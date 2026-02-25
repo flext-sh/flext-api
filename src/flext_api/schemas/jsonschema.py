@@ -16,6 +16,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from flext_core import r
 
 from flext_api.plugins import FlextApiPlugins
@@ -737,7 +740,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     def load_schema(
         self,
         schema_source: str,
-    ) -> r[t_api.ApiJsonValue]:
+    ) -> r[t_api.GeneralValueType]:
         """Load JSON Schema from source.
 
         Args:
@@ -747,10 +750,65 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         FlextResult containing loaded schema or error
 
         """
-        # Acknowledge unused parameter (stub implementation)
-        _ = schema_source
-        # For string paths, would load from file
-        return r[t_api.ApiJsonValue].fail("File loading not implemented yet")
+        schema_path = Path(schema_source)
+        if not schema_path.exists() or not schema_path.is_file():
+            return r[t_api.GeneralValueType].fail(
+                f"Schema file not found: {schema_source}"
+            )
+
+        try:
+            schema_text = schema_path.read_text(encoding="utf-8")
+        except OSError as e:
+            return r[t_api.GeneralValueType].fail(f"Failed to read schema file: {e}")
+
+        suffix = schema_path.suffix.lower()
+        if suffix in {".yaml", ".yml"}:
+            try:
+                import yaml
+            except ImportError:
+                return r[t_api.GeneralValueType].fail(
+                    "YAML schema loading requires PyYAML"
+                )
+
+            try:
+                loaded_schema = yaml.safe_load(schema_text)
+            except Exception as e:
+                return r[t_api.GeneralValueType].fail(
+                    f"Failed to parse YAML schema: {e}"
+                )
+        else:
+            try:
+                loaded_schema = json.loads(schema_text)
+            except json.JSONDecodeError as e:
+                return r[t_api.GeneralValueType].fail(
+                    f"Failed to parse JSON schema: {e}"
+                )
+
+        match loaded_schema:
+            case str() | int() | float() | bool() | None | list() | dict():
+
+                def normalize(value: object) -> t_api.GeneralValueType:
+                    match value:
+                        case str() | int() | float() | bool() | None:
+                            return value
+                        case list() as values:
+                            normalized_values: list[t_api.GeneralValueType] = []
+                            for item in values:
+                                normalized_values.append(normalize(item))
+                            return normalized_values
+                        case dict() as mapping:
+                            normalized_mapping: dict[str, t_api.GeneralValueType] = {}
+                            for key, item in mapping.items():
+                                normalized_mapping[str(key)] = normalize(item)
+                            return normalized_mapping
+                        case _:
+                            return str(value)
+
+                return r[t_api.GeneralValueType].ok(normalize(loaded_schema))
+            case _:
+                return r[t_api.GeneralValueType].fail(
+                    "JSON schema file must contain valid JSON/YAML value"
+                )
 
 
 __all__ = ["JSONSchemaValidator"]

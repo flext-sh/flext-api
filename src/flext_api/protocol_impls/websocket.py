@@ -390,14 +390,14 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             for handler in self._on_disconnect_handlers:
                 try:
                     handler()
-                except Exception:
+                except (ValueError, TypeError, KeyError, ConnectionError):
                     self.logger.exception("Disconnect handler error")
 
             self.logger.info("WebSocket disconnected", url=self._url)
 
             return r[bool].ok(value=True)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
     def send_message(
@@ -504,7 +504,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             for handler in self._on_connect_handlers:
                 try:
                     handler()
-                except Exception:
+                except (ValueError, TypeError, KeyError, ConnectionError):
                     self.logger.exception("Connect handler error")
 
             self.logger.info(
@@ -518,7 +518,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             return r[bool].ok(value=True)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             self._connected = False
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")
@@ -564,7 +564,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             return r[bool].ok(value=True)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"WebSocket send error: {e}")
 
     def _receive_loop(self) -> None:
@@ -580,19 +580,19 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     for handler in self._on_message_handlers:
                         try:
                             handler(inbound.message)
-                        except Exception:
+                        except (ValueError, TypeError, KeyError, ConnectionError):
                             self.logger.exception("Message handler error")
                 except ValidationError:
                     pass
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")
 
                 # Notify error handlers
                 for handler in self._on_error_handlers:
                     try:
                         handler(e)
-                    except Exception:
+                    except (ValueError, TypeError, KeyError, ConnectionError):
                         self.logger.exception("Error handler error")
 
                 # Attempt reconnection if enabled
@@ -610,7 +610,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     # Ping is handled automatically by websockets library
                     self.logger.debug("WebSocket heartbeat")
 
-            except Exception:
+            except (ValueError, TypeError, KeyError, ConnectionError):
                 self.logger.exception("Heartbeat error")
                 break
 

@@ -16,7 +16,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
+from pathlib import Path
 from typing import override
 
 from flext_core import r, u
@@ -751,6 +753,50 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         self.logger.debug("AsyncAPI response validation completed")
         return r[bool].ok(value=True)
 
+    def _to_general_value(self, value: object) -> t.GeneralValueType:
+        match value:
+            case str() | int() | float() | bool() | None:
+                return value
+            case list() as values:
+                normalized_values: list[t.GeneralValueType] = []
+                for item in values:
+                    normalized_values.append(self._to_general_value(item))
+                return normalized_values
+            case dict() as mapping:
+                normalized_mapping: dict[str, t.GeneralValueType] = {}
+                for key, item in mapping.items():
+                    normalized_mapping[str(key)] = self._to_general_value(item)
+                return normalized_mapping
+            case _:
+                return str(value)
+
+    def _load_schema_document(self, schema_source: str) -> r[object]:
+        schema_path = Path(schema_source)
+        if not schema_path.exists() or not schema_path.is_file():
+            return r[object].fail(f"Schema file not found: {schema_source}")
+
+        try:
+            schema_text = schema_path.read_text(encoding="utf-8")
+        except OSError as e:
+            return r[object].fail(f"Failed to read schema file: {e}")
+
+        suffix = schema_path.suffix.lower()
+        if suffix in {".yaml", ".yml"}:
+            try:
+                import yaml
+            except ImportError:
+                return r[object].fail("YAML schema loading requires PyYAML")
+
+            try:
+                return r[object].ok(yaml.safe_load(schema_text))
+            except Exception as e:
+                return r[object].fail(f"Failed to parse YAML schema: {e}")
+
+        try:
+            return r[object].ok(json.loads(schema_text))
+        except json.JSONDecodeError as e:
+            return r[object].fail(f"Failed to parse JSON schema: {e}")
+
     @override
     def load_schema(
         self,
@@ -765,8 +811,20 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         FlextResult containing loaded schema or error
 
         """
-        # For string paths, would load from file
-        return r[t.GeneralValueType].fail("File loading not implemented yet")
+        schema_result = self._load_schema_document(schema_source)
+        if schema_result.is_failure:
+            return r[t.GeneralValueType].fail(
+                schema_result.error or "Failed to load AsyncAPI schema"
+            )
+
+        loaded_schema = schema_result.value
+        if not isinstance(loaded_schema, dict):
+            return r[t.GeneralValueType].fail(
+                "AsyncAPI schema must be a JSON/YAML object"
+            )
+
+        normalized_schema = self._to_general_value(loaded_schema)
+        return r[t.GeneralValueType].ok(normalized_schema)
 
 
 __all__ = ["AsyncAPISchemaValidator"]

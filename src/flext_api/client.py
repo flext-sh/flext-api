@@ -188,7 +188,13 @@ class FlextApiClient(s[FlextApiSettings]):
                     body=body,
                 ),
             )
-        except Exception as exc:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            httpx.HTTPError,
+            ConnectionError,
+        ) as exc:
             return r[FlextApiModels.HttpResponse].fail(str(exc))
 
     def _build_url(self, path: str) -> r[str]:
@@ -286,7 +292,14 @@ class FlextApiClient(s[FlextApiSettings]):
             except ValidationError:
                 normalized = FlextRuntime.normalize_to_general_value(json_data)
                 return r[t.Api.ResponseBody].ok({"value": str(normalized)})
-        except (AttributeError, ValueError, TypeError, Exception) as e:
+        except (
+            AttributeError,
+            ValueError,
+            TypeError,
+            KeyError,
+            httpx.HTTPError,
+            ConnectionError,
+        ) as e:
             return r[t.Api.ResponseBody].fail(
                 f"JSON deserialization failed: {e}",
             )

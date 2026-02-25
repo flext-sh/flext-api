@@ -48,7 +48,7 @@ class FlextApiSettingsManager:
                 self._config = process_result.value
 
             return self._validate_configuration()
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             error_msg = f"Configuration failed: {e}"
             return r.fail(error_msg)
 

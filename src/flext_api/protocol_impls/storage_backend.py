@@ -35,7 +35,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
                 return r[object].ok(value)
             return r[object].fail(f"Key not found: {key}")
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[object].fail(f"Retrieval operation failed: {e}")
 
     def set(
@@ -57,7 +57,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
             self.logger.debug("Stored data with key: %s", key)
             return r[bool].ok(value=True)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Storage operation failed: {e}")
 
     def delete(self, key: str) -> r[bool]:
@@ -74,7 +74,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
                 return r[bool].ok(value=True)
             return r[bool].fail(f"Key not found: {key}")
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Delete operation failed: {e}")
 
     def exists(self, key: str) -> r[bool]:
@@ -82,7 +82,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         try:
             exists = str(key) in self._storage
             return r[bool].ok(exists)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Exists check failed: {e}")
 
     def clear(self) -> r[bool]:
@@ -91,7 +91,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
             self._storage = {}
             self.logger.debug("Cleared all storage data")
             return r[bool].ok(value=True)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Clear operation failed: {e}")
 
     def keys(self) -> r[list[str]]:
@@ -99,5 +99,5 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         try:
             storage_keys: list[str] = list(self._storage)
             return r[list[str]].ok(storage_keys)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[list[str]].fail(f"Keys operation failed: {e}")

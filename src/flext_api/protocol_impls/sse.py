@@ -201,7 +201,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
 
-            except Exception as exc:
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as exc:
                 self._notify_error_handlers(exc)
 
                 if not auto_reconnect or attempts >= max_attempts:
@@ -399,28 +399,28 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         for handler in handlers:
             try:
                 handler(event)
-            except Exception:
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE event handler error")
 
     def _notify_connect_handlers(self) -> None:
         for handler in self._on_connect_handlers:
             try:
                 handler()
-            except Exception:
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE connect handler error")
 
     def _notify_disconnect_handlers(self) -> None:
         for handler in self._on_disconnect_handlers:
             try:
                 handler()
-            except Exception:
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE disconnect handler error")
 
     def _notify_error_handlers(self, exc: Exception) -> None:
         for handler in self._on_error_handlers:
             try:
                 handler(exc)
-            except Exception:
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE error handler error")
 
     def supports_protocol(self, protocol: str) -> bool:

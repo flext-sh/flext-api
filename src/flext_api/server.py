@@ -174,7 +174,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                     close_method = getattr(connection, "close", None)
                     if callable(close_method):
                         close_method()
-                except Exception as e:
+                except (ValueError, TypeError, KeyError, ConnectionError) as e:
                     self._logger.warning(
                         "Failed to close WebSocket %s",
                         conn_id,
@@ -186,7 +186,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                     close_method = getattr(connection, "close", None)
                     if callable(close_method):
                         close_method()
-                except Exception as e:
+                except (ValueError, TypeError, KeyError, ConnectionError) as e:
                     self._logger.warning(
                         "Failed to close SSE %s",
                         conn_id,
@@ -253,7 +253,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                     openapi_url="/openapi.json",
                 )
                 return r[FastAPI].ok(app)
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[FastAPI].fail(f"Failed to create app: {e}")
 
         def apply_middleware(
@@ -268,7 +268,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                         extra={"middleware": middleware.__class__.__name__},
                     )
                 return r[bool].ok(value=True)
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bool].fail(f"Failed to apply middleware: {e}")
 
         def register_routes(
@@ -326,7 +326,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                     )
 
                 return r[bool].ok(value=True)
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bool].fail(f"Failed to register routes: {e}")
 
         def start(

@@ -448,7 +448,7 @@ class FlextApiUtilities(FlextUtilities):
                 ):
                     return r.fail(f"Invalid port {parsed.port}")
                 return r.ok(url)
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r.fail(f"Invalid URL: {e}")
 
         @staticmethod

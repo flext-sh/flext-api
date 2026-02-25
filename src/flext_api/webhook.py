@@ -198,7 +198,7 @@ class FlextWebhookHandler(FlextService[object]):
             for key, value in event_data.items():
                 json_object[str(key)] = FlextWebhookHandler._to_json_value(value)
             return r[t.JsonObject].ok(json_object)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[t.JsonObject].fail(f"Failed to parse payload: {e}")
 
     def _extract_event_type(self, event_data: t.JsonObject) -> r[str]:
@@ -423,7 +423,7 @@ class FlextWebhookHandler(FlextService[object]):
 
             return r[bool].ok(value=True)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Signature verification error: {e}")
 
     def _process_event(
@@ -466,7 +466,7 @@ class FlextWebhookHandler(FlextService[object]):
                 if getattr(result, "is_failure", False):
                     error = str(getattr(result, "error", "handler failed"))
                     return r[bool].fail(error)
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bool].fail(f"Handler execution failed: {e}")
 
         return r[bool].ok(value=True)

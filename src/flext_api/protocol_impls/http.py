@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 
 import httpx
 from flext_core import r
@@ -30,13 +30,13 @@ from flext_api.utilities import u
 
 
 class _HttpRequestCallArgs(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
 
     method: str = "GET"
     url: str
     headers: dict[str, str] = Field(default_factory=dict)
     params: dict[str, str] | None = None
-    json: t.ApiJsonValue | None = None
+    json_body: t.ApiJsonValue | None = Field(default=None, alias="json")
     content: str | bytes | None = None
     timeout: float | None = None
 
@@ -155,23 +155,52 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         http_request = FlextApiModels.HttpRequest(
             method=method_result.value,
             url=url_result.value,
-            headers=headers,
+            headers=dict(headers),
             body=body,
             timeout=self._extract_timeout(request),
         )
 
         return r[FlextApiModels.HttpRequest].ok(http_request)
 
+    def _to_general_value(self, value: t.ApiJsonValue) -> t.GeneralValueType:
+        match value:
+            case str() | int() | float() | bool() | None:
+                return value
+            case list() as items:
+                normalized_items: list[t.GeneralValueType] = []
+                for item in items:
+                    match item:
+                        case str() | int() | float() | bool() | None | list() | dict():
+                            normalized_items.append(self._to_general_value(item))
+                        case _:
+                            normalized_items.append(str(item))
+                return normalized_items
+            case dict() as mapping:
+                normalized_mapping: dict[str, t.GeneralValueType] = {}
+                for key, item in mapping.items():
+                    match item:
+                        case str() | int() | float() | bool() | None | list() | dict():
+                            normalized_mapping[str(key)] = self._to_general_value(item)
+                        case _:
+                            normalized_mapping[str(key)] = str(item)
+                return normalized_mapping
+            case _:
+                return str(value)
+
     def send_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
-        **_kwargs: t.ApiJsonValue,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        request: Mapping[str, t.ApiJsonValue],
+        **_kwargs: object,
+    ) -> r[Mapping[str, t.ApiJsonValue]]:
         """Send HTTP request with retry logic and error handling."""
+        request_general: dict[str, t.GeneralValueType] = {}
+        for key, value in request.items():
+            request_general[key] = self._to_general_value(value)
+
         # Build HTTP request model
-        request_result = self._build_http_request_from_dict(request)
+        request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.ApiJsonValue]].fail(
                 request_result.error or "Request building failed",
             )
 
@@ -182,7 +211,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.ApiJsonValue]].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
@@ -196,7 +225,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         )
 
         if conn_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.ApiJsonValue]].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
 
@@ -215,13 +244,13 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         if result.is_success:
             response = result.value
-            return r[Mapping[str, t.GeneralValueType]].ok({
+            return r[Mapping[str, t.ApiJsonValue]].ok({
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
                 "body": str(getattr(response, "text", response.body)),
             })
 
-        return r[Mapping[str, t.GeneralValueType]].fail(
+        return r[Mapping[str, t.ApiJsonValue]].fail(
             result.error or "Request execution failed"
         )
 
@@ -233,9 +262,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         params: Mapping[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> Mapping[str, t.GeneralValueType]:
+    ) -> Mapping[str, object]:
         """Build request kwargs based on body type."""
-        kwargs: dict[str, t.GeneralValueType] = {
+        kwargs: dict[str, object] = {
             "method": method,
             "url": url,
             "headers": headers,
@@ -255,7 +284,10 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 kwargs["data"] = str(parsed_mapping.body)
             return kwargs
         except ValidationError:
-            kwargs["content"] = body
+            if isinstance(body, bytes):
+                kwargs["content"] = body
+            else:
+                kwargs["content"] = str(body)
 
         return kwargs
 
@@ -305,7 +337,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     url=call_args.url,
                     headers=call_args.headers,
                     params=call_args.params,
-                    json=call_args.json,
+                    json=call_args.json_body,
                     content=call_args.content,
                     timeout=call_args.timeout,
                 )
@@ -342,7 +374,13 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 )
             except ValidationError as e:
                 last_error = f"Invalid request argument type: {e}"
-            except Exception as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
                 last_error = self._handle_request_exception(
                     e,
                     url,
@@ -383,7 +421,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
             return r[FlextApiModels.HttpResponse].ok(response)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
             return r[FlextApiModels.HttpResponse].fail(f"Failed to build response: {e}")
 
     def supports_protocol(self, protocol: str) -> bool:
@@ -416,7 +454,56 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             },
         )
 
-        return r[object].fail("Streaming not yet implemented (Phase 2 enhancement)")
+        if chunk_size <= 0:
+            return r[object].fail("chunk_size must be greater than 0")
+
+        headers_result = self._extract_headers_from_model(request)
+        if headers_result.is_failure:
+            return r[object].fail(headers_result.error or "Headers extraction failed")
+
+        method = request.method.upper()
+        url = str(request.url)
+        request_kwargs = self._build_request_kwargs(
+            method,
+            url,
+            headers_result.value,
+            {},
+            request.timeout,
+            request.body,
+        )
+
+        try:
+            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
+        except ValidationError as e:
+            return r[object].fail(f"Invalid streaming request arguments: {e}")
+
+        def _iter_stream_chunks() -> Iterator[bytes]:
+            timeout_config = (
+                call_args.timeout
+                if call_args.timeout is not None
+                else float(c.Api.DEFAULT_TIMEOUT)
+            )
+            with httpx.Client(
+                follow_redirects=self._follow_redirects,
+                max_redirects=self._max_redirects,
+                timeout=timeout_config,
+                http2=self._http2,
+            ) as client:
+                with client.stream(
+                    method=call_args.method,
+                    url=call_args.url,
+                    headers=call_args.headers,
+                    params=call_args.params,
+                    json=call_args.json_body,
+                    content=call_args.content,
+                    timeout=call_args.timeout,
+                ) as response:
+                    response.raise_for_status()
+                    for chunk in response.iter_bytes(chunk_size=chunk_size):
+                        if chunk:
+                            yield chunk
+
+        return r[object].ok(_iter_stream_chunks())
 
     def get_protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information."""

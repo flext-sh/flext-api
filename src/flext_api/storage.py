@@ -379,7 +379,7 @@ class FlextApiStorage:
                 timestamp=u.Generators.generate_iso_timestamp(),
                 ttl=ttl_val,
             )
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Metadata validation failed: {e}")
 
         # Store with expiry tracking - direct field access
@@ -604,7 +604,7 @@ class FlextApiStorage:
                 if result.is_failure:
                     return result
             return r[bool].ok(value=True)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(str(e))
 
     def batch_get(self, keys: list[str]) -> r[Mapping[str, t.JsonValue]]:
@@ -617,7 +617,7 @@ class FlextApiStorage:
                     unwrapped = get_result.value
                     result_dict[key] = self._to_json_value(unwrapped)
             return r[Mapping[str, t.JsonValue]].ok(result_dict)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, t.JsonValue]].fail(str(e))
 
     def batch_delete(self, keys: list[str]) -> r[bool]:
@@ -631,21 +631,21 @@ class FlextApiStorage:
             if all_deleted:
                 return r[bool].ok(value=True)
             return r[bool].fail("Some keys could not be deleted")
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(str(e))
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using json library."""
         try:
             return r[str].ok(json.dumps(data, default=str))
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[str].fail(f"JSON serialization failed: {e}")
 
     def deserialize_json(self, json_str: str) -> r[t.JsonValue]:
         """Deserialize from JSON using json library."""
         try:
             return r[t.JsonValue].ok(json.loads(json_str))
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[t.JsonValue].fail(f"JSON deserialization failed: {e}")
 
     def cleanup_expired(self) -> r[int]:
@@ -655,7 +655,7 @@ class FlextApiStorage:
             self._cleanup_expired()
             removed = initial_size - len(self._storage)
             return r[int].ok(removed)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[int].fail(f"Cleanup failed: {e}")
 
     def info(self) -> r[Mapping[str, t.JsonValue]]:
@@ -670,7 +670,7 @@ class FlextApiStorage:
                 "default_ttl": self._default_ttl,
                 "operations_count": self._operations_count,
             })
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, t.JsonValue]].fail(str(e))
 
     def health_check(self) -> r[Mapping[str, t.JsonValue]]:
@@ -683,7 +683,7 @@ class FlextApiStorage:
                 "size": len(self._storage),
                 "operations_count": self._operations_count,
             })
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, t.JsonValue]].fail(str(e))
 
     def metrics(self) -> r[Mapping[str, t.JsonValue]]:
@@ -715,7 +715,7 @@ class FlextApiStorage:
                 "namespace": self._stats.namespace,
             }
             return r[Mapping[str, t.JsonValue]].ok(stats_dict)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, t.JsonValue]].fail(str(e))
 
     def get_cache_stats(self) -> r[t.Api.CacheDict]:
@@ -727,7 +727,7 @@ class FlextApiStorage:
                 "hits": self._stats.cache_hits,
                 "misses": self._stats.cache_misses,
             })
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[t.Api.CacheDict].fail(str(e))
 
     def get_storage_metrics(self) -> r[t.Api.MetricsDict]:
@@ -738,7 +738,7 @@ class FlextApiStorage:
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
             })
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[t.Api.MetricsDict].fail(str(e))
 
     def get_storage_statistics(self) -> r[Mapping[str, float]]:
@@ -757,7 +757,7 @@ class FlextApiStorage:
                 "storage_size": float(len(self._storage)),
                 "memory_usage": float(len(str(self._storage))),
             })
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, float]].fail(str(e))
 
     # Properties for namespace and backend access

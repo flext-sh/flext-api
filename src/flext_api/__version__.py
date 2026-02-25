@@ -20,7 +20,7 @@ try:
     __version_info__ = tuple(
         int(part) if part.isdigit() else part for part in __version__.split(".")
     )
-except Exception:
+except (ValueError, TypeError, KeyError, ConnectionError):
     __version__ = "0.0.0"
     __version_info__ = (0, 0, 0)
 __title__ = _metadata_map.get("Name", "flext-api")

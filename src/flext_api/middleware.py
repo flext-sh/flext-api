@@ -34,7 +34,7 @@ class FlextApiMiddleware:
         for middleware in middleware_list:
             try:
                 request = middleware(request)
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 # Log exception and continue with other middleware
                 logging.getLogger(__name__).warning("Middleware failed: %s", e)
                 continue

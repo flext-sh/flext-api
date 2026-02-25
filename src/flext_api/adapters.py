@@ -58,7 +58,7 @@ class FlextApiAdapters:
                     message,
                 )
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[t.JsonObject | FlextApiModels.HttpRequest].fail(
                     f"HTTP to WebSocket adaptation failed: {e}",
                 )
@@ -89,7 +89,7 @@ class FlextApiAdapters:
                 })
                 return r[FlextApiModels.HttpResponse].ok(response)
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[FlextApiModels.HttpResponse].fail(
                     f"WebSocket to HTTP adaptation failed: {e}",
                 )
@@ -116,7 +116,7 @@ class FlextApiAdapters:
 
                 return r[t.JsonObject].ok(graphql_schema)
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[t.JsonObject].fail(
                     f"OpenAPI to GraphQL conversion failed: {e}",
                 )
@@ -141,7 +141,7 @@ class FlextApiAdapters:
                 except (TypeError, ValueError):
                     return r[bytes].fail("MessagePack.packb did not return bytes")
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
 
         @staticmethod
@@ -151,7 +151,7 @@ class FlextApiAdapters:
                 packed: bytes = cbor2.dumps(data)
                 return r[bytes].ok(packed)
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bytes].fail(f"JSON to CBOR conversion failed: {e}")
 
     class RequestTransformer:
@@ -183,7 +183,7 @@ class FlextApiAdapters:
                     request,
                 )
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[t.JsonObject | FlextApiModels.HttpRequest].fail(
                     f"Request transformation failed: {e}",
                 )
@@ -211,7 +211,7 @@ class FlextApiAdapters:
                     FlextApiModels.HttpResponse.model_validate(response),
                 )
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[FlextApiModels.HttpResponse].fail(
                     f"Response transformation failed: {e}",
                 )

@@ -144,7 +144,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
             return r[str].fail(str(details))
-        except Exception:
+        except (ValueError, TypeError, KeyError, ConnectionError):
             return r[str].fail("URL must be a string (RFC 7230)")
         return r[str].ok(parsed.url)
 
@@ -163,7 +163,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
             return r[str].fail(str(details))
-        except Exception:
+        except (ValueError, TypeError, KeyError, ConnectionError):
             return r[str].fail("Method must be a string (RFC 7231)")
         return r[str].ok(parsed.method)
 
