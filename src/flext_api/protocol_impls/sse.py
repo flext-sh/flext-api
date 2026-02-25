@@ -142,13 +142,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
         request_map = cast("Mapping[str, t.GeneralValueType]", request)
 
-        url_result = self._extract_url(request_map)  # type: ignore[arg-type]
+        url_result = self._extract_url(request_map)
         if url_result.is_failure:
             return r[Mapping[str, t.ApiJsonValue]].fail(
                 url_result.error or "URL extraction failed",
             )
 
-        headers = dict(self._extract_headers(request_map))  # type: ignore[arg-type]
+        headers = dict(self._extract_headers(request_map))
         method = options.method.upper()
         max_events = options.max_events
         auto_reconnect = (
@@ -251,7 +251,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         try:
             with httpx.Client(timeout=timeout) as client:
                 if connect_sse is not None:
-                    with connect_sse(  # type: ignore[misc]
+                    with connect_sse(
                         client,
                         method,
                         url,
