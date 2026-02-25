@@ -759,9 +759,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             case str() | int() | float() | bool() | None:
                 return value
             case list() as values:
-                normalized_values: list[t.GeneralValueType] = []
-                for item in values:
-                    normalized_values.append(self._to_general_value(item))
+                normalized_values: list[t.GeneralValueType] = [
+                    self._to_general_value(item) for item in values
+                ]
                 return normalized_values
             case dict() as mapping:
                 normalized_mapping: dict[str, t.GeneralValueType] = {}

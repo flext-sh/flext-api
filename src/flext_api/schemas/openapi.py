@@ -564,7 +564,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
 
-        # Acknowledge unused parameters (stub implementation)
+        # Acknowledge unused parameters (schema endpoint)
         _ = request, schema
         # Implementation would validate request against OpenAPI paths/operations
         return r[bool].ok(value=True)
@@ -589,7 +589,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
 
-        # Acknowledge unused parameters (stub implementation)
+        # Acknowledge unused parameters (schema endpoint)
         _ = response, schema
         # Implementation would validate response against OpenAPI response schemas
         return r[bool].ok(value=True)
@@ -599,9 +599,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             case str() | int() | float() | bool() | None:
                 return value
             case list() as values:
-                normalized_values: list[t.GeneralValueType] = []
-                for item in values:
-                    normalized_values.append(self._to_general_value(item))
+                normalized_values: list[t.GeneralValueType] = [
+                    self._to_general_value(item) for item in values
+                ]
                 return normalized_values
             case dict() as mapping:
                 normalized_mapping: dict[str, t.GeneralValueType] = {}

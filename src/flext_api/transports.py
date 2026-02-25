@@ -48,7 +48,13 @@ class FlextApiTransports:
                 _ = options  # Reserved for future use
                 self._client = httpx.Client()
                 return r[str].ok(url)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
                 return r[str].fail(f"HTTP connect failed: {e}")
 
         def disconnect(self, connection: str) -> r[bool]:
@@ -59,7 +65,13 @@ class FlextApiTransports:
                     self._client.close()
                 self._client = None
                 return r[bool].ok(value=True)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
                 return r[bool].fail(f"HTTP disconnect failed: {e}")
 
         def _extract_request_params(
@@ -86,7 +98,13 @@ class FlextApiTransports:
                             body=body_bytes,
                         )
                 return r[m.HttpRequest].ok(request_model)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
                 return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
         def send(
@@ -150,7 +168,13 @@ class FlextApiTransports:
                     "text": response.text,
                     "url": str(response.url),
                 })
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
                 return r[t.Api.HttpResponseDict | str].fail(f"HTTP send failed: {e}")
 
 

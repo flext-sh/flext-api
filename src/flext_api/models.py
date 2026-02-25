@@ -76,9 +76,11 @@ class FlextApiModels(FlextModels):
             default_factory=dict,
             description="HTTP request headers",
         )
-        body: Annotated[t.Api.RequestBody, BeforeValidator(_normalize_request_body)] = Field(
-            default_factory=dict,
-            description="Request body",
+        body: Annotated[t.Api.RequestBody, BeforeValidator(_normalize_request_body)] = (
+            Field(
+                default_factory=dict,
+                description="Request body",
+            )
         )
 
         query_params: t.Api.WebParams = Field(
@@ -122,7 +124,9 @@ class FlextApiModels(FlextModels):
             default_factory=dict,
             description="HTTP response headers",
         )
-        body: Annotated[t.Api.ResponseBody, BeforeValidator(_normalize_response_body)] = Field(
+        body: Annotated[
+            t.Api.ResponseBody, BeforeValidator(_normalize_response_body)
+        ] = Field(
             default_factory=dict,
             description="Response body (empty dict by default, None allowed for 204)",
         )

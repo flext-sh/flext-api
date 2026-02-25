@@ -483,13 +483,14 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 if call_args.timeout is not None
                 else float(c.Api.DEFAULT_TIMEOUT)
             )
-            with httpx.Client(
-                follow_redirects=self._follow_redirects,
-                max_redirects=self._max_redirects,
-                timeout=timeout_config,
-                http2=self._http2,
-            ) as client:
-                with client.stream(
+            with (
+                httpx.Client(
+                    follow_redirects=self._follow_redirects,
+                    max_redirects=self._max_redirects,
+                    timeout=timeout_config,
+                    http2=self._http2,
+                ) as client,
+                client.stream(
                     method=call_args.method,
                     url=call_args.url,
                     headers=call_args.headers,
@@ -497,11 +498,12 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     json=call_args.json_body,
                     content=call_args.content,
                     timeout=call_args.timeout,
-                ) as response:
-                    response.raise_for_status()
-                    for chunk in response.iter_bytes(chunk_size=chunk_size):
-                        if chunk:
-                            yield chunk
+                ) as response,
+            ):
+                response.raise_for_status()
+                for chunk in response.iter_bytes(chunk_size=chunk_size):
+                    if chunk:
+                        yield chunk
 
         return r[object].ok(_iter_stream_chunks())
 

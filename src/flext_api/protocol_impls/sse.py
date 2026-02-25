@@ -201,7 +201,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
 
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as exc:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as exc:
                 self._notify_error_handlers(exc)
 
                 if not auto_reconnect or attempts >= max_attempts:
