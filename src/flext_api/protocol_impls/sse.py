@@ -1,55 +1,53 @@
 """Server-Sent Events (SSE) Protocol Plugin for flext-api.
 
-SSE protocol support currently not implemented - stub for future development.
-All methods return NotImplementedError to indicate stub status.
-
-See TRANSFORMATION_PLAN.md - Phase 3 for implementation details.
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+import time
+from collections.abc import Callable, Iterator, Mapping
+from typing import cast
 
+import httpx
 from flext_core import r
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.typings import t
 
+try:
+    from httpx_sse import connect_sse
+except ImportError:
+    connect_sse = None
+
 
 class SSEProtocolPlugin(RFCProtocolImplementation):
-    """Server-Sent Events protocol plugin (stub implementation).
-
-    Features (planned for future implementation):
-    - SSE event stream handling
-    - Event parsing (id, event, data, retry)
-    - Automatic reconnection with Last-Event-ID
-    - Event type filtering
-    - Retry handling with configurable delays
-    - Connection state tracking
-    - Error recovery and resilience
-
-    Note:
-    This is a stub implementation. All methods return errors indicating
-    the feature is not yet implemented.
-
-    """
-
-    # Declare attributes to satisfy type checkers
-    # These are initialized via object.__setattr__() in __init__()
     is_connected: bool
     last_event_id: str
     _connected: bool
-    _on_event_handlers: Mapping[str, list[Callable[..., None]]]
+    _on_event_handlers: dict[str, list[Callable[..., None]]]
     _on_connect_handlers: list[Callable[[], None]]
     _on_disconnect_handlers: list[Callable[[], None]]
     _on_error_handlers: list[Callable[[Exception], None]]
     _retry_timeout: int
     _auto_reconnect: bool
+    _connect_timeout: float
+    _read_timeout: float
+    _reconnect_max_attempts: int
+    _reconnect_backoff_factor: float
+
+    class _SendRequestOptions(BaseModel):
+        model_config = ConfigDict(extra="ignore")
+
+        method: str = Field(default="GET")
+        max_events: int = Field(default=1, ge=1)
+        retry_timeout: int | None = Field(default=None, ge=0)
+        auto_reconnect: bool | None = None
+        reconnect_max_attempts: int | None = Field(default=None, ge=0)
+        reconnect_backoff_factor: float | None = Field(default=None, ge=1.0)
 
     def __init__(
         self,
@@ -61,27 +59,12 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         reconnect_max_attempts: int | None = None,
         reconnect_backoff_factor: float | None = None,
     ) -> None:
-        """Initialize SSE protocol plugin stub.
-
-        Note: All timeout and reconnection parameters are currently
-        unused in this stub implementation.
-
-        """
-        # Acknowledge unused parameters for future implementation
-        _ = connect_timeout
-        _ = read_timeout
-        _ = reconnect_max_attempts
-        _ = reconnect_backoff_factor
         super().__init__(
             name="sse",
             version="1.0.0",
-            description=(
-                "Server-Sent Events protocol support (stub - not yet implemented)"
-            ),
+            description="Server-Sent Events protocol support with event stream handling",
         )
 
-        # Initialize stub attributes for testing - use constants if not provided
-        # Use object.__setattr__() to bypass frozen Pydantic model constraints
         object.__setattr__(self, "is_connected", False)
         object.__setattr__(self, "_connected", False)
         object.__setattr__(self, "last_event_id", "")
@@ -99,50 +82,348 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             ),
         )
         object.__setattr__(self, "_auto_reconnect", auto_reconnect)
+        object.__setattr__(
+            self,
+            "_connect_timeout",
+            (
+                connect_timeout
+                if connect_timeout is not None
+                else FlextApiConstants.Api.SSE.DEFAULT_CONNECT_TIMEOUT
+            ),
+        )
+        object.__setattr__(
+            self,
+            "_read_timeout",
+            (
+                read_timeout
+                if read_timeout is not None
+                else FlextApiConstants.Api.SSE.DEFAULT_READ_TIMEOUT
+            ),
+        )
+        object.__setattr__(
+            self,
+            "_reconnect_max_attempts",
+            (
+                reconnect_max_attempts
+                if reconnect_max_attempts is not None
+                else FlextApiConstants.Api.SSE.DEFAULT_RECONNECT_MAX_ATTEMPTS
+            ),
+        )
+        object.__setattr__(
+            self,
+            "_reconnect_backoff_factor",
+            (
+                reconnect_backoff_factor
+                if reconnect_backoff_factor is not None
+                else FlextApiConstants.Api.SSE.DEFAULT_RECONNECT_BACKOFF_FACTOR
+            ),
+        )
 
-        # Initialize protocol
         init_result = self.initialize()
         if init_result.is_failure:
             self.logger.error(f"Failed to initialize SSE protocol: {init_result.error}")
 
     def send_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
+        request: Mapping[str, t.ApiJsonValue],
         **kwargs: object,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
-        """Send SSE request (stub - not implemented).
-
-        Args:
-        request: HTTP request dictionary (unused in stub)
-        **kwargs: Additional SSE-specific parameters (unused in stub)
-
-        Returns:
-        FlextResult with error indicating not implemented
-
-        """
-        # Validate request using base class method
+    ) -> r[Mapping[str, t.ApiJsonValue]]:
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.ApiJsonValue]].fail(
                 validation_result.error or "Request validation failed",
             )
 
-        # Acknowledge kwargs to avoid linting warnings
-        _ = kwargs
-        return r[Mapping[str, t.GeneralValueType]].fail(
-            "SSE protocol not yet implemented (Phase 3)"
+        try:
+            options = self._SendRequestOptions.model_validate(kwargs)
+        except ValidationError as exc:
+            details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(details))
+
+        request_map = cast("Mapping[str, t.GeneralValueType]", request)
+
+        url_result = self._extract_url(request_map)  # type: ignore[arg-type]
+        if url_result.is_failure:
+            return r[Mapping[str, t.ApiJsonValue]].fail(
+                url_result.error or "URL extraction failed",
+            )
+
+        headers = dict(self._extract_headers(request_map))  # type: ignore[arg-type]
+        method = options.method.upper()
+        max_events = options.max_events
+        auto_reconnect = (
+            options.auto_reconnect
+            if options.auto_reconnect is not None
+            else self._auto_reconnect
+        )
+        max_attempts = (
+            options.reconnect_max_attempts
+            if options.reconnect_max_attempts is not None
+            else self._reconnect_max_attempts
+        )
+        backoff_factor = (
+            options.reconnect_backoff_factor
+            if options.reconnect_backoff_factor is not None
+            else self._reconnect_backoff_factor
+        )
+        base_retry_timeout = (
+            options.retry_timeout
+            if options.retry_timeout is not None
+            else self._retry_timeout
         )
 
+        events: list[dict[str, t.GeneralValueType]] = []
+        retry_timeout_ms = base_retry_timeout
+        attempts = 0
+
+        while len(events) < max_events:
+            connect_headers = dict(headers)
+            if self.last_event_id:
+                connect_headers["last-event-id"] = self.last_event_id
+
+            try:
+                stream_events, next_retry = self._consume_stream_once(
+                    url=url_result.value,
+                    method=method,
+                    headers=connect_headers,
+                    remaining=max_events - len(events),
+                )
+                events.extend(stream_events)
+                if isinstance(next_retry, int) and next_retry >= 0:
+                    retry_timeout_ms = next_retry
+
+                if len(events) >= max_events:
+                    break
+
+                if not auto_reconnect or attempts >= max_attempts:
+                    break
+
+                attempts += 1
+                self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
+
+            except Exception as exc:
+                self._notify_error_handlers(exc)
+
+                if not auto_reconnect or attempts >= max_attempts:
+                    return r[Mapping[str, t.ApiJsonValue]].fail(
+                        f"SSE stream failed: {exc}",
+                    )
+
+                attempts += 1
+                self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
+
+        response: dict[str, t.GeneralValueType] = {
+            "status_code": 200,
+            "url": url_result.value,
+            "method": "SSE",
+            "headers": headers,
+            "body": {
+                "events": events,
+                "event_count": len(events),
+                "last_event_id": self.last_event_id,
+                "retry_timeout": retry_timeout_ms,
+                "reconnect_attempts": attempts,
+            },
+        }
+        return r[Mapping[str, t.ApiJsonValue]].ok(response)
+
+    def _consume_stream_once(
+        self,
+        *,
+        url: str,
+        method: str,
+        headers: Mapping[str, str],
+        remaining: int,
+    ) -> tuple[list[dict[str, t.GeneralValueType]], int | None]:
+        timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
+        events: list[dict[str, t.GeneralValueType]] = []
+        retry_timeout: int | None = None
+
+        self._set_connected_state(True)
+        self._notify_connect_handlers()
+
+        try:
+            with httpx.Client(timeout=timeout) as client:
+                if connect_sse is not None:
+                    with connect_sse(  # type: ignore[misc]
+                        client,
+                        method,
+                        url,
+                        headers=headers,
+                    ) as event_source:
+                        for event in event_source.iter_sse():
+                            parsed = self._parse_sse_event(
+                                event_id=getattr(event, "id", ""),
+                                event_type=getattr(event, "event", ""),
+                                data=getattr(event, "data", ""),
+                                retry=getattr(event, "retry", None),
+                            )
+                            retry_timeout = self._extract_retry_timeout(parsed)
+                            self._record_event_id(parsed)
+                            self._notify_event_handlers(parsed)
+                            events.append(parsed)
+                            if len(events) >= remaining:
+                                break
+                else:
+                    with client.stream(method, url, headers=headers) as response:
+                        response.raise_for_status()
+                        for parsed in self._iter_fallback_events(response.iter_lines()):
+                            retry_timeout = self._extract_retry_timeout(parsed)
+                            self._record_event_id(parsed)
+                            self._notify_event_handlers(parsed)
+                            events.append(parsed)
+                            if len(events) >= remaining:
+                                break
+        finally:
+            self._set_connected_state(False)
+            self._notify_disconnect_handlers()
+
+        return events, retry_timeout
+
+    def _iter_fallback_events(
+        self,
+        lines: Iterator[str],
+    ) -> Iterator[dict[str, t.GeneralValueType]]:
+        event_id = ""
+        event_type = ""
+        data_lines: list[str] = []
+        retry: int | None = None
+
+        def flush_event() -> dict[str, t.GeneralValueType] | None:
+            if not event_id and not event_type and not data_lines and retry is None:
+                return None
+            return self._parse_sse_event(
+                event_id=event_id,
+                event_type=event_type,
+                data="\n".join(data_lines),
+                retry=retry,
+            )
+
+        for raw_line in lines:
+            line = raw_line.rstrip("\r")
+            if not line:
+                payload = flush_event()
+                if payload is not None:
+                    yield payload
+                event_id = ""
+                event_type = ""
+                data_lines = []
+                retry = None
+                continue
+
+            if line.startswith(":"):
+                continue
+
+            field, separator, value = line.partition(":")
+            if separator and value.startswith(" "):
+                value = value[1:]
+
+            if field == "data":
+                data_lines.append(value)
+            elif field == "event":
+                event_type = value
+            elif field == "id":
+                if "\x00" not in value:
+                    event_id = value
+            elif field == "retry":
+                try:
+                    retry = int(value)
+                except ValueError:
+                    continue
+
+        payload = flush_event()
+        if payload is not None:
+            yield payload
+
+    def _parse_sse_event(
+        self,
+        *,
+        event_id: object,
+        event_type: object,
+        data: object,
+        retry: object,
+    ) -> dict[str, t.GeneralValueType]:
+        parsed_id = str(event_id) if event_id is not None else ""
+        parsed_type = str(event_type) if event_type else "message"
+        parsed_data = "" if data is None else str(data)
+        parsed_retry: int | None = None
+        if retry is not None and isinstance(retry, (int, float, str)):
+            try:
+                parsed_retry = int(retry)
+            except (TypeError, ValueError):
+                parsed_retry = None
+
+        event_payload: dict[str, t.GeneralValueType] = {
+            "id": parsed_id,
+            "event": parsed_type,
+            "data": parsed_data,
+        }
+        if parsed_retry is not None and parsed_retry >= 0:
+            event_payload["retry"] = parsed_retry
+        return event_payload
+
+    def _extract_retry_timeout(
+        self, event: Mapping[str, t.GeneralValueType]
+    ) -> int | None:
+        retry_value = event.get("retry")
+        if isinstance(retry_value, int) and retry_value >= 0:
+            return retry_value
+        return None
+
+    def _record_event_id(self, event: Mapping[str, t.GeneralValueType]) -> None:
+        event_id = event.get("id")
+        if isinstance(event_id, str) and event_id:
+            self.last_event_id = event_id
+
+    def _sleep_before_reconnect(
+        self,
+        retry_timeout_ms: int,
+        attempt: int,
+        backoff_factor: float,
+    ) -> None:
+        delay_seconds = (max(retry_timeout_ms, 0) / 1000.0) * (
+            backoff_factor ** (attempt - 1)
+        )
+        if delay_seconds > 0:
+            time.sleep(delay_seconds)
+
+    def _set_connected_state(self, connected: bool) -> None:
+        self._connected = connected
+        self.is_connected = connected
+
+    def _notify_event_handlers(self, event: Mapping[str, t.GeneralValueType]) -> None:
+        event_type_raw = event.get("event")
+        event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
+        handlers = [*self._on_event_handlers.get(event_type, [])]
+        handlers.extend(self._on_event_handlers.get("*", []))
+        for handler in handlers:
+            try:
+                handler(event)
+            except Exception:
+                self.logger.exception("SSE event handler error")
+
+    def _notify_connect_handlers(self) -> None:
+        for handler in self._on_connect_handlers:
+            try:
+                handler()
+            except Exception:
+                self.logger.exception("SSE connect handler error")
+
+    def _notify_disconnect_handlers(self) -> None:
+        for handler in self._on_disconnect_handlers:
+            try:
+                handler()
+            except Exception:
+                self.logger.exception("SSE disconnect handler error")
+
+    def _notify_error_handlers(self, exc: Exception) -> None:
+        for handler in self._on_error_handlers:
+            try:
+                handler(exc)
+            except Exception:
+                self.logger.exception("SSE error handler error")
+
     def supports_protocol(self, protocol: str) -> bool:
-        """Check if this plugin supports the given protocol.
-
-        Args:
-        protocol: Protocol identifier
-
-        Returns:
-        True if protocol is SSE variant
-
-        """
         protocol_lower = protocol.lower()
         return protocol_lower in {
             FlextApiConstants.Api.SSE.Protocol.SSE,
@@ -151,12 +432,6 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         }
 
     def get_supported_protocols(self) -> list[str]:
-        """Get list of supported protocols.
-
-        Returns:
-        List of supported protocol identifiers
-
-        """
         return [
             FlextApiConstants.Api.SSE.Protocol.SSE,
             FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
@@ -164,21 +439,17 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         ]
 
     def on_event(self, event_type: str, handler: Callable[..., None]) -> None:
-        """Register event handler (stub - not implemented)."""
         if event_type not in self._on_event_handlers:
             self._on_event_handlers[event_type] = []
         self._on_event_handlers[event_type].append(handler)
 
-    def on_connect(self, handler: Callable[..., None]) -> None:
-        """Register connect handler (stub - not implemented)."""
+    def on_connect(self, handler: Callable[[], None]) -> None:
         self._on_connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Callable[..., None]) -> None:
-        """Register disconnect handler (stub - not implemented)."""
+    def on_disconnect(self, handler: Callable[[], None]) -> None:
         self._on_disconnect_handlers.append(handler)
 
-    def on_error(self, handler: Callable[..., None]) -> None:
-        """Register error handler (stub - not implemented)."""
+    def on_error(self, handler: Callable[[Exception], None]) -> None:
         self._on_error_handlers.append(handler)
 
 

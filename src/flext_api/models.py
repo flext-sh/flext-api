@@ -13,15 +13,29 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from typing import Self
+from typing import Annotated, Self
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
-from pydantic import Field, computed_field, field_validator
+from pydantic import BeforeValidator, Field, computed_field
 
 from flext_api.constants import c
 from flext_api.typings import t
 from flext_api.utilities import u
+
+
+def _normalize_request_body(v: t.ApiJsonValue) -> t.Api.RequestBody:
+    """Normalize body - empty dict is valid."""
+    if v is None:
+        return {}
+    return u.Api.RequestUtils.to_request_body(v)
+
+
+def _normalize_response_body(v: t.ApiJsonValue) -> t.Api.ResponseBody:
+    """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
+    if v is None:
+        return None  # Explicit None is valid (e.g., for 204 responses)
+    return u.Api.RequestUtils.to_request_body(v)
 
 
 class FlextApiModels(FlextModels):
@@ -62,18 +76,10 @@ class FlextApiModels(FlextModels):
             default_factory=dict,
             description="HTTP request headers",
         )
-        body: t.Api.RequestBody = Field(
+        body: Annotated[t.Api.RequestBody, BeforeValidator(_normalize_request_body)] = Field(
             default_factory=dict,
             description="Request body",
         )
-
-        @field_validator("body", mode="before")
-        @classmethod
-        def normalize_body(cls, v: t.ApiJsonValue) -> t.Api.RequestBody:
-            """Normalize body - empty dict is valid."""
-            if v is None:
-                return {}
-            return u.Api.RequestUtils.to_request_body(v)
 
         query_params: t.Api.WebParams = Field(
             default_factory=dict,
@@ -116,18 +122,10 @@ class FlextApiModels(FlextModels):
             default_factory=dict,
             description="HTTP response headers",
         )
-        body: t.Api.ResponseBody = Field(
+        body: Annotated[t.Api.ResponseBody, BeforeValidator(_normalize_response_body)] = Field(
             default_factory=dict,
             description="Response body (empty dict by default, None allowed for 204)",
         )
-
-        @field_validator("body", mode="before")
-        @classmethod
-        def normalize_body(cls, v: t.ApiJsonValue) -> t.Api.ResponseBody:
-            """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
-            if v is None:
-                return None  # Explicit None is valid (e.g., for 204 responses)
-            return u.Api.RequestUtils.to_request_body(v)
 
         request_id: str = Field(
             default="",

@@ -4,11 +4,11 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations  # @vulture_ignore
+from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_core import FlextLogger, FlextRuntime, t  # @vulture_ignore
+from flext_core import FlextLogger, FlextRuntime, t
 
 from flext_api.protocols import FlextApiProtocols as api_protocols
 

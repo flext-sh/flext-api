@@ -27,9 +27,9 @@ from flext_core import (
     FlextService,
     e,
     r,
-    u,
     x,
 )
+from pydantic import TypeAdapter, ValidationError
 
 from flext_api.constants import c
 from flext_api.protocols import p
@@ -49,7 +49,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
     """
 
     # Type annotations for dynamically-set fields
-    _protocol_handlers: Mapping[str, p.Api.Server.ProtocolHandler]
+    _protocol_handlers: dict[str, p.Api.Server.ProtocolHandler]
     _middleware_pipeline: list[Callable[..., None]]
 
     class RouteRegistry:
@@ -65,7 +65,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             logger: Logger instance for audit trail
 
             """
-            self._routes: Mapping[str, t.Api.RouteData] = {}
+            self._routes: dict[str, t.Api.RouteData] = {}
             self._logger = logger
 
         def register(
@@ -440,13 +440,15 @@ class FlextApiServer(FlextService[bool], x.Validation):
         version: str,
     ) -> r[bool]:
         """Validate server configuration using utilities directly."""
-        host_result = u.Validation.Network.validate_hostname(host)
-        if host_result.is_failure:
-            return r[bool].fail(host_result.error or "Host validation failed")
+        try:
+            TypeAdapter(t.Validation.HostnameStr).validate_python(host)
+        except ValidationError as error:
+            return r[bool].fail(f"Host validation failed: {error}")
 
-        port_result = u.Validation.Network.validate_port_number(port)
-        if port_result.is_failure:
-            return r[bool].fail(port_result.error or "Port validation failed")
+        try:
+            TypeAdapter(t.Validation.PortNumber).validate_python(port)
+        except ValidationError as error:
+            return r[bool].fail(f"Port validation failed: {error}")
 
         # Validate string field - check non-empty
         title_result: r[str]

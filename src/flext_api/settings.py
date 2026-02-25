@@ -12,12 +12,26 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from typing import Annotated
 
 from flext_core import FlextSettings
-from pydantic import Field, field_validator
+from pydantic import BeforeValidator, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flext_api.constants import c
+
+
+def _validate_headers(v: Mapping[str, str]) -> Mapping[str, str]:
+    """Validate headers - keys must be non-empty, values must be non-empty."""
+    for key, value in v.items():
+        key_stripped = key.strip()
+        if not key_stripped:
+            msg = f"Invalid header key: '{key}'"
+            raise ValueError(msg)
+        if not value:
+            msg = f"Invalid header value for '{key}': '{value}'"
+            raise ValueError(msg)
+    return v
 
 
 @FlextSettings.auto_register("api")
@@ -57,24 +71,10 @@ class FlextApiSettings(BaseSettings):
         description="Maximum retry attempts",
     )
 
-    headers: dict[str, str] = Field(
+    headers: Annotated[dict[str, str], BeforeValidator(_validate_headers)] = Field(
         default_factory=dict,
         description="Default HTTP headers",
     )
-
-    @field_validator("headers", mode="before")
-    @classmethod
-    def validate_headers(cls, v: Mapping[str, str]) -> Mapping[str, str]:
-        """Validate headers."""
-        for key, value in v.items():
-            key_stripped = key.strip()
-            if not key_stripped:
-                msg = f"Invalid header key: '{key}'"
-                raise ValueError(msg)
-            if not value:
-                msg = f"Invalid header value for '{key}': '{value}'"
-                raise ValueError(msg)
-        return v
 
     @property
     def default_headers(self) -> Mapping[str, str]:

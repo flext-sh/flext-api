@@ -14,7 +14,6 @@ from flext_api import (
     BaseProtocolImplementation,
     FlextWebClientImplementation,
     FlextWebProtocolPlugin,
-    GraphQLProtocolPlugin,
     LoggerProtocolImplementation,
     RFCProtocolImplementation,
     SSEProtocolPlugin,
@@ -31,7 +30,7 @@ class TestProtocolImpls:
         assert BaseProtocolImplementation is not None
         assert FlextWebClientImplementation is not None
         assert FlextWebProtocolPlugin is not None
-        assert GraphQLProtocolPlugin is not None
+        assert LoggerProtocolImplementation is not None
         assert LoggerProtocolImplementation is not None
         assert RFCProtocolImplementation is not None
         assert SSEProtocolPlugin is not None

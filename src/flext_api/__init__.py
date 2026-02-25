@@ -143,22 +143,10 @@ from flext_api.protocol_impls import (
     BaseProtocolImplementation,
     FlextWebClientImplementation,
     FlextWebProtocolPlugin,
-    GraphQLProtocolPlugin,
-    LoggerProtocolImplementation,
     RFCProtocolImplementation,
     SSEProtocolPlugin,
     StorageBackendImplementation,
     WebSocketProtocolPlugin,
-)
-from flext_api.protocol_stubs import (
-    GrpcChannel,
-    GrpcMethod,
-    GrpcRequest,
-    GrpcResponse,
-    GrpcServer,
-    GrpcStub,
-    ProtobufMessage,
-    ProtobufSerializer,
 )
 from flext_api.protocols import FlextApiProtocols, p
 from flext_api.schemas import (
@@ -171,7 +159,6 @@ from flext_api.settings import FlextApiSettings
 from flext_api.settings_manager import FlextApiSettingsManager
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes, t
-from flext_api.utilities import FlextApiUtilities, u
 
 __all__ = [
     "AsyncAPISchemaValidator",
@@ -192,19 +179,9 @@ __all__ = [
     "FlextApiUtilities",
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
-    "GraphQLProtocolPlugin",
-    "GrpcChannel",
-    "GrpcMethod",
-    "GrpcRequest",
-    "GrpcResponse",
-    "GrpcServer",
-    "GrpcStub",
     "HttpError",
     "JSONSchemaValidator",
-    "LoggerProtocolImplementation",
     "OpenAPISchemaValidator",
-    "ProtobufMessage",
-    "ProtobufSerializer",
     "RFCProtocolImplementation",
     "SSEProtocolPlugin",
     "StorageBackendImplementation",

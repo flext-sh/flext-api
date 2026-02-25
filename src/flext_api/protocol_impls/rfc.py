@@ -12,13 +12,45 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Annotated
 
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.base import BaseProtocolImplementation
 from flext_api.typings import t
+
+
+def _validate_rfc_url(value: str) -> str:
+    """Validate URL per RFC 7230."""
+    if not value.strip():
+        msg = "URL cannot be empty (RFC 7230)"
+        raise ValueError(msg)
+    if not value.startswith(("http://", "https://")):
+        msg = "URL must start with http:// or https://"
+        raise ValueError(msg)
+    return value
+
+
+def _validate_rfc_method(value: str) -> str:
+    """Validate HTTP method per RFC 7231."""
+    method_upper = value.upper()
+    valid_methods = {
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "TRACE",
+        "CONNECT",
+    }
+    if method_upper not in valid_methods:
+        msg = f"Invalid HTTP method: {method_upper} (RFC 7231)"
+        raise ValueError(msg)
+    return method_upper
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):
@@ -70,43 +102,14 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
     class _UrlRequest(BaseModel):
         model_config = ConfigDict(extra="ignore")
 
-        url: str
-
-        @field_validator("url")
-        @classmethod
-        def validate_url(cls, value: str) -> str:
-            if not value.strip():
-                msg = "URL cannot be empty (RFC 7230)"
-                raise ValueError(msg)
-            if not value.startswith(("http://", "https://")):
-                msg = "URL must start with http:// or https://"
-                raise ValueError(msg)
-            return value
+        url: Annotated[str, AfterValidator(_validate_rfc_url)]
 
     class _MethodRequest(BaseModel):
         model_config = ConfigDict(extra="ignore")
 
-        method: str = Field(default=FlextApiConstants.Api.Method.GET)
-
-        @field_validator("method")
-        @classmethod
-        def validate_method(cls, value: str) -> str:
-            method_upper = value.upper()
-            valid_methods = {
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "HEAD",
-                "OPTIONS",
-                "TRACE",
-                "CONNECT",
-            }
-            if method_upper not in valid_methods:
-                msg = f"Invalid HTTP method: {method_upper} (RFC 7231)"
-                raise ValueError(msg)
-            return method_upper
+        method: Annotated[str, AfterValidator(_validate_rfc_method)] = Field(
+            default=FlextApiConstants.Api.Method.GET
+        )
 
     class _HeadersRequest(BaseModel):
         model_config = ConfigDict(extra="ignore")

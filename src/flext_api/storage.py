@@ -27,7 +27,7 @@ from collections.abc import Mapping
 from typing import Self
 
 from flext_core import FlextLogger, FlextRuntime, r, u, x
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import t
@@ -509,13 +509,26 @@ class FlextApiStorage:
                 del self._expiry_times[key]
             return r[t.ApiJsonValue].fail(f"Key expired: {key}")
 
-        except Exception as e:
-            # Log cleanup errors but continue - cache functionality is preserved
-            FlextLogger(__name__).warning(
-                "Failed to cleanup expired cache entry",
+        except ValidationError as e:
+            FlextLogger(__name__).error(
+                "Metadata validation failed for storage entry",
                 error=str(e),
+                exception_type="ValidationError",
+                key=key,
             )
-            return r[t.ApiJsonValue].fail(f"Error processing key: {key}")
+            return r[t.ApiJsonValue].fail(
+                f"ValidationError processing key '{key}': {e}"
+            )
+        except (KeyError, TypeError, AttributeError) as e:
+            FlextLogger(__name__).error(
+                "Failed to process namespaced storage entry",
+                error=str(e),
+                exception_type=type(e).__name__,
+                key=key,
+            )
+            return r[t.ApiJsonValue].fail(
+                f"{type(e).__name__} processing key '{key}': {e}"
+            )
 
     def delete(self, key: str) -> r[bool]:
         """Delete key from storage."""
