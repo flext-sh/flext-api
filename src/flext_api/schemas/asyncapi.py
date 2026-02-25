@@ -58,14 +58,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         value: dict[str, t.GeneralValueType]
 
-    def _parse_string_field(self, value: t.GeneralValueType, field_name: str) -> r[str]:
+    def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
             parsed = self._StringField.model_validate({"value": value})
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)
 
-    def _parse_int_field(self, value: t.GeneralValueType, field_name: str) -> r[int]:
+    def _parse_int_field(self, value: t.ApiJsonValue, field_name: str) -> r[int]:
         try:
             parsed = self._IntField.model_validate({"value": value})
         except ValidationError:
@@ -74,7 +74,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_dict_field(
         self,
-        value: t.GeneralValueType,
+        value: t.ApiJsonValue,
         field_name: str,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         try:
@@ -263,6 +263,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         channels_result = self._parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
             return r[Mapping[str, t.GeneralValueType]].fail(channels_result.error)
+        channels = channels_result.value
 
         channels_validation = self._validate_channels(
             channels_result.value,
@@ -295,7 +296,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             extra={
                 "version": version_result.value,
                 "title": title_str,
-                "channels_count": len(channels_value),
+                "channels_count": len(channels),
             },
         )
 
@@ -303,7 +304,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             "valid": True,
             "version": version_result.value,
             "title": title_str,
-            "channels": list(channels_value.keys()),
+            "channels": list(channels.keys()),
         })
 
     def _validate_channel_structure(
@@ -775,27 +776,37 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         if not schema_path.exists() or not schema_path.is_file():
             return r[object].fail(f"Schema file not found: {schema_source}")
 
+        suffix = schema_path.suffix.lower()
         try:
-            schema_text = schema_path.read_text(encoding="utf-8")
+            with schema_path.open("r", encoding="utf-8") as schema_file:
+                if suffix in {".yaml", ".yml"}:
+                    try:
+                        import yaml
+                    except ImportError:
+                        return r[object].fail("YAML schema loading requires PyYAML")
+
+                    try:
+                        return r[object].ok(yaml.safe_load(schema_file))
+                    except Exception as e:
+                        return r[object].fail(f"Failed to parse YAML schema: {e}")
+
+                try:
+                    return r[object].ok(json.load(schema_file))
+                except json.JSONDecodeError as e:
+                    return r[object].fail(f"Failed to parse JSON schema: {e}")
         except OSError as e:
             return r[object].fail(f"Failed to read schema file: {e}")
 
-        suffix = schema_path.suffix.lower()
-        if suffix in {".yaml", ".yml"}:
-            try:
-                import yaml
-            except ImportError:
-                return r[object].fail("YAML schema loading requires PyYAML")
-
-            try:
-                return r[object].ok(yaml.safe_load(schema_text))
-            except Exception as e:
-                return r[object].fail(f"Failed to parse YAML schema: {e}")
-
-        try:
-            return r[object].ok(json.loads(schema_text))
-        except json.JSONDecodeError as e:
-            return r[object].fail(f"Failed to parse JSON schema: {e}")
+    def _normalize_json_object(self, value: Mapping[str, object]) -> t.JsonObject:
+        normalized: t.JsonObject = {}
+        for key, item in value.items():
+            normalized_value = self._to_general_value(item)
+            match normalized_value:
+                case str() | int() | float() | bool() | None | list() | dict():
+                    normalized[str(key)] = normalized_value
+                case _:
+                    normalized[str(key)] = str(normalized_value)
+        return normalized
 
     @override
     def load_schema(
@@ -823,8 +834,15 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 "AsyncAPI schema must be a JSON/YAML object"
             )
 
-        normalized_schema = self._to_general_value(loaded_schema)
-        return r[t.GeneralValueType].ok(normalized_schema)
+        normalized_schema = self._normalize_json_object(loaded_schema)
+        validation_result = self.validate_schema(normalized_schema)
+        if validation_result.is_failure:
+            return r[t.GeneralValueType].fail(
+                f"Invalid AsyncAPI schema: {validation_result.error}"
+            )
+
+        normalized_result: t.GeneralValueType = normalized_schema
+        return r[t.GeneralValueType].ok(normalized_result)
 
 
 __all__ = ["AsyncAPISchemaValidator"]

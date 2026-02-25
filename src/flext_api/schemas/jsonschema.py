@@ -756,59 +756,54 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                 f"Schema file not found: {schema_source}"
             )
 
+        suffix = schema_path.suffix.lower()
         try:
-            schema_text = schema_path.read_text(encoding="utf-8")
+            with schema_path.open("r", encoding="utf-8") as schema_file:
+                if suffix in {".yaml", ".yml"}:
+                    try:
+                        import yaml
+                    except ImportError:
+                        return r[t_api.GeneralValueType].fail(
+                            "YAML schema loading requires PyYAML"
+                        )
+
+                    try:
+                        loaded_schema = yaml.safe_load(schema_file)
+                    except Exception as e:
+                        return r[t_api.GeneralValueType].fail(
+                            f"Failed to parse YAML schema: {e}"
+                        )
+                else:
+                    try:
+                        loaded_schema = json.load(schema_file)
+                    except json.JSONDecodeError as e:
+                        return r[t_api.GeneralValueType].fail(
+                            f"Failed to parse JSON schema: {e}"
+                        )
         except OSError as e:
             return r[t_api.GeneralValueType].fail(f"Failed to read schema file: {e}")
 
-        suffix = schema_path.suffix.lower()
-        if suffix in {".yaml", ".yml"}:
-            try:
-                import yaml
-            except ImportError:
-                return r[t_api.GeneralValueType].fail(
-                    "YAML schema loading requires PyYAML"
-                )
+        if not isinstance(loaded_schema, dict):
+            return r[t_api.GeneralValueType].fail(
+                "JSON schema file must contain a JSON/YAML object"
+            )
 
-            try:
-                loaded_schema = yaml.safe_load(schema_text)
-            except Exception as e:
-                return r[t_api.GeneralValueType].fail(
-                    f"Failed to parse YAML schema: {e}"
-                )
-        else:
-            try:
-                loaded_schema = json.loads(schema_text)
-            except json.JSONDecodeError as e:
-                return r[t_api.GeneralValueType].fail(
-                    f"Failed to parse JSON schema: {e}"
-                )
+        schema_definition: t_api.Api.SchemaDefinition = {}
+        for key, value in loaded_schema.items():
+            match value:
+                case str() | int() | float() | bool() | None | list() | dict():
+                    schema_definition[str(key)] = self._to_general_value(value)
+                case _:
+                    schema_definition[str(key)] = str(value)
 
-        match loaded_schema:
-            case str() | int() | float() | bool() | None | list() | dict():
+        validation_result = self.validate_schema(schema_definition)
+        if validation_result.is_failure:
+            return r[t_api.GeneralValueType].fail(
+                f"Invalid JSON schema: {validation_result.error}"
+            )
 
-                def normalize(value: object) -> t_api.GeneralValueType:
-                    match value:
-                        case str() | int() | float() | bool() | None:
-                            return value
-                        case list() as values:
-                            normalized_values: list[t_api.GeneralValueType] = []
-                            for item in values:
-                                normalized_values.append(normalize(item))
-                            return normalized_values
-                        case dict() as mapping:
-                            normalized_mapping: dict[str, t_api.GeneralValueType] = {}
-                            for key, item in mapping.items():
-                                normalized_mapping[str(key)] = normalize(item)
-                            return normalized_mapping
-                        case _:
-                            return str(value)
-
-                return r[t_api.GeneralValueType].ok(normalize(loaded_schema))
-            case _:
-                return r[t_api.GeneralValueType].fail(
-                    "JSON schema file must contain valid JSON/YAML value"
-                )
+        schema_result: t_api.GeneralValueType = schema_definition
+        return r[t_api.GeneralValueType].ok(schema_result)
 
 
 __all__ = ["JSONSchemaValidator"]

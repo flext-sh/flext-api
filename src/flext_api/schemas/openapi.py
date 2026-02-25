@@ -54,7 +54,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         value: dict[str, t.GeneralValueType]
 
-    def _parse_string_field(self, value: t.GeneralValueType, field_name: str) -> r[str]:
+    def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
             parsed = self._StringField.model_validate({"value": value})
         except ValidationError:
@@ -63,7 +63,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_dict_field(
         self,
-        value: t.GeneralValueType,
+        value: t.ApiJsonValue,
         field_name: str,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         try:
@@ -206,7 +206,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def _extract_title(self, info_value: t.GeneralValueType) -> str:
+    def _extract_title(self, info_value: t.ApiJsonValue) -> str:
         """Extract title from validated info object."""
         info_result = self._parse_dict_field(info_value, "info")
         if info_result.is_failure:
@@ -216,7 +216,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return ""
         return str(info["title"])
 
-    def _extract_paths_keys(self, paths_value: t.GeneralValueType) -> list[str]:
+    def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> list[str]:
         """Extract path keys from validated paths object."""
         paths_result = self._parse_dict_field(paths_value, "paths")
         if paths_result.is_failure:
@@ -296,7 +296,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             "paths": paths_keys,
         })
 
-    def _validate_paths(self, paths: Mapping[str, object]) -> r[bool]:
+    def _validate_paths(self, paths: Mapping[str, t.ApiJsonValue]) -> r[bool]:
         """Validate OpenAPI paths object.
 
         Args:
@@ -311,7 +311,13 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             if not path.startswith("/"):
                 return r[bool].fail(f"Path must start with '/': {path}")
 
-            path_item_result = self._parse_dict_field(path_item, "path_item")
+            match path_item:
+                case str() | int() | float() | bool() | None | list() | dict():
+                    path_item_value = path_item
+                case _:
+                    return r[bool].fail(f"Path item must be a JSON value: {path}")
+
+            path_item_result = self._parse_dict_field(path_item_value, "path_item")
             if path_item_result.is_failure:
                 return r[bool].fail(f"Path item must be a dictionary: {path}")
             path_item = path_item_result.value
@@ -610,27 +616,39 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if not schema_path.exists() or not schema_path.is_file():
             return r[object].fail(f"Schema file not found: {schema_source}")
 
+        suffix = schema_path.suffix.lower()
         try:
-            schema_text = schema_path.read_text(encoding="utf-8")
+            with schema_path.open("r", encoding="utf-8") as schema_file:
+                if suffix in {".yaml", ".yml"}:
+                    try:
+                        import yaml
+                    except ImportError:
+                        return r[object].fail("YAML schema loading requires PyYAML")
+
+                    try:
+                        return r[object].ok(yaml.safe_load(schema_file))
+                    except Exception as e:
+                        return r[object].fail(f"Failed to parse YAML schema: {e}")
+
+                try:
+                    return r[object].ok(json.load(schema_file))
+                except json.JSONDecodeError as e:
+                    return r[object].fail(f"Failed to parse JSON schema: {e}")
         except OSError as e:
             return r[object].fail(f"Failed to read schema file: {e}")
 
-        suffix = schema_path.suffix.lower()
-        if suffix in {".yaml", ".yml"}:
-            try:
-                import yaml
-            except ImportError:
-                return r[object].fail("YAML schema loading requires PyYAML")
-
-            try:
-                return r[object].ok(yaml.safe_load(schema_text))
-            except Exception as e:
-                return r[object].fail(f"Failed to parse YAML schema: {e}")
-
-        try:
-            return r[object].ok(json.loads(schema_text))
-        except json.JSONDecodeError as e:
-            return r[object].fail(f"Failed to parse JSON schema: {e}")
+    def _normalize_json_object(
+        self, value: Mapping[str, t.ApiJsonValue]
+    ) -> t.JsonObject:
+        normalized: t.JsonObject = {}
+        for key, item in value.items():
+            normalized_value = self._to_general_value(item)
+            match normalized_value:
+                case str() | int() | float() | bool() | None | list() | dict():
+                    normalized[str(key)] = normalized_value
+                case _:
+                    normalized[str(key)] = str(normalized_value)
+        return normalized
 
     def load_schema(
         self,
@@ -657,8 +675,15 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 "OpenAPI schema must be a JSON/YAML object"
             )
 
-        normalized_schema = self._to_general_value(loaded_schema)
-        return r[t.GeneralValueType].ok(normalized_schema)
+        normalized_schema = self._normalize_json_object(loaded_schema)
+        validation_result = self.validate_schema(normalized_schema)
+        if validation_result.is_failure:
+            return r[t.GeneralValueType].fail(
+                f"Invalid OpenAPI schema: {validation_result.error}"
+            )
+
+        normalized_result: t.GeneralValueType = normalized_schema
+        return r[t.GeneralValueType].ok(normalized_result)
 
 
 __all__ = ["OpenAPISchemaValidator"]
