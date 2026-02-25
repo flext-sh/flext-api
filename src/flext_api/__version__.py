@@ -21,7 +21,7 @@ try:
         int(part) if part.isdigit() else part for part in __version__.split(".")
     )
 except (ValueError, TypeError, KeyError, ConnectionError):
-    __version__ = "0.0.0"
+    __version__ = "0.12.0-dev"
     __version_info__ = (0, 0, 0)
 __title__ = _metadata_map.get("Name", "flext-api")
 __description__ = _metadata_map.get("Summary", "")
