@@ -227,7 +227,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         body = self._extract_body(request)
         if body is not None:
             try:
-                parsed = self._InboundMessage.model_validate({"message": body})
+                parsed = self._InboundMessage(message=body)
                 return r[str | bytes].ok(parsed.message)
             except ValidationError:
                 return r[str | bytes].ok(str(body))
@@ -576,7 +576,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
                 # Notify message handlers only if we have valid message data
                 try:
-                    inbound = self._InboundMessage.model_validate({"message": message})
+                    inbound = self._InboundMessage(message=message)
                     for handler in self._on_message_handlers:
                         try:
                             handler(inbound.message)

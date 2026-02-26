@@ -85,11 +85,11 @@ class FlextApiAdapters:
                 )
 
                 # Pydantic 2 model_validate for dict→Model conversion
-                response = FlextApiModels.HttpResponse.model_validate({
-                    "status_code": message.get("status", 200),
-                    "headers": headers,
-                    "body": message.get("body"),
-                })
+                response = FlextApiModels.HttpResponse(
+                    status_code=message.get("status", 200),
+                    headers=headers,
+                    body=message.get("body"),
+                )
                 return r[FlextApiModels.HttpResponse].ok(response)
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:

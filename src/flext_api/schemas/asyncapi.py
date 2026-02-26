@@ -61,14 +61,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
-            parsed = self._StringField.model_validate({"value": value})
+            parsed = self._StringField(value=value)
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)
 
     def _parse_int_field(self, value: t.ApiJsonValue, field_name: str) -> r[int]:
         try:
-            parsed = self._IntField.model_validate({"value": value})
+            parsed = self._IntField(value=value)
         except ValidationError:
             return r[int].fail(f"'{field_name}' field must be an integer")
         return r[int].ok(parsed.value)
@@ -79,7 +79,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         field_name: str,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         try:
-            parsed = self._DictField.model_validate({"value": value})
+            parsed = self._DictField(value=value)
         except ValidationError:
             return r[Mapping[str, t.GeneralValueType]].fail(
                 f"'{field_name}' field must be a dictionary"

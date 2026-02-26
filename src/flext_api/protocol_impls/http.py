@@ -277,7 +277,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         content_type = self._get_content_type(headers)
         try:
-            parsed_mapping = _MappingBodyModel.model_validate({"body": body})
+            parsed_mapping = _MappingBodyModel(body=body)
             if c.Api.ContentType.FORM in content_type:
                 kwargs["data"] = str(parsed_mapping.body)
             else:

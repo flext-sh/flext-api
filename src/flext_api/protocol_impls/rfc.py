@@ -309,7 +309,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = self._StatusCodeValue.model_validate({"status_code": status_code})
+            parsed = self._StatusCodeValue(status_code=status_code)
         except ValidationError:
             return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
