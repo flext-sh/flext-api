@@ -25,6 +25,8 @@ except ImportError:
 
 
 class SSEProtocolPlugin(RFCProtocolImplementation):
+    """Server-Sent Events protocol plugin implementation."""
+
     is_connected: bool
     last_event_id: str
     _connected: bool

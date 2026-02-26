@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
 from flext_core import r
 
 from flext_api.plugins import FlextApiPlugins
@@ -760,13 +761,6 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
-                    try:
-                        import yaml
-                    except ImportError:
-                        return r[t_api.GeneralValueType].fail(
-                            "YAML schema loading requires PyYAML"
-                        )
-
                     try:
                         loaded_schema = yaml.safe_load(schema_file)
                     except Exception as e:

@@ -20,6 +20,7 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
+import yaml
 from flext_core import r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
@@ -620,11 +621,6 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
-                    try:
-                        import yaml
-                    except ImportError:
-                        return r[object].fail("YAML schema loading requires PyYAML")
-
                     try:
                         return r[object].ok(yaml.safe_load(schema_file))
                     except Exception as e:

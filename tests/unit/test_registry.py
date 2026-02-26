@@ -10,11 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r
-
 from flext_api import t
 from flext_api.plugins import FlextApiPlugins
 from flext_api.registry import FlextApiRegistry
+from flext_core import r
 
 
 # Real plugin implementations (not mocks!)
@@ -25,7 +24,7 @@ class TestProtocol(FlextApiPlugins.Protocol):
         """Initialize test protocol."""
         super().__init__(name="test_protocol", version="1.0.0")
 
-    def send_request(  # type: ignore[override]
+    def send_request(
         self, request: dict[str, t.GeneralValueType], **kwargs: object
     ) -> r[dict[str, t.GeneralValueType]]:
         """Send a test request."""
@@ -33,7 +32,7 @@ class TestProtocol(FlextApiPlugins.Protocol):
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if protocol is supported."""
-        return protocol in ("http", "https")
+        return protocol in {"http", "https"}
 
 
 class TestSchema(FlextApiPlugins.Schema):
@@ -43,7 +42,7 @@ class TestSchema(FlextApiPlugins.Schema):
         """Initialize test schema."""
         super().__init__(name="test_schema", version="1.0.0")
 
-    def validate_request(  # type: ignore[override]
+    def validate_request(
         self,
         request: dict[str, t.GeneralValueType],
         schema: dict[str, t.GeneralValueType],
@@ -51,7 +50,7 @@ class TestSchema(FlextApiPlugins.Schema):
         """Validate request against schema."""
         return r[bool].ok(True)
 
-    def validate_response(  # type: ignore[override]
+    def validate_response(
         self,
         response: dict[str, t.GeneralValueType],
         schema: dict[str, t.GeneralValueType],
@@ -59,7 +58,7 @@ class TestSchema(FlextApiPlugins.Schema):
         """Validate response against schema."""
         return r[bool].ok(True)
 
-    def load_schema(self, schema_source: str) -> r[object]:  # type: ignore[override]
+    def load_schema(self, schema_source: str) -> r[object]:
         """Load schema from source."""
         return r[object].ok({})
 
@@ -79,7 +78,7 @@ class TestTransport(FlextApiPlugins.Transport):
         """Close connection."""
         return r[bool].ok(True)
 
-    def send(  # type: ignore[override]
+    def send(
         self,
         connection: object,
         data: dict[str, t.GeneralValueType] | str | bytes,
@@ -88,7 +87,7 @@ class TestTransport(FlextApiPlugins.Transport):
         """Send data through connection."""
         return r[bool].ok(True)
 
-    def receive(  # type: ignore[override]
+    def receive(
         self, connection: object, **options: object
     ) -> r[dict[str, t.GeneralValueType] | str | bytes]:
         """Receive data from connection."""

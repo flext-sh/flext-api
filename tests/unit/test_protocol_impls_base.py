@@ -133,7 +133,7 @@ class TestBaseProtocolImplementation:
     def test_validate_request_not_dict(self) -> None:
         """Test _validate_request with non-dict request."""
         protocol = BaseProtocolImplementation(name="test")
-        result = protocol._validate_request("not a dict")  # type: ignore[arg-type]
+        result = protocol._validate_request("not a dict")
         assert result.is_failure
         assert result.error is not None and "must be a dictionary" in result.error
 
@@ -167,7 +167,7 @@ class TestBaseProtocolImplementation:
         """Test _build_success_response with data."""
         protocol = BaseProtocolImplementation(name="test")
         data = {"result": "success"}
-        response = protocol._build_success_response(data, 201)  # type: ignore[arg-type]
+        response = protocol._build_success_response(data, 201)
         assert isinstance(response, dict)
         assert response["status"] == "success"
         assert response["status_code"] == 201

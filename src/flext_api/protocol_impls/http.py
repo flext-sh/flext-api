@@ -378,7 +378,6 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 ValueError,
                 TypeError,
                 KeyError,
-                httpx.HTTPError,
                 ConnectionError,
             ) as e:
                 last_error = self._handle_request_exception(
