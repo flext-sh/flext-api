@@ -55,7 +55,7 @@ class BaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: t.ApiJsonValue,
+        **_kwargs: t.GeneralValueType,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -112,9 +112,9 @@ class BaseProtocolImplementation:
 
     def send_request(
         self,
-        request: Mapping[str, t.ApiJsonValue],
+        request: Mapping[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[Mapping[str, t.ApiJsonValue]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -131,7 +131,7 @@ class BaseProtocolImplementation:
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return r[Mapping[str, t.ApiJsonValue]].fail(
+        return r[Mapping[str, t.GeneralValueType]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -176,8 +176,8 @@ class BaseProtocolImplementation:
         }
 
     def _validate_request(
-        self, request: Mapping[str, t.ApiJsonValue]
-    ) -> r[Mapping[str, t.ApiJsonValue]]:
+        self, request: Mapping[str, t.GeneralValueType]
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Validate request dictionary.
 
         Args:
@@ -188,9 +188,9 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[Mapping[str, t.ApiJsonValue]].fail("Request cannot be empty")
+            return r[Mapping[str, t.GeneralValueType]].fail("Request cannot be empty")
 
-        return r[Mapping[str, t.ApiJsonValue]].ok(request)
+        return r[Mapping[str, t.GeneralValueType]].ok(request)
 
     def _build_error_response(
         self,

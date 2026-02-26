@@ -99,9 +99,9 @@ class FlextApiSettingsManager:
             return r[float].fail("Timeout not specified in configuration")
 
         timeout_value_raw = self._config["timeout"]
-        if timeout_value_raw.__class__ in {int, float}:
+        if isinstance(timeout_value_raw, int | float):
             timeout_value = float(timeout_value_raw)
-        elif timeout_value_raw.__class__ is str:
+        elif isinstance(timeout_value_raw, str):
             try:
                 timeout_value = float(timeout_value_raw)
             except ValueError:
@@ -124,9 +124,9 @@ class FlextApiSettingsManager:
             return r.fail("Max retries not specified in configuration")
 
         max_retries_raw = self._config["max_retries"]
-        if max_retries_raw.__class__ is int:
+        if isinstance(max_retries_raw, int):
             max_retries_value = max_retries_raw
-        elif max_retries_raw.__class__ in {float, str}:
+        elif isinstance(max_retries_raw, float | str):
             try:
                 max_retries_value = int(max_retries_raw)
             except (ValueError, TypeError):
@@ -168,15 +168,15 @@ class FlextApiSettingsManager:
             return r[Mapping[str, str]].ok({})
 
         headers_value = self._config["headers"]
-        if u.is_dict_like(headers_value):
+        if isinstance(headers_value, Mapping):
             headers_dict: dict[str, str] = {
                 str(k): str(v) for k, v in headers_value.items()
             }
             return r[Mapping[str, str]].ok(headers_dict)
-        if headers_value.__class__ is str:
+        if isinstance(headers_value, str):
             try:
                 parsed_headers = json.loads(headers_value)
-                if u.is_dict_like(parsed_headers):
+                if isinstance(parsed_headers, Mapping):
                     headers_dict = {str(k): str(v) for k, v in parsed_headers.items()}
                     return r[Mapping[str, str]].ok(headers_dict)
                 return r.fail(
@@ -197,7 +197,7 @@ class FlextApiSettingsManager:
             return r[str].ok("")
 
         base_url_value = self._config["base_url"]
-        if base_url_value.__class__ is str:
+        if isinstance(base_url_value, str):
             return r[str].ok(base_url_value)
         return r.fail(f"Invalid base_url type: {type(base_url_value)}")
 
@@ -209,9 +209,9 @@ class FlextApiSettingsManager:
             return r.fail("Timeout not specified in configuration")
 
         timeout_raw = self._config["timeout"]
-        if timeout_raw.__class__ in {int, float}:
+        if isinstance(timeout_raw, int | float):
             timeout_value = float(timeout_raw)
-        elif timeout_raw.__class__ is str:
+        elif isinstance(timeout_raw, str):
             try:
                 timeout_value = float(timeout_raw)
             except ValueError:

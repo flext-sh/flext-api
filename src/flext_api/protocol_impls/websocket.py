@@ -362,7 +362,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         connect_headers: dict[str, str] = {}
         if headers is not None:
-            connect_headers = headers
+            connect_headers.update(headers)
         return self._connect(url, connect_headers)
 
     def disconnect(self) -> r[bool]:

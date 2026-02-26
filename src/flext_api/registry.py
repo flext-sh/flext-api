@@ -37,15 +37,19 @@ class FlextApiRegistry(FlextRegistry):
     AUTH_PROVIDERS: ClassVar[str] = "auth_providers"
 
     _global_instance: ClassVar[FlextApiRegistry | None] = None
+    _protocol_cache: dict[str, FlextApiPlugins.Protocol]
+    _schema_cache: dict[str, FlextApiPlugins.Schema]
+    _transport_cache: dict[str, FlextApiPlugins.Transport]
+    _auth_cache: dict[str, FlextApiPlugins.Authentication]
 
     def __init__(self, dispatcher: p.CommandBus | None = None) -> None:
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
         # Typed caches per plugin category — eliminates cast/isinstance
-        self._protocol_cache: Mapping[str, FlextApiPlugins.Protocol] = {}
-        self._schema_cache: Mapping[str, FlextApiPlugins.Schema] = {}
-        self._transport_cache: Mapping[str, FlextApiPlugins.Transport] = {}
-        self._auth_cache: Mapping[str, FlextApiPlugins.Authentication] = {}
+        self._protocol_cache: dict[str, FlextApiPlugins.Protocol] = {}
+        self._schema_cache: dict[str, FlextApiPlugins.Schema] = {}
+        self._transport_cache: dict[str, FlextApiPlugins.Transport] = {}
+        self._auth_cache: dict[str, FlextApiPlugins.Authentication] = {}
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod

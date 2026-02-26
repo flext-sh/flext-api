@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Annotated, TypeIs
@@ -96,34 +96,30 @@ class FlextApiUtilities(FlextUtilities):
             @staticmethod
             def to_json_value(value: object) -> t.JsonValue:
                 """Normalize arbitrary value to JsonValue."""
-                normalized = FlextRuntime.normalize_to_general_value(value)
-                if normalized is None or normalized.__class__ in {
-                    str,
-                    int,
-                    float,
-                    bool,
-                }:
-                    return normalized
-                if u.is_dict_like(normalized):
+                if value is None or isinstance(value, str | int | float | bool):
+                    return value
+                if isinstance(value, Mapping):
                     converted: t.JsonObject = {}
-                    for key, item in normalized.items():
+                    for key, item in value.items():
                         converted[str(key)] = (
                             FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         )
                     return converted
-                if u.is_list_like(normalized):
+                if isinstance(value, Sequence) and not isinstance(value, str | bytes):
                     return [
                         FlextApiUtilities.Api.RequestUtils.to_json_value(item)
-                        for item in normalized
+                        for item in value
                     ]
-                return str(normalized)
+                if isinstance(value, bytes):
+                    return value.decode("utf-8", errors="replace")
+                return str(value)
 
             @staticmethod
             def to_request_body(value: object) -> t.Api.RequestBody:
                 """Convert arbitrary value to RequestBody-compatible payload."""
-                if value.__class__ in {str, bytes}:
+                if isinstance(value, str | bytes):
                     return value
-                if u.is_dict_like(value):
+                if isinstance(value, Mapping):
                     normalized: t.Api.JsonObject = {}
                     for key, item in value.items():
                         key_str = str(key)
@@ -192,6 +188,8 @@ class FlextApiUtilities(FlextUtilities):
                 # Check kwargs for timeout
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
+                    if not isinstance(timeout_value, int | float | str):
+                        return r.fail(f"Invalid timeout value: {timeout_value}")
                     try:
                         timeout_float = float(timeout_value)
                         if timeout_float > 0:
@@ -283,8 +281,15 @@ class FlextApiUtilities(FlextUtilities):
                 page_str = params.get("page", "1")
                 page_size_str = params.get("page_size", "20")
 
-                page = int(page_str)
-                page_size = int(page_size_str)
+                if isinstance(page_str, int | float | str):
+                    page = int(page_str)
+                else:
+                    return r.fail("Invalid page parameter")
+
+                if isinstance(page_size_str, int | float | str):
+                    page_size = int(page_size_str)
+                else:
+                    return r.fail("Invalid page_size parameter")
 
                 if page < 1 or page_size < 1:
                     return r.fail("Page and page_size must be >= 1")
@@ -454,7 +459,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def is_valid_port_number(port: object) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
-            if port.__class__ is not int:
+            if not isinstance(port, int):
                 return False
             return 1 <= port <= MAX_PORT
 

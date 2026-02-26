@@ -25,10 +25,9 @@ class _HttpClientRequestOptions(BaseModel):
 
     headers: dict[str, str] = Field(default_factory=dict)
     params: dict[str, str] | None = None
-    json: t.GeneralValueType | None = None
+    json_data: t.GeneralValueType | None = Field(default=None, alias="json")
     content: str | bytes | None = None
     data: dict[str, t.GeneralValueType] | None = None
-    files: dict[str, t.GeneralValueType] | None = None
     timeout: float | None = None
 
 
@@ -122,10 +121,9 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
                 url=full_url,
                 headers=headers,
                 params=options.params,
-                json=options.json,
+                json=options.json_data,
                 content=options.content,
                 data=options.data,
-                files=options.files,
                 timeout=options.timeout,
             )
             response = self._create_response_from_httpx(httpx_response)

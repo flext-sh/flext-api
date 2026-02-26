@@ -159,6 +159,7 @@ from flext_api.settings import FlextApiSettings
 from flext_api.settings_manager import FlextApiSettingsManager
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes, t
+from flext_api.utilities import FlextApiUtilities, u
 
 __all__ = [
     "AsyncAPISchemaValidator",

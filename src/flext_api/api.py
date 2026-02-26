@@ -83,7 +83,7 @@ class FlextApi(s[FlextApiSettings]):
             api_config = FlextApiSettings()
 
         # Type narrowing: convert kwargs to expected type
-        kwargs_typed: dict[str, t.ApiJsonValue] = {
+        kwargs_typed: dict[str, t.GeneralValueType] = {
             k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
@@ -94,6 +94,12 @@ class FlextApi(s[FlextApiSettings]):
         # Initialize HTTP client with API config
         self._client = FlextApiClient(config=api_config)
 
+    def _get_config(self) -> FlextApiSettings:
+        config = self._config
+        if isinstance(config, FlextApiSettings):
+            return config
+        return FlextApiSettings()
+
     def execute(
         self,
         **kwargs: t.JsonValue | str | int | bool,
@@ -101,7 +107,7 @@ class FlextApi(s[FlextApiSettings]):
         """Execute FlextService interface."""
         if kwargs:
             FlextLogger(__name__).info(f"Execute called with kwargs: {kwargs}")
-        config = self._config
+        config = self._get_config()
         return r[FlextApiSettings].ok(config)
 
     def request(
@@ -140,17 +146,21 @@ class FlextApi(s[FlextApiSettings]):
         if params_value is None:
             return r[t.Api.WebParams].ok(query_params)
 
-        if not u.is_dict_like(params_value):
+        if not isinstance(params_value, Mapping):
             return r[t.Api.WebParams].fail(
                 f"Invalid params type: {type(params_value)}",
             )
 
+        params_mapping: Mapping[str, t.ApiJsonValue] = params_value
+
         # Type reconstruction: build params dict with proper narrowing
         params_result: dict[str, str | list[str]] = {}
-        for k, v in params_value.items():
-            if u.is_list_like(v):
-                # Convert list elements to strings if needed
+        for k, v in params_mapping.items():
+            if isinstance(v, list):
                 str_list: list[str] = [str(item) for item in v]
+                params_result[k] = str_list
+            elif isinstance(v, tuple):
+                str_list = [str(item) for item in v]
                 params_result[k] = str_list
             else:
                 params_result[k] = str(v)
@@ -230,7 +240,7 @@ class FlextApi(s[FlextApiSettings]):
             method=method,
             url=url,
             body=body_final,
-            headers=headers_result.value,
+            headers=dict(headers_result.value),
             query_params=query_params_result.value,
             timeout=timeout_result.value,
         )

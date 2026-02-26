@@ -34,7 +34,7 @@ class FlextApiTransports:
             """Initialize HTTP transport."""
             self._client: httpx.Client | None = None
 
-        def connect(self, url: str, **options: t.ApiJsonValue) -> r[str]:
+        def connect(self, url: str, **options: t.GeneralValueType) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
                 # Validate URL parameter
@@ -97,6 +97,8 @@ class FlextApiTransports:
                             url=connection_url,
                             body=body_bytes,
                         )
+                    case _:
+                        return r[m.HttpRequest].fail("Unsupported request payload type")
                 return r[m.HttpRequest].ok(request_model)
             except (
                 ValueError,

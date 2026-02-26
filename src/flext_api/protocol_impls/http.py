@@ -36,13 +36,13 @@ class _HttpRequestCallArgs(BaseModel):
     url: str
     headers: dict[str, str] = Field(default_factory=dict)
     params: dict[str, str] | None = None
-    json_body: t.ApiJsonValue | None = Field(default=None, alias="json")
+    json_body: t.GeneralValueType | None = Field(default=None, alias="json")
     content: str | bytes | None = None
     timeout: float | None = None
 
 
 class _MappingBodyModel(BaseModel):
-    body: dict[str, t.ApiJsonValue]
+    body: dict[str, t.GeneralValueType]
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):
@@ -162,7 +162,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         return r[FlextApiModels.HttpRequest].ok(http_request)
 
-    def _to_general_value(self, value: t.ApiJsonValue) -> t.GeneralValueType:
+    def _to_general_value(self, value: t.GeneralValueType) -> t.GeneralValueType:
         match value:
             case str() | int() | float() | bool() | None:
                 return value
@@ -189,9 +189,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: Mapping[str, t.ApiJsonValue],
+        request: Mapping[str, t.GeneralValueType],
         **_kwargs: object,
-    ) -> r[Mapping[str, t.ApiJsonValue]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send HTTP request with retry logic and error handling."""
         request_general: dict[str, t.GeneralValueType] = {}
         for key, value in request.items():
@@ -200,7 +200,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Build HTTP request model
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
-            return r[Mapping[str, t.ApiJsonValue]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 request_result.error or "Request building failed",
             )
 
@@ -211,7 +211,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[Mapping[str, t.ApiJsonValue]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value

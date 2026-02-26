@@ -65,7 +65,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
         """
         # Type narrowing: convert kwargs to expected type
-        kwargs_typed: dict[str, t.ApiJsonValue] = {
+        kwargs_typed: dict[str, t.GeneralValueType] = {
             k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
@@ -84,7 +84,10 @@ class FlextApiClient(s[FlextApiSettings]):
 
     def _get_config(self) -> FlextApiSettings:
         """Get FlextApiSettings with proper type narrowing."""
-        return self._config
+        config = self._config
+        if isinstance(config, FlextApiSettings):
+            return config
+        return FlextApiSettings()
 
     def execute(
         self,
@@ -221,17 +224,19 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[bytes]:
         """Serialize request body to bytes - no None, empty dict is valid."""
         # Empty dict serializes to empty bytes
-        if u.is_dict_like(body) and len(body) == 0:
+        if isinstance(body, dict) and len(body) == 0:
             return r[bytes].ok(b"")
-        if body.__class__ is bytes:
+        if isinstance(body, bytes):
             return r[bytes].ok(body)
-        if u.is_dict_like(body):
+        if isinstance(body, dict):
             try:
                 serialized = json.dumps(body).encode("utf-8")
                 return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")
-        return r[bytes].ok(body.encode("utf-8"))
+        if isinstance(body, str):
+            return r[bytes].ok(body.encode("utf-8"))
+        return r[bytes].fail("Unsupported request body type")
 
     @staticmethod
     def _deserialize_body(

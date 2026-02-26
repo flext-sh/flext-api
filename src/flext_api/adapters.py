@@ -11,6 +11,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
+from collections.abc import Mapping
+
 from flext_core import r, u
 
 from flext_api.models import FlextApiModels
@@ -37,12 +39,13 @@ class FlextApiAdapters:
                 # Convert body to string if bytes, otherwise use as-is
                 body_value: str | t.JsonObject | None = None
                 if request.body:
-                    try:
-                        body_value = request.body.decode("utf-8")
-                    except AttributeError:
+                    if isinstance(request.body, bytes):
+                        try:
+                            body_value = request.body.decode("utf-8")
+                        except UnicodeDecodeError:
+                            body_value = "<binary data>"
+                    else:
                         body_value = request.body
-                    except UnicodeDecodeError:
-                        body_value = "<binary data>"
 
                 message: t.JsonObject = {
                     "type": "request",
@@ -77,7 +80,7 @@ class FlextApiAdapters:
                 headers_raw = message.get("headers")
                 headers = (
                     {str(k): str(v) for k, v in headers_raw.items()}
-                    if u.is_dict_like(headers_raw)
+                    if isinstance(headers_raw, Mapping)
                     else {}
                 )
 
@@ -199,7 +202,7 @@ class FlextApiAdapters:
             """
             try:
                 if source_protocol == "websocket":
-                    if not u.is_dict_like(response):
+                    if not isinstance(response, Mapping):
                         return r[FlextApiModels.HttpResponse].fail(
                             "Invalid WebSocket response payload",
                         )

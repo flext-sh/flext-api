@@ -73,25 +73,26 @@ class FlextWebhookHandler(FlextService[object]):
     _max_retries: int
     _retry_delay: float
     _retry_backoff: float
-    _event_handlers: Mapping[str, list[Callable[..., None]]]
+    _event_handlers: dict[str, list[Callable[..., None]]]
     _event_queue: deque[t.JsonObject]
-    _delivery_confirmations: Mapping[str, t.JsonObject]
+    _delivery_confirmations: dict[str, t.JsonObject]
     _retry_queue: deque[t.JsonObject]
 
     @staticmethod
     def _to_json_value(value: object) -> t.JsonValue:
         """Convert arbitrary object to JsonValue recursively."""
-        normalized = FlextRuntime.normalize_to_general_value(value)
-        if normalized is None or normalized.__class__ in {str, int, float, bool}:
-            return normalized
-        if u.is_dict_like(normalized):
+        if value is None or isinstance(value, str | int | float | bool):
+            return value
+        if isinstance(value, Mapping):
             converted: t.JsonObject = {}
-            for key, item in normalized.items():
+            for key, item in value.items():
                 converted[str(key)] = FlextWebhookHandler._to_json_value(item)
             return converted
-        if u.is_list_like(normalized):
-            return [FlextWebhookHandler._to_json_value(item) for item in normalized]
-        return str(normalized)
+        if isinstance(value, list | tuple):
+            return [FlextWebhookHandler._to_json_value(item) for item in value]
+        if isinstance(value, bytes):
+            return value.decode("utf-8", errors="replace")
+        return str(value)
 
     def __init__(
         self,
@@ -186,7 +187,7 @@ class FlextWebhookHandler(FlextService[object]):
     def _parse_payload(self, payload: bytes | str) -> r[t.JsonObject]:
         """Parse webhook payload."""
         try:
-            if payload.__class__ is bytes:
+            if isinstance(payload, bytes):
                 payload_str = payload.decode("utf-8")
             else:
                 payload_str = payload
@@ -206,11 +207,11 @@ class FlextWebhookHandler(FlextService[object]):
         event_type: str | None = None
         if "type" in event_data:
             type_value = event_data["type"]
-            if type_value.__class__ is str:
+            if isinstance(type_value, str):
                 event_type = type_value
         if not event_type and "event_type" in event_data:
             event_type_value = event_data["event_type"]
-            if event_type_value.__class__ is str:
+            if isinstance(event_type_value, str):
                 event_type = event_type_value
         if not event_type:
             return r[str].fail("Missing event type in payload")
@@ -220,7 +221,7 @@ class FlextWebhookHandler(FlextService[object]):
         """Extract or generate event ID."""
         if "id" in event_data:
             id_value = event_data["id"]
-            if id_value.__class__ is str:
+            if isinstance(id_value, str):
                 return id_value
         return self._generate_event_id()
 
@@ -258,7 +259,7 @@ class FlextWebhookHandler(FlextService[object]):
         attempts_value: int = 0
         if "attempts" in event:
             attempts_raw = event["attempts"]
-            if attempts_raw.__class__ is int:
+            if isinstance(attempts_raw, int):
                 attempts_value = attempts_raw
 
         if attempts_value < self._max_retries:
@@ -393,7 +394,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         # Convert payload to bytes if needed
         payload_bytes = (
-            payload if payload.__class__ is bytes else payload.encode("utf-8")
+            payload if isinstance(payload, bytes) else payload.encode("utf-8")
         )
 
         # Compute expected signature
@@ -441,7 +442,7 @@ class FlextWebhookHandler(FlextService[object]):
         """
         # Extract event type with type narrowing
         event_type_value = event.get("type")
-        if event_type_value.__class__ is not str:
+        if not isinstance(event_type_value, str):
             return r[bool].fail("Event type must be a string")
         event_type: str = event_type_value
 
@@ -484,10 +485,10 @@ class FlextWebhookHandler(FlextService[object]):
     def _handle_successful_retry(self, event: t.JsonObject) -> None:
         """Handle successful retry delivery."""
         event_id = event.get("id")
-        if event_id is not None and event_id.__class__ is str:
+        if isinstance(event_id, str):
             event_type = "unknown"
             type_value = event.get("type")
-            if type_value is not None and type_value.__class__ is str:
+            if isinstance(type_value, str):
                 event_type = type_value
 
             attempts_count = self._get_attempts_count(event)

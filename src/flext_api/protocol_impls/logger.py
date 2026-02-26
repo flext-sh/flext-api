@@ -6,11 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
-from flext_core import FlextLogger, FlextRuntime, t
+from flext_core import FlextLogger, FlextRuntime
 
 from flext_api.protocols import FlextApiProtocols as api_protocols
+from flext_api.typings import t
 
 
 class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
@@ -23,11 +24,17 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
     def _convert_kwargs_to_context(
         self,
         kwargs: Mapping[str, object],
-    ) -> Mapping[str, t.ApiJsonValue]:
+    ) -> Mapping[str, t.GeneralValueType]:
         """Convert kwargs to context dict for logger compatibility."""
-        context: dict[str, t.ApiJsonValue] = {}
+        context: dict[str, t.GeneralValueType] = {}
         for key, value in kwargs.items():
-            context[key] = FlextRuntime.normalize_to_general_value(value)
+            if value is None or isinstance(value, str | int | float | bool):
+                context[key] = value
+                continue
+            if isinstance(value, Mapping | Sequence):
+                context[key] = FlextRuntime.normalize_to_general_value(value)
+                continue
+            context[key] = str(value)
         return context
 
     def info(self, message: str, **kwargs: object) -> None:

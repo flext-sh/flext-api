@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterator, Mapping
-from typing import cast
 
 import httpx
 from flext_core import r
@@ -142,15 +141,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[Mapping[str, t.ApiJsonValue]].fail(str(details))
 
-        request_map = cast("Mapping[str, t.GeneralValueType]", request)
-
-        url_result = self._extract_url(request_map)
+        url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[Mapping[str, t.ApiJsonValue]].fail(
                 url_result.error or "URL extraction failed",
             )
 
-        headers = dict(self._extract_headers(request_map))
+        headers = dict(self._extract_headers(request))
         method = options.method.upper()
         max_events = options.max_events
         auto_reconnect = (

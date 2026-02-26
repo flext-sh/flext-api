@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Mapping
 
 from flext_core import r
 from flext_core.loggings import FlextLogger
@@ -214,10 +213,12 @@ class FlextApiPlugins:
     class Manager:
         """Plugin manager for discovery, loading, and lifecycle management."""
 
+        _loaded_plugins: dict[str, FlextApiPlugins.Plugin]
+
         def __init__(self) -> None:
             """Initialize plugin manager."""
             self.logger = FlextLogger(__name__)
-            self._loaded_plugins: Mapping[str, FlextApiPlugins.Plugin] = {}
+            self._loaded_plugins: dict[str, FlextApiPlugins.Plugin] = {}
 
         def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> r[bool]:
             """Load and initialize a plugin."""

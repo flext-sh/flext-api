@@ -434,7 +434,10 @@ class FlextApiModels(FlextModels):
         """
         # Use model defaults - body defaults to empty dict, not None
         response_body: t.Api.ResponseBody = body if body is not None else {}
-        response_headers: dict[str, str] = headers if headers is not None else {}
+        if headers is None:
+            response_headers: dict[str, str] = {}
+        else:
+            response_headers = {k: v for k, v in headers.items()}
         response_id: str = request_id if request_id is not None else ""
 
         return cls.HttpResponse(
@@ -475,7 +478,10 @@ class FlextApiModels(FlextModels):
         config_max_retries = (
             max_retries if max_retries is not None else c.Api.DEFAULT_MAX_RETRIES
         )
-        config_headers: dict[str, str] = headers if headers is not None else {}
+        if headers is None:
+            config_headers: dict[str, str] = {}
+        else:
+            config_headers = {k: v for k, v in headers.items()}
 
         return cls.ClientConfig(
             base_url=config_base_url,

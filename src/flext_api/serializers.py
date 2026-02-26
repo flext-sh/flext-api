@@ -9,8 +9,9 @@ import importlib
 from collections.abc import Mapping, Sequence
 from types import ModuleType
 
-from flext_core.typings import t
 from pydantic import TypeAdapter, ValidationError
+
+from flext_api.typings import t
 
 _MESSAGEPACK_RESULT_ADAPTER = TypeAdapter(
     str | int | float | bool | Mapping[str, object] | list[object] | None
@@ -63,12 +64,9 @@ class FlextApiSerializers:
                 return b""
 
             result = packb_fn(obj)
-            if result.__class__ is bytes:
-                return result
-            try:
+            if isinstance(result, bytes | bytearray):
                 return bytes(result)
-            except (TypeError, ValueError):
-                return b""
+            return b""
 
         @staticmethod
         def unpackb(

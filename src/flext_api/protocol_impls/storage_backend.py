@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 from flext_core import FlextLogger, FlextRuntime, r
 
 from flext_api.protocols import p
@@ -20,28 +18,28 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: Mapping[str, t.ApiJsonValue] = {}
+        self._storage: dict[str, t.ApiJsonValue] = {}
         self.logger = FlextLogger(__name__)
 
-    def get(self, key: str) -> r[object]:
+    def get(self, key: str) -> r[t.ApiJsonValue]:
         """Retrieve value by key."""
         try:
             if not key:
-                return r[object].fail("Storage key cannot be empty")
+                return r[t.ApiJsonValue].fail("Storage key cannot be empty")
 
             if key in self._storage:
                 value = self._storage[key]
                 self.logger.debug("Retrieved data with key: %s", key)
-                return r[object].ok(value)
-            return r[object].fail(f"Key not found: {key}")
+                return r[t.ApiJsonValue].ok(value)
+            return r[t.ApiJsonValue].fail(f"Key not found: {key}")
 
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[object].fail(f"Retrieval operation failed: {e}")
+            return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
     def set(
         self,
         key: str,
-        value: object,
+        value: t.ApiJsonValue,
         timeout: int | None = None,
     ) -> r[bool]:
         """Store value with optional timeout."""

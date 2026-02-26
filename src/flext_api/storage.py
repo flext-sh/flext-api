@@ -54,14 +54,14 @@ class FlextApiStorage:
     model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
 
     # Type annotations for dynamically-set fields
-    _storage: Mapping[str, t.JsonValue]
-    _expiry_times: Mapping[str, float]
+    _storage: dict[str, t.JsonValue]
+    _expiry_times: dict[str, float]
     _stats: FlextApiModels.Storage.Stats
     _operations_count: int
     _created_at: str
 
     @staticmethod
-    def _to_json_value(value: t.ApiJsonValue) -> t.JsonValue:
+    def _to_json_value(value: t.GeneralValueType) -> t.JsonValue:
         """Convert arbitrary value to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
         match normalized:
@@ -161,7 +161,7 @@ class FlextApiStorage:
         self,
         config_obj: BaseModel,
         field_name: str,
-    ) -> t.ApiJsonValue | None:
+    ) -> t.GeneralValueType | None:
         """Extract optional field from config object."""
         field_value = config_obj.model_dump().get(field_name)
         if field_value is not None:
