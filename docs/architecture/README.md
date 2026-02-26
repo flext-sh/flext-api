@@ -291,7 +291,7 @@ The architecture supports extension in several areas:
 - [AsyncAPI](https://www.asyncapi.com/) - Event-driven API specification
 - [RFC 2119](https://tools.ietf.org/html/rfc2119) - Key words for requirements
 
-______________________________________________________________________
+---
 
 ## 🎯 Architecture Vision
 
@@ -304,6 +304,6 @@ FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, s
 - **Development Speed**: 50% faster API integration development
 - **Maintenance Cost**: 60% reduction in HTTP operation maintenance
 
-______________________________________________________________________
+---
 
 _This architecture documentation is maintained using automated tools and reviewed regularly to ensure accuracy and completeness._

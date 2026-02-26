@@ -102,7 +102,7 @@ Date: [YYYY-MM-DD]
 - [Reference to research or article]
 - [Related ADR: ADR-XXXX]
 
-______________________________________________________________________
+---
 
 **Decision Maker**: [Name/Team]
 **Reviewers**: [List of reviewers]
