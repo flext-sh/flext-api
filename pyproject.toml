@@ -33,8 +33,8 @@ classifiers = [
 dependencies = [
   "cbor2>=5.7",
   "fastapi>=0.116",
-  "flext-core @ file:../flext-core",
-  "flext-web @ file:../flext-web",
+  "flext-core @ ../flext-core",
+  "flext-web @ ../flext-web",
   "gql>=4",
   "httpx>=0.28.1",
   "httpx-sse>=0.4.0",
