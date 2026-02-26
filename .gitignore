@@ -2,11 +2,9 @@
 # AGGRESSIVE WHITELIST - Block everything by default, explicitly allow needed files
 # ============================================================================
 
-
 # Block everything at root level
 /*
 /*/
-
 
 # ============================================================================
 # ALLOWED: Core Directories
@@ -20,6 +18,7 @@
 !dbt/
 !.github/
 !.vscode/
+!scripts/
 
 # ============================================================================
 # ALLOWED: Root-Level Configuration Files
@@ -61,7 +60,7 @@
 !dbt/**
 !.github/**
 !.vscode/**
-
+!scripts/**
 
 # ============================================================================
 # SECURITY: Explicit Blocks (NEVER commit these)
@@ -78,7 +77,6 @@
 credentials.json
 secrets.yaml
 secrets.yml
-
 
 # ============================================================================
 # PROJECT-SPECIFIC RULES: flext-api
