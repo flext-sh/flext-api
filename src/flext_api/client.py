@@ -15,7 +15,7 @@ import json
 from typing import Self
 
 import httpx
-from flext_core import FlextRuntime, r, s, u
+from flext_core import FlextRuntime, r, s
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api.constants import FlextApiConstants

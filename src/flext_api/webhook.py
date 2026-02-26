@@ -30,7 +30,6 @@ from flext_core import (
     FlextContext,
     FlextDispatcher,
     FlextLogger,
-    FlextRuntime,
     FlextService,
     r,
     u,

@@ -437,7 +437,7 @@ class FlextApiModels(FlextModels):
         if headers is None:
             response_headers: dict[str, str] = {}
         else:
-            response_headers = {k: v for k, v in headers.items()}
+            response_headers = dict(headers.items())
         response_id: str = request_id if request_id is not None else ""
 
         return cls.HttpResponse(
@@ -481,7 +481,7 @@ class FlextApiModels(FlextModels):
         if headers is None:
             config_headers: dict[str, str] = {}
         else:
-            config_headers = {k: v for k, v in headers.items()}
+            config_headers = dict(headers.items())
 
         return cls.ClientConfig(
             base_url=config_base_url,
