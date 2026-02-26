@@ -194,6 +194,6 @@ Rel(flext_api, external_api, "Makes HTTP requests", "REST/GraphQL")
 1. **Monitoring**: Extensive logging and performance monitoring
 1. **Documentation**: Detailed architecture and API documentation
 
----
+______________________________________________________________________
 
 **Next Level**: [Container Diagram](containers.md) - Technology choices and deployment view

@@ -747,6 +747,6 @@ class AuthenticationManager:
         return FlextResult.ok(authenticated_request)
 ```
 
----
+______________________________________________________________________
 
 **C4 Model Complete**: This concludes the C4 model documentation for FLEXT-API, showing the progression from high-level system context down to implementation details.

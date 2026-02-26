@@ -133,5 +133,3 @@ markers = [
 
 # [MANAGED] ruff
 
-[tool.pyrefly]
-search_path = ["."]
