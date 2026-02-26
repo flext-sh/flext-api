@@ -60,6 +60,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         reconnect_max_attempts: int | None = None,
         reconnect_backoff_factor: float | None = None,
     ) -> None:
+        """Initialize the SSE protocol plugin."""
         super().__init__(
             name="sse",
             version="1.0.0",
@@ -129,6 +130,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         request: Mapping[str, t.ApiJsonValue],
         **kwargs: object,
     ) -> r[Mapping[str, t.ApiJsonValue]]:
+        """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
             return r[Mapping[str, t.ApiJsonValue]].fail(
@@ -244,7 +246,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         events: list[dict[str, t.GeneralValueType]] = []
         retry_timeout: int | None = None
 
-        self._set_connected_state(True)
+        self._set_connected_state(connected=True)
         self._notify_connect_handlers()
 
         try:
@@ -280,7 +282,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                             if len(events) >= remaining:
                                 break
         finally:
-            self._set_connected_state(False)
+            self._set_connected_state(connected=False)
             self._notify_disconnect_handlers()
 
         return events, retry_timeout
@@ -392,7 +394,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         if delay_seconds > 0:
             time.sleep(delay_seconds)
 
-    def _set_connected_state(self, connected: bool) -> None:
+    def _set_connected_state(self, *, connected: bool) -> None:
         self._connected = connected
         self.is_connected = connected
 
@@ -429,6 +431,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 self.logger.exception("SSE error handler error")
 
     def supports_protocol(self, protocol: str) -> bool:
+        """Check if protocol is supported by this plugin."""
         protocol_lower = protocol.lower()
         return protocol_lower in {
             FlextApiConstants.Api.SSE.Protocol.SSE,
@@ -437,6 +440,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         }
 
     def get_supported_protocols(self) -> list[str]:
+        """Get list of supported protocols."""
         return [
             FlextApiConstants.Api.SSE.Protocol.SSE,
             FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
@@ -444,17 +448,21 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         ]
 
     def on_event(self, event_type: str, handler: Callable[..., None]) -> None:
+        """Register a handler for a specific SSE event type."""
         if event_type not in self._on_event_handlers:
             self._on_event_handlers[event_type] = []
         self._on_event_handlers[event_type].append(handler)
 
     def on_connect(self, handler: Callable[[], None]) -> None:
+        """Register a handler to be called when connecting."""
         self._on_connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Callable[[], None]) -> None:
+        """Register a handler to be called when disconnected."""
         self._on_disconnect_handlers.append(handler)
 
     def on_error(self, handler: Callable[[Exception], None]) -> None:
+        """Register a handler to be called on errors."""
         self._on_error_handlers.append(handler)
 
 
