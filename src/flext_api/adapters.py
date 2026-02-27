@@ -85,10 +85,18 @@ class FlextApiAdapters:
                 )
 
                 # Pydantic 2 model_validate for dict→Model conversion
+                status_code = message.get("status", 200)
+                if not isinstance(status_code, int):
+                    status_code = 200
+                body = message.get("body")
+                if isinstance(body, (dict, str, bytes)) or body is None:
+                    response_body = body
+                else:
+                    response_body = str(body) if body else None
                 response = FlextApiModels.HttpResponse(
-                    status_code=message.get("status", 200),
+                    status_code=status_code,
                     headers=headers,
-                    body=message.get("body"),
+                    body=response_body,
                 )
                 return r[FlextApiModels.HttpResponse].ok(response)
 

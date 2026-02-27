@@ -19,6 +19,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from typing import override
 
 from fastapi import FastAPI
 from flext_core import (
@@ -470,6 +471,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
         return r[bool].ok(value=True)
 
+    @override
     def execute(self) -> r[bool]:
         """Execute server service (required by FlextService)."""
         return r[bool].ok(True)

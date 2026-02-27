@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
+from typing import override
 from flext_core import r
 
 from flext_api.constants import c
@@ -34,6 +35,7 @@ class FlextApiTransports:
             """Initialize HTTP transport."""
             self._client: httpx.Client | None = None
 
+        @override
         def connect(self, url: str, **options: t.GeneralValueType) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
@@ -57,6 +59,7 @@ class FlextApiTransports:
             ) as e:
                 return r[str].fail(f"HTTP connect failed: {e}")
 
+        @override
         def disconnect(self, connection: str) -> r[bool]:
             """Disconnect HTTP connection."""
             try:
@@ -109,6 +112,7 @@ class FlextApiTransports:
             ) as e:
                 return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
+        @override
         def send(
             self,
             connection: str,

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Mapping
+from typing import override
 
 import websockets
 from flext_core import r
@@ -226,10 +227,13 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         body = self._extract_body(request)
         if body is not None:
-            try:
-                parsed = self._InboundMessage(message=body)
-                return r[str | bytes].ok(parsed.message)
-            except ValidationError:
+            if isinstance(body, (str, bytes)):
+                try:
+                    parsed = self._InboundMessage(message=body)
+                    return r[str | bytes].ok(parsed.message)
+                except ValidationError:
+                    return r[str | bytes].ok(str(body))
+            else:
                 return r[str | bytes].ok(str(body))
 
         return r[str | bytes].fail("Message or body is required")
@@ -253,6 +257,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         return self._connect(url_result.value, headers)
 
+    @override
     def send_request(
         self,
         request: Mapping[str, t.GeneralValueType],
@@ -316,6 +321,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         return r[Mapping[str, t.GeneralValueType]].ok(response)
 
+    @override
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
 
@@ -332,6 +338,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             FlextApiConstants.Api.WebSocket.Protocol.WSS,
         }
 
+    @override
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols.
 
@@ -575,15 +582,17 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 message = recv_method() if callable(recv_method) else None
 
                 # Notify message handlers only if we have valid message data
-                try:
-                    inbound = self._InboundMessage(message=message)
-                    for handler in self._on_message_handlers:
-                        try:
-                            handler(inbound.message)
-                        except (ValueError, TypeError, KeyError, ConnectionError):
-                            self.logger.exception("Message handler error")
-                except ValidationError:
-                    pass
+                if isinstance(message, (str, bytes)):
+                    try:
+                        inbound = self._InboundMessage(message=message)
+                    except ValidationError:
+                        pass
+                    else:
+                        for handler in self._on_message_handlers:
+                            try:
+                                handler(inbound.message)
+                            except (ValueError, TypeError, KeyError, ConnectionError):
+                                self.logger.exception("Message handler error")
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")

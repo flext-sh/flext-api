@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterator, Mapping
+from typing import override
 
 import httpx
 from flext_core import r
@@ -187,6 +188,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             case _:
                 return str(value)
 
+    @override
     def send_request(
         self,
         request: Mapping[str, t.GeneralValueType],
@@ -276,18 +278,21 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return kwargs
 
         content_type = self._get_content_type(headers)
-        try:
-            parsed_mapping = _MappingBodyModel(body=body)
-            if c.Api.ContentType.FORM in content_type:
-                kwargs["data"] = str(parsed_mapping.body)
-            else:
-                kwargs["data"] = str(parsed_mapping.body)
-            return kwargs
-        except ValidationError:
-            if isinstance(body, bytes):
-                kwargs["content"] = body
-            else:
-                kwargs["content"] = str(body)
+        if isinstance(body, dict):
+            try:
+                parsed_mapping = _MappingBodyModel(body=body)
+                if c.Api.ContentType.FORM in content_type:
+                    kwargs["data"] = str(parsed_mapping.body)
+                else:
+                    kwargs["data"] = str(parsed_mapping.body)
+                return kwargs
+            except ValidationError:
+                pass
+
+        if isinstance(body, bytes):
+            kwargs["content"] = body
+        else:
+            kwargs["content"] = str(body)
 
         return kwargs
 
@@ -423,6 +428,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
             return r[FlextApiModels.HttpResponse].fail(f"Failed to build response: {e}")
 
+    @override
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol."""
         if self._http3:
@@ -431,6 +437,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             supported = c.Api.HTTP.SUPPORTED_PROTOCOLS
         return protocol.lower() in supported
 
+    @override
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols."""
         if self._http3:
@@ -506,6 +513,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         return r[object].ok(_iter_stream_chunks())
 
+    @override
     def get_protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information."""
         base_info = super().get_protocol_info()

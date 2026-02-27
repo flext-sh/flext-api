@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from pathlib import Path
+from typing import override
 
 import yaml
 from flext_core import r, u
@@ -545,6 +546,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         """
         return ["openapi", "openapi3", "openapi-3"]
 
+    @override
     def validate_request(
         self,
         request: t.JsonObject,
@@ -570,6 +572,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Implementation would validate request against OpenAPI paths/operations
         return r[bool].ok(value=True)
 
+    @override
     def validate_response(
         self,
         response: t.JsonObject,
@@ -646,6 +649,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                     normalized[str(key)] = str(normalized_value)
         return normalized
 
+    @override
     def load_schema(
         self,
         schema_source: str,

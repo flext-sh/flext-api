@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import ClassVar, Self
+from typing import ClassVar, Self, override
 
 from flext_core import FlextLogger, r, s
 from flext_core.runtime import FlextRuntime
@@ -100,6 +100,7 @@ class FlextApi(s[FlextApiSettings]):
             return config
         return FlextApiSettings()
 
+    @override
     def execute(
         self,
         **kwargs: t.JsonValue | str | int | bool,

@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Self
+from typing import Self, override
 
 import httpx
 from flext_core import FlextLogger, r
@@ -152,6 +152,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             self.logger.exception(error_msg)
             return r[t.Api.HttpResponseDict].fail(error_msg)
 
+    @override
     def request(
         self,
         method: str,
@@ -207,6 +208,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """Exit context manager and close client."""
         self.close()
 
+    @override
     def get(
         self,
         url: str,
@@ -215,6 +217,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """Execute HTTP GET request."""
         return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
 
+    @override
     def post(
         self,
         url: str,
@@ -223,6 +226,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """Execute HTTP POST request."""
         return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
 
+    @override
     def put(
         self,
         url: str,
@@ -231,6 +235,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """Execute HTTP PUT request."""
         return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
 
+    @override
     def delete(
         self,
         url: str,

@@ -26,7 +26,7 @@ import time
 from collections.abc import Mapping
 from typing import Self
 
-from flext_core import FlextLogger, FlextRuntime, r, u, x
+from flext_core import FlextLogger, FlextRuntime, r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api.models import FlextApiModels
@@ -59,6 +59,10 @@ class FlextApiStorage:
     _stats: FlextApiModels.Storage.Stats
     _operations_count: int
     _created_at: str
+    _namespace: str
+    _max_size: int | None
+    _default_ttl: float | None
+    _backend: str
 
     @staticmethod
     def _to_json_value(value: t.GeneralValueType) -> t.JsonValue:
@@ -179,6 +183,8 @@ class FlextApiStorage:
 
     def _normalize_config(self, config_obj: t.ApiJsonValue | None) -> t.Api.StorageDict:
         """Normalize config object to dictionary."""
+        if config_obj is None:
+            return {}
         if u.is_dict_like(config_obj):
             normalized: t.Api.StorageDict = {}
             for key, value in config_obj.items():
@@ -189,7 +195,7 @@ class FlextApiStorage:
                     case float() as f:
                         normalized[key_str] = int(f)
             return normalized
-        if x.is_base_model(config_obj):
+        if isinstance(config_obj, BaseModel):
             namespace_str = self._extract_config_field(
                 config_obj,
                 "namespace",

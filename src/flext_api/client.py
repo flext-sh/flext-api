@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Self
+from typing import Self, override
 
 import httpx
 from flext_core import FlextRuntime, r, s
@@ -89,6 +89,7 @@ class FlextApiClient(s[FlextApiSettings]):
             return config
         return FlextApiSettings()
 
+    @override
     def execute(
         self,
         **kwargs: t.JsonValue | str | int | bool,

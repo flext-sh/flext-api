@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from typing import override
 
 from flext_core import FlextLogger, FlextRuntime
 
@@ -37,21 +38,25 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
             context[key] = str(value)
         return context
 
+    @override
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.info(message, return_result=False, **context)
 
+    @override
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.error(message, return_result=False, **context)
 
+    @override
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.debug(message, return_result=False, **context)
 
+    @override
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
         context = self._convert_kwargs_to_context(kwargs)

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterator, Mapping
+from typing import override
 
 import httpx
 from flext_core import r
@@ -125,6 +126,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         if init_result.is_failure:
             self.logger.error(f"Failed to initialize SSE protocol: {init_result.error}")
 
+    @override
     def send_request(
         self,
         request: Mapping[str, t.ApiJsonValue],
@@ -430,6 +432,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE error handler error")
 
+    @override
     def supports_protocol(self, protocol: str) -> bool:
         """Check if protocol is supported by this plugin."""
         protocol_lower = protocol.lower()
@@ -439,6 +442,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
         }
 
+    @override
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols."""
         return [

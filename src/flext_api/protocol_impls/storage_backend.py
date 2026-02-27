@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_core import FlextLogger, FlextRuntime, r
 
 from flext_api.protocols import p
@@ -21,6 +23,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         self._storage: dict[str, t.ApiJsonValue] = {}
         self.logger = FlextLogger(__name__)
 
+    @override
     def get(self, key: str) -> r[t.ApiJsonValue]:
         """Retrieve value by key."""
         try:
@@ -36,6 +39,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
+    @override
     def set(
         self,
         key: str,
@@ -58,6 +62,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Storage operation failed: {e}")
 
+    @override
     def delete(self, key: str) -> r[bool]:
         """Delete value by key."""
         try:
@@ -75,6 +80,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Delete operation failed: {e}")
 
+    @override
     def exists(self, key: str) -> r[bool]:
         """Check if key exists."""
         try:
@@ -83,6 +89,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Exists check failed: {e}")
 
+    @override
     def clear(self) -> r[bool]:
         """Clear all stored values."""
         try:
@@ -92,6 +99,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Clear operation failed: {e}")
 
+    @override
     def keys(self) -> r[list[str]]:
         """Get all keys."""
         try:

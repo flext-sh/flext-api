@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import override
 
 import yaml
 from flext_core import r
@@ -650,6 +651,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         """
         return ["json-schema", "jsonschema", "json"]
 
+    @override
     def validate_request(
         self,
         request: t_api.JsonObject,
@@ -694,6 +696,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
+    @override
     def validate_response(
         self,
         response: t_api.JsonObject,
@@ -738,6 +741,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
+    @override
     def load_schema(
         self,
         schema_source: str,
