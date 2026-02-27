@@ -38,8 +38,8 @@ Correct - Always use root imports:
     )
 
 Forbidden - Never use internal imports:
-    from flext_api.api import FlextApi  # Wrong - use root import
-    from flext_api.models import FlextApiModels  # Wrong - use root import
+    from flext_api.api import FlextApi
+    from flext_api.models import FlextApiModels
 
 Why: 33+ ecosystem projects rely on root imports. Internal imports break
 the entire ecosystem by creating circular dependencies and import order issues.
