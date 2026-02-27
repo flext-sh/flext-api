@@ -29,9 +29,9 @@ from typing import override
 from flext_core import (
     FlextContainer,
     FlextContext,
-    FlextDispatcher,
     FlextLogger,
     FlextService,
+    p,
     r,
     u,
 )
@@ -52,7 +52,7 @@ class FlextWebhookHandler(FlextService[bool]):
     - Webhook registration and lifecycle
 
     Integration:
-    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, FlextDispatcher, u)
+    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, CommandBus, u)
     - Signature verification using HMAC
     - Event routing to registered handlers
     - Retry queue with configurable attempts
@@ -66,7 +66,7 @@ class FlextWebhookHandler(FlextService[bool]):
     # These are initialized directly in __init__() (no PrivateAttr needed)
     # Note: _container type matches parent FlextService (optional type)
     _flext_context: FlextContext
-    _dispatcher: FlextDispatcher
+    _dispatcher: p.CommandBus
     _secret: str | None
     _signature_header: str
     _algorithm: str
@@ -121,7 +121,7 @@ class FlextWebhookHandler(FlextService[bool]):
         # Set attributes directly (no PrivateAttr needed, compatible with FlextService)
         self._container = FlextContainer()
         self._flext_context = FlextContext()
-        self._dispatcher = FlextDispatcher()
+        self._dispatcher = FlextContainer.get_global().get("command_bus").unwrap()
 
         # Webhook configuration
         self._secret = secret
