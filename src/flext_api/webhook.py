@@ -24,6 +24,7 @@ import time
 import uuid
 from collections import deque
 from collections.abc import Callable, Mapping
+from typing import override
 
 from flext_core import (
     FlextContainer,
@@ -38,7 +39,7 @@ from flext_core import (
 from flext_api.typings import t
 
 
-class FlextWebhookHandler(FlextService[object]):
+class FlextWebhookHandler(FlextService[bool]):
     """Webhook handler with signature verification and event processing.
 
     Features:
@@ -87,8 +88,8 @@ class FlextWebhookHandler(FlextService[object]):
             for key, item in value.items():
                 converted[str(key)] = FlextWebhookHandler._to_json_value(item)
             return converted
-        if isinstance(value, list | tuple):
-            return [FlextWebhookHandler._to_json_value(item) for item in value]
+        if isinstance(value, (list, tuple)):
+            return [FlextWebhookHandler._to_json_value(item) for item in list(value)]
         if isinstance(value, bytes):
             return value.decode("utf-8", errors="replace")
         return str(value)
@@ -142,7 +143,8 @@ class FlextWebhookHandler(FlextService[object]):
         # Retry queue
         self._retry_queue = deque(maxlen=500)
 
-    def execute(self, **kwargs: object) -> r[object]:
+    @override
+    def execute(self) -> r[bool]:
         """Execute webhook service lifecycle operations.
 
         FlextService requires this method for service execution.
@@ -154,7 +156,7 @@ class FlextWebhookHandler(FlextService[object]):
         """
         if kwargs:
             FlextLogger(__name__).info("Execute called with kwargs: %s", str(kwargs))
-        return r[object].ok(True)
+        return r[bool].ok(True)
 
     def register_event_handler(
         self,
