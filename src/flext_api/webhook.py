@@ -154,8 +154,6 @@ class FlextWebhookHandler(FlextService[bool]):
         r[object]: Success result
 
         """
-        if kwargs:
-            FlextLogger(__name__).info("Execute called with kwargs: %s", str(kwargs))
         return r[bool].ok(True)
 
     def register_event_handler(
