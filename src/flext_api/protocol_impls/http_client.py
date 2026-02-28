@@ -92,7 +92,8 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         }
 
     def _build_request_options(
-        self, kwargs: Mapping[str, t.GeneralValueType]
+        self,
+        kwargs: Mapping[str, t.GeneralValueType],
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
@@ -172,7 +173,10 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         options = options_result.value
         headers = self._prepare_request_headers(options)
         return self._execute_httpx_request(
-            method, full_url_result.value, headers, options
+            method,
+            full_url_result.value,
+            headers,
+            options,
         )
 
     def _build_full_url(self, url: str) -> r[str]:

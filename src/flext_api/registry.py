@@ -170,7 +170,7 @@ class FlextApiRegistry(FlextRegistry):
         if result.is_failure:
             return r[FlextApiPlugins.Authentication].fail(result.error)
         return r[FlextApiPlugins.Authentication].fail(
-            "Plugin is not an Authentication type"
+            "Plugin is not an Authentication type",
         )
 
     def list_auth_providers(self) -> r[list[str]]:

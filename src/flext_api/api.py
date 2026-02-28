@@ -74,7 +74,9 @@ class FlextApi(s[FlextApiSettings]):
         """
         # Determine which config to use
         init_config = getattr(
-            self, "_init_config", None
+            self,
+            "_init_config",
+            None,
         )  # INTENTIONAL: getattr for optional attribute
         if init_config is not None:
             api_config = init_config

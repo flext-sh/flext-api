@@ -68,13 +68,15 @@ class FlextApiTypes(FlextTypes):
         # =========================================================================
 
         type RequestConfig = dict[
-            str, str | int | bool | list[str] | FlextApiTypes.JsonObject
+            str,
+            str | int | bool | list[str] | FlextApiTypes.JsonObject,
         ]
         type ResponseConfig = dict[str, FlextTypes.JsonValue | FlextApiTypes.JsonObject]
         type RequestBody = FlextApiTypes.JsonObject | str | bytes
         type ResponseBody = FlextApiTypes.JsonObject | str | bytes | None
         type HttpResponseDict = dict[
-            str, int | str | dict[str, str] | FlextApiTypes.JsonObject | bytes | None
+            str,
+            int | str | dict[str, str] | FlextApiTypes.JsonObject | bytes | None,
         ]
         """HTTP response as dictionary (status_code, headers, body, request_id)."""
         type ValidationResult = dict[str, bool | list[str] | FlextApiTypes.JsonObject]
@@ -84,10 +86,12 @@ class FlextApiTypes(FlextTypes):
         # =========================================================================
 
         type EndpointConfig = dict[
-            str, FlextTypes.JsonValue | list[str] | FlextApiTypes.JsonObject
+            str,
+            FlextTypes.JsonValue | list[str] | FlextApiTypes.JsonObject,
         ]
         type EndpointMetadata = dict[
-            str, str | int | list[str] | FlextApiTypes.JsonObject
+            str,
+            str | int | list[str] | FlextApiTypes.JsonObject,
         ]
         type RouteConfig = dict[str, str | list[str] | FlextApiTypes.JsonObject]
 
@@ -116,7 +120,8 @@ class FlextApiTypes(FlextTypes):
         type AuthCredentials = Mapping[str, str | FlextApiTypes.JsonObject]
         type AuthTokenData = Mapping[str, FlextTypes.JsonValue | int | bool]
         type SecurityConfig = Mapping[
-            str, bool | str | list[str] | FlextApiTypes.JsonObject
+            str,
+            bool | str | list[str] | FlextApiTypes.JsonObject,
         ]
 
         # =========================================================================

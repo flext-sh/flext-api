@@ -118,7 +118,7 @@ class FlextApiTransports:
                 client = self._client
                 if client is None:
                     return r[t.Api.HttpResponseDict | str].fail(
-                        "HTTP client is not connected"
+                        "HTTP client is not connected",
                     )
 
                 params_result = self._extract_request_params(

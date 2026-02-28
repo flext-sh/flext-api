@@ -80,7 +80,9 @@ class FlextApiStorage:
         return str(normalized)
 
     def __new__(
-        cls, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue
+        cls,
+        config: t.ApiJsonValue | None = None,
+        **kwargs: t.ApiJsonValue,
     ) -> Self:
         """Intercept config argument and convert to kwargs for FlextService V2."""
         instance = super().__new__(cls)
@@ -91,7 +93,9 @@ class FlextApiStorage:
         return instance
 
     def __init__(
-        self, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue
+        self,
+        config: t.ApiJsonValue | None = None,
+        **kwargs: t.ApiJsonValue,
     ) -> None:
         """Initialize storage with config using Pydantic."""
         self.logger = FlextLogger(__name__)
@@ -142,7 +146,7 @@ class FlextApiStorage:
         storage_kwargs_dict = dict(storage_kwargs)
         max_size_val = storage_kwargs_dict.pop("max_size", None)
         default_ttl_val = storage_kwargs_dict.pop("default_ttl", None)
-        setattr(self, "_flext_storage_kwargs", storage_kwargs_dict)
+        self._flext_storage_kwargs = storage_kwargs_dict
         return max_size_val, default_ttl_val
 
     def _extract_config_field(
@@ -460,7 +464,9 @@ class FlextApiStorage:
         return r[t.ApiJsonValue].fail(f"Key not found: {key}")
 
     def _process_namespaced_entry(
-        self, namespaced_key: str, key: str
+        self,
+        namespaced_key: str,
+        key: str,
     ) -> r[t.ApiJsonValue]:
         """Process a namespaced storage entry with metadata validation."""
         data = self._storage[namespaced_key]
@@ -520,7 +526,7 @@ class FlextApiStorage:
                 key=key,
             )
             return r[t.ApiJsonValue].fail(
-                f"ValidationError processing key '{key}': {e}"
+                f"ValidationError processing key '{key}': {e}",
             )
         except (KeyError, TypeError, AttributeError) as e:
             FlextLogger(__name__).error(
@@ -530,7 +536,7 @@ class FlextApiStorage:
                 key=key,
             )
             return r[t.ApiJsonValue].fail(
-                f"{type(e).__name__} processing key '{key}': {e}"
+                f"{type(e).__name__} processing key '{key}': {e}",
             )
 
     def delete(self, key: str) -> r[bool]:

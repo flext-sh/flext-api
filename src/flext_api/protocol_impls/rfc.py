@@ -107,7 +107,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         model_config = ConfigDict(extra="ignore")
 
         method: Annotated[str, AfterValidator(_validate_rfc_method)] = Field(
-            default=FlextApiConstants.Api.Method.GET
+            default=FlextApiConstants.Api.Method.GET,
         )
 
     class _HeadersRequest(BaseModel):
@@ -119,7 +119,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         model_config = ConfigDict(extra="ignore")
 
         timeout: float = Field(
-            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT), gt=0
+            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
+            gt=0,
         )
 
     class _StatusCodeValue(BaseModel):
@@ -167,7 +168,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return r[str].ok(parsed.method)
 
     def _extract_headers(
-        self, request: Mapping[str, t.GeneralValueType]
+        self,
+        request: Mapping[str, t.GeneralValueType],
     ) -> Mapping[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
@@ -194,7 +196,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return normalized_headers
 
     def _extract_body(
-        self, request: Mapping[str, t.GeneralValueType]
+        self,
+        request: Mapping[str, t.GeneralValueType],
     ) -> t.GeneralValueType | None:
         """Extract body from request (RFC 7231 compliant).
 

@@ -249,7 +249,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             })
 
         return r[Mapping[str, t.ApiJsonValue]].fail(
-            result.error or "Request execution failed"
+            result.error or "Request execution failed",
         )
 
     def _build_request_kwargs(
@@ -332,7 +332,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     body,
                 )
                 call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
-                request_method = getattr(connection, "request")
+                request_method = connection.request
                 response = request_method(
                     method=call_args.method,
                     url=call_args.url,

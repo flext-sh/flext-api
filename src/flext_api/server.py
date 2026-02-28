@@ -102,7 +102,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                         options_json[k] = v
                     case _:
                         return r[bool].fail(
-                            f"Unsupported route option type for key: {k}"
+                            f"Unsupported route option type for key: {k}",
                         )
 
             route_data: t.Api.RouteData = {
@@ -118,7 +118,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                     case _:
                         normalized_schema_input = str(schema)
                 schema_normalized = FlextRuntime.normalize_to_general_value(
-                    normalized_schema_input
+                    normalized_schema_input,
                 )
                 match schema_normalized:
                     case str() | int() | float() | bool() | None | list() | dict():
@@ -427,8 +427,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
         )
 
         # Protocol and middleware with FlextConstants defaults
-        setattr(self, "_protocol_handlers", {})
-        setattr(self, "_middleware_pipeline", [])
+        self._protocol_handlers = {}
+        self._middleware_pipeline = []
 
     def _validate_server_config(
         self,

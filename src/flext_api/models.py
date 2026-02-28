@@ -78,7 +78,8 @@ class FlextApiModels(FlextModels):
                 description="HTTP request headers",
             )
             body: Annotated[
-                t.Api.RequestBody, BeforeValidator(_normalize_request_body)
+                t.Api.RequestBody,
+                BeforeValidator(_normalize_request_body),
             ] = Field(
                 default_factory=dict,
                 description="Request body",
@@ -126,7 +127,8 @@ class FlextApiModels(FlextModels):
                 description="HTTP response headers",
             )
             body: Annotated[
-                t.Api.ResponseBody, BeforeValidator(_normalize_response_body)
+                t.Api.ResponseBody,
+                BeforeValidator(_normalize_response_body),
             ] = Field(
                 default_factory=dict,
                 description="Response body (empty dict by default, None allowed for 204)",
@@ -272,7 +274,8 @@ class FlextApiModels(FlextModels):
                 description="Default headers for all requests",
             )
             verify_ssl: bool = Field(
-                default=True, description="Verify SSL certificates"
+                default=True,
+                description="Verify SSL certificates",
             )
 
             @computed_field
@@ -301,10 +304,14 @@ class FlextApiModels(FlextModels):
                 description="Items per page",
             )
             total_items: int = Field(
-                default=0, ge=0, description="Total number of items"
+                default=0,
+                ge=0,
+                description="Total number of items",
             )
             total_pages: int = Field(
-                default=0, ge=0, description="Total number of pages"
+                default=0,
+                ge=0,
+                description="Total number of pages",
             )
 
             @computed_field
@@ -333,7 +340,8 @@ class FlextApiModels(FlextModels):
 
             message: str = Field(..., description="Human-readable error message")
             error_code: str = Field(
-                default="", description="Machine-readable error code"
+                default="",
+                description="Machine-readable error code",
             )
             status_code: int = Field(
                 default=c.Api.HTTP_SERVER_ERROR_MIN,
@@ -522,10 +530,14 @@ class FlextApiModels(FlextModels):
                 description="Items per page",
             )
             total_items: int = Field(
-                default=0, ge=0, description="Total number of items"
+                default=0,
+                ge=0,
+                description="Total number of items",
             )
             total_pages: int = Field(
-                default=0, ge=0, description="Total number of pages"
+                default=0,
+                ge=0,
+                description="Total number of pages",
             )
 
             @computed_field

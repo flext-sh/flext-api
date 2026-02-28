@@ -371,7 +371,8 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         return event_payload
 
     def _extract_retry_timeout(
-        self, event: Mapping[str, t.GeneralValueType]
+        self,
+        event: Mapping[str, t.GeneralValueType],
     ) -> int | None:
         retry_value = event.get("retry")
         if isinstance(retry_value, int) and retry_value >= 0:

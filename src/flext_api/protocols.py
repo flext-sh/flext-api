@@ -294,7 +294,8 @@ class FlextApiProtocols(FlextWebProtocols):
                 """
 
                 def get_request_schema(
-                    self, method: str
+                    self,
+                    method: str,
                 ) -> FlextResult[t.Api.JsonObject]:
                     """Get request schema for method.
 
@@ -308,7 +309,8 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
                 def get_response_schema(
-                    self, method: str
+                    self,
+                    method: str,
                 ) -> FlextResult[t.Api.JsonObject]:
                     """Get response schema for method.
 

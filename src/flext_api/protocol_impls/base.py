@@ -176,7 +176,8 @@ class BaseProtocolImplementation:
         }
 
     def _validate_request(
-        self, request: Mapping[str, t.GeneralValueType]
+        self,
+        request: Mapping[str, t.GeneralValueType],
     ) -> r[Mapping[str, t.GeneralValueType]]:
         """Validate request dictionary.
 

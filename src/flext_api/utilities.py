@@ -140,12 +140,12 @@ class FlextApiUtilities(FlextUtilities):
                 if kwargs is not None and "data" in kwargs:
                     raw_data = kwargs["data"]
                     return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data)
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data),
                     )
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
                     return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json)
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json),
                     )
                 return r[t.Api.RequestBody].ok({})
 
@@ -316,7 +316,7 @@ class FlextApiUtilities(FlextUtilities):
                 FlextApiUtilities.Api.RequestUtils.to_json_value(default_page_size)
             )
             result["max_page_size"] = FlextApiUtilities.Api.RequestUtils.to_json_value(
-                max_page_size
+                max_page_size,
             )
 
             return result
