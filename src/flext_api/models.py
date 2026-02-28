@@ -16,6 +16,7 @@ from collections.abc import Mapping
 from typing import Annotated, Self
 from urllib.parse import ParseResult, urlparse
 
+from flext_web import FlextWebModels
 from flext_core import FlextModels
 from pydantic import BeforeValidator, Field, computed_field
 
@@ -36,7 +37,7 @@ def _normalize_response_body(v: t.ApiJsonValue) -> t.Api.ResponseBody:
     return u.Api.RequestUtils.to_request_body(v)
 
 
-class FlextApiModels(FlextModels):
+class FlextApiModels(FlextWebModels):
     """HTTP domain models for flext-api.
 
     Unified namespace class that aggregates all HTTP-specific domain models.

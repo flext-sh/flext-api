@@ -14,11 +14,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from typing import TypeAlias
+from flext_web import FlextWebTypes
 
 from flext_core import FlextTypes
 
 
-class FlextApiTypes(FlextTypes):
+class FlextApiTypes(FlextWebTypes):
     """Unified API type definitions extending t with composition.
 
     Single namespace containing ALL API types.

@@ -9,6 +9,7 @@ from enum import StrEnum
 from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
+from flext_web import FlextWebUtilities
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator
 
@@ -30,7 +31,7 @@ VALID_HTTP_METHODS: frozenset[str] = frozenset({
 })
 
 
-class FlextApiUtilities(FlextUtilities):
+class FlextApiUtilities(FlextWebUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
