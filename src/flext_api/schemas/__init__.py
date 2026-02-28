@@ -25,10 +25,7 @@ if TYPE_CHECKING:
 
 # Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "AsyncAPISchemaValidator": (
-        "flext_api.schemas.asyncapi",
-        "AsyncAPISchemaValidator",
-    ),
+    "AsyncAPISchemaValidator": ("flext_api.schemas.asyncapi", "AsyncAPISchemaValidator"),
     "JSONSchemaValidator": ("flext_api.schemas.jsonschema", "JSONSchemaValidator"),
     "OpenAPISchemaValidator": ("flext_api.schemas.openapi", "OpenAPISchemaValidator"),
 }
