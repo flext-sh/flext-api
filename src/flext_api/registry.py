@@ -12,8 +12,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import ClassVar
 
-from flext_core import FlextRegistry, r
-from flext_core.protocols import p
+from flext_core import FlextRegistry, p, r
 
 from flext_api.plugins import FlextApiPlugins
 

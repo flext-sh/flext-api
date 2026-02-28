@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import r
-from flext_core.protocols import FlextProtocols
+from flext_core import FlextProtocols, r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import t

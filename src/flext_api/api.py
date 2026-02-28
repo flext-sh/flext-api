@@ -13,8 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import ClassVar, Self, override
 
-from flext_core import FlextLogger, r, s
-from flext_core.runtime import FlextRuntime
+from flext_core import FlextLogger, FlextRuntime, r, s
 from pydantic import ConfigDict
 
 from flext_api.client import FlextApiClient
