@@ -14,10 +14,7 @@ import httpx
 from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api.constants import FlextApiConstants
-from flext_api.models import m
-from flext_api.protocols import p
-from flext_api.typings import t
+from flext_api import FlextApiConstants, m, p, t
 
 
 class _HttpClientRequestOptions(BaseModel):
@@ -204,7 +201,12 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type: t.GeneralValueType, exc_val: t.GeneralValueType, exc_tb: t.GeneralValueType) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         """Exit context manager and close client."""
         self.close()
 

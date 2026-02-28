@@ -127,7 +127,7 @@ Generate JSON Schema specifications for data validation and API contracts.
 
 ```python
 from flext_api.schemas.jsonschema import JsonSchema
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiModels
 from typing import Optional
 
 class UserCreateRequest(FlextApiModels.BaseRequest):

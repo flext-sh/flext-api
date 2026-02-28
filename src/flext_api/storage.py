@@ -29,8 +29,7 @@ from typing import Self
 from flext_core import FlextLogger, FlextRuntime, r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from flext_api.models import m
-from flext_api.typings import t
+from flext_api import m, t
 
 
 class FlextApiStorage:

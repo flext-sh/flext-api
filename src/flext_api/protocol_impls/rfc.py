@@ -17,9 +17,8 @@ from typing import Annotated
 from flext_core import r
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api.constants import FlextApiConstants
+from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
-from flext_api.typings import t
 
 
 def _validate_rfc_url(value: str) -> str:
@@ -194,7 +193,9 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return normalized_headers
 
-    def _extract_body(self, request: Mapping[str, t.GeneralValueType]) -> t.GeneralValueType | None:
+    def _extract_body(
+        self, request: Mapping[str, t.GeneralValueType]
+    ) -> t.GeneralValueType | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:

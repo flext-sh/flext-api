@@ -15,7 +15,7 @@ from abc import abstractmethod
 from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, PrivateAttr
 
-from flext_api.typings import t
+from flext_api import t
 
 
 class FlextApiPlugins:

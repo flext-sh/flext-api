@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator
 
-from flext_api.typings import t
+from flext_api import t
 
 # Local constants to avoid circular import with constants.py
 MAX_HOSTNAME_LENGTH: int = 253
@@ -51,7 +51,7 @@ class FlextApiUtilities(FlextUtilities):
         and cross-project access. Access via FlextUtilities.Api.* pattern.
 
         Example:
-            from flext_api.utilities import u
+            from flext_api import u
             result = FlextUtilities.Api.Collection.parse_sequence(Status, ["active", "pending"])
             parsed = FlextUtilities.Api.Args.parse_kwargs(kwargs, enum_fields)
 

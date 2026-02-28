@@ -36,7 +36,7 @@ from flext_core import (
     u,
 )
 
-from flext_api.typings import t
+from flext_api import t
 
 
 class FlextWebhookHandler(FlextService[bool]):

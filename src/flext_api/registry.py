@@ -14,7 +14,7 @@ from typing import ClassVar
 
 from flext_core import FlextRegistry, p, r
 
-from flext_api.plugins import FlextApiPlugins
+from flext_api import FlextApiPlugins
 
 
 class FlextApiRegistry(FlextRegistry):

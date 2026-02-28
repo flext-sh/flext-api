@@ -11,8 +11,7 @@ from typing import override
 
 from flext_core import FlextLogger, FlextRuntime
 
-from flext_api.protocols import FlextApiProtocols as api_protocols
-from flext_api.typings import t
+from flext_api import FlextApiProtocols as api_protocols, t
 
 
 class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):

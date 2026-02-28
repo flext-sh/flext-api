@@ -153,7 +153,7 @@ pip install flext-api
 
 ```python
 from flext_api import FlextApiClient
-from flext_api.settings import FlextApiSettings
+from flext_api import FlextApiSettings
 
 # Configure client
 config = FlextApiSettings(base_url="https://api.example.com")
@@ -173,7 +173,7 @@ else:
 
 ```python
 from flext_api import create_fastapi_app
-from flext_api.settings import FlextApiSettings
+from flext_api import FlextApiSettings
 
 # Create FastAPI application
 config = FlextApiSettings(title="My API", version="1.0.0")

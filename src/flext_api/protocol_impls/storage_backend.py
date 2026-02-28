@@ -11,8 +11,7 @@ from typing import override
 
 from flext_core import FlextLogger, FlextRuntime, r
 
-from flext_api.protocols import p
-from flext_api.typings import t
+from flext_api import p, t
 
 
 class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):

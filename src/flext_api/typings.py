@@ -39,7 +39,7 @@ class FlextApiTypes(FlextTypes):
         This enables consistent namespace patterns for cross-project type access.
 
         Examples:
-            from flext_api.typings import t
+            from flext_api import t
             request_data: t.Api.RequestData = ...
             response_data: t.Api.ResponseData = ...
 

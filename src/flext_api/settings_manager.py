@@ -16,8 +16,7 @@ from collections.abc import Mapping
 
 from flext_core import r
 
-from flext_api.models import m
-from flext_api.typings import t
+from flext_api import m, t
 
 
 class FlextApiSettingsManager:

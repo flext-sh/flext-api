@@ -38,8 +38,8 @@ Correct - Always use root imports:
     )
 
 Forbidden - Never use internal imports:
-    from flext_api.api import FlextApi  # Wrong - use root import
-    from flext_api.models import FlextApiModels  # Wrong - use root import
+    from flext_api import FlextApi  # Wrong - use root import
+    from flext_api import FlextApiModels  # Wrong - use root import
 
 Why: 33+ ecosystem projects rely on root imports. Internal imports break
 the entire ecosystem by creating circular dependencies and import order issues.
@@ -123,7 +123,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core import (
@@ -135,36 +135,40 @@ if TYPE_CHECKING:
         FlextService as s,
     )
 
-    from flext_api.__version__ import __version__, __version_info__
-    from flext_api.adapters import FlextApiAdapters
-    from flext_api.api import FlextApi
-    from flext_api.app import FlextApiApp
-    from flext_api.client import FlextApiClient
-    from flext_api.constants import FlextApiConstants, FlextApiConstants as c
-    from flext_api.exceptions import HttpError
-    from flext_api.lifecycle_manager import FlextApiLifecycleManager
-    from flext_api.models import FlextApiModels, m
-    from flext_api.protocol_impls import (
+    from flext_api import (
+        AsyncAPISchemaValidator,
         BaseProtocolImplementation,
+        FlextApi,
+        FlextApiAdapters,
+        FlextApiApp,
+        FlextApiClient,
+        FlextApiConstants,
+        FlextApiConstants as c,
+        FlextApiLifecycleManager,
+        FlextApiModels,
+        FlextApiProtocols,
+        FlextApiProtocols as p,
+        FlextApiServerFactory,
+        FlextApiSettings,
+        FlextApiSettingsManager,
+        FlextApiStorage,
+        FlextApiTypes,
+        FlextApiTypes as t,
+        FlextApiUtilities,
+        FlextApiUtilities as u,
         FlextWebClientImplementation,
         FlextWebProtocolPlugin,
+        HttpError,
+        JSONSchemaValidator,
+        OpenAPISchemaValidator,
         RFCProtocolImplementation,
         SSEProtocolPlugin,
         StorageBackendImplementation,
         WebSocketProtocolPlugin,
+        __version__,
+        __version_info__,
+        m,
     )
-    from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
-    from flext_api.schemas import (
-        AsyncAPISchemaValidator,
-        JSONSchemaValidator,
-        OpenAPISchemaValidator,
-    )
-    from flext_api.server_factory import FlextApiServerFactory
-    from flext_api.settings import FlextApiSettings
-    from flext_api.settings_manager import FlextApiSettingsManager
-    from flext_api.storage import FlextApiStorage
-    from flext_api.typings import FlextApiTypes, FlextApiTypes as t
-    from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
 
 # Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {

@@ -190,7 +190,7 @@ class MyApiConfig(FlextApiSettings):
 Type-safe models for HTTP requests and responses using Pydantic v2.
 
 ```python
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiModels
 from typing import Optional
 from pydantic import Field
 
@@ -227,7 +227,7 @@ async def create_user(request: UserCreateRequest):
 Standardized error responses across the API.
 
 ```python
-from flext_api.models import ErrorResponse
+from flext_api import ErrorResponse
 
 class ValidationErrorResponse(ErrorResponse):
     """Validation error response."""
@@ -257,7 +257,7 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
 Collection of HTTP-related utility functions.
 
 ```python
-from flext_api.utilities import FlextApiUtilities
+from flext_api import FlextApiUtilities
 
 # URL manipulation
 base_url = "https://api.example.com/v1"

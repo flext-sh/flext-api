@@ -19,9 +19,7 @@ from urllib.parse import ParseResult, urlparse
 from flext_core import FlextModels
 from pydantic import BeforeValidator, Field, computed_field
 
-from flext_api.constants import c
-from flext_api.typings import t
-from flext_api.utilities import u
+from flext_api import c, t, u
 
 
 def _normalize_request_body(v: t.ApiJsonValue) -> t.Api.RequestBody:

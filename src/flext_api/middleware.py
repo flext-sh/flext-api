@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
-from flext_api.models import m
+from flext_api import m
 
 
 class FlextApiMiddleware:

@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from flext_api.protocols import p
+from flext_api import p
 
 
 class FlextApiLifecycleManager:

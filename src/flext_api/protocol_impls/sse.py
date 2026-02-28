@@ -14,9 +14,8 @@ import httpx
 from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api.constants import FlextApiConstants
+from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-from flext_api.typings import t
 
 try:
     from httpx_sse import connect_sse

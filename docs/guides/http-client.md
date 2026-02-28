@@ -566,7 +566,7 @@ result = retry_client.get("/data")
 ```python
 import pytest
 from flext_api import FlextApiClient
-from flext_api.testing import FlextApiTestClient
+from flext_api import FlextApiTestClient
 
 class TestUserAPI:
     def setup_method(self):

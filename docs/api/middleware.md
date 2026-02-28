@@ -32,7 +32,7 @@ This section covers the HTTP middleware and handler system for request/response 
 Base class for implementing HTTP middleware with FLEXT patterns.
 
 ```python
-from flext_api.middleware import FlextApiMiddleware
+from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -94,7 +94,7 @@ app.add_middleware(middleware)
 Chain multiple middleware components for complex request processing.
 
 ```python
-from flext_api.middleware import MiddlewarePipeline
+from flext_api import MiddlewarePipeline
 
 # Create middleware pipeline
 pipeline = MiddlewarePipeline()
@@ -126,7 +126,7 @@ async def handle_request(request):
 Middleware for handling user authentication and authorization.
 
 ```python
-from flext_api.middleware import AuthenticationMiddleware
+from flext_api import AuthenticationMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -199,7 +199,7 @@ app.add_middleware(auth_middleware)
 ### Authorization Decorator
 
 ```python
-from flext_api.middleware import require_roles, require_permissions
+from flext_api import require_roles, require_permissions
 
 # Role-based authorization
 @app.get("/REDACTED_LDAP_BIND_PASSWORD/users")
@@ -226,7 +226,7 @@ async def delete_user(
 Middleware for preprocessing incoming requests.
 
 ```python
-from flext_api.middleware import RequestMiddleware
+from flext_api import RequestMiddleware
 
 class RequestValidationMiddleware(RequestMiddleware):
     """Validate and sanitize incoming requests."""
@@ -269,7 +269,7 @@ class RequestValidationMiddleware(RequestMiddleware):
 Middleware for postprocessing outgoing responses.
 
 ```python
-from flext_api.middleware import ResponseMiddleware
+from flext_api import ResponseMiddleware
 
 class ResponseFormattingMiddleware(ResponseMiddleware):
     """Format and enhance response data."""
@@ -303,8 +303,8 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
 Middleware for centralized error handling and response formatting.
 
 ```python
-from flext_api.middleware import ErrorHandlingMiddleware
-from flext_api.models import m
+from flext_api import ErrorHandlingMiddleware
+from flext_api import m
 
 class FlextApiErrorHandler(ErrorHandlingMiddleware):
     """Centralized error handling with FLEXT patterns."""
@@ -361,7 +361,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
 Middleware for monitoring request performance and metrics.
 
 ```python
-from flext_api.middleware import PerformanceMonitoringMiddleware
+from flext_api import PerformanceMonitoringMiddleware
 
 class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
     """Monitor request performance and timing."""
@@ -412,7 +412,7 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 ### Complete Middleware Stack
 
 ```python
-from flext_api.middleware import (
+from flext_api import (
     MiddlewarePipeline,
     LoggingMiddleware,
     AuthenticationMiddleware,
@@ -438,7 +438,7 @@ app.middleware("http")(middleware_pipeline.process_request)
 ### Custom Middleware Implementation
 
 ```python
-from flext_api.middleware import FlextApiMiddleware
+from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants

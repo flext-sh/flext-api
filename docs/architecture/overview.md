@@ -180,7 +180,7 @@ Protocol Layer
 FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
-from flext_api.protocols import ProtocolRegistry
+from flext_api import ProtocolRegistry
 
 # Register protocols
 registry = ProtocolRegistry()
@@ -482,7 +482,7 @@ Caching Strategy
 ### Cache Configuration
 
 ```python
-from flext_api.storage import FlextApiCache
+from flext_api import FlextApiCache
 
 # Redis cache configuration
 redis_cache = FlextApiCache(
@@ -550,7 +550,7 @@ Security Layer
 ### Security Middleware
 
 ```python
-from flext_api.middleware import SecurityMiddleware
+from flext_api import SecurityMiddleware
 
 class ComprehensiveSecurityMiddleware(SecurityMiddleware):
     """Comprehensive security middleware."""
@@ -641,7 +641,7 @@ Performance Layer
 ### Performance Monitoring
 
 ```python
-from flext_api.middleware import PerformanceMonitoringMiddleware
+from flext_api import PerformanceMonitoringMiddleware
 
 class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
     """Detailed performance monitoring."""
@@ -811,7 +811,7 @@ spec:
 ### Adding New Protocols
 
 ```python
-from flext_api.protocols import BaseProtocol
+from flext_api import BaseProtocol
 
 class CustomProtocol(BaseProtocol):
     """Custom protocol implementation."""
@@ -833,7 +833,7 @@ registry.register("custom", CustomProtocol)
 ### Custom Middleware
 
 ```python
-from flext_api.middleware import FlextApiMiddleware
+from flext_api import FlextApiMiddleware
 
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""

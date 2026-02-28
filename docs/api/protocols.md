@@ -478,7 +478,7 @@ print(f"GraphQL user: {user_graphql['name']}")
 ### Protocol Plugin System
 
 ```python
-from flext_api.protocols import ProtocolRegistry
+from flext_api import ProtocolRegistry
 from flext_api.protocol_impls.http import FlextWebProtocol
 from flext_api.protocol_impls.graphql import GraphQLProtocol
 

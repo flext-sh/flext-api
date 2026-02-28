@@ -18,7 +18,7 @@ from flext_core import FlextSettings
 from pydantic import BeforeValidator, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flext_api.constants import c
+from flext_api import c
 
 
 def _validate_headers(v: Mapping[str, str]) -> Mapping[str, str]:

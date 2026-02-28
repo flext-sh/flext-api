@@ -23,8 +23,7 @@ from typing import override
 import yaml
 from flext_core import r
 
-from flext_api.plugins import FlextApiPlugins
-from flext_api.typings import t as t_api
+from flext_api import FlextApiPlugins, t as t_api
 
 
 class JSONSchemaValidator(FlextApiPlugins.Schema):

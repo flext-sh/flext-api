@@ -32,9 +32,7 @@ from flext_core import (
 )
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api.constants import c
-from flext_api.protocols import p
-from flext_api.typings import t
+from flext_api import c, p, t
 
 
 class FlextApiServer(FlextService[bool], x.Validation):

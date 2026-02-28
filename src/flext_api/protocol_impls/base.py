@@ -14,7 +14,7 @@ from collections.abc import Mapping
 
 from flext_core import FlextLogger, r
 
-from flext_api.typings import t
+from flext_api import t
 
 
 class BaseProtocolImplementation:

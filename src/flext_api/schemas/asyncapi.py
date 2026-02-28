@@ -25,8 +25,7 @@ import yaml
 from flext_core import r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from flext_api.plugins import FlextApiPlugins
-from flext_api.typings import t
+from flext_api import FlextApiPlugins, t
 
 
 class AsyncAPISchemaValidator(FlextApiPlugins.Schema):

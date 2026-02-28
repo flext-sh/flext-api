@@ -12,11 +12,10 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core.result import FlextResult
-from flext_web.protocols import FlextWebProtocols
+from flext_core import FlextResult
+from flext_web import FlextWebProtocols
 
-from flext_api.constants import FlextApiConstants
-from flext_api.typings import t
+from flext_api import FlextApiConstants, t
 
 
 class FlextApiProtocols(FlextWebProtocols):
@@ -32,7 +31,7 @@ class FlextApiProtocols(FlextWebProtocols):
 
     **Usage:**
     ```python
-    from flext_api.protocols import p
+    from flext_api import p
 
     # Access API protocols via .Api namespace
     client: p.Api.Client.HttpClientProtocol
@@ -294,7 +293,9 @@ class FlextApiProtocols(FlextWebProtocols):
                 when flext-grpc is integrated.
                 """
 
-                def get_request_schema(self, method: str) -> FlextResult[t.Api.JsonObject]:
+                def get_request_schema(
+                    self, method: str
+                ) -> FlextResult[t.Api.JsonObject]:
                     """Get request schema for method.
 
                     Args:
@@ -306,7 +307,9 @@ class FlextApiProtocols(FlextWebProtocols):
                     """
                     ...
 
-                def get_response_schema(self, method: str) -> FlextResult[t.Api.JsonObject]:
+                def get_response_schema(
+                    self, method: str
+                ) -> FlextResult[t.Api.JsonObject]:
                     """Get response schema for method.
 
                     Args:
