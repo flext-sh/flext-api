@@ -17,13 +17,12 @@ import httpx
 from flext_core import r
 
 from flext_api.constants import c
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.protocols import p
 from flext_api.typings import t
 
 # Protocol reference for backward compatibility
 TransportPlugin = p.Api.Transport.TransportPlugin
-m = FlextApiModels
 
 
 class FlextApiTransports:

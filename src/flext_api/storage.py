@@ -29,7 +29,7 @@ from typing import Self
 from flext_core import FlextLogger, FlextRuntime, r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.typings import t
 
 
@@ -56,7 +56,7 @@ class FlextApiStorage:
     # Type annotations for dynamically-set fields
     _storage: dict[str, t.JsonValue]
     _expiry_times: dict[str, float]
-    _stats: FlextApiModels.Storage.Stats
+    _stats: m.Storage.Stats
     _operations_count: int
     _created_at: str
     _namespace: str
@@ -112,9 +112,7 @@ class FlextApiStorage:
         object.__setattr__(self, "_expiry_times", {})
 
         # Metrics using Pydantic model
-        object.__setattr__(
-            self, "_stats", FlextApiModels.Storage.Stats(namespace=self._namespace)
-        )
+        object.__setattr__(self, "_stats", m.Storage.Stats(namespace=self._namespace))
         object.__setattr__(self, "_operations_count", 0)
         object.__setattr__(self, "_created_at", u.Generators.generate_iso_timestamp())
 
@@ -380,7 +378,7 @@ class FlextApiStorage:
 
         # Use Pydantic model for metadata validation
         try:
-            metadata = FlextApiModels.Storage.Metadata(
+            metadata = m.Storage.Metadata(
                 value=value,
                 timestamp=u.Generators.generate_iso_timestamp(),
                 ttl=ttl_val,
@@ -409,7 +407,7 @@ class FlextApiStorage:
 
         self._operations_count += 1
         # Create new Stats instance with updated values (immutable pattern)
-        self._stats = FlextApiModels.Storage.Stats(
+        self._stats = m.Storage.Stats(
             total_operations=self._operations_count,
             cache_hits=self._stats.cache_hits,
             cache_misses=self._stats.cache_misses,
@@ -432,7 +430,7 @@ class FlextApiStorage:
         if key in self._storage:
             value = self._storage[key]
             # Create new Stats instance with updated values (immutable pattern)
-            self._stats = FlextApiModels.Storage.Stats(
+            self._stats = m.Storage.Stats(
                 total_operations=self._stats.total_operations,
                 cache_hits=self._stats.cache_hits + 1,
                 cache_misses=self._stats.cache_misses,
@@ -451,7 +449,7 @@ class FlextApiStorage:
                 return result
 
         # Create new Stats instance with updated values (immutable pattern)
-        self._stats = FlextApiModels.Storage.Stats(
+        self._stats = m.Storage.Stats(
             total_operations=self._stats.total_operations,
             cache_hits=self._stats.cache_hits,
             cache_misses=self._stats.cache_misses + 1,
@@ -489,7 +487,7 @@ class FlextApiStorage:
             except (ValueError, TypeError):
                 created_at_float = 0.0
 
-            metadata = FlextApiModels.Storage.Metadata(
+            metadata = m.Storage.Metadata(
                 value=data.get("value"),
                 timestamp=str(data.get("timestamp", "")),
                 ttl=ttl_int,
@@ -497,7 +495,7 @@ class FlextApiStorage:
             )
             if not metadata.is_expired():
                 # Create new Stats instance with updated values (immutable pattern)
-                self._stats = FlextApiModels.Storage.Stats(
+                self._stats = m.Storage.Stats(
                     total_operations=self._stats.total_operations,
                     cache_hits=self._stats.cache_hits + 1,
                     cache_misses=self._stats.cache_misses,
@@ -700,7 +698,7 @@ class FlextApiStorage:
             if self._stats.total_operations > 0:
                 hit_ratio = self._stats.cache_hits / self._stats.total_operations
 
-            self._stats = FlextApiModels.Storage.Stats(
+            self._stats = m.Storage.Stats(
                 total_operations=self._stats.total_operations,
                 cache_hits=self._stats.cache_hits,
                 cache_misses=self._stats.cache_misses,

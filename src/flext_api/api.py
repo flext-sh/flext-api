@@ -18,7 +18,7 @@ from pydantic import ConfigDict
 
 from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.settings import FlextApiSettings
 from flext_api.typings import t
 from flext_api.utilities import FlextApiUtilities
@@ -43,7 +43,7 @@ class FlextApi(s[FlextApiSettings]):
     """
 
     # Unified namespace - direct access to FLEXT components
-    Models: ClassVar = FlextApiModels
+    Models: ClassVar = m
 
     def __new__(cls, config: FlextApiSettings | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
@@ -112,8 +112,8 @@ class FlextApi(s[FlextApiSettings]):
 
     def request(
         self,
-        request: FlextApiModels.HttpRequest,
-    ) -> r[FlextApiModels.HttpResponse]:
+        request: m.HttpRequest,
+    ) -> r[m.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
         Args:
@@ -174,7 +174,7 @@ class FlextApi(s[FlextApiSettings]):
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
         timeout: float | None = None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """Generic HTTP method executor using monadic patterns - no fallbacks.
 
         Args:
@@ -199,7 +199,7 @@ class FlextApi(s[FlextApiSettings]):
             request_kwargs_dict,
         )
         if body_result.is_failure:
-            return r[FlextApiModels.HttpResponse].fail(
+            return r[m.HttpResponse].fail(
                 body_result.error or "Body extraction failed",
             )
 
@@ -209,7 +209,7 @@ class FlextApi(s[FlextApiSettings]):
             request_kwargs_dict,
         )
         if headers_result.is_failure:
-            return r[FlextApiModels.HttpResponse].fail(
+            return r[m.HttpResponse].fail(
                 headers_result.error or "Header extraction failed",
             )
 
@@ -221,14 +221,14 @@ class FlextApi(s[FlextApiSettings]):
             )
         )
         if timeout_result.is_failure:
-            return r[FlextApiModels.HttpResponse].fail(
+            return r[m.HttpResponse].fail(
                 timeout_result.error or "Timeout extraction failed",
             )
 
         # Extract query params
         query_params_result = self._extract_query_params(request_kwargs)
         if query_params_result.is_failure:
-            return r[FlextApiModels.HttpResponse].fail(
+            return r[m.HttpResponse].fail(
                 query_params_result.error or "Query params extraction failed",
             )
 
@@ -236,7 +236,7 @@ class FlextApi(s[FlextApiSettings]):
         body_final = body_result.value
 
         # Create request model
-        http_request = FlextApiModels.HttpRequest(
+        http_request = m.HttpRequest(
             method=method,
             url=url,
             body=body_final,
@@ -251,7 +251,7 @@ class FlextApi(s[FlextApiSettings]):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
             method=FlextApiConstants.Api.Method.GET,
@@ -266,7 +266,7 @@ class FlextApi(s[FlextApiSettings]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
             method=FlextApiConstants.Api.Method.POST,
@@ -282,7 +282,7 @@ class FlextApi(s[FlextApiSettings]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
             method=FlextApiConstants.Api.Method.PUT,
@@ -297,7 +297,7 @@ class FlextApi(s[FlextApiSettings]):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
             method=FlextApiConstants.Api.Method.DELETE,
@@ -312,7 +312,7 @@ class FlextApi(s[FlextApiSettings]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
             method=FlextApiConstants.Api.Method.PATCH,

@@ -15,7 +15,7 @@ from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.protocols import p
 from flext_api.typings import t
 
@@ -34,7 +34,7 @@ class _HttpClientRequestOptions(BaseModel):
 class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     """HTTP client implementation conforming to FlextWebClientProtocol."""
 
-    def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:
+    def __init__(self, client_config: m.ClientConfig) -> None:
         """Initialize HTTP client protocol implementation.
 
         Args:
@@ -74,9 +74,9 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     def _create_response_from_httpx(
         self,
         httpx_response: httpx.Response,
-    ) -> FlextApiModels.HttpResponse:
+    ) -> m.HttpResponse:
         """Convert httpx response to FlextApiModels.HttpResponse."""
-        return FlextApiModels.HttpResponse(
+        return m.HttpResponse(
             status_code=httpx_response.status_code,
             headers=dict(httpx_response.headers),
             body=httpx_response.content,
@@ -84,7 +84,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
 
     def _response_to_dict(
         self,
-        response: FlextApiModels.HttpResponse,
+        response: m.HttpResponse,
     ) -> t.Api.HttpResponseDict:
         """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
         return {

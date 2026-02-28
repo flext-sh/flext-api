@@ -15,7 +15,7 @@ from collections.abc import Mapping
 import cbor2
 from flext_core import r
 
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.serializers import FlextApiSerializers
 from flext_api.typings import t
 
@@ -32,8 +32,8 @@ class FlextApiAdapters:
 
         @staticmethod
         def adapt_http_request_to_websocket(
-            request: FlextApiModels.HttpRequest,
-        ) -> r[t.JsonObject | FlextApiModels.HttpRequest]:
+            request: m.HttpRequest,
+        ) -> r[t.JsonObject | m.HttpRequest]:
             """Convert HTTP request to WebSocket message format."""
             try:
                 # Convert body to string if bytes, otherwise use as-is
@@ -57,19 +57,19 @@ class FlextApiAdapters:
                     "body": body_value,
                 }
 
-                return r[t.JsonObject | FlextApiModels.HttpRequest].ok(
+                return r[t.JsonObject | m.HttpRequest].ok(
                     message,
                 )
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.JsonObject | FlextApiModels.HttpRequest].fail(
+                return r[t.JsonObject | m.HttpRequest].fail(
                     f"HTTP to WebSocket adaptation failed: {e}",
                 )
 
         @staticmethod
         def adapt_websocket_message_to_http_response(
             message: t.JsonObject,
-        ) -> r[FlextApiModels.HttpResponse]:
+        ) -> r[m.HttpResponse]:
             """Adapt WebSocket message to HTTP response.
 
             Uses Pydantic 2 model_validate() for dict-to-Model conversion.
@@ -93,15 +93,15 @@ class FlextApiAdapters:
                     response_body = body
                 else:
                     response_body = str(body) if body else None
-                response = FlextApiModels.HttpResponse(
+                response = m.HttpResponse(
                     status_code=status_code,
                     headers=headers,
                     body=response_body,
                 )
-                return r[FlextApiModels.HttpResponse].ok(response)
+                return r[m.HttpResponse].ok(response)
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[FlextApiModels.HttpResponse].fail(
+                return r[m.HttpResponse].fail(
                     f"WebSocket to HTTP adaptation failed: {e}",
                 )
 
@@ -174,9 +174,9 @@ class FlextApiAdapters:
 
         @staticmethod
         def transform_request_for_protocol(
-            request: FlextApiModels.HttpRequest,
+            request: m.HttpRequest,
             target_protocol: str,
-        ) -> r[t.JsonObject | FlextApiModels.HttpRequest]:
+        ) -> r[t.JsonObject | m.HttpRequest]:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
@@ -187,23 +187,23 @@ class FlextApiAdapters:
                     )
                     if result.is_success:
                         return result
-                    return r[t.JsonObject | FlextApiModels.HttpRequest].fail(
+                    return r[t.JsonObject | m.HttpRequest].fail(
                         result.error or "Adaptation failed",
                     )
-                return r[t.JsonObject | FlextApiModels.HttpRequest].ok(
+                return r[t.JsonObject | m.HttpRequest].ok(
                     request,
                 )
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.JsonObject | FlextApiModels.HttpRequest].fail(
+                return r[t.JsonObject | m.HttpRequest].fail(
                     f"Request transformation failed: {e}",
                 )
 
         @staticmethod
         def transform_response_for_protocol(
-            response: t.JsonObject | FlextApiModels.HttpResponse,
+            response: t.JsonObject | m.HttpResponse,
             source_protocol: str,
-        ) -> r[FlextApiModels.HttpResponse]:
+        ) -> r[m.HttpResponse]:
             """Transform response for specific protocol.
 
             Returns HttpResponse Model for all protocols - consistent return type.
@@ -211,19 +211,19 @@ class FlextApiAdapters:
             try:
                 if source_protocol == "websocket":
                     if not isinstance(response, Mapping):
-                        return r[FlextApiModels.HttpResponse].fail(
+                        return r[m.HttpResponse].fail(
                             "Invalid WebSocket response payload",
                         )
                     return FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
                         dict(response),
                     )
 
-                return r[FlextApiModels.HttpResponse].ok(
-                    FlextApiModels.HttpResponse.model_validate(response),
+                return r[m.HttpResponse].ok(
+                    m.HttpResponse.model_validate(response),
                 )
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[FlextApiModels.HttpResponse].fail(
+                return r[m.HttpResponse].fail(
                     f"Response transformation failed: {e}",
                 )
 

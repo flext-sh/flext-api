@@ -19,7 +19,7 @@ from flext_core import FlextRuntime, r, s
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.settings import FlextApiSettings
 from flext_api.typings import t
 
@@ -111,8 +111,8 @@ class FlextApiClient(s[FlextApiSettings]):
 
     def request(
         self,
-        request: FlextApiModels.HttpRequest,
-    ) -> r[FlextApiModels.HttpResponse]:
+        request: m.HttpRequest,
+    ) -> r[m.HttpResponse]:
         """Execute HTTP request from model using monadic patterns.
 
         Args:
@@ -125,13 +125,13 @@ class FlextApiClient(s[FlextApiSettings]):
         # Build URL and serialize body using monadic patterns
         url_result = self._build_url(request.url)
         if url_result.is_failure:
-            return r[FlextApiModels.HttpResponse].fail(
+            return r[m.HttpResponse].fail(
                 url_result.error or "URL validation failed",
             )
 
         body_result = self._serialize_body(request.body)
         if body_result.is_failure:
-            return r[FlextApiModels.HttpResponse].fail(
+            return r[m.HttpResponse].fail(
                 body_result.error or "Body serialization failed",
             )
 
@@ -144,10 +144,10 @@ class FlextApiClient(s[FlextApiSettings]):
 
     def _execute_http_request(
         self,
-        request: FlextApiModels.HttpRequest,
+        request: m.HttpRequest,
         url: str,
         serialized_body: bytes,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
             api_config = self._get_config()
@@ -181,12 +181,12 @@ class FlextApiClient(s[FlextApiSettings]):
                     )
 
             if response.status_code >= FlextApiConstants.Api.HTTP_ERROR_MIN:
-                return r[FlextApiModels.HttpResponse].fail(
+                return r[m.HttpResponse].fail(
                     f"HTTP {response.status_code}: {response.reason_phrase}",
                 )
 
             return self._deserialize_body(response).map(
-                lambda body: FlextApiModels.HttpResponse(
+                lambda body: m.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=body,
@@ -199,7 +199,7 @@ class FlextApiClient(s[FlextApiSettings]):
             httpx.HTTPError,
             ConnectionError,
         ) as exc:
-            return r[FlextApiModels.HttpResponse].fail(str(exc))
+            return r[m.HttpResponse].fail(str(exc))
 
     def _build_url(self, path: str) -> r[str]:
         """Build full URL from base_url and path."""

@@ -550,7 +550,7 @@ class FlextApiConstants(FlextConstants):
     # Always use full namespace: c.Api.DEFAULT_TIMEOUT, c.Api.HTTPRetry, etc.
 
 
-c = FlextApiConstants  # Runtime alias (not TypeAlias to avoid PYI042)
+c = FlextApiConstants
 
 __all__ = [
     "FlextApiConstants",

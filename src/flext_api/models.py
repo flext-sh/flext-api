@@ -581,7 +581,6 @@ class FlextApiModels(FlextModels):
                 namespace: str = "flext"
 
 
-# Runtime alias (m is already imported from flext_core, so this redefines it)
-# This is intentional - flext_api re-exports m
+m = FlextApiModels
 
-__all__ = ["FlextApiModels"]
+__all__ = ["FlextApiModels", "m"]

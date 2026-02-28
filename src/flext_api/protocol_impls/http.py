@@ -23,7 +23,7 @@ from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api.constants import c
-from flext_api.models import FlextApiModels
+from flext_api.models import m
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
 from flext_api.typings import t
@@ -123,26 +123,26 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def _build_http_request_from_dict(
         self,
         request: Mapping[str, t.GeneralValueType],
-    ) -> r[FlextApiModels.HttpRequest]:
+    ) -> r[m.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[FlextApiModels.HttpRequest].fail(
+            return r[m.HttpRequest].fail(
                 validation_result.error or "Request validation failed",
             )
 
         # Extract method using RFC method
         method_result = self._extract_method(request)
         if method_result.is_failure:
-            return r[FlextApiModels.HttpRequest].fail(
+            return r[m.HttpRequest].fail(
                 method_result.error or "Method extraction failed",
             )
 
         # Extract URL using RFC method
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[FlextApiModels.HttpRequest].fail(
+            return r[m.HttpRequest].fail(
                 url_result.error or "URL extraction failed",
             )
 
@@ -153,7 +153,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         body_value = self._extract_body(request)
         body = u.Api.RequestUtils.to_request_body(body_value)
 
-        http_request = FlextApiModels.HttpRequest(
+        http_request = m.HttpRequest(
             method=method_result.value,
             url=url_result.value,
             headers=dict(headers),
@@ -161,7 +161,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             timeout=self._extract_timeout(request),
         )
 
-        return r[FlextApiModels.HttpRequest].ok(http_request)
+        return r[m.HttpRequest].ok(http_request)
 
     def _to_general_value(self, value: t.GeneralValueType) -> t.GeneralValueType:
         match value:
@@ -321,7 +321,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         params: Mapping[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """Execute HTTP request with retry logic."""
         last_error = "Unknown error"
 
@@ -355,7 +355,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     attempt,
                     self._max_retries,
                 ):
-                    return r[FlextApiModels.HttpResponse].fail(
+                    return r[m.HttpResponse].fail(
                         f"HTTP {response.status_code}: {response.text}",
                     )
 
@@ -397,13 +397,13 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 backoff_time = self._retry_backoff_factor * (2**attempt)
                 time.sleep(backoff_time)
 
-        return r[FlextApiModels.HttpResponse].fail(
+        return r[m.HttpResponse].fail(
             f"Request failed after {self._max_retries + 1} attempts: {last_error}",
         )
 
     def _extract_headers_from_model(
         self,
-        request: FlextApiModels.HttpRequest,
+        request: m.HttpRequest,
     ) -> r[Mapping[str, str]]:
         """Extract headers from HttpRequest model without fallback."""
         return r[Mapping[str, str]].ok(dict(request.headers))
@@ -412,21 +412,21 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self,
         httpx_response: httpx.Response,
         _method: str,
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> r[m.HttpResponse]:
         """Build FlextApiModels.HttpResponse from httpx.Response."""
         try:
             content = httpx_response.read()
 
-            response = FlextApiModels.HttpResponse(
+            response = m.HttpResponse(
                 status_code=httpx_response.status_code,
                 headers=dict(httpx_response.headers),
                 body=content,
             )
 
-            return r[FlextApiModels.HttpResponse].ok(response)
+            return r[m.HttpResponse].ok(response)
 
         except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
-            return r[FlextApiModels.HttpResponse].fail(f"Failed to build response: {e}")
+            return r[m.HttpResponse].fail(f"Failed to build response: {e}")
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -447,7 +447,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def stream_request(
         self,
-        request: FlextApiModels.HttpRequest,
+        request: m.HttpRequest,
         chunk_size: int = 8192,
     ) -> r[object]:
         """Send streaming HTTP request."""
