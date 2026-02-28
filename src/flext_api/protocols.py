@@ -12,13 +12,14 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, r
+from flext_core import r
+from flext_web.protocols import FlextWebProtocols
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import t
 
 
-class FlextApiProtocols(FlextProtocols):
+class FlextApiProtocols(FlextWebProtocols):
     """Single unified HTTP protocols class extending flext-core FlextProtocols.
 
     Contains all protocol definitions for HTTP operations organized under the .Api namespace.
