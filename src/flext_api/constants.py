@@ -20,8 +20,8 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal
 
-from flext_web import FlextWebConstants
 from flext_core import FlextConstants
+from flext_web import FlextWebConstants
 
 
 class FlextApiConstants(FlextWebConstants):

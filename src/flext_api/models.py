@@ -16,8 +16,8 @@ from collections.abc import Mapping
 from typing import Annotated, Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_web import FlextWebModels
 from flext_core import FlextModels
+from flext_web import FlextWebModels
 from pydantic import BeforeValidator, Field, computed_field
 
 from flext_api import c, t, u
