@@ -304,7 +304,7 @@ Middleware for centralized error handling and response formatting.
 
 ```python
 from flext_api.middleware import ErrorHandlingMiddleware
-from flext_api.models import ErrorResponse
+from flext_api.models import m
 
 class FlextApiErrorHandler(ErrorHandlingMiddleware):
     """Centralized error handling with FLEXT patterns."""
@@ -316,7 +316,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
         status_code = self.map_exception_to_status(exception)
 
         # Create error response
-        error_response = ErrorResponse(
+        error_response = m.Api.ErrorResponse(
             error_code=self.get_error_code(exception),
             message=str(exception),
             details=self.get_exception_details(exception),
