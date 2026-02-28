@@ -21,14 +21,11 @@ from flext_api.models import m
 from flext_api.protocols import p
 from flext_api.typings import t
 
-# Protocol reference for backward compatibility
-TransportPlugin = p.Api.Transport.TransportPlugin
-
 
 class FlextApiTransports:
     """FLEXT API transport implementations."""
 
-    class FlextWebTransport(TransportPlugin):
+    class FlextWebTransport(p.Api.Transport.TransportPlugin):
         """HTTP transport implementation using httpx."""
 
         def __init__(self) -> None:
@@ -186,5 +183,4 @@ class FlextApiTransports:
 
 __all__ = [
     "FlextApiTransports",
-    "TransportPlugin",
 ]
