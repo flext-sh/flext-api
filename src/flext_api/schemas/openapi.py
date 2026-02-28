@@ -58,6 +58,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
+            if not isinstance(value, str):
+                return r[str].fail(f"'{field_name}' field must be a string")
             parsed = self._StringField(value=value)
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
@@ -69,6 +71,10 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         field_name: str,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         try:
+            if not isinstance(value, Mapping):
+                return r[Mapping[str, t.GeneralValueType]].fail(
+                    f"'{field_name}' field must be a dictionary"
+                )
             parsed = self._DictField(value=value)
         except ValidationError:
             return r[Mapping[str, t.GeneralValueType]].fail(

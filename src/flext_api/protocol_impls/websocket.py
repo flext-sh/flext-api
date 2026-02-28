@@ -66,7 +66,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _auto_reconnect: bool
     _reconnect_max_attempts: int
     _reconnect_backoff_factor: float
-    _connection: t.GeneralValueType | None
+    _connection: object | None
     _connected: bool
     _url: str
     _headers: Mapping[str, str]
@@ -491,7 +491,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             self._headers = headers
 
             # Connect to WebSocket server
-            connection_obj = websockets.connect(
+            # Note: websockets.connect() returns a coroutine/context manager
+            # which is stored as GeneralValueType for compatibility
+            connection_obj: object = websockets.connect(
                 url,
                 extra_headers=headers,
                 ping_interval=self._ping_interval,

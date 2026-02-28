@@ -559,7 +559,7 @@ class FlextApiModels(FlextModels):
 
                 value: t.ApiJsonValue
                 timestamp: str
-                ttl: int | None = None
+                ttl: float | int | None = None
                 created_at: float = Field(default_factory=time.time)
 
                 def is_expired(self) -> bool:
@@ -579,6 +579,23 @@ class FlextApiModels(FlextModels):
                 storage_size: int = 0
                 memory_usage: int = 0
                 namespace: str = "flext"
+
+    # =========================================================================
+    # CLASS-LEVEL ALIASES FOR FLAT NAMESPACE ACCESS
+    # =========================================================================
+    # Expose nested Api models at root level for convenient access
+    HttpRequest = Api.HttpRequest
+    HttpResponse = Api.HttpResponse
+    ClientConfig = Api.ClientConfig
+    Url = Api.Url
+    PaginationInfo = Api.PaginationInfo
+    Error = Api.Error
+    QueryParams = Api.QueryParams
+    Headers = Api.Headers
+    HttpPagination = Api.HttpPagination
+    Storage = Api.Storage
+    create_config = Api.create_config
+    create_response = Api.create_response
 
 
 m = FlextApiModels

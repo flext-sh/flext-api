@@ -121,7 +121,15 @@ class FlextWebhookHandler(FlextService[bool]):
         # Set attributes directly (no PrivateAttr needed, compatible with FlextService)
         self._container = FlextContainer()
         self._flext_context = FlextContext()
-        self._dispatcher = FlextContainer.get_global().get("command_bus").unwrap()
+        dispatcher_result = FlextContainer.get_global().get("command_bus")
+        if dispatcher_result.is_failure:
+            msg = f"Failed to get command_bus: {dispatcher_result.error}"
+            raise RuntimeError(msg)
+        dispatcher = dispatcher_result.unwrap()
+        if not isinstance(dispatcher, p.CommandBus):
+            msg = f"command_bus is not a CommandBus: {type(dispatcher)}"
+            raise TypeError(msg)
+        self._dispatcher = dispatcher
 
         # Webhook configuration
         self._secret = secret

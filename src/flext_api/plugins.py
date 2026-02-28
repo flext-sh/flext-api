@@ -67,6 +67,10 @@ class FlextApiPlugins:
             """Check if plugin is initialized."""
             return self._initialized
 
+        def _protocol_name(self) -> str:
+            """Return protocol name for Registrable compliance."""
+            return f"plugin.{self.name}"
+
         def get_metadata(self) -> t.JsonObject:
             """Get plugin metadata."""
             return {

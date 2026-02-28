@@ -32,7 +32,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
             if value is None or isinstance(value, str | int | float | bool):
                 context[key] = value
                 continue
-            if isinstance(value, Mapping | Sequence):
+            if isinstance(value, (Mapping, Sequence)):
                 context[key] = FlextRuntime.normalize_to_general_value(value)
                 continue
             context[key] = str(value)

@@ -61,6 +61,8 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
+            if not isinstance(value, str):
+                return r[str].fail(f"'{field_name}' field must be a string")
             parsed = self._StringField(value=value)
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
@@ -68,6 +70,8 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_int_field(self, value: t.ApiJsonValue, field_name: str) -> r[int]:
         try:
+            if not isinstance(value, int):
+                return r[int].fail(f"'{field_name}' field must be an integer")
             parsed = self._IntField(value=value)
         except ValidationError:
             return r[int].fail(f"'{field_name}' field must be an integer")
@@ -79,6 +83,10 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         field_name: str,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         try:
+            if not isinstance(value, Mapping):
+                return r[Mapping[str, t.GeneralValueType]].fail(
+                    f"'{field_name}' field must be a dictionary"
+                )
             parsed = self._DictField(value=value)
         except ValidationError:
             return r[Mapping[str, t.GeneralValueType]].fail(
@@ -796,7 +804,11 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     def _normalize_json_object(self, value: Mapping[str, object]) -> t.JsonObject:
         normalized: t.JsonObject = {}
         for key, item in value.items():
-            normalized_value = self._to_general_value(item)
+            # Type narrowing: convert object to GeneralValueType
+            if isinstance(item, (str, int, float, bool, type(None), list, dict)):
+                normalized_value = self._to_general_value(item)
+            else:
+                normalized_value = str(item)
             match normalized_value:
                 case str() | int() | float() | bool() | None | list() | dict():
                     normalized[str(key)] = normalized_value
