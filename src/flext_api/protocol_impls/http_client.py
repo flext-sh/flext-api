@@ -204,7 +204,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+    def __exit__(self, exc_type: t.GeneralValueType, exc_val: t.GeneralValueType, exc_tb: t.GeneralValueType) -> None:
         """Exit context manager and close client."""
         self.close()
 

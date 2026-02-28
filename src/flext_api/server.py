@@ -97,7 +97,6 @@ class FlextApiServer(FlextService[bool], x.Validation):
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
 
-            # Convert options to JsonValue-compatible types
             options_json: dict[str, t.JsonValue] = {}
             for k, v in options.items():
                 match v:

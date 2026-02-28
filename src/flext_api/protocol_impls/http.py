@@ -517,7 +517,6 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def get_protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information."""
         base_info = super().get_protocol_info()
-        # Type narrowing: base_info is JsonObject, update with compatible values
         updated_info: t.JsonObject = {
             **base_info,
             "http2_enabled": self._http2,

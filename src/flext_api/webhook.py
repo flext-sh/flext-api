@@ -118,7 +118,6 @@ class FlextWebhookHandler(FlextService[bool]):
 
         # Initialize flext-core components
         # FlextContainer() returns singleton via __new__
-        # Set attributes directly (no PrivateAttr needed, compatible with FlextService)
         self._container = FlextContainer()
         self._flext_context = FlextContext()
         dispatcher_result = FlextContainer.get_global().get("command_bus")

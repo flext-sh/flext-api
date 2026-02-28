@@ -273,12 +273,9 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         # Convert dict[str, t.GeneralValueType] to JsonObject and dict[str, str] to WebHeaders
-        # JsonObject is dict[str, JsonValue] where JsonValue includes compatible types
         json_data: dict[str, t.GeneralValueType] | None = None
         if data is not None:
-            # Create new dict with compatible types
             # JsonValue is str | int | float | bool | None | Sequence[JsonValue] | Mapping[str, JsonValue]
-            # Most object values are compatible, but we need to filter/convert if needed
             json_data = {}
             for key, value in data.items():
                 json_data[key] = value

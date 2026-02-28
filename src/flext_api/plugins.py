@@ -288,7 +288,6 @@ class FlextApiPlugins:
             return r[bool].ok(value=True)
 
 
-# Note: Compatibility aliases removed - use FlextApiPlugins.* directly
 # Previous aliases (removed):
 # - BasePlugin -> FlextApiPlugins.Plugin
 # - ProtocolPlugin -> FlextApiPlugins.Protocol
