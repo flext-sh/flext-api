@@ -130,7 +130,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     def send_request(
         self,
         request: Mapping[str, t.ApiJsonValue],
-        **kwargs: object,
+        **kwargs: t.GeneralValueType,
     ) -> r[Mapping[str, t.ApiJsonValue]]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
@@ -347,10 +347,10 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     def _parse_sse_event(
         self,
         *,
-        event_id: object,
-        event_type: object,
-        data: object,
-        retry: object,
+        event_id: t.GeneralValueType,
+        event_type: t.GeneralValueType,
+        data: t.GeneralValueType,
+        retry: t.GeneralValueType,
     ) -> dict[str, t.GeneralValueType]:
         parsed_id = str(event_id) if event_id is not None else ""
         parsed_type = str(event_type) if event_type else "message"

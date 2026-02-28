@@ -77,7 +77,7 @@ class BaseProtocolImplementation:
         # Protocol state
         object.__setattr__(self, "_initialized", False)
 
-    def execute(self, **kwargs: object) -> r[bool]:
+    def execute(self, **kwargs: t.GeneralValueType) -> r[bool]:
         """Execute protocol - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
@@ -113,7 +113,7 @@ class BaseProtocolImplementation:
     def send_request(
         self,
         request: Mapping[str, t.GeneralValueType],
-        **kwargs: object,
+        **kwargs: t.GeneralValueType,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send request using this protocol.
 

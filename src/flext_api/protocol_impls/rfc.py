@@ -194,7 +194,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return normalized_headers
 
-    def _extract_body(self, request: Mapping[str, t.GeneralValueType]) -> object | None:
+    def _extract_body(self, request: Mapping[str, t.GeneralValueType]) -> t.GeneralValueType | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:

@@ -66,7 +66,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _auto_reconnect: bool
     _reconnect_max_attempts: int
     _reconnect_backoff_factor: float
-    _connection: object | None
+    _connection: t.GeneralValueType | None
     _connected: bool
     _url: str
     _headers: Mapping[str, str]
@@ -261,7 +261,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def send_request(
         self,
         request: Mapping[str, t.GeneralValueType],
-        **kwargs: object,
+        **kwargs: t.GeneralValueType,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send WebSocket request (connect and send message).
 

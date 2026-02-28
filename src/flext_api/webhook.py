@@ -79,7 +79,7 @@ class FlextWebhookHandler(FlextService[bool]):
     _retry_queue: deque[t.JsonObject]
 
     @staticmethod
-    def _to_json_value(value: object) -> t.JsonValue:
+    def _to_json_value(value: t.GeneralValueType) -> t.JsonValue:
         """Convert arbitrary object to JsonValue recursively."""
         if value is None or isinstance(value, str | int | float | bool):
             return value

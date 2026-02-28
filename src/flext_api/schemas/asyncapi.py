@@ -755,7 +755,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         self.logger.debug("AsyncAPI response validation completed")
         return r[bool].ok(value=True)
 
-    def _to_general_value(self, value: object) -> t.GeneralValueType:
+    def _to_general_value(self, value: t.GeneralValueType) -> t.GeneralValueType:
         match value:
             case str() | int() | float() | bool() | None:
                 return value

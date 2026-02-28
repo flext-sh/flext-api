@@ -192,7 +192,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def send_request(
         self,
         request: Mapping[str, t.GeneralValueType],
-        **_kwargs: object,
+        **_kwargs: t.GeneralValueType,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send HTTP request with retry logic and error handling."""
         request_general: dict[str, t.GeneralValueType] = {}
@@ -314,7 +314,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def _execute_with_retry(
         self,
-        connection: object,
+        connection: t.GeneralValueType,
         method: str,
         url: str,
         headers: Mapping[str, str],

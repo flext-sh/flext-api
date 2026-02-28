@@ -159,8 +159,6 @@ class FlextApiConstants(FlextConstants):
         """Terminal operation statuses."""
         type SuccessStatuses = Literal["success", "completed"]
         """Success operation statuses."""
-        type JsonCompatibleTypes = Literal["application/json", "text/plain"]
-        """Content types compatible with JSON serialization."""
 
         # ═══════════════════════════════════════════════════════════════════
         # IMMUTABLE COLLECTIONS: frozenset for O(1) validation

@@ -83,7 +83,7 @@ class FlextApiUtilities(FlextUtilities):
             """Annotated type factories."""
 
             @staticmethod
-            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> object:
+            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> t.GeneralValueType:
                 """Create Annotated type with automatic enum coercion."""
                 return Annotated[
                     enum_cls,
@@ -94,7 +94,7 @@ class FlextApiUtilities(FlextUtilities):
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
-            def to_json_value(value: object) -> t.JsonValue:
+            def to_json_value(value: t.GeneralValueType) -> t.JsonValue:
                 """Normalize arbitrary value to JsonValue."""
                 if value is None or isinstance(value, str | int | float | bool):
                     return value
@@ -115,7 +115,7 @@ class FlextApiUtilities(FlextUtilities):
                 return str(value)
 
             @staticmethod
-            def to_request_body(value: object) -> t.Api.RequestBody:
+            def to_request_body(value: t.GeneralValueType) -> t.Api.RequestBody:
                 """Convert arbitrary value to RequestBody-compatible payload."""
                 if isinstance(value, str | bytes):
                     return value
@@ -300,7 +300,7 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def extract_pagination_config(
-            config: object,
+            config: t.GeneralValueType,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Extract pagination configuration from config object.
 
@@ -457,7 +457,7 @@ class FlextApiUtilities(FlextUtilities):
                 return r.fail(f"Invalid URL: {e}")
 
         @staticmethod
-        def is_valid_port_number(port: object) -> TypeIs[int]:
+        def is_valid_port_number(port: t.GeneralValueType) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False
