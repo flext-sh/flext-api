@@ -21,7 +21,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_api import FlextApiConstants, FlextApiSettings, m, t
 
 # HTTP status codes
-_RESPONSE_BODY_ADAPTER = TypeAdapter(t.Api.ResponseBody)
+_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(t.Api.ResponseBody)
 
 
 class FlextApiClient(s[FlextApiSettings]):

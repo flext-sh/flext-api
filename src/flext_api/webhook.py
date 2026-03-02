@@ -33,7 +33,6 @@ from flext_core import (
     FlextService,
     p,
     r,
-    u,
 )
 
 from flext_api import t
@@ -199,7 +198,7 @@ class FlextWebhookHandler(FlextService[bool]):
                 payload_str = payload
 
             event_data = json.loads(payload_str)
-            if not u.is_dict_like(event_data):
+            if not isinstance(event_data, dict):
                 return r[t.JsonObject].fail("Payload must be a JSON object")
             json_object: t.JsonObject = {}
             for key, value in event_data.items():

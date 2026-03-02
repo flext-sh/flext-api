@@ -55,7 +55,7 @@ class FlextApiStorage:
     # Type annotations for dynamically-set fields
     _storage: dict[str, t.JsonValue]
     _expiry_times: dict[str, float]
-    _stats: m.Storage.Stats
+    _stats: m.Api.Storage.Stats
     _operations_count: int
     _created_at: str
     _namespace: str
@@ -70,12 +70,12 @@ class FlextApiStorage:
         match normalized:
             case None | str() | int() | float() | bool():
                 return normalized
-        if u.is_dict_like(normalized):
+        if isinstance(normalized, dict):
             converted: t.JsonObject = {}
             for key, item in normalized.items():
                 converted[str(key)] = FlextApiStorage._to_json_value(item)
             return converted
-        if u.is_list_like(normalized):
+        if isinstance(normalized, (list, tuple)):
             return [FlextApiStorage._to_json_value(item) for item in normalized]
         return str(normalized)
 
@@ -186,7 +186,7 @@ class FlextApiStorage:
         """Normalize config object to dictionary."""
         if config_obj is None:
             return {}
-        if u.is_dict_like(config_obj):
+        if isinstance(config_obj, dict):
             normalized: t.Api.StorageDict = {}
             for key, value in config_obj.items():
                 key_str = str(key)
@@ -472,7 +472,7 @@ class FlextApiStorage:
         data = self._storage[namespaced_key]
         try:
             # Validate using Pydantic model
-            if not u.is_dict_like(data):
+            if not isinstance(data, dict):
                 return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
 
             # Cast to expected types for Pydantic model construction

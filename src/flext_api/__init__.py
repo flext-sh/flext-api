@@ -144,6 +144,7 @@ if TYPE_CHECKING:
     from flext_api.exceptions import HttpError
     from flext_api.lifecycle_manager import FlextApiLifecycleManager
     from flext_api.models import FlextApiModels, FlextApiModels as m
+    from flext_api.plugins import FlextApiPlugins
     from flext_api.protocol_impls import (
         BaseProtocolImplementation,
         FlextWebClientImplementation,
@@ -183,6 +184,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "FlextApiLifecycleManager",
     ),
     "FlextApiModels": ("flext_api.models", "FlextApiModels"),
+    "FlextApiPlugins": ("flext_api.plugins", "FlextApiPlugins"),
     "FlextApiProtocols": ("flext_api.protocols", "FlextApiProtocols"),
     "FlextApiServerFactory": ("flext_api.server_factory", "FlextApiServerFactory"),
     "FlextApiSettings": ("flext_api.settings", "FlextApiSettings"),
@@ -236,6 +238,7 @@ __all__ = [
     "FlextApiConstants",
     "FlextApiLifecycleManager",
     "FlextApiModels",
+    "FlextApiPlugins",
     "FlextApiProtocols",
     "FlextApiServerFactory",
     "FlextApiSettings",

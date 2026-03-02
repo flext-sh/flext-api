@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Annotated, TypeIs
+from typing import Annotated, TypeAlias, TypeIs
 from urllib.parse import urlparse
 
 from flext_core import FlextUtilities, r
@@ -84,7 +84,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Annotated type factories."""
 
             @staticmethod
-            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> t.GeneralValueType:
+            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> TypeAlias:
                 """Create Annotated type with automatic enum coercion."""
                 return Annotated[
                     enum_cls,
@@ -161,7 +161,7 @@ class FlextApiUtilities(FlextWebUtilities):
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
                     headers_value = kwargs["headers"]
-                    if u.is_dict_like(headers_value):
+                    if isinstance(headers_value, dict):
                         merged.update({k: str(v) for k, v in headers_value.items()})
                 return r.ok(merged)
 

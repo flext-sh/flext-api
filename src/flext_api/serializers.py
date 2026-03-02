@@ -13,7 +13,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
 
-_MESSAGEPACK_RESULT_ADAPTER = TypeAdapter(
+_MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[str | int | float | bool | Mapping[str, object] | list[object] | None] = TypeAdapter(
     str | int | float | bool | Mapping[str, object] | list[object] | None,
 )
 
