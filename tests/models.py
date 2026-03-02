@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import FlextTestsModels
+
 
 class TestsFlextApiModels(FlextTestsModels):
     """Test models for flextapi."""
