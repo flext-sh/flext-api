@@ -80,7 +80,7 @@ class FlextWebhookHandler(FlextService[bool]):
     @staticmethod
     def _to_json_value(value: t.ContainerValue) -> t.JsonValue:
         """Convert arbitrary object to JsonValue recursively."""
-        if value is None or isinstance(value, t.JsonPrimitive):
+        if value is None or isinstance(value, str | int | float | bool):
             return value
         if isinstance(value, Mapping):
             converted: t.JsonObject = {}

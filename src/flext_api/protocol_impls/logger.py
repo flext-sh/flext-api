@@ -28,7 +28,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.ContainerValue] = {}
         for key, value in kwargs.items():
-            if value is None or isinstance(value, t.JsonPrimitive):
+            if value is None or isinstance(value, str | int | float | bool):
                 context[key] = value
                 continue
             if isinstance(value, (Mapping, Sequence)):
