@@ -14,9 +14,9 @@ from pydantic import TypeAdapter, ValidationError
 from flext_api import t
 
 _MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
-    t.JsonPrimitive | Mapping[str, object] | list[object] | None
+    t.Scalar | Mapping[str, object] | list[object] | None
 ] = TypeAdapter(
-    t.JsonPrimitive | Mapping[str, object] | list[object] | None,
+    t.Scalar | Mapping[str, object] | list[object] | None,
 )
 
 
@@ -39,7 +39,7 @@ class FlextApiSerializers:
         def packb(
             obj: Mapping[
                 str,
-                t.JsonPrimitive | Sequence[object] | Mapping[str, object] | None,
+                t.Scalar | Sequence[object] | Mapping[str, object] | None,
             ]
             | t.ApiJsonValue,
         ) -> bytes:
@@ -67,7 +67,7 @@ class FlextApiSerializers:
         @staticmethod
         def unpackb(
             data: bytes,
-        ) -> t.JsonPrimitive | Mapping[str, object] | list[object] | None:
+        ) -> t.Scalar | Mapping[str, object] | list[object] | None:
             """Type-safe wrapper for msgpack.unpackb().
 
             Args:
