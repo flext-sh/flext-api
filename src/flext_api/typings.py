@@ -127,9 +127,7 @@ class FlextApiTypes(FlextWebTypes):
         # =========================================================================
 
         type AuthConfig = Mapping[str, str | dict[str, FlextTypes.ContainerValue]]
-        type AuthCredentials = Mapping[
-            str, str | dict[str, FlextTypes.ContainerValue]
-        ]
+        type AuthCredentials = Mapping[str, str | dict[str, FlextTypes.ContainerValue]]
         type AuthTokenData = Mapping[str, FlextTypes.JsonValue | int | bool]
         type SecurityConfig = Mapping[
             str,
