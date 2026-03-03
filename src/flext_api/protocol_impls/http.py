@@ -33,13 +33,13 @@ class _HttpRequestCallArgs(BaseModel):
     url: str
     headers: dict[str, str] = Field(default_factory=dict)
     params: dict[str, str] | None = None
-    json_body: t.GeneralValueType | None = Field(default=None, alias="json")
+    json_body: t.ContainerValue | None = Field(default=None, alias="json")
     content: str | bytes | None = None
     timeout: float | None = None
 
 
 class _MappingBodyModel(BaseModel):
-    body: dict[str, t.GeneralValueType]
+    body: dict[str, t.ContainerValue]
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):
@@ -118,7 +118,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def _build_http_request_from_dict(
         self,
-        request: Mapping[str, t.GeneralValueType],
+        request: Mapping[str, t.ContainerValue],
     ) -> r[m.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         # Validate request using base class method
@@ -159,12 +159,12 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         return r[m.HttpRequest].ok(http_request)
 
-    def _to_general_value(self, value: t.GeneralValueType) -> t.GeneralValueType:
+    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
         match value:
             case str() | int() | float() | bool() | None:
                 return value
             case list() as items:
-                normalized_items: list[t.GeneralValueType] = []
+                normalized_items: list[t.ContainerValue] = []
                 for item in items:
                     match item:
                         case str() | int() | float() | bool() | None | list() | dict():
@@ -173,7 +173,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                             normalized_items.append(str(item))
                 return normalized_items
             case dict() as mapping:
-                normalized_mapping: dict[str, t.GeneralValueType] = {}
+                normalized_mapping: dict[str, t.ContainerValue] = {}
                 for key, item in mapping.items():
                     match item:
                         case str() | int() | float() | bool() | None | list() | dict():
@@ -187,18 +187,18 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     @override
     def send_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
-        **_kwargs: t.GeneralValueType,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        request: Mapping[str, t.ContainerValue],
+        **_kwargs: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Send HTTP request with retry logic and error handling."""
-        request_general: dict[str, t.GeneralValueType] = {}
+        request_general: dict[str, t.ContainerValue] = {}
         for key, value in request.items():
             request_general[key] = self._to_general_value(value)
 
         # Build HTTP request model
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 request_result.error or "Request building failed",
             )
 
@@ -209,7 +209,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
@@ -310,7 +310,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def _execute_with_retry(
         self,
-        connection: t.GeneralValueType,
+        connection: t.ContainerValue,
         method: str,
         url: str,
         headers: Mapping[str, str],

@@ -95,9 +95,9 @@ class FlextApiUtilities(FlextWebUtilities):
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
-            def to_json_value(value: t.GeneralValueType) -> t.JsonValue:
+            def to_json_value(value: t.ContainerValue) -> t.JsonValue:
                 """Normalize arbitrary value to JsonValue."""
-                if value is None or isinstance(value, str | int | float | bool):
+                if value is None or isinstance(value, t.JsonPrimitive):
                     return value
                 if isinstance(value, Mapping):
                     converted: t.JsonObject = {}
@@ -116,7 +116,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 return str(value)
 
             @staticmethod
-            def to_request_body(value: t.GeneralValueType) -> t.Api.RequestBody:
+            def to_request_body(value: t.ContainerValue) -> t.Api.RequestBody:
                 """Convert arbitrary value to RequestBody-compatible payload."""
                 if isinstance(value, str | bytes):
                     return value
@@ -301,7 +301,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def extract_pagination_config(
-            config: t.GeneralValueType,
+            config: t.ContainerValue,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Extract pagination configuration from config object.
 
@@ -458,7 +458,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r.fail(f"Invalid URL: {e}")
 
         @staticmethod
-        def is_valid_port_number(port: t.GeneralValueType) -> TypeIs[int]:
+        def is_valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False

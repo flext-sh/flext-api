@@ -22,9 +22,9 @@ class _HttpClientRequestOptions(BaseModel):
 
     headers: dict[str, str] = Field(default_factory=dict)
     params: dict[str, str] | None = None
-    json_data: t.GeneralValueType | None = Field(default=None, alias="json")
+    json_data: t.ContainerValue | None = Field(default=None, alias="json")
     content: str | bytes | None = None
-    data: dict[str, t.GeneralValueType] | None = None
+    data: dict[str, t.ContainerValue] | None = None
     timeout: float | None = None
 
 
@@ -93,7 +93,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
 
     def _build_request_options(
         self,
-        kwargs: Mapping[str, t.GeneralValueType],
+        kwargs: Mapping[str, t.ContainerValue],
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
@@ -155,7 +155,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         self,
         method: str,
         url: str,
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
@@ -218,7 +218,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     def get(
         self,
         url: str,
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP GET request."""
         return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
@@ -227,7 +227,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     def post(
         self,
         url: str,
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP POST request."""
         return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
@@ -236,7 +236,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     def put(
         self,
         url: str,
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP PUT request."""
         return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
@@ -245,7 +245,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     def delete(
         self,
         url: str,
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP DELETE request."""
         return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)

@@ -55,7 +55,7 @@ class BaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: t.GeneralValueType,
+        **_kwargs: t.ContainerValue,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -77,7 +77,7 @@ class BaseProtocolImplementation:
         # Protocol state
         object.__setattr__(self, "_initialized", False)
 
-    def execute(self, **kwargs: t.GeneralValueType) -> r[bool]:
+    def execute(self, **kwargs: t.ContainerValue) -> r[bool]:
         """Execute protocol - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
@@ -112,9 +112,9 @@ class BaseProtocolImplementation:
 
     def send_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
-        **kwargs: t.GeneralValueType,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        request: Mapping[str, t.ContainerValue],
+        **kwargs: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -131,7 +131,7 @@ class BaseProtocolImplementation:
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return r[Mapping[str, t.GeneralValueType]].fail(
+        return r[t.ConfigurationMapping].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -177,8 +177,8 @@ class BaseProtocolImplementation:
 
     def _validate_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        request: Mapping[str, t.ContainerValue],
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate request dictionary.
 
         Args:
@@ -189,9 +189,9 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[Mapping[str, t.GeneralValueType]].fail("Request cannot be empty")
+            return r[t.ConfigurationMapping].fail("Request cannot be empty")
 
-        return r[Mapping[str, t.GeneralValueType]].ok(request)
+        return r[t.ConfigurationMapping].ok(request)
 
     def _build_error_response(
         self,

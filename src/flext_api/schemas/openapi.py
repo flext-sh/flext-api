@@ -53,7 +53,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     class _DictField(BaseModel):
         model_config = ConfigDict(extra="ignore")
 
-        value: dict[str, t.GeneralValueType]
+        value: dict[str, t.ContainerValue]
 
     def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
@@ -68,18 +68,18 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self,
         value: t.ApiJsonValue,
         field_name: str,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.ContainerValue]]:
         try:
             if not isinstance(value, Mapping):
-                return r[Mapping[str, t.GeneralValueType]].fail(
+                return r[t.ConfigurationMapping].fail(
                     f"'{field_name}' field must be a dictionary",
                 )
             parsed = self._DictField(value=value)
         except ValidationError:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 f"'{field_name}' field must be a dictionary",
             )
-        return r[Mapping[str, t.GeneralValueType]].ok(parsed.value)
+        return r[t.ConfigurationMapping].ok(parsed.value)
 
     def __init__(
         self,
@@ -108,7 +108,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self._validate_responses = validate_responses
 
         # Cached schemas
-        self._cached_schemas: Mapping[str, Mapping[str, t.GeneralValueType]] = {}
+        self._cached_schemas: Mapping[str, Mapping[str, t.ContainerValue]] = {}
 
     def _validate_openapi_version(
         self,
@@ -361,7 +361,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_operation(
         self,
-        operation: Mapping[str, t.GeneralValueType],
+        operation: Mapping[str, t.ContainerValue],
         path: str,
         method: str,
     ) -> r[bool]:
@@ -394,7 +394,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_components(
         self,
-        components: Mapping[str, t.GeneralValueType],
+        components: Mapping[str, t.ContainerValue],
     ) -> r[bool]:
         """Validate OpenAPI components object.
 
@@ -432,20 +432,20 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_security_schemes_structure(
         self,
-        security_schemes: t.GeneralValueType,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        security_schemes: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic structure of security schemes."""
         schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
         if schemes_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 "Security schemes must be a dictionary",
             )
-        return r[Mapping[str, t.GeneralValueType]].ok(schemes_result.value)
+        return r[t.ConfigurationMapping].ok(schemes_result.value)
 
     def _validate_single_security_scheme(
         self,
         scheme_name: str,
-        scheme: t.GeneralValueType,
+        scheme: t.ContainerValue,
     ) -> r[bool]:
         """Validate a single security scheme."""
         scheme_result = self._parse_dict_field(scheme, "scheme")
@@ -478,7 +478,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def _validate_scheme_type_requirements(
         self,
         scheme_name: str,
-        scheme: Mapping[str, t.GeneralValueType],
+        scheme: Mapping[str, t.ContainerValue],
         scheme_type: str,
     ) -> r[bool]:
         """Validate type-specific requirements for security schemes."""
@@ -501,7 +501,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_security_schemes(
         self,
-        security_schemes: Mapping[str, t.GeneralValueType],
+        security_schemes: Mapping[str, t.ContainerValue],
     ) -> r[bool]:
         """Validate OpenAPI security schemes.
 
@@ -604,17 +604,17 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Implementation would validate response against OpenAPI response schemas
         return r[bool].ok(value=True)
 
-    def _to_general_value(self, value: t.GeneralValueType) -> t.GeneralValueType:
+    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
         match value:
             case str() | int() | float() | bool() | None:
                 return value
             case list() as values:
-                normalized_values: list[t.GeneralValueType] = [
+                normalized_values: list[t.ContainerValue] = [
                     self._to_general_value(item) for item in values
                 ]
                 return normalized_values
             case dict() as mapping:
-                normalized_mapping: dict[str, t.GeneralValueType] = {}
+                normalized_mapping: dict[str, t.ContainerValue] = {}
                 for key, item in mapping.items():
                     normalized_mapping[str(key)] = self._to_general_value(item)
                 return normalized_mapping
@@ -660,7 +660,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def load_schema(
         self,
         schema_source: str,
-    ) -> r[t.GeneralValueType]:
+    ) -> r[t.ContainerValue]:
         """Load OpenAPI schema from source.
 
         Args:
@@ -672,25 +672,25 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         """
         schema_result = self._load_schema_document(schema_source)
         if schema_result.is_failure:
-            return r[t.GeneralValueType].fail(
+            return r[t.ContainerValue].fail(
                 schema_result.error or "Failed to load OpenAPI schema",
             )
 
         loaded_schema = schema_result.value
         if not isinstance(loaded_schema, dict):
-            return r[t.GeneralValueType].fail(
+            return r[t.ContainerValue].fail(
                 "OpenAPI schema must be a JSON/YAML object",
             )
 
         normalized_schema = self._normalize_json_object(loaded_schema)
         validation_result = self.validate_schema(normalized_schema)
         if validation_result.is_failure:
-            return r[t.GeneralValueType].fail(
+            return r[t.ContainerValue].fail(
                 f"Invalid OpenAPI schema: {validation_result.error}",
             )
 
-        normalized_result: t.GeneralValueType = normalized_schema
-        return r[t.GeneralValueType].ok(normalized_result)
+        normalized_result: t.ContainerValue = normalized_schema
+        return r[t.ContainerValue].ok(normalized_result)
 
 
 __all__ = ["OpenAPISchemaValidator"]

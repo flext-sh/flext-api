@@ -34,7 +34,7 @@ class FlextApiPlugins:
 
         model_config = ConfigDict(arbitrary_types_allowed=True)
 
-        def __init__(self, **data: t.GeneralValueType) -> None:
+        def __init__(self, **data: t.ContainerValue) -> None:
             """Initialize plugin with metadata."""
             super().__init__(**data)
             self._logger = FlextLogger(f"{__name__}.{self.name}")
@@ -87,7 +87,7 @@ class FlextApiPlugins:
         def send_request(
             self,
             request: t.JsonObject,
-            **kwargs: t.GeneralValueType,
+            **kwargs: t.ContainerValue,
         ) -> r[t.JsonObject]:
             """Send request using this protocol."""
             ...
@@ -123,7 +123,7 @@ class FlextApiPlugins:
             ...
 
         @abstractmethod
-        def load_schema(self, schema_source: str) -> r[t.GeneralValueType]:
+        def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
             """Load schema from source."""
             ...
 
@@ -139,21 +139,21 @@ class FlextApiPlugins:
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
-        def connect(self, url: str, **options: t.GeneralValueType) -> r[bool]:
+        def connect(self, url: str, **options: t.ContainerValue) -> r[bool]:
             """Establish connection to endpoint."""
             ...
 
         @abstractmethod
-        def disconnect(self, connection: t.GeneralValueType) -> r[bool]:
+        def disconnect(self, connection: t.ContainerValue) -> r[bool]:
             """Close connection."""
             ...
 
         @abstractmethod
         def send(
             self,
-            connection: t.GeneralValueType,
+            connection: t.ContainerValue,
             data: t.JsonObject | str | bytes,
-            **options: t.GeneralValueType,
+            **options: t.ContainerValue,
         ) -> r[bool]:
             """Send data through connection."""
             ...
@@ -161,8 +161,8 @@ class FlextApiPlugins:
         @abstractmethod
         def receive(
             self,
-            connection: t.GeneralValueType,
-            **options: t.GeneralValueType,
+            connection: t.ContainerValue,
+            **options: t.ContainerValue,
         ) -> r[t.JsonObject | str | bytes]:
             """Receive data from connection."""
             ...

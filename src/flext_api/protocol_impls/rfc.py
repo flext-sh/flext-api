@@ -85,7 +85,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> None:
         """Initialize RFC protocol implementation.
 
@@ -126,7 +126,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
     class _StatusCodeValue(BaseModel):
         status_code: int = Field(ge=100, le=599)
 
-    def _extract_url(self, request: Mapping[str, t.GeneralValueType]) -> r[str]:
+    def _extract_url(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
 
         Args:
@@ -148,7 +148,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[str].fail("URL must be a string (RFC 7230)")
         return r[str].ok(parsed.url)
 
-    def _extract_method(self, request: Mapping[str, t.GeneralValueType]) -> r[str]:
+    def _extract_method(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
 
         Args:
@@ -169,7 +169,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _extract_headers(
         self,
-        request: Mapping[str, t.GeneralValueType],
+        request: Mapping[str, t.ContainerValue],
     ) -> Mapping[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
@@ -197,8 +197,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _extract_body(
         self,
-        request: Mapping[str, t.GeneralValueType],
-    ) -> t.GeneralValueType | None:
+        request: Mapping[str, t.ContainerValue],
+    ) -> t.ContainerValue | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:
@@ -213,7 +213,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return request["body"]
 
-    def _extract_timeout(self, request: Mapping[str, t.GeneralValueType]) -> float:
+    def _extract_timeout(self, request: Mapping[str, t.ContainerValue]) -> float:
         """Extract timeout from request with defaults.
 
         Args:
@@ -238,7 +238,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         error: str,
         status_code: int = 500,
         error_code: str | None = None,
-    ) -> Mapping[str, t.GeneralValueType]:
+    ) -> Mapping[str, t.ContainerValue]:
         """Build RFC-compliant error response (RFC 7231).
 
         Args:
@@ -251,7 +251,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         # Build error response manually
-        error_response: dict[str, t.GeneralValueType] = {
+        error_response: dict[str, t.ContainerValue] = {
             "error": error,
             "status_code": status_code,
         }
@@ -261,10 +261,10 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _build_rfc_success_response(
         self,
-        data: Mapping[str, t.GeneralValueType] | None = None,
+        data: Mapping[str, t.ContainerValue] | None = None,
         status_code: int = 200,
         headers: Mapping[str, str] | None = None,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -276,8 +276,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         FlextResult with RFC-compliant success response
 
         """
-        # Convert dict[str, t.GeneralValueType] to JsonObject and dict[str, str] to WebHeaders
-        json_data: dict[str, t.GeneralValueType] | None = None
+        # Convert dict[str, t.ContainerValue] to JsonObject and dict[str, str] to WebHeaders
+        json_data: dict[str, t.ContainerValue] | None = None
         if data is not None:
             # JsonValue is str | int | float | bool | None | Sequence[JsonValue] | Mapping[str, JsonValue]
             json_data = {}
@@ -290,14 +290,14 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             web_headers = dict(headers)
 
         # Build success response manually
-        success_response: dict[str, t.GeneralValueType] = {
+        success_response: dict[str, t.ContainerValue] = {
             "status_code": status_code,
         }
         if json_data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
-        return r[Mapping[str, t.GeneralValueType]].ok(success_response)
+        return r[t.ConfigurationMapping].ok(success_response)
 
     def _validate_status_code(self, status_code: int) -> r[int]:
         """Validate HTTP status code (RFC 7231).

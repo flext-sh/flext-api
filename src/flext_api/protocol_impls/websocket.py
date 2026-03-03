@@ -65,7 +65,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _auto_reconnect: bool
     _reconnect_max_attempts: int
     _reconnect_backoff_factor: float
-    _connection: t.GeneralValueType | None
+    _connection: t.ContainerValue | None
     _connected: bool
     _url: str
     _headers: Mapping[str, str]
@@ -217,7 +217,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self,
-        request: Mapping[str, t.GeneralValueType],
+        request: Mapping[str, t.ContainerValue],
         options: _SendRequestOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
@@ -241,7 +241,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Extract message type from kwargs."""
         return options.message_type
 
-    def _ensure_connected(self, request: Mapping[str, t.GeneralValueType]) -> r[bool]:
+    def _ensure_connected(self, request: Mapping[str, t.ContainerValue]) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
@@ -259,9 +259,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     @override
     def send_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
-        **kwargs: t.GeneralValueType,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        request: Mapping[str, t.ContainerValue],
+        **kwargs: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -278,12 +278,12 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[Mapping[str, t.GeneralValueType]].fail(str(details))
+            return r[t.ConfigurationMapping].fail(str(details))
 
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 message_result.error or "Message extraction failed",
             )
 
@@ -292,25 +292,25 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Connect if not connected
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
 
         # Send message
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 f"WebSocket send failed: {send_result.error}",
             )
 
         # Create response (WebSocket doesn't have traditional responses)
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
 
-        response: dict[str, t.GeneralValueType] = {
+        response: dict[str, t.ContainerValue] = {
             "status_code": FlextApiConstants.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
             "method": "WEBSOCKET",
@@ -318,7 +318,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "body": {"status": "message_sent", "message_type": message_type},
         }
 
-        return r[Mapping[str, t.GeneralValueType]].ok(response)
+        return r[t.ConfigurationMapping].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -491,7 +491,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             # Connect to WebSocket server
             # Note: websockets.connect() returns a coroutine/context manager
-            connection_obj: t.GeneralValueType = websockets.connect(
+            connection_obj: t.ContainerValue = websockets.connect(
                 url,
                 extra_headers=headers,
                 ping_interval=self._ping_interval,

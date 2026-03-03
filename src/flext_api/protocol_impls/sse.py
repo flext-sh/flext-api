@@ -128,13 +128,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     @override
     def send_request(
         self,
-        request: Mapping[str, t.GeneralValueType],
-        **kwargs: t.GeneralValueType,
-    ) -> r[Mapping[str, t.GeneralValueType]]:
+        request: Mapping[str, t.ContainerValue],
+        **kwargs: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 validation_result.error or "Request validation failed",
             )
 
@@ -142,11 +142,11 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             options = self._SendRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
-            return r[Mapping[str, t.GeneralValueType]].fail(str(details))
+            return r[t.ConfigurationMapping].fail(str(details))
 
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[Mapping[str, t.GeneralValueType]].fail(
+            return r[t.ConfigurationMapping].fail(
                 url_result.error or "URL extraction failed",
             )
 
@@ -174,7 +174,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             else self._retry_timeout
         )
 
-        events: list[dict[str, t.GeneralValueType]] = []
+        events: list[dict[str, t.ContainerValue]] = []
         retry_timeout_ms = base_retry_timeout
         attempts = 0
 
@@ -213,14 +213,14 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 self._notify_error_handlers(exc)
 
                 if not auto_reconnect or attempts >= max_attempts:
-                    return r[Mapping[str, t.GeneralValueType]].fail(
+                    return r[t.ConfigurationMapping].fail(
                         f"SSE stream failed: {exc}",
                     )
 
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
 
-        response: dict[str, t.GeneralValueType] = {
+        response: dict[str, t.ContainerValue] = {
             "status_code": 200,
             "url": url_result.value,
             "method": "SSE",
@@ -233,7 +233,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 "reconnect_attempts": attempts,
             },
         }
-        return r[Mapping[str, t.GeneralValueType]].ok(response)
+        return r[t.ConfigurationMapping].ok(response)
 
     def _consume_stream_once(
         self,
@@ -242,9 +242,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         method: str,
         headers: Mapping[str, str],
         remaining: int,
-    ) -> tuple[list[dict[str, t.GeneralValueType]], int | None]:
+    ) -> tuple[list[dict[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
-        events: list[dict[str, t.GeneralValueType]] = []
+        events: list[dict[str, t.ContainerValue]] = []
         retry_timeout: int | None = None
 
         self._set_connected_state(connected=True)
@@ -291,13 +291,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     def _iter_fallback_events(
         self,
         lines: Iterator[str],
-    ) -> Iterator[dict[str, t.GeneralValueType]]:
+    ) -> Iterator[dict[str, t.ContainerValue]]:
         event_id = ""
         event_type = ""
         data_lines: list[str] = []
         retry: int | None = None
 
-        def flush_event() -> dict[str, t.GeneralValueType] | None:
+        def flush_event() -> dict[str, t.ContainerValue] | None:
             if not event_id and not event_type and not data_lines and retry is None:
                 return None
             return self._parse_sse_event(
@@ -346,11 +346,11 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     def _parse_sse_event(
         self,
         *,
-        event_id: t.GeneralValueType,
-        event_type: t.GeneralValueType,
-        data: t.GeneralValueType,
-        retry: t.GeneralValueType,
-    ) -> dict[str, t.GeneralValueType]:
+        event_id: t.ContainerValue,
+        event_type: t.ContainerValue,
+        data: t.ContainerValue,
+        retry: t.ContainerValue,
+    ) -> dict[str, t.ContainerValue]:
         parsed_id = str(event_id) if event_id is not None else ""
         parsed_type = str(event_type) if event_type else "message"
         parsed_data = "" if data is None else str(data)
@@ -361,7 +361,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             except (TypeError, ValueError):
                 parsed_retry = None
 
-        event_payload: dict[str, t.GeneralValueType] = {
+        event_payload: dict[str, t.ContainerValue] = {
             "id": parsed_id,
             "event": parsed_type,
             "data": parsed_data,
@@ -372,14 +372,14 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_retry_timeout(
         self,
-        event: Mapping[str, t.GeneralValueType],
+        event: Mapping[str, t.ContainerValue],
     ) -> int | None:
         retry_value = event.get("retry")
         if isinstance(retry_value, int) and retry_value >= 0:
             return retry_value
         return None
 
-    def _record_event_id(self, event: Mapping[str, t.GeneralValueType]) -> None:
+    def _record_event_id(self, event: Mapping[str, t.ContainerValue]) -> None:
         event_id = event.get("id")
         if isinstance(event_id, str) and event_id:
             self.last_event_id = event_id
@@ -400,7 +400,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         self._connected = connected
         self.is_connected = connected
 
-    def _notify_event_handlers(self, event: Mapping[str, t.GeneralValueType]) -> None:
+    def _notify_event_handlers(self, event: Mapping[str, t.ContainerValue]) -> None:
         event_type_raw = event.get("event")
         event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
         handlers = [*self._on_event_handlers.get(event_type, [])]

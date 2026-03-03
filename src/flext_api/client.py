@@ -64,7 +64,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
         """
         # Type narrowing: convert kwargs to expected type
-        kwargs_typed: dict[str, t.GeneralValueType] = {
+        kwargs_typed: dict[str, t.ContainerValue] = {
             k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)

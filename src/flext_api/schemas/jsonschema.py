@@ -744,7 +744,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     def load_schema(
         self,
         schema_source: str,
-    ) -> r[t_api.GeneralValueType]:
+    ) -> r[t_api.ContainerValue]:
         """Load JSON Schema from source.
 
         Args:
@@ -756,7 +756,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         """
         schema_path = Path(schema_source)
         if not schema_path.exists() or not schema_path.is_file():
-            return r[t_api.GeneralValueType].fail(
+            return r[t_api.ContainerValue].fail(
                 f"Schema file not found: {schema_source}",
             )
 
@@ -767,21 +767,21 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     try:
                         loaded_schema = yaml.safe_load(schema_file)
                     except Exception as e:
-                        return r[t_api.GeneralValueType].fail(
+                        return r[t_api.ContainerValue].fail(
                             f"Failed to parse YAML schema: {e}",
                         )
                 else:
                     try:
                         loaded_schema = json.load(schema_file)
                     except json.JSONDecodeError as e:
-                        return r[t_api.GeneralValueType].fail(
+                        return r[t_api.ContainerValue].fail(
                             f"Failed to parse JSON schema: {e}",
                         )
         except OSError as e:
-            return r[t_api.GeneralValueType].fail(f"Failed to read schema file: {e}")
+            return r[t_api.ContainerValue].fail(f"Failed to read schema file: {e}")
 
         if not isinstance(loaded_schema, dict):
-            return r[t_api.GeneralValueType].fail(
+            return r[t_api.ContainerValue].fail(
                 "JSON schema file must contain a JSON/YAML object",
             )
 
@@ -795,12 +795,12 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         validation_result = self.validate_schema(schema_definition)
         if validation_result.is_failure:
-            return r[t_api.GeneralValueType].fail(
+            return r[t_api.ContainerValue].fail(
                 f"Invalid JSON schema: {validation_result.error}",
             )
 
-        schema_result: t_api.GeneralValueType = schema_definition
-        return r[t_api.GeneralValueType].ok(schema_result)
+        schema_result: t_api.ContainerValue = schema_definition
+        return r[t_api.ContainerValue].ok(schema_result)
 
 
 __all__ = ["JSONSchemaValidator"]

@@ -30,7 +30,7 @@ class FlextApiTransports:
             self._client: httpx.Client | None = None
 
         @override
-        def connect(self, url: str, **options: t.GeneralValueType) -> r[str]:
+        def connect(self, url: str, **options: t.ContainerValue) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
                 # Validate URL parameter
