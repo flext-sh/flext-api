@@ -16,7 +16,7 @@ from typing import Annotated
 
 from flext_core import FlextSettings
 from pydantic import BeforeValidator, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
 
 from flext_api import c
 
@@ -35,7 +35,7 @@ def _validate_headers(v: Mapping[str, str]) -> Mapping[str, str]:
 
 
 @FlextSettings.auto_register("api")
-class FlextApiSettings(BaseSettings):
+class FlextApiSettings(FlextSettings):
     """HTTP configuration using Pydantic v2.
 
     Pure configuration model with validation using c.
