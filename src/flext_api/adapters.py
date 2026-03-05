@@ -136,6 +136,16 @@ class FlextApiAdapters:
         """
 
         @staticmethod
+        def convert_json_to_cbor(data: t.JsonObject) -> r[bytes]:
+            """Convert JSON data to CBOR format."""
+            try:
+                packed: bytes = cbor2.dumps(data)
+                return r[bytes].ok(packed)
+
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+                return r[bytes].fail(f"JSON to CBOR conversion failed: {e}")
+
+        @staticmethod
         def convert_json_to_messagepack(
             data: t.JsonObject,
         ) -> r[bytes]:
@@ -150,16 +160,6 @@ class FlextApiAdapters:
 
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
-
-        @staticmethod
-        def convert_json_to_cbor(data: t.JsonObject) -> r[bytes]:
-            """Convert JSON data to CBOR format."""
-            try:
-                packed: bytes = cbor2.dumps(data)
-                return r[bytes].ok(packed)
-
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[bytes].fail(f"JSON to CBOR conversion failed: {e}")
 
     class RequestTransformer:
         """Request/response transformation following SOLID principles.

@@ -95,6 +95,41 @@ class FlextApiUtilities(FlextWebUtilities):
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
+            def extract_body_from_kwargs(
+                data: t.Api.RequestBody | None,
+                kwargs: Mapping[str, t.ApiJsonValue] | None,
+            ) -> r[t.Api.RequestBody]:
+                """Extract body from data or kwargs - returns empty dict if no body found."""
+                if data is not None:
+                    return r[t.Api.RequestBody].ok(data)
+                if kwargs is not None and "data" in kwargs:
+                    raw_data = kwargs["data"]
+                    return r[t.Api.RequestBody].ok(
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data),
+                    )
+                if kwargs is not None and "json" in kwargs:
+                    raw_json = kwargs["json"]
+                    return r[t.Api.RequestBody].ok(
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json),
+                    )
+                return r[t.Api.RequestBody].ok({})
+
+            @staticmethod
+            def merge_headers(
+                headers: Mapping[str, str] | None,
+                kwargs: Mapping[str, t.ApiJsonValue] | None,
+            ) -> r[Mapping[str, str]]:
+                """Merge headers from headers dict and kwargs."""
+                merged: dict[str, str] = {}
+                if headers:
+                    merged.update(headers)
+                if kwargs and "headers" in kwargs:
+                    headers_value = kwargs["headers"]
+                    if isinstance(headers_value, dict):
+                        merged.update({k: str(v) for k, v in headers_value.items()})
+                return r.ok(merged)
+
+            @staticmethod
             def to_json_value(value: t.ContainerValue) -> t.JsonValue:
                 """Normalize arbitrary value to JsonValue."""
                 if value is None or isinstance(value, str | int | float | bool):
@@ -129,41 +164,6 @@ class FlextApiUtilities(FlextWebUtilities):
                         )
                     return normalized
                 return str(value)
-
-            @staticmethod
-            def extract_body_from_kwargs(
-                data: t.Api.RequestBody | None,
-                kwargs: Mapping[str, t.ApiJsonValue] | None,
-            ) -> r[t.Api.RequestBody]:
-                """Extract body from data or kwargs - returns empty dict if no body found."""
-                if data is not None:
-                    return r[t.Api.RequestBody].ok(data)
-                if kwargs is not None and "data" in kwargs:
-                    raw_data = kwargs["data"]
-                    return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data),
-                    )
-                if kwargs is not None and "json" in kwargs:
-                    raw_json = kwargs["json"]
-                    return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json),
-                    )
-                return r[t.Api.RequestBody].ok({})
-
-            @staticmethod
-            def merge_headers(
-                headers: Mapping[str, str] | None,
-                kwargs: Mapping[str, t.ApiJsonValue] | None,
-            ) -> r[Mapping[str, str]]:
-                """Merge headers from headers dict and kwargs."""
-                merged: dict[str, str] = {}
-                if headers:
-                    merged.update(headers)
-                if kwargs and "headers" in kwargs:
-                    headers_value = kwargs["headers"]
-                    if isinstance(headers_value, dict):
-                        merged.update({k: str(v) for k, v in headers_value.items()})
-                return r.ok(merged)
 
             @staticmethod
             def validate_and_extract_timeout(
@@ -210,23 +210,20 @@ class FlextApiUtilities(FlextWebUtilities):
         """Response builder for API responses."""
 
         @staticmethod
-        def build_success_response(
-            data: t.ApiJsonValue = None,
-            message: str = "Success",
-            status_code: int = 200,
-            headers: Mapping[str, str] | None = None,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
-            """Build success response with optional data and message."""
-            response: dict[str, t.ApiJsonValue] = {
-                "status": "success",
-                "data": data,
-                "message": message,
-                "status_code": status_code,
-                "timestamp": datetime.now(tz=UTC).isoformat(),
+        def build_error_response(
+            message: str,
+            status_code: int = 400,
+            error_code: str | None = None,
+        ) -> Mapping[str, t.ApiJsonValue]:
+            """Build error response - returns plain dict."""
+            return {
+                "success": False,
+                "error": {
+                    "message": message,
+                    "status_code": status_code,
+                    "code": error_code,
+                },
             }
-            if headers:
-                response["headers"] = headers
-            return r.ok(response)
 
         @staticmethod
         def build_error_result(
@@ -247,20 +244,23 @@ class FlextApiUtilities(FlextWebUtilities):
             return r.ok(response)
 
         @staticmethod
-        def build_error_response(
-            message: str,
-            status_code: int = 400,
-            error_code: str | None = None,
-        ) -> Mapping[str, t.ApiJsonValue]:
-            """Build error response - returns plain dict."""
-            return {
-                "success": False,
-                "error": {
-                    "message": message,
-                    "status_code": status_code,
-                    "code": error_code,
-                },
+        def build_success_response(
+            data: t.ApiJsonValue = None,
+            message: str = "Success",
+            status_code: int = 200,
+            headers: Mapping[str, str] | None = None,
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
+            """Build success response with optional data and message."""
+            response: dict[str, t.ApiJsonValue] = {
+                "status": "success",
+                "data": data,
+                "message": message,
+                "status_code": status_code,
+                "timestamp": datetime.now(tz=UTC).isoformat(),
             }
+            if headers:
+                response["headers"] = headers
+            return r.ok(response)
 
     # ═══════════════════════════════════════════════════════════════════
     # PAGINATION BUILDER: Nested inside FlextApiUtilities
@@ -268,6 +268,48 @@ class FlextApiUtilities(FlextWebUtilities):
 
     class PaginationBuilder:
         """Pagination builder for paginated responses."""
+
+        @staticmethod
+        def build_paginated_response(
+            data: list[t.ApiJsonValue],
+            page: int,
+            page_size: int,
+            total: int | None = None,
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
+            """Build paginated response."""
+            if page < 1:
+                return r.fail("Page must be >= 1")
+            if page_size < 1:
+                return r.fail("Page size must be >= 1")
+
+            total_items = total if total is not None else len(data)
+            total_pages = (
+                (total_items + page_size - 1) // page_size if page_size > 0 else 0
+            )
+
+            return r.ok({
+                "success": True,
+                "data": data,
+                "pagination": {
+                    "page": page,
+                    "page_size": page_size,
+                    "total": total_items,
+                    "total_pages": total_pages,
+                },
+            })
+
+        @staticmethod
+        def build_pagination_response(
+            pagination_data: Mapping[str, t.ApiJsonValue],
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
+            """Build full pagination response from pagination data dict."""
+            if "data" not in pagination_data:
+                return r.fail("pagination_data must contain 'data' key")
+
+            return r.ok({
+                "success": True,
+                "pagination": pagination_data,
+            })
 
         @staticmethod
         def extract_page_params(
@@ -323,25 +365,6 @@ class FlextApiUtilities(FlextWebUtilities):
             return result
 
         @staticmethod
-        def validate_pagination_params(
-            page: int,
-            page_size: int,
-            max_page_size: int = 1000,
-        ) -> r[tuple[int, int]]:
-            """Validate pagination parameters.
-
-            Returns tuple of (page, page_size) if valid.
-            """
-            if page < 1:
-                return r.fail("Page must be >= 1")
-            if page_size < 1:
-                return r.fail("Page size must be >= 1")
-            if page_size > max_page_size:
-                return r.fail(f"Page size cannot exceed {max_page_size}")
-
-            return r.ok((page, page_size))
-
-        @staticmethod
         def prepare_pagination_data(
             data: list[t.ApiJsonValue],
             total: int,
@@ -374,46 +397,23 @@ class FlextApiUtilities(FlextWebUtilities):
             })
 
         @staticmethod
-        def build_pagination_response(
-            pagination_data: Mapping[str, t.ApiJsonValue],
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
-            """Build full pagination response from pagination data dict."""
-            if "data" not in pagination_data:
-                return r.fail("pagination_data must contain 'data' key")
-
-            return r.ok({
-                "success": True,
-                "pagination": pagination_data,
-            })
-
-        @staticmethod
-        def build_paginated_response(
-            data: list[t.ApiJsonValue],
+        def validate_pagination_params(
             page: int,
             page_size: int,
-            total: int | None = None,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
-            """Build paginated response."""
+            max_page_size: int = 1000,
+        ) -> r[tuple[int, int]]:
+            """Validate pagination parameters.
+
+            Returns tuple of (page, page_size) if valid.
+            """
             if page < 1:
                 return r.fail("Page must be >= 1")
             if page_size < 1:
                 return r.fail("Page size must be >= 1")
+            if page_size > max_page_size:
+                return r.fail(f"Page size cannot exceed {max_page_size}")
 
-            total_items = total if total is not None else len(data)
-            total_pages = (
-                (total_items + page_size - 1) // page_size if page_size > 0 else 0
-            )
-
-            return r.ok({
-                "success": True,
-                "data": data,
-                "pagination": {
-                    "page": page,
-                    "page_size": page_size,
-                    "total": total_items,
-                    "total_pages": total_pages,
-                },
-            })
+            return r.ok((page, page_size))
 
     # ═══════════════════════════════════════════════════════════════════
     # WEB VALIDATOR: Nested inside FlextApiUtilities
@@ -421,6 +421,22 @@ class FlextApiUtilities(FlextWebUtilities):
 
     class FlextWebValidator:
         """Web validation utilities for URLs and HTTP methods."""
+
+        @staticmethod
+        def is_valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
+            """Check if port is a valid port number (TypeIs for precise narrowing)."""
+            if not isinstance(port, int):
+                return False
+            return 1 <= port <= MAX_PORT
+
+        @staticmethod
+        def normalize_url(url: str) -> str:
+            """Normalize URL by adding https:// if no scheme."""
+            if not url:
+                return ""
+            if not url.startswith(("http://", "https://")):
+                return f"https://{url}"
+            return url
 
         @staticmethod
         def validate_hostname(host: str) -> r[str]:
@@ -436,6 +452,18 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r.fail("Invalid hostname format")
 
             return r.ok(host)
+
+        @staticmethod
+        def validate_http_method(method: str) -> bool:
+            """Validate HTTP method."""
+            return method.upper() in VALID_HTTP_METHODS
+
+        @staticmethod
+        def validate_port_number(port: int) -> r[int]:
+            """Validate port number range."""
+            if port < 1 or port > MAX_PORT:
+                return r.fail(f"Port must be between 1 and {MAX_PORT}")
+            return r.ok(port)
 
         @staticmethod
         def validate_url(url: str) -> r[str]:
@@ -456,34 +484,6 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r.ok(url)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r.fail(f"Invalid URL: {e}")
-
-        @staticmethod
-        def is_valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
-            """Check if port is a valid port number (TypeIs for precise narrowing)."""
-            if not isinstance(port, int):
-                return False
-            return 1 <= port <= MAX_PORT
-
-        @staticmethod
-        def validate_port_number(port: int) -> r[int]:
-            """Validate port number range."""
-            if port < 1 or port > MAX_PORT:
-                return r.fail(f"Port must be between 1 and {MAX_PORT}")
-            return r.ok(port)
-
-        @staticmethod
-        def validate_http_method(method: str) -> bool:
-            """Validate HTTP method."""
-            return method.upper() in VALID_HTTP_METHODS
-
-        @staticmethod
-        def normalize_url(url: str) -> str:
-            """Normalize URL by adding https:// if no scheme."""
-            if not url:
-                return ""
-            if not url.startswith(("http://", "https://")):
-                return f"https://{url}"
-            return url
 
 
 # Short alias for runtime access

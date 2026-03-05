@@ -71,41 +71,6 @@ class FlextApiTransports:
             ) as e:
                 return r[bool].fail(f"HTTP disconnect failed: {e}")
 
-        def _extract_request_params(
-            self,
-            data: t.Api.RequestConfig | t.Api.RequestBody,
-            *,
-            connection_url: str,
-        ) -> r[m.HttpRequest]:
-            """Extract and validate request parameters from data."""
-            try:
-                match data:
-                    case dict() as payload:
-                        request_model = m.HttpRequest.model_validate(payload)
-                    case str() as body_text:
-                        request_model = m.HttpRequest(
-                            method=c.Api.Method.GET,
-                            url=connection_url,
-                            body=body_text,
-                        )
-                    case bytes() as body_bytes:
-                        request_model = m.HttpRequest(
-                            method=c.Api.Method.GET,
-                            url=connection_url,
-                            body=body_bytes,
-                        )
-                    case _:
-                        return r[m.HttpRequest].fail("Unsupported request payload type")
-                return r[m.HttpRequest].ok(request_model)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as e:
-                return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
-
         @override
         def send(
             self,
@@ -176,6 +141,41 @@ class FlextApiTransports:
                 ConnectionError,
             ) as e:
                 return r[t.Api.HttpResponseDict | str].fail(f"HTTP send failed: {e}")
+
+        def _extract_request_params(
+            self,
+            data: t.Api.RequestConfig | t.Api.RequestBody,
+            *,
+            connection_url: str,
+        ) -> r[m.HttpRequest]:
+            """Extract and validate request parameters from data."""
+            try:
+                match data:
+                    case dict() as payload:
+                        request_model = m.HttpRequest.model_validate(payload)
+                    case str() as body_text:
+                        request_model = m.HttpRequest(
+                            method=c.Api.Method.GET,
+                            url=connection_url,
+                            body=body_text,
+                        )
+                    case bytes() as body_bytes:
+                        request_model = m.HttpRequest(
+                            method=c.Api.Method.GET,
+                            url=connection_url,
+                            body=body_bytes,
+                        )
+                    case _:
+                        return r[m.HttpRequest].fail("Unsupported request payload type")
+                return r[m.HttpRequest].ok(request_model)
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
+                return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
 
 __all__ = [

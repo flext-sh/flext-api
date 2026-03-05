@@ -101,165 +101,201 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             "regex",
         ]
 
-    def _validate_schema_basic_structure(
+    def get_supported_schemas(self) -> list[str]:
+        """Get list of supported schema types.
+
+        Returns:
+        List of supported schema type identifiers
+
+        """
+        return ["json-schema", "jsonschema", "json"]
+
+    @override
+    def load_schema(
         self,
-        schema: t_api.JsonObject,
-    ) -> r[t_api.Api.SchemaDefinition]:
-        """Validate basic schema structure."""
-        # Validate all values are JsonValue types
-        schema_dict: t_api.Api.SchemaDefinition = {}
-        for key, value in schema.items():
-            match (key, value):
-                case (
-                    str() as key_str,
-                    str() | int() | float() | bool() | None | list() | dict(),
-                ):
-                    schema_dict[key_str] = self._to_general_value(value)
-                case _:
-                    continue
-        return r[t_api.Api.SchemaDefinition].ok(schema_dict)
+        schema_source: str,
+    ) -> r[t_api.ContainerValue]:
+        """Load JSON Schema from source.
 
-    def _to_general_value(self, value: t_api.ApiJsonValue) -> t_api.ApiJsonValue:
-        """Coerce JSON-like values recursively."""
-        if value is None:
-            return None
-        if isinstance(value, list):
-            normalized_items: list[t_api.ApiJsonValue] = []
-            for item in value:
-                if _is_api_json_value(item):
-                    normalized_items.append(self._to_general_value(item))
-                else:
-                    normalized_items.append(str(item))
-            return normalized_items
-        if isinstance(value, Mapping):
-            normalized_map: dict[str, t_api.ApiJsonValue] = {}
-            for key, item in value.items():
-                if _is_api_json_value(item):
-                    normalized_map[str(key)] = self._to_general_value(item)
-                else:
-                    normalized_map[str(key)] = str(item)
-            return normalized_map
-        if isinstance(value, (str, int, float, bool)):
-            return value
-        return str(value)
+        Args:
+        schema_source: Schema file path
 
-    def _validate_schema_uri_field(
-        self,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate $schema URI field if present."""
-        if "$schema" not in schema:
-            return r[bool].ok(value=True)
-        schema_uri = schema["$schema"]
-        match schema_uri:
-            case str() as schema_uri_str:
-                draft_result = self._validate_schema_uri(schema_uri_str)
-            case _:
-                return r[bool].fail("$schema must be a string")
-        if draft_result.is_failure:
-            return r[bool].fail(draft_result.error or "Schema URI validation failed")
-        return r[bool].ok(value=True)
+        Returns:
+        FlextResult containing loaded schema or error
 
-    def _validate_schema_type_field(
-        self,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate type field if present."""
-        if "type" not in schema:
-            return r[bool].ok(value=True)
-        type_result = self._validate_type_field(schema["type"])
-        if type_result.is_failure:
-            return r[bool].fail(f"Invalid type field: {type_result.error}")
-        return r[bool].ok(value=True)
+        """
+        schema_path = Path(schema_source)
+        if not schema_path.exists() or not schema_path.is_file():
+            return r[t_api.ContainerValue].fail(
+                f"Schema file not found: {schema_source}",
+            )
 
-    def _validate_schema_properties(
-        self,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate properties field and nested schemas."""
-        if "properties" not in schema:
-            return r[bool].ok(value=True)
-        properties_field = schema["properties"]
-        match properties_field:
-            case dict() as properties_dict:
-                pass
-            case _:
-                return r[bool].fail("Properties must be a dictionary")
-
-        # Recursively validate property schemas
-        for prop_name, prop_schema in properties_dict.items():
-            match prop_schema:
-                case dict() as prop_schema_dict:
-                    prop_result = self.validate_schema(prop_schema_dict)
-                    if prop_result.is_failure:
-                        return r[bool].fail(
-                            f"Invalid property schema '{prop_name}': {prop_result.error}",
+        suffix = schema_path.suffix.lower()
+        try:
+            with schema_path.open("r", encoding="utf-8") as schema_file:
+                if suffix in {".yaml", ".yml"}:
+                    try:
+                        loaded_schema = yaml.safe_load(schema_file)
+                    except Exception as e:
+                        return r[t_api.ContainerValue].fail(
+                            f"Failed to parse YAML schema: {e}",
                         )
-                case _:
-                    continue
-        return r[bool].ok(value=True)
+                else:
+                    try:
+                        loaded_schema = json.load(schema_file)
+                    except json.JSONDecodeError as e:
+                        return r[t_api.ContainerValue].fail(
+                            f"Failed to parse JSON schema: {e}",
+                        )
+        except OSError as e:
+            return r[t_api.ContainerValue].fail(f"Failed to read schema file: {e}")
 
-    def _validate_schema_items(self, schema: t_api.Api.SchemaDefinition) -> r[bool]:
-        """Validate items field for arrays."""
-        if "items" not in schema:
-            return r[bool].ok(value=True)
-        items = schema["items"]
-        match items:
-            case dict() as items_schema:
-                items_result = self.validate_schema(items_schema)
-                if items_result.is_failure:
-                    return r[bool].fail(f"Invalid items schema: {items_result.error}")
-            case list() as item_schemas:
-                for i, item_schema in enumerate(item_schemas):
-                    match item_schema:
-                        case dict() as item_schema_typed:
-                            item_result = self.validate_schema(item_schema_typed)
-                            if item_result.is_failure:
-                                return r[bool].fail(
-                                    f"Invalid items[{i}] schema: {item_result.error}",
-                                )
-                        case _:
-                            continue
-            case _:
-                return r[bool].ok(value=True)
-        return r[bool].ok(value=True)
+        if not _is_object_mapping(loaded_schema):
+            return r[t_api.ContainerValue].fail(
+                "JSON schema file must contain a JSON/YAML object",
+            )
 
-    def _validate_schema_required(
+        schema_definition: t_api.Api.SchemaDefinition = {}
+        for key, value in loaded_schema.items():
+            if _is_api_json_value(value):
+                schema_definition[str(key)] = self._to_general_value(value)
+            else:
+                schema_definition[str(key)] = str(value)
+
+        validation_result = self.validate_schema(schema_definition)
+        if validation_result.is_failure:
+            return r[t_api.ContainerValue].fail(
+                f"Invalid JSON schema: {validation_result.error}",
+            )
+
+        schema_result: t_api.ContainerValue = schema_definition
+        return r[t_api.ContainerValue].ok(schema_result)
+
+    def supports_schema(self, schema_type: str) -> bool:
+        """Check if this validator supports the given schema type.
+
+        Args:
+        schema_type: Schema type identifier
+
+        Returns:
+        True if schema type is supported
+
+        """
+        return schema_type.lower() in {"json-schema", "jsonschema", "json"}
+
+    def validate_instance(
         self,
+        instance: t_api.ApiJsonValue,
         schema: t_api.Api.SchemaDefinition,
+    ) -> r[t_api.Api.SchemaDefinition]:
+        """Validate instance against JSON Schema.
+
+        Args:
+        instance: Instance to validate
+        schema: JSON Schema to validate against
+
+        Returns:
+        FlextResult containing validation result or error
+
+        """
+        # Validate schema first
+        schema_validation = self._validate_instance_schema(schema)
+        if schema_validation.is_failure:
+            return r[t_api.Api.SchemaDefinition].fail(
+                schema_validation.error or "Schema basic structure validation failed",
+            )
+
+        # Run all validations
+        validations = [
+            self._validate_type_in_schema(instance, schema),
+            self._validate_required_properties(instance, schema),
+            self._validate_object_properties(instance, schema),
+            self._validate_array_items(instance, schema),
+        ]
+
+        for validation_result in validations:
+            if validation_result.is_failure:
+                return r[t_api.Api.SchemaDefinition].fail(
+                    validation_result.error or "Schema validation failed",
+                )
+
+        return r[t_api.Api.SchemaDefinition].ok({
+            "valid": True,
+            "type": type(instance).__name__,
+        })
+
+    @override
+    def validate_request(
+        self,
+        request: t_api.JsonObject,
+        schema: t_api.JsonObject,
     ) -> r[bool]:
-        """Validate required field."""
-        if "required" not in schema:
-            return r[bool].ok(value=True)
-        required_field = schema["required"]
-        match required_field:
-            case list() as required_items:
-                for req in required_items:
-                    match req:
-                        case str():
-                            continue
-                        case _:
-                            return r[bool].fail("Required items must be strings")
-            case _:
-                return r[bool].fail("Required must be an array")
+        """Validate request against JSON Schema.
+
+        Args:
+        request: Request to validate
+        schema: JSON Schema
+
+        Returns:
+        FlextResult containing validation result or error
+
+        """
+        # Convert schema to SchemaDefinition for validation
+        schema_def: t_api.Api.SchemaDefinition = {}
+        for k, v in schema.items():
+            schema_def[k] = self._to_general_value(v)
+
+        # Validate the schema first
+        schema_result = self.validate_schema(schema_def)
+        if schema_result.is_failure:
+            return r[bool].fail(f"Invalid schema: {schema_result.error}")
+
+        # Validate request body against JSON Schema
+        # Convert JsonObject to dict[str, JsonValue] for instance validation
+        request_typed: t_api.JsonObject = {}
+        for k, v in request.items():
+            request_typed[k] = self._to_general_value(v)
+        instance_result = self.validate_instance(request_typed, schema_def)
+        if instance_result.is_failure:
+            return r[bool].fail(instance_result.error or "Schema validation failed")
+
         return r[bool].ok(value=True)
 
-    def _validate_schema_format(
+    @override
+    def validate_response(
         self,
-        schema: t_api.Api.SchemaDefinition,
+        response: t_api.JsonObject,
+        schema: t_api.JsonObject,
     ) -> r[bool]:
-        """Validate format field if present."""
-        if "format" not in schema or not self._validate_formats:
-            return r[bool].ok(value=True)
-        format_value = schema["format"]
-        match format_value:
-            case str() as format_text:
-                pass
-            case _:
-                return r[bool].fail("Format must be a string")
+        """Validate response against JSON Schema.
 
-        if format_text not in self._supported_formats and self._strict_mode:
-            return r[bool].fail(f"Unsupported format: {format_text}")
+        Args:
+        response: Response to validate
+        schema: JSON Schema
+
+        Returns:
+        FlextResult containing validation result or error
+
+        """
+        # Convert schema to SchemaDefinition for validation
+        schema_def: t_api.Api.SchemaDefinition = {}
+        for k, v in schema.items():
+            schema_def[k] = self._to_general_value(v)
+
+        # Validate the schema first
+        schema_result = self.validate_schema(schema_def)
+        if schema_result.is_failure:
+            return r[bool].fail(f"Invalid schema: {schema_result.error}")
+
+        # Validate response body against JSON Schema
+        # Convert JsonObject to dict[str, JsonValue] for instance validation
+        response_typed: t_api.JsonObject = {}
+        for k, v in response.items():
+            response_typed[k] = self._to_general_value(v)
+        instance_result = self.validate_instance(response_typed, schema_def)
+        if instance_result.is_failure:
+            return r[bool].fail(instance_result.error or "Schema validation failed")
+
         return r[bool].ok(value=True)
 
     def validate_schema(
@@ -324,96 +360,29 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             case _:
                 return []
 
-    def _validate_instance_schema(
-        self,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate that the schema itself is valid."""
-        schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-        return r[bool].ok(value=True)
-
-    def _validate_type_in_schema(
-        self,
-        instance: t_api.ApiJsonValue,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate instance type if specified in schema."""
-        if "type" not in schema:
-            return r[bool].ok(value=True)
-        type_result = self._validate_instance_type(instance, schema["type"])
-        if type_result.is_failure:
-            return r[bool].fail(type_result.error or "Type validation failed")
-        return r[bool].ok(value=True)
-
-    def _validate_required_properties(
-        self,
-        instance: t_api.ApiJsonValue,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate required properties for mapping instances."""
-        if "required" not in schema:
-            return r[bool].ok(value=True)
-        match (instance, schema["required"]):
-            case (dict() as instance_dict, list() as required_field):
-                for required_prop in required_field:
-                    match required_prop:
-                        case str() as required_name if (
-                            required_name not in instance_dict
-                        ):
-                            return r[bool].fail(
-                                f"Missing required property: {required_name}",
-                            )
-                        case _:
-                            continue
-            case _:
-                return r[bool].ok(value=True)
-        return r[bool].ok(value=True)
-
-    def _validate_object_properties(
-        self,
-        instance: t_api.ApiJsonValue,
-        schema: t_api.Api.SchemaDefinition,
-    ) -> r[bool]:
-        """Validate properties for mapping instances."""
-        if "properties" not in schema:
-            return r[bool].ok(value=True)
-        match (instance, schema["properties"]):
-            case (dict() as instance_dict, dict() as properties_field):
-                for prop_name, prop_value in instance_dict.items():
-                    if prop_name in properties_field:
-                        prop_schema = properties_field[prop_name]
-                        match prop_schema:
-                            case dict() as prop_schema_typed:
-                                match prop_value:
-                                    case (
-                                        str()
-                                        | int()
-                                        | float()
-                                        | bool()
-                                        | None
-                                        | list()
-                                        | dict()
-                                    ):
-                                        prop_value_typed = self._to_general_value(
-                                            prop_value,
-                                        )
-                                    case _:
-                                        prop_value_typed = str(prop_value)
-                                prop_result = self.validate_instance(
-                                    prop_value_typed,
-                                    prop_schema_typed,
-                                )
-                                if prop_result.is_failure:
-                                    return r[bool].fail(
-                                        f"Invalid property '{prop_name}': {prop_result.error}",
-                                    )
-                            case _:
-                                continue
-            case _:
-                return r[bool].ok(value=True)
-        return r[bool].ok(value=True)
+    def _to_general_value(self, value: t_api.ApiJsonValue) -> t_api.ApiJsonValue:
+        """Coerce JSON-like values recursively."""
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_items: list[t_api.ApiJsonValue] = []
+            for item in value:
+                if _is_api_json_value(item):
+                    normalized_items.append(self._to_general_value(item))
+                else:
+                    normalized_items.append(str(item))
+            return normalized_items
+        if isinstance(value, Mapping):
+            normalized_map: dict[str, t_api.ApiJsonValue] = {}
+            for key, item in value.items():
+                if _is_api_json_value(item):
+                    normalized_map[str(key)] = self._to_general_value(item)
+                else:
+                    normalized_map[str(key)] = str(item)
+            return normalized_map
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
     def _validate_array_items(
         self,
@@ -439,116 +408,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                 return r[bool].ok(value=True)
         return r[bool].ok(value=True)
 
-    def validate_instance(
+    def _validate_instance_schema(
         self,
-        instance: t_api.ApiJsonValue,
         schema: t_api.Api.SchemaDefinition,
-    ) -> r[t_api.Api.SchemaDefinition]:
-        """Validate instance against JSON Schema.
-
-        Args:
-        instance: Instance to validate
-        schema: JSON Schema to validate against
-
-        Returns:
-        FlextResult containing validation result or error
-
-        """
-        # Validate schema first
-        schema_validation = self._validate_instance_schema(schema)
-        if schema_validation.is_failure:
-            return r[t_api.Api.SchemaDefinition].fail(
-                schema_validation.error or "Schema basic structure validation failed",
-            )
-
-        # Run all validations
-        validations = [
-            self._validate_type_in_schema(instance, schema),
-            self._validate_required_properties(instance, schema),
-            self._validate_object_properties(instance, schema),
-            self._validate_array_items(instance, schema),
-        ]
-
-        for validation_result in validations:
-            if validation_result.is_failure:
-                return r[t_api.Api.SchemaDefinition].fail(
-                    validation_result.error or "Schema validation failed",
-                )
-
-        return r[t_api.Api.SchemaDefinition].ok({
-            "valid": True,
-            "type": type(instance).__name__,
-        })
-
-    def _validate_schema_uri(self, schema_uri: str) -> r[bool]:
-        """Validate $schema URI.
-
-        Args:
-        schema_uri: Schema URI to validate
-
-        Returns:
-        FlextResult indicating validation success or failure
-
-        """
-        valid_uris = [
-            "http://json-schema.org/draft-04/schema#",
-            "http://json-schema.org/draft-07/schema#",
-            "https://json-schema.org/draft/2019-09/schema",
-            "https://json-schema.org/draft/2020-12/schema",
-        ]
-
-        if schema_uri not in valid_uris and self._strict_mode:
-            return r[bool].fail(f"Unsupported schema URI: {schema_uri}")
-
-        return r[bool].ok(value=True)
-
-    def _validate_type_field(self, type_value: t_api.ApiJsonValue) -> r[bool]:
-        """Validate type field value.
-
-        Args:
-        type_value: Type field value
-
-        Returns:
-        FlextResult indicating validation success or failure
-
-        """
-        json_mapping_type = "".join([
-            chr(111),
-            chr(98),
-            chr(106),
-            chr(101),
-            chr(99),
-            chr(116),
-        ])
-        valid_types = [
-            "null",
-            "boolean",
-            json_mapping_type,
-            "array",
-            "number",
-            "integer",
-            "string",
-        ]
-
-        match type_value:
-            case str() as type_text:
-                if type_text not in valid_types:
-                    return r[bool].fail(f"Invalid type: {type_text}")
-            case list() as type_list:
-                for type_item in type_list:
-                    match type_item:
-                        case str() as type_name:
-                            if type_name not in valid_types:
-                                return r[bool].fail(
-                                    f"Invalid type in array: {type_name}",
-                                )
-                        case _:
-                            return r[bool].fail(
-                                f"Type in array must be string, got {type(type_item).__name__}",
-                            )
-            case _:
-                return r[bool].fail("Type must be string or array of strings")
-
+    ) -> r[bool]:
+        """Validate that the schema itself is valid."""
+        schema_result = self.validate_schema(schema)
+        if schema_result.is_failure:
+            return r[bool].fail(f"Invalid schema: {schema_result.error}")
         return r[bool].ok(value=True)
 
     def _validate_instance_type(
@@ -630,161 +497,294 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def supports_schema(self, schema_type: str) -> bool:
-        """Check if this validator supports the given schema type.
-
-        Args:
-        schema_type: Schema type identifier
-
-        Returns:
-        True if schema type is supported
-
-        """
-        return schema_type.lower() in {"json-schema", "jsonschema", "json"}
-
-    def get_supported_schemas(self) -> list[str]:
-        """Get list of supported schema types.
-
-        Returns:
-        List of supported schema type identifiers
-
-        """
-        return ["json-schema", "jsonschema", "json"]
-
-    @override
-    def validate_request(
+    def _validate_object_properties(
         self,
-        request: t_api.JsonObject,
-        schema: t_api.JsonObject,
+        instance: t_api.ApiJsonValue,
+        schema: t_api.Api.SchemaDefinition,
     ) -> r[bool]:
-        """Validate request against JSON Schema.
+        """Validate properties for mapping instances."""
+        if "properties" not in schema:
+            return r[bool].ok(value=True)
+        match (instance, schema["properties"]):
+            case (dict() as instance_dict, dict() as properties_field):
+                for prop_name, prop_value in instance_dict.items():
+                    if prop_name in properties_field:
+                        prop_schema = properties_field[prop_name]
+                        match prop_schema:
+                            case dict() as prop_schema_typed:
+                                match prop_value:
+                                    case (
+                                        str()
+                                        | int()
+                                        | float()
+                                        | bool()
+                                        | None
+                                        | list()
+                                        | dict()
+                                    ):
+                                        prop_value_typed = self._to_general_value(
+                                            prop_value,
+                                        )
+                                    case _:
+                                        prop_value_typed = str(prop_value)
+                                prop_result = self.validate_instance(
+                                    prop_value_typed,
+                                    prop_schema_typed,
+                                )
+                                if prop_result.is_failure:
+                                    return r[bool].fail(
+                                        f"Invalid property '{prop_name}': {prop_result.error}",
+                                    )
+                            case _:
+                                continue
+            case _:
+                return r[bool].ok(value=True)
+        return r[bool].ok(value=True)
+
+    def _validate_required_properties(
+        self,
+        instance: t_api.ApiJsonValue,
+        schema: t_api.Api.SchemaDefinition,
+    ) -> r[bool]:
+        """Validate required properties for mapping instances."""
+        if "required" not in schema:
+            return r[bool].ok(value=True)
+        match (instance, schema["required"]):
+            case (dict() as instance_dict, list() as required_field):
+                for required_prop in required_field:
+                    match required_prop:
+                        case str() as required_name if (
+                            required_name not in instance_dict
+                        ):
+                            return r[bool].fail(
+                                f"Missing required property: {required_name}",
+                            )
+                        case _:
+                            continue
+            case _:
+                return r[bool].ok(value=True)
+        return r[bool].ok(value=True)
+
+    def _validate_schema_basic_structure(
+        self,
+        schema: t_api.JsonObject,
+    ) -> r[t_api.Api.SchemaDefinition]:
+        """Validate basic schema structure."""
+        # Validate all values are JsonValue types
+        schema_dict: t_api.Api.SchemaDefinition = {}
+        for key, value in schema.items():
+            match (key, value):
+                case (
+                    str() as key_str,
+                    str() | int() | float() | bool() | None | list() | dict(),
+                ):
+                    schema_dict[key_str] = self._to_general_value(value)
+                case _:
+                    continue
+        return r[t_api.Api.SchemaDefinition].ok(schema_dict)
+
+    def _validate_schema_format(
+        self,
+        schema: t_api.Api.SchemaDefinition,
+    ) -> r[bool]:
+        """Validate format field if present."""
+        if "format" not in schema or not self._validate_formats:
+            return r[bool].ok(value=True)
+        format_value = schema["format"]
+        match format_value:
+            case str() as format_text:
+                pass
+            case _:
+                return r[bool].fail("Format must be a string")
+
+        if format_text not in self._supported_formats and self._strict_mode:
+            return r[bool].fail(f"Unsupported format: {format_text}")
+        return r[bool].ok(value=True)
+
+    def _validate_schema_items(self, schema: t_api.Api.SchemaDefinition) -> r[bool]:
+        """Validate items field for arrays."""
+        if "items" not in schema:
+            return r[bool].ok(value=True)
+        items = schema["items"]
+        match items:
+            case dict() as items_schema:
+                items_result = self.validate_schema(items_schema)
+                if items_result.is_failure:
+                    return r[bool].fail(f"Invalid items schema: {items_result.error}")
+            case list() as item_schemas:
+                for i, item_schema in enumerate(item_schemas):
+                    match item_schema:
+                        case dict() as item_schema_typed:
+                            item_result = self.validate_schema(item_schema_typed)
+                            if item_result.is_failure:
+                                return r[bool].fail(
+                                    f"Invalid items[{i}] schema: {item_result.error}",
+                                )
+                        case _:
+                            continue
+            case _:
+                return r[bool].ok(value=True)
+        return r[bool].ok(value=True)
+
+    def _validate_schema_properties(
+        self,
+        schema: t_api.Api.SchemaDefinition,
+    ) -> r[bool]:
+        """Validate properties field and nested schemas."""
+        if "properties" not in schema:
+            return r[bool].ok(value=True)
+        properties_field = schema["properties"]
+        match properties_field:
+            case dict() as properties_dict:
+                pass
+            case _:
+                return r[bool].fail("Properties must be a dictionary")
+
+        # Recursively validate property schemas
+        for prop_name, prop_schema in properties_dict.items():
+            match prop_schema:
+                case dict() as prop_schema_dict:
+                    prop_result = self.validate_schema(prop_schema_dict)
+                    if prop_result.is_failure:
+                        return r[bool].fail(
+                            f"Invalid property schema '{prop_name}': {prop_result.error}",
+                        )
+                case _:
+                    continue
+        return r[bool].ok(value=True)
+
+    def _validate_schema_required(
+        self,
+        schema: t_api.Api.SchemaDefinition,
+    ) -> r[bool]:
+        """Validate required field."""
+        if "required" not in schema:
+            return r[bool].ok(value=True)
+        required_field = schema["required"]
+        match required_field:
+            case list() as required_items:
+                for req in required_items:
+                    match req:
+                        case str():
+                            continue
+                        case _:
+                            return r[bool].fail("Required items must be strings")
+            case _:
+                return r[bool].fail("Required must be an array")
+        return r[bool].ok(value=True)
+
+    def _validate_schema_type_field(
+        self,
+        schema: t_api.Api.SchemaDefinition,
+    ) -> r[bool]:
+        """Validate type field if present."""
+        if "type" not in schema:
+            return r[bool].ok(value=True)
+        type_result = self._validate_type_field(schema["type"])
+        if type_result.is_failure:
+            return r[bool].fail(f"Invalid type field: {type_result.error}")
+        return r[bool].ok(value=True)
+
+    def _validate_schema_uri(self, schema_uri: str) -> r[bool]:
+        """Validate $schema URI.
 
         Args:
-        request: Request to validate
-        schema: JSON Schema
+        schema_uri: Schema URI to validate
 
         Returns:
-        FlextResult containing validation result or error
+        FlextResult indicating validation success or failure
 
         """
-        # Convert schema to SchemaDefinition for validation
-        schema_def: t_api.Api.SchemaDefinition = {}
-        for k, v in schema.items():
-            schema_def[k] = self._to_general_value(v)
+        valid_uris = [
+            "http://json-schema.org/draft-04/schema#",
+            "http://json-schema.org/draft-07/schema#",
+            "https://json-schema.org/draft/2019-09/schema",
+            "https://json-schema.org/draft/2020-12/schema",
+        ]
 
-        # Validate the schema first
-        schema_result = self.validate_schema(schema_def)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-
-        # Validate request body against JSON Schema
-        # Convert JsonObject to dict[str, JsonValue] for instance validation
-        request_typed: t_api.JsonObject = {}
-        for k, v in request.items():
-            request_typed[k] = self._to_general_value(v)
-        instance_result = self.validate_instance(request_typed, schema_def)
-        if instance_result.is_failure:
-            return r[bool].fail(instance_result.error or "Schema validation failed")
+        if schema_uri not in valid_uris and self._strict_mode:
+            return r[bool].fail(f"Unsupported schema URI: {schema_uri}")
 
         return r[bool].ok(value=True)
 
-    @override
-    def validate_response(
+    def _validate_schema_uri_field(
         self,
-        response: t_api.JsonObject,
-        schema: t_api.JsonObject,
+        schema: t_api.Api.SchemaDefinition,
     ) -> r[bool]:
-        """Validate response against JSON Schema.
+        """Validate $schema URI field if present."""
+        if "$schema" not in schema:
+            return r[bool].ok(value=True)
+        schema_uri = schema["$schema"]
+        match schema_uri:
+            case str() as schema_uri_str:
+                draft_result = self._validate_schema_uri(schema_uri_str)
+            case _:
+                return r[bool].fail("$schema must be a string")
+        if draft_result.is_failure:
+            return r[bool].fail(draft_result.error or "Schema URI validation failed")
+        return r[bool].ok(value=True)
+
+    def _validate_type_field(self, type_value: t_api.ApiJsonValue) -> r[bool]:
+        """Validate type field value.
 
         Args:
-        response: Response to validate
-        schema: JSON Schema
+        type_value: Type field value
 
         Returns:
-        FlextResult containing validation result or error
+        FlextResult indicating validation success or failure
 
         """
-        # Convert schema to SchemaDefinition for validation
-        schema_def: t_api.Api.SchemaDefinition = {}
-        for k, v in schema.items():
-            schema_def[k] = self._to_general_value(v)
+        json_mapping_type = "".join([
+            chr(111),
+            chr(98),
+            chr(106),
+            chr(101),
+            chr(99),
+            chr(116),
+        ])
+        valid_types = [
+            "null",
+            "boolean",
+            json_mapping_type,
+            "array",
+            "number",
+            "integer",
+            "string",
+        ]
 
-        # Validate the schema first
-        schema_result = self.validate_schema(schema_def)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-
-        # Validate response body against JSON Schema
-        # Convert JsonObject to dict[str, JsonValue] for instance validation
-        response_typed: t_api.JsonObject = {}
-        for k, v in response.items():
-            response_typed[k] = self._to_general_value(v)
-        instance_result = self.validate_instance(response_typed, schema_def)
-        if instance_result.is_failure:
-            return r[bool].fail(instance_result.error or "Schema validation failed")
+        match type_value:
+            case str() as type_text:
+                if type_text not in valid_types:
+                    return r[bool].fail(f"Invalid type: {type_text}")
+            case list() as type_list:
+                for type_item in type_list:
+                    match type_item:
+                        case str() as type_name:
+                            if type_name not in valid_types:
+                                return r[bool].fail(
+                                    f"Invalid type in array: {type_name}",
+                                )
+                        case _:
+                            return r[bool].fail(
+                                f"Type in array must be string, got {type(type_item).__name__}",
+                            )
+            case _:
+                return r[bool].fail("Type must be string or array of strings")
 
         return r[bool].ok(value=True)
 
-    @override
-    def load_schema(
+    def _validate_type_in_schema(
         self,
-        schema_source: str,
-    ) -> r[t_api.ContainerValue]:
-        """Load JSON Schema from source.
-
-        Args:
-        schema_source: Schema file path
-
-        Returns:
-        FlextResult containing loaded schema or error
-
-        """
-        schema_path = Path(schema_source)
-        if not schema_path.exists() or not schema_path.is_file():
-            return r[t_api.ContainerValue].fail(
-                f"Schema file not found: {schema_source}",
-            )
-
-        suffix = schema_path.suffix.lower()
-        try:
-            with schema_path.open("r", encoding="utf-8") as schema_file:
-                if suffix in {".yaml", ".yml"}:
-                    try:
-                        loaded_schema = yaml.safe_load(schema_file)
-                    except Exception as e:
-                        return r[t_api.ContainerValue].fail(
-                            f"Failed to parse YAML schema: {e}",
-                        )
-                else:
-                    try:
-                        loaded_schema = json.load(schema_file)
-                    except json.JSONDecodeError as e:
-                        return r[t_api.ContainerValue].fail(
-                            f"Failed to parse JSON schema: {e}",
-                        )
-        except OSError as e:
-            return r[t_api.ContainerValue].fail(f"Failed to read schema file: {e}")
-
-        if not _is_object_mapping(loaded_schema):
-            return r[t_api.ContainerValue].fail(
-                "JSON schema file must contain a JSON/YAML object",
-            )
-
-        schema_definition: t_api.Api.SchemaDefinition = {}
-        for key, value in loaded_schema.items():
-            if _is_api_json_value(value):
-                schema_definition[str(key)] = self._to_general_value(value)
-            else:
-                schema_definition[str(key)] = str(value)
-
-        validation_result = self.validate_schema(schema_definition)
-        if validation_result.is_failure:
-            return r[t_api.ContainerValue].fail(
-                f"Invalid JSON schema: {validation_result.error}",
-            )
-
-        schema_result: t_api.ContainerValue = schema_definition
-        return r[t_api.ContainerValue].ok(schema_result)
+        instance: t_api.ApiJsonValue,
+        schema: t_api.Api.SchemaDefinition,
+    ) -> r[bool]:
+        """Validate instance type if specified in schema."""
+        if "type" not in schema:
+            return r[bool].ok(value=True)
+        type_result = self._validate_instance_type(instance, schema["type"])
+        if type_result.is_failure:
+            return r[bool].fail(type_result.error or "Type validation failed")
+        return r[bool].ok(value=True)
 
 
 __all__ = ["JSONSchemaValidator"]

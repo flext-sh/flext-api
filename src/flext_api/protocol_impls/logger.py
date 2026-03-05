@@ -24,6 +24,30 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
         """Initialize logger protocol implementation."""
         self.logger = FlextLogger(__name__)
 
+    @override
+    def debug(self, message: str, **kwargs: t.ContainerValue) -> None:
+        """Log debug message."""
+        context = self._convert_kwargs_to_context(kwargs)
+        self.logger.debug(message, return_result=False, **context)
+
+    @override
+    def error(self, message: str, **kwargs: t.ContainerValue) -> None:
+        """Log error message."""
+        context = self._convert_kwargs_to_context(kwargs)
+        self.logger.error(message, return_result=False, **context)
+
+    @override
+    def info(self, message: str, **kwargs: t.ContainerValue) -> None:
+        """Log info message."""
+        context = self._convert_kwargs_to_context(kwargs)
+        self.logger.info(message, return_result=False, **context)
+
+    @override
+    def warning(self, message: str, **kwargs: t.ContainerValue) -> None:
+        """Log warning message."""
+        context = self._convert_kwargs_to_context(kwargs)
+        self.logger.warning(message, return_result=False, **context)
+
     def _convert_kwargs_to_context(
         self,
         kwargs: Mapping[str, t.ApiJsonValue],
@@ -39,27 +63,3 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
                 continue
             context[key] = str(value)
         return context
-
-    @override
-    def info(self, message: str, **kwargs: t.ContainerValue) -> None:
-        """Log info message."""
-        context = self._convert_kwargs_to_context(kwargs)
-        self.logger.info(message, return_result=False, **context)
-
-    @override
-    def error(self, message: str, **kwargs: t.ContainerValue) -> None:
-        """Log error message."""
-        context = self._convert_kwargs_to_context(kwargs)
-        self.logger.error(message, return_result=False, **context)
-
-    @override
-    def debug(self, message: str, **kwargs: t.ContainerValue) -> None:
-        """Log debug message."""
-        context = self._convert_kwargs_to_context(kwargs)
-        self.logger.debug(message, return_result=False, **context)
-
-    @override
-    def warning(self, message: str, **kwargs: t.ContainerValue) -> None:
-        """Log warning message."""
-        context = self._convert_kwargs_to_context(kwargs)
-        self.logger.warning(message, return_result=False, **context)

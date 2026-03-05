@@ -141,11 +141,18 @@ class FlextApiModels(FlextWebModels):
             )
 
             @computed_field
-            def is_success(self) -> bool:
-                """Check if response indicates success (2xx status code)."""
+            def is_client_error(self) -> bool:
+                """Check if response indicates client error (4xx status code)."""
                 return (
-                    c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX
+                    c.Api.HTTP_CLIENT_ERROR_MIN
+                    <= self.status_code
+                    < c.Api.HTTP_CLIENT_ERROR_MAX
                 )
+
+            @computed_field
+            def is_error(self) -> bool:
+                """Check if response indicates any error (4xx or 5xx status code)."""
+                return self.status_code >= c.Api.HTTP_ERROR_MIN
 
             @computed_field
             def is_redirect(self) -> bool:
@@ -157,23 +164,16 @@ class FlextApiModels(FlextWebModels):
                 )
 
             @computed_field
-            def is_client_error(self) -> bool:
-                """Check if response indicates client error (4xx status code)."""
-                return (
-                    c.Api.HTTP_CLIENT_ERROR_MIN
-                    <= self.status_code
-                    < c.Api.HTTP_CLIENT_ERROR_MAX
-                )
-
-            @computed_field
             def is_server_error(self) -> bool:
                 """Check if response indicates server error (5xx status code)."""
                 return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
             @computed_field
-            def is_error(self) -> bool:
-                """Check if response indicates any error (4xx or 5xx status code)."""
-                return self.status_code >= c.Api.HTTP_ERROR_MIN
+            def is_success(self) -> bool:
+                """Check if response indicates success (2xx status code)."""
+                return (
+                    c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX
+                )
 
         # =========================================================================
         # URL AND PARSING MODELS
@@ -195,17 +195,19 @@ class FlextApiModels(FlextWebModels):
                 return urlparse(self.url)
 
             @computed_field
-            def parsed(self) -> ParseResult:
-                """Parse the URL."""
-                return self._parsed_url
+            def fragment(self) -> str:
+                """Get URL fragment."""
+                parsed_fragment = self._parsed_url.fragment
+                if parsed_fragment:
+                    return parsed_fragment
+                return ""
 
             @computed_field
-            def scheme(self) -> str:
-                """Get URL scheme (http, https, etc.)."""
-                parsed_scheme = self._parsed_url.scheme
-                if parsed_scheme:
-                    return parsed_scheme
-                return c.Api.HTTP.Protocol.HTTPS
+            def is_valid(self) -> bool:
+                """Check if URL is valid."""
+                scheme_value = self._parsed_url.scheme
+                netloc_value = self._parsed_url.netloc
+                return bool(scheme_value and netloc_value)
 
             @computed_field
             def netloc(self) -> str:
@@ -214,6 +216,11 @@ class FlextApiModels(FlextWebModels):
                 if parsed_netloc:
                     return parsed_netloc
                 return f"{c.Api.Server.DEFAULT_HOST}:{c.Api.Server.DEFAULT_PORT}"
+
+            @computed_field
+            def parsed(self) -> ParseResult:
+                """Parse the URL."""
+                return self._parsed_url
 
             @computed_field
             def path(self) -> str:
@@ -232,19 +239,12 @@ class FlextApiModels(FlextWebModels):
                 return ""
 
             @computed_field
-            def fragment(self) -> str:
-                """Get URL fragment."""
-                parsed_fragment = self._parsed_url.fragment
-                if parsed_fragment:
-                    return parsed_fragment
-                return ""
-
-            @computed_field
-            def is_valid(self) -> bool:
-                """Check if URL is valid."""
-                scheme_value = self._parsed_url.scheme
-                netloc_value = self._parsed_url.netloc
-                return bool(scheme_value and netloc_value)
+            def scheme(self) -> str:
+                """Get URL scheme (http, https, etc.)."""
+                parsed_scheme = self._parsed_url.scheme
+                if parsed_scheme:
+                    return parsed_scheme
+                return c.Api.HTTP.Protocol.HTTPS
 
         # =========================================================================
         # CONFIGURATION MODELS
@@ -432,45 +432,6 @@ class FlextApiModels(FlextWebModels):
                 }
                 return self.model_copy(update={"headers": updated_headers})
 
-        # =========================================================================
-        # FACTORY METHODS - Model creation utilities
-        # =========================================================================
-
-        @classmethod
-        def create_response(
-            cls,
-            status_code: int,
-            body: t.Api.ResponseBody | None = None,
-            headers: Mapping[str, str] | None = None,
-            request_id: str | None = None,
-        ) -> FlextApiModels.Api.HttpResponse:
-            """Create HttpResponse from parameters.
-
-            Args:
-            status_code: HTTP status code
-            body: Response body (JSON, string, bytes, or None for empty dict)
-            headers: Response headers dictionary (None for empty dict)
-            request_id: Associated request ID for tracking (None for empty string)
-
-            Returns:
-            HttpResponse instance with defaults from model
-
-            """
-            # Use model defaults - body defaults to empty dict, not None
-            response_body: t.Api.ResponseBody = body if body is not None else {}
-            if headers is None:
-                response_headers: dict[str, str] = {}
-            else:
-                response_headers = dict(headers.items())
-            response_id: str = request_id if request_id is not None else ""
-
-            return cls.HttpResponse(
-                status_code=status_code,
-                body=response_body,
-                headers=response_headers,
-                request_id=response_id,
-            )
-
         @classmethod
         def create_config(
             cls,
@@ -517,6 +478,45 @@ class FlextApiModels(FlextWebModels):
                 verify_ssl=verify_ssl,
             )
 
+        # =========================================================================
+        # FACTORY METHODS - Model creation utilities
+        # =========================================================================
+
+        @classmethod
+        def create_response(
+            cls,
+            status_code: int,
+            body: t.Api.ResponseBody | None = None,
+            headers: Mapping[str, str] | None = None,
+            request_id: str | None = None,
+        ) -> FlextApiModels.Api.HttpResponse:
+            """Create HttpResponse from parameters.
+
+            Args:
+            status_code: HTTP status code
+            body: Response body (JSON, string, bytes, or None for empty dict)
+            headers: Response headers dictionary (None for empty dict)
+            request_id: Associated request ID for tracking (None for empty string)
+
+            Returns:
+            HttpResponse instance with defaults from model
+
+            """
+            # Use model defaults - body defaults to empty dict, not None
+            response_body: t.Api.ResponseBody = body if body is not None else {}
+            if headers is None:
+                response_headers: dict[str, str] = {}
+            else:
+                response_headers = dict(headers.items())
+            response_id: str = request_id if request_id is not None else ""
+
+            return cls.HttpResponse(
+                status_code=status_code,
+                body=response_body,
+                headers=response_headers,
+                request_id=response_id,
+            )
+
         class HttpPagination(FlextModels.Value):
             """HTTP pagination value object for list responses.
 
@@ -542,11 +542,6 @@ class FlextApiModels(FlextWebModels):
             )
 
             @computed_field
-            def offset(self) -> int:
-                """Calculate offset from page and page_size."""
-                return (self.page - 1) * self.page_size
-
-            @computed_field
             def has_next(self) -> bool:
                 """Check if next page exists."""
                 if self.total_pages == 0:
@@ -557,6 +552,11 @@ class FlextApiModels(FlextWebModels):
             def has_previous(self) -> bool:
                 """Check if previous page exists."""
                 return self.page > 1
+
+            @computed_field
+            def offset(self) -> int:
+                """Calculate offset from page and page_size."""
+                return (self.page - 1) * self.page_size
 
         # =========================================================================
         # STORAGE MODELS

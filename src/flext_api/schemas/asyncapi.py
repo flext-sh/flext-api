@@ -66,41 +66,6 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         value: Mapping[str, t.ContainerValue]
 
-    def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
-        try:
-            if not isinstance(value, str):
-                return r[str].fail(f"'{field_name}' field must be a string")
-            parsed = self._StringField(value=value)
-        except ValidationError:
-            return r[str].fail(f"'{field_name}' field must be a string")
-        return r[str].ok(parsed.value)
-
-    def _parse_int_field(self, value: t.ApiJsonValue, field_name: str) -> r[int]:
-        try:
-            if not isinstance(value, int):
-                return r[int].fail(f"'{field_name}' field must be an integer")
-            parsed = self._IntField(value=value)
-        except ValidationError:
-            return r[int].fail(f"'{field_name}' field must be an integer")
-        return r[int].ok(parsed.value)
-
-    def _parse_dict_field(
-        self,
-        value: t.ApiJsonValue,
-        field_name: str,
-    ) -> r[Mapping[str, t.ContainerValue]]:
-        try:
-            if not isinstance(value, Mapping):
-                return r[Mapping[str, t.ContainerValue]].fail(
-                    f"'{field_name}' field must be a dictionary",
-                )
-            parsed = self._DictField(value=value)
-        except ValidationError:
-            return r[Mapping[str, t.ContainerValue]].fail(
-                f"'{field_name}' field must be a dictionary",
-            )
-        return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
-
     def __init__(
         self,
         *,
@@ -141,100 +106,142 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             "amqps",
         ]
 
-    def _validate_asyncapi_version(
+    def get_supported_schemas(self) -> list[str]:
+        """Get list of supported schema types.
+
+        Returns:
+        List of supported schema type identifiers
+
+        """
+        return ["asyncapi", "async-api", "asyncapi2", "asyncapi3"]
+
+    @override
+    def load_schema(
         self,
-        schema: Mapping[str, t.ContainerValue],
-    ) -> r[str]:
-        """Validate AsyncAPI version field."""
-        if "asyncapi" not in schema:
-            return r[str].fail("Missing 'asyncapi' version field")
+        schema_source: str,
+    ) -> r[t.ContainerValue]:
+        """Load AsyncAPI schema from source.
 
-        asyncapi_version = schema["asyncapi"]
-        parsed_version = self._parse_string_field(asyncapi_version, "asyncapi")
-        if parsed_version.is_failure:
-            return parsed_version
-        asyncapi_version = parsed_version.value
+        Args:
+        schema_source: Schema file path
 
-        if not (asyncapi_version.startswith(("2.", "3."))):
-            return r[str].fail(f"Unsupported AsyncAPI version: {asyncapi_version}")
-        return r[str].ok(asyncapi_version)
+        Returns:
+        FlextResult containing loaded schema or error
 
-    def _validate_required_fields(
+        """
+        schema_result = self._load_schema_document(schema_source)
+        if schema_result.is_failure:
+            return r[t.ContainerValue].fail(
+                schema_result.error or "Failed to load AsyncAPI schema",
+            )
+
+        loaded_schema = schema_result.value
+        if not _is_object_mapping(loaded_schema):
+            return r[t.ContainerValue].fail(
+                "AsyncAPI schema must be a JSON/YAML object",
+            )
+
+        normalized_schema = self._normalize_json_object(loaded_schema)
+        validation_result = self.validate_schema(normalized_schema)
+        if validation_result.is_failure:
+            return r[t.ContainerValue].fail(
+                f"Invalid AsyncAPI schema: {validation_result.error}",
+            )
+
+        normalized_result: t.ContainerValue = normalized_schema
+        return r[t.ContainerValue].ok(normalized_result)
+
+    def supports_schema(self, schema_type: str) -> bool:
+        """Check if this validator supports the given schema type.
+
+        Args:
+        schema_type: Schema type identifier
+
+        Returns:
+        True if schema type is supported
+
+        """
+        return schema_type.lower() in {
+            "asyncapi",
+            "async-api",
+            "asyncapi2",
+            "asyncapi3",
+        }
+
+    @override
+    def validate_request(
         self,
-        schema: Mapping[str, t.ContainerValue],
-        version: str,
+        request: t.JsonObject,
+        schema: t.JsonObject,
     ) -> r[bool]:
-        """Validate required fields based on AsyncAPI version."""
-        required_fields = ["info"]
-        if version.startswith(("2.", "3.")):
-            required_fields.append("channels")
+        """Validate request against AsyncAPI schema.
 
-        # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = u.Collection.filter(
-            list(required_fields),
-            lambda field: field not in schema,
-        )
-        if missing_fields:
-            return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
+        Args:
+        request: Request to validate
+        schema: AsyncAPI schema
+
+        Returns:
+        FlextResult containing validation result or error
+
+        """
+        # Basic AsyncAPI request validation
+        # Validate AsyncAPI structure
+        if "asyncapi" not in schema:
+            return r[bool].fail("Schema missing 'asyncapi' version field")
+
+        # Check if channels exist for message validation
+        if "channels" not in schema:
+            return r[bool].ok(value=True)  # No channels to validate against
+
+        channels_value = schema["channels"]
+        channels_result = self._parse_dict_field(channels_value, "channels")
+        if channels_result.is_failure:
+            return r[bool].fail(channels_result.error)
+        channels = channels_result.value
+        if not channels:
+            return r[bool].ok(value=True)  # No channels to validate against
+
+        # Basic validation - request should have expected structure
+        # For WebSocket/SSE requests, we expect certain fields
+        if "body" in request:
+            body_value = request["body"]
+            _ = body_value
+
+        self.logger.debug("AsyncAPI request validation completed")
         return r[bool].ok(value=True)
 
-    def _validate_info_object(
+    @override
+    def validate_response(
         self,
-        schema: Mapping[str, t.ContainerValue],
-    ) -> r[Mapping[str, t.ContainerValue]]:
-        """Validate info object and return it."""
-        if "info" not in schema:
-            return r[Mapping[str, t.ContainerValue]].fail(
-                "Missing 'info' field in schema",
-            )
-
-        info_value = schema["info"]
-        info_result = self._parse_dict_field(info_value, "info")
-        if info_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(info_result.error)
-        info = info_result.value
-        info_required = ["title", "version"]
-        # Use u.filter() for unified filtering (DSL pattern)
-        info_missing = u.Collection.filter(
-            list(info_required),
-            lambda field: field not in info,
-        )
-        if info_missing:
-            return r[Mapping[str, t.ContainerValue]].fail(
-                f"Missing required info fields: {', '.join(info_missing)}",
-            )
-        return r[Mapping[str, t.ContainerValue]].ok(info)
-
-    def _validate_optional_components(
-        self,
-        schema: Mapping[str, t.ContainerValue],
+        response: t.JsonObject,
+        schema: t.JsonObject,
     ) -> r[bool]:
-        """Validate optional components like servers and components."""
-        # Validate servers if present
-        if "servers" in schema:
-            servers_value = schema["servers"]
-            servers_result = self._parse_dict_field(servers_value, "servers")
-            if servers_result.is_failure:
-                return r[bool].fail(servers_result.error)
+        """Validate response against AsyncAPI schema.
 
-            servers_validation = self._validate_servers(servers_result.value)
-            if servers_validation.is_failure:
-                return r[bool].fail(
-                    f"Server validation failed: {servers_validation.error}",
-                )
+        Args:
+        response: Response to validate
+        schema: AsyncAPI schema
 
-        # Validate components if present
-        if "components" in schema:
-            components_value = schema["components"]
-            components_result = self._parse_dict_field(components_value, "components")
-            if components_result.is_failure:
-                return r[bool].fail(components_result.error)
+        Returns:
+        FlextResult containing validation result or error
 
-            components_validation = self._validate_components(components_result.value)
-            if components_validation.is_failure:
-                return r[bool].fail(
-                    f"Component validation failed: {components_validation.error}",
-                )
+        """
+        # Basic AsyncAPI response validation
+        # Validate AsyncAPI structure
+        if "asyncapi" not in schema:
+            return r[bool].fail("Schema missing 'asyncapi' version field")
+
+        # Check if channels exist for message validation
+        channels_result = self._validate_response_channels(schema)
+        if channels_result.is_failure:
+            return channels_result
+
+        # Check status for HTTP-like responses
+        status_result = self._validate_response_status_code(response)
+        if status_result.is_failure:
+            return status_result
+
+        self.logger.debug("AsyncAPI response validation completed")
         return r[bool].ok(value=True)
 
     def validate_schema(
@@ -325,18 +332,88 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             "channels": list(channels.keys()),
         })
 
-    def _validate_channel_structure(
+    def _load_schema_document(self, schema_source: str) -> r[object]:
+        schema_path = Path(schema_source)
+        if not schema_path.exists() or not schema_path.is_file():
+            return r[object].fail(f"Schema file not found: {schema_source}")
+
+        suffix = schema_path.suffix.lower()
+        try:
+            with schema_path.open("r", encoding="utf-8") as schema_file:
+                if suffix in {".yaml", ".yml"}:
+                    try:
+                        return r[object].ok(yaml.safe_load(schema_file))
+                    except Exception as e:
+                        return r[object].fail(f"Failed to parse YAML schema: {e}")
+
+                try:
+                    return r[object].ok(json.load(schema_file))
+                except json.JSONDecodeError as e:
+                    return r[object].fail(f"Failed to parse JSON schema: {e}")
+        except OSError as e:
+            return r[object].fail(f"Failed to read schema file: {e}")
+
+    def _normalize_json_object(self, value: Mapping[object, object]) -> t.JsonObject:
+        normalized: t.JsonObject = {}
+        for key, item in value.items():
+            if _is_container_value(item):
+                normalized_value = self._to_general_value(item)
+            else:
+                normalized_value = str(item)
+            normalized[str(key)] = normalized_value
+        return normalized
+
+    def _parse_dict_field(
         self,
-        channel_name: str,
-        channel: t.ContainerValue,
+        value: t.ApiJsonValue,
+        field_name: str,
     ) -> r[Mapping[str, t.ContainerValue]]:
-        """Validate basic channel structure."""
-        channel_result = self._parse_dict_field(channel, "channel")
-        if channel_result.is_failure:
+        try:
+            if not isinstance(value, Mapping):
+                return r[Mapping[str, t.ContainerValue]].fail(
+                    f"'{field_name}' field must be a dictionary",
+                )
+            parsed = self._DictField(value=value)
+        except ValidationError:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"Channel must be a dictionary: {channel_name}",
+                f"'{field_name}' field must be a dictionary",
             )
-        return r[Mapping[str, t.ContainerValue]].ok(channel_result.value)
+        return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
+
+    def _parse_int_field(self, value: t.ApiJsonValue, field_name: str) -> r[int]:
+        try:
+            if not isinstance(value, int):
+                return r[int].fail(f"'{field_name}' field must be an integer")
+            parsed = self._IntField(value=value)
+        except ValidationError:
+            return r[int].fail(f"'{field_name}' field must be an integer")
+        return r[int].ok(parsed.value)
+
+    def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
+        try:
+            if not isinstance(value, str):
+                return r[str].fail(f"'{field_name}' field must be a string")
+            parsed = self._StringField(value=value)
+        except ValidationError:
+            return r[str].fail(f"'{field_name}' field must be a string")
+        return r[str].ok(parsed.value)
+
+    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_values: list[t.ContainerValue] = [
+                self._to_general_value(item) for item in value
+            ]
+            return normalized_values
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized_mapping[str(key)] = self._to_general_value(item)
+            return normalized_mapping
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
     def _validate_asyncapi_2_operations(
         self,
@@ -387,6 +464,24 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(f"Missing 'address' in channel: {channel_name}")
         return r[bool].ok(value=True)
 
+    def _validate_asyncapi_version(
+        self,
+        schema: Mapping[str, t.ContainerValue],
+    ) -> r[str]:
+        """Validate AsyncAPI version field."""
+        if "asyncapi" not in schema:
+            return r[str].fail("Missing 'asyncapi' version field")
+
+        asyncapi_version = schema["asyncapi"]
+        parsed_version = self._parse_string_field(asyncapi_version, "asyncapi")
+        if parsed_version.is_failure:
+            return parsed_version
+        asyncapi_version = parsed_version.value
+
+        if not (asyncapi_version.startswith(("2.", "3."))):
+            return r[str].fail(f"Unsupported AsyncAPI version: {asyncapi_version}")
+        return r[str].ok(asyncapi_version)
+
     def _validate_channel_messages(
         self,
         channel: Mapping[str, t.ContainerValue],
@@ -409,25 +504,18 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 return messages_result
         return r[bool].ok(value=True)
 
-    def _validate_single_channel(
+    def _validate_channel_structure(
         self,
         channel_name: str,
-        channel: Mapping[str, t.ContainerValue],
-        version: str,
-    ) -> r[bool]:
-        """Validate a single channel."""
-        # Validate operations based on version
-        if version.startswith("2."):
-            ops_result = self._validate_asyncapi_2_operations(channel, channel_name)
-            if ops_result.is_failure:
-                return ops_result
-        elif version.startswith("3."):
-            struct_result = self._validate_asyncapi_3_structure(channel, channel_name)
-            if struct_result.is_failure:
-                return struct_result
-
-        # Validate messages
-        return self._validate_channel_messages(channel, channel_name)
+        channel: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
+        """Validate basic channel structure."""
+        channel_result = self._parse_dict_field(channel, "channel")
+        if channel_result.is_failure:
+            return r[Mapping[str, t.ContainerValue]].fail(
+                f"Channel must be a dictionary: {channel_name}",
+            )
+        return r[Mapping[str, t.ContainerValue]].ok(channel_result.value)
 
     def _validate_channels(
         self,
@@ -470,41 +558,72 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def _validate_operation(
+    def _validate_components(
         self,
-        operation: Mapping[str, t.ContainerValue],
-        channel_name: str,
-        op_type: str,
+        components: Mapping[str, t.ContainerValue],
     ) -> r[bool]:
-        """Validate AsyncAPI operation (publish/subscribe).
+        """Validate AsyncAPI components.
 
         Args:
-        operation: Operation dictionary
-        channel_name: Channel name
-        op_type: Operation type (publish/subscribe)
+        components: Components dictionary from AsyncAPI schema
 
         Returns:
         FlextResult indicating validation success or failure
 
         """
-        # Validate message if present
-        if "message" in operation and self._validate_messages:
-            message = operation["message"]
-            message_result = self._parse_dict_field(message, "message")
-            if message_result.is_failure:
+        # Validate component sections
+        valid_sections = [
+            "schemas",
+            "messages",
+            "securitySchemes",
+            "parameters",
+            "correlationIds",
+            "operationTraits",
+            "messageTraits",
+            "serverBindings",
+            "channelBindings",
+            "operationBindings",
+            "messageBindings",
+        ]
+
+        for section_name, section_value in components.items():
+            if section_name not in valid_sections and self._strict_mode:
+                return r[bool].fail(f"Invalid component section: {section_name}")
+
+            section_result = self._parse_dict_field(section_value, section_name)
+            if section_result.is_failure:
                 return r[bool].fail(
-                    f"'message' must be a dictionary in {op_type} operation of channel: {channel_name}",
+                    f"Component section must be a dictionary: {section_name}",
                 )
 
-            message_validation = self._validate_message(
-                message_result.value,
-                channel_name,
-                op_type,
-            )
-            if message_validation.is_failure:
-                return message_validation
-
         return r[bool].ok(value=True)
+
+    def _validate_info_object(
+        self,
+        schema: Mapping[str, t.ContainerValue],
+    ) -> r[Mapping[str, t.ContainerValue]]:
+        """Validate info object and return it."""
+        if "info" not in schema:
+            return r[Mapping[str, t.ContainerValue]].fail(
+                "Missing 'info' field in schema",
+            )
+
+        info_value = schema["info"]
+        info_result = self._parse_dict_field(info_value, "info")
+        if info_result.is_failure:
+            return r[Mapping[str, t.ContainerValue]].fail(info_result.error)
+        info = info_result.value
+        info_required = ["title", "version"]
+        # Use u.filter() for unified filtering (DSL pattern)
+        info_missing = u.Collection.filter(
+            list(info_required),
+            lambda field: field not in info,
+        )
+        if info_missing:
+            return r[Mapping[str, t.ContainerValue]].fail(
+                f"Missing required info fields: {', '.join(info_missing)}",
+            )
+        return r[Mapping[str, t.ContainerValue]].ok(info)
 
     def _validate_message(
         self,
@@ -566,6 +685,124 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
+    def _validate_operation(
+        self,
+        operation: Mapping[str, t.ContainerValue],
+        channel_name: str,
+        op_type: str,
+    ) -> r[bool]:
+        """Validate AsyncAPI operation (publish/subscribe).
+
+        Args:
+        operation: Operation dictionary
+        channel_name: Channel name
+        op_type: Operation type (publish/subscribe)
+
+        Returns:
+        FlextResult indicating validation success or failure
+
+        """
+        # Validate message if present
+        if "message" in operation and self._validate_messages:
+            message = operation["message"]
+            message_result = self._parse_dict_field(message, "message")
+            if message_result.is_failure:
+                return r[bool].fail(
+                    f"'message' must be a dictionary in {op_type} operation of channel: {channel_name}",
+                )
+
+            message_validation = self._validate_message(
+                message_result.value,
+                channel_name,
+                op_type,
+            )
+            if message_validation.is_failure:
+                return message_validation
+
+        return r[bool].ok(value=True)
+
+    def _validate_optional_components(
+        self,
+        schema: Mapping[str, t.ContainerValue],
+    ) -> r[bool]:
+        """Validate optional components like servers and components."""
+        # Validate servers if present
+        if "servers" in schema:
+            servers_value = schema["servers"]
+            servers_result = self._parse_dict_field(servers_value, "servers")
+            if servers_result.is_failure:
+                return r[bool].fail(servers_result.error)
+
+            servers_validation = self._validate_servers(servers_result.value)
+            if servers_validation.is_failure:
+                return r[bool].fail(
+                    f"Server validation failed: {servers_validation.error}",
+                )
+
+        # Validate components if present
+        if "components" in schema:
+            components_value = schema["components"]
+            components_result = self._parse_dict_field(components_value, "components")
+            if components_result.is_failure:
+                return r[bool].fail(components_result.error)
+
+            components_validation = self._validate_components(components_result.value)
+            if components_validation.is_failure:
+                return r[bool].fail(
+                    f"Component validation failed: {components_validation.error}",
+                )
+        return r[bool].ok(value=True)
+
+    def _validate_required_fields(
+        self,
+        schema: Mapping[str, t.ContainerValue],
+        version: str,
+    ) -> r[bool]:
+        """Validate required fields based on AsyncAPI version."""
+        required_fields = ["info"]
+        if version.startswith(("2.", "3.")):
+            required_fields.append("channels")
+
+        # Use u.filter() for unified filtering (DSL pattern)
+        missing_fields = u.Collection.filter(
+            list(required_fields),
+            lambda field: field not in schema,
+        )
+        if missing_fields:
+            return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
+        return r[bool].ok(value=True)
+
+    def _validate_response_channels(self, schema: t.JsonObject) -> r[bool]:
+        """Validate channels in schema for response validation."""
+        if "channels" not in schema:
+            return r[bool].ok(value=True)  # No channels to validate against
+
+        channels_value = schema["channels"]
+        channels_result = self._parse_dict_field(channels_value, "channels")
+        if channels_result.is_failure:
+            return r[bool].fail(channels_result.error)
+        if not channels_result.value:
+            return r[bool].ok(value=True)  # No channels to validate against
+
+        return r[bool].ok(value=True)
+
+    def _validate_response_status_code(self, response: t.JsonObject) -> r[bool]:
+        """Validate status code in response."""
+        if "status_code" not in response:
+            return r[bool].ok(value=True)
+
+        status_code_value = response["status_code"]
+        http_status_min = 100
+        http_status_max = 599
+        status_result = self._parse_int_field(status_code_value, "status_code")
+        if status_result.is_failure:
+            return r[bool].fail("Invalid status code")
+
+        if not (http_status_min <= status_result.value <= http_status_max):
+            return r[bool].fail("Invalid status code")
+
+        return r[bool].ok(value=True)
+
     def _validate_servers(self, servers: Mapping[str, t.ContainerValue]) -> r[bool]:
         """Validate AsyncAPI servers.
 
@@ -602,262 +839,25 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def _validate_components(
+    def _validate_single_channel(
         self,
-        components: Mapping[str, t.ContainerValue],
+        channel_name: str,
+        channel: Mapping[str, t.ContainerValue],
+        version: str,
     ) -> r[bool]:
-        """Validate AsyncAPI components.
+        """Validate a single channel."""
+        # Validate operations based on version
+        if version.startswith("2."):
+            ops_result = self._validate_asyncapi_2_operations(channel, channel_name)
+            if ops_result.is_failure:
+                return ops_result
+        elif version.startswith("3."):
+            struct_result = self._validate_asyncapi_3_structure(channel, channel_name)
+            if struct_result.is_failure:
+                return struct_result
 
-        Args:
-        components: Components dictionary from AsyncAPI schema
-
-        Returns:
-        FlextResult indicating validation success or failure
-
-        """
-        # Validate component sections
-        valid_sections = [
-            "schemas",
-            "messages",
-            "securitySchemes",
-            "parameters",
-            "correlationIds",
-            "operationTraits",
-            "messageTraits",
-            "serverBindings",
-            "channelBindings",
-            "operationBindings",
-            "messageBindings",
-        ]
-
-        for section_name, section_value in components.items():
-            if section_name not in valid_sections and self._strict_mode:
-                return r[bool].fail(f"Invalid component section: {section_name}")
-
-            section_result = self._parse_dict_field(section_value, section_name)
-            if section_result.is_failure:
-                return r[bool].fail(
-                    f"Component section must be a dictionary: {section_name}",
-                )
-
-        return r[bool].ok(value=True)
-
-    def supports_schema(self, schema_type: str) -> bool:
-        """Check if this validator supports the given schema type.
-
-        Args:
-        schema_type: Schema type identifier
-
-        Returns:
-        True if schema type is supported
-
-        """
-        return schema_type.lower() in {
-            "asyncapi",
-            "async-api",
-            "asyncapi2",
-            "asyncapi3",
-        }
-
-    def get_supported_schemas(self) -> list[str]:
-        """Get list of supported schema types.
-
-        Returns:
-        List of supported schema type identifiers
-
-        """
-        return ["asyncapi", "async-api", "asyncapi2", "asyncapi3"]
-
-    @override
-    def validate_request(
-        self,
-        request: t.JsonObject,
-        schema: t.JsonObject,
-    ) -> r[bool]:
-        """Validate request against AsyncAPI schema.
-
-        Args:
-        request: Request to validate
-        schema: AsyncAPI schema
-
-        Returns:
-        FlextResult containing validation result or error
-
-        """
-        # Basic AsyncAPI request validation
-        # Validate AsyncAPI structure
-        if "asyncapi" not in schema:
-            return r[bool].fail("Schema missing 'asyncapi' version field")
-
-        # Check if channels exist for message validation
-        if "channels" not in schema:
-            return r[bool].ok(value=True)  # No channels to validate against
-
-        channels_value = schema["channels"]
-        channels_result = self._parse_dict_field(channels_value, "channels")
-        if channels_result.is_failure:
-            return r[bool].fail(channels_result.error)
-        channels = channels_result.value
-        if not channels:
-            return r[bool].ok(value=True)  # No channels to validate against
-
-        # Basic validation - request should have expected structure
-        # For WebSocket/SSE requests, we expect certain fields
-        if "body" in request:
-            body_value = request["body"]
-            _ = body_value
-
-        self.logger.debug("AsyncAPI request validation completed")
-        return r[bool].ok(value=True)
-
-    def _validate_response_channels(self, schema: t.JsonObject) -> r[bool]:
-        """Validate channels in schema for response validation."""
-        if "channels" not in schema:
-            return r[bool].ok(value=True)  # No channels to validate against
-
-        channels_value = schema["channels"]
-        channels_result = self._parse_dict_field(channels_value, "channels")
-        if channels_result.is_failure:
-            return r[bool].fail(channels_result.error)
-        if not channels_result.value:
-            return r[bool].ok(value=True)  # No channels to validate against
-
-        return r[bool].ok(value=True)
-
-    def _validate_response_status_code(self, response: t.JsonObject) -> r[bool]:
-        """Validate status code in response."""
-        if "status_code" not in response:
-            return r[bool].ok(value=True)
-
-        status_code_value = response["status_code"]
-        http_status_min = 100
-        http_status_max = 599
-        status_result = self._parse_int_field(status_code_value, "status_code")
-        if status_result.is_failure:
-            return r[bool].fail("Invalid status code")
-
-        if not (http_status_min <= status_result.value <= http_status_max):
-            return r[bool].fail("Invalid status code")
-
-        return r[bool].ok(value=True)
-
-    @override
-    def validate_response(
-        self,
-        response: t.JsonObject,
-        schema: t.JsonObject,
-    ) -> r[bool]:
-        """Validate response against AsyncAPI schema.
-
-        Args:
-        response: Response to validate
-        schema: AsyncAPI schema
-
-        Returns:
-        FlextResult containing validation result or error
-
-        """
-        # Basic AsyncAPI response validation
-        # Validate AsyncAPI structure
-        if "asyncapi" not in schema:
-            return r[bool].fail("Schema missing 'asyncapi' version field")
-
-        # Check if channels exist for message validation
-        channels_result = self._validate_response_channels(schema)
-        if channels_result.is_failure:
-            return channels_result
-
-        # Check status for HTTP-like responses
-        status_result = self._validate_response_status_code(response)
-        if status_result.is_failure:
-            return status_result
-
-        self.logger.debug("AsyncAPI response validation completed")
-        return r[bool].ok(value=True)
-
-    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        if value is None:
-            return None
-        if isinstance(value, list):
-            normalized_values: list[t.ContainerValue] = [
-                self._to_general_value(item) for item in value
-            ]
-            return normalized_values
-        if isinstance(value, Mapping):
-            normalized_mapping: dict[str, t.ContainerValue] = {}
-            for key, item in value.items():
-                normalized_mapping[str(key)] = self._to_general_value(item)
-            return normalized_mapping
-        if isinstance(value, (str, int, float, bool)):
-            return value
-        return str(value)
-
-    def _load_schema_document(self, schema_source: str) -> r[object]:
-        schema_path = Path(schema_source)
-        if not schema_path.exists() or not schema_path.is_file():
-            return r[object].fail(f"Schema file not found: {schema_source}")
-
-        suffix = schema_path.suffix.lower()
-        try:
-            with schema_path.open("r", encoding="utf-8") as schema_file:
-                if suffix in {".yaml", ".yml"}:
-                    try:
-                        return r[object].ok(yaml.safe_load(schema_file))
-                    except Exception as e:
-                        return r[object].fail(f"Failed to parse YAML schema: {e}")
-
-                try:
-                    return r[object].ok(json.load(schema_file))
-                except json.JSONDecodeError as e:
-                    return r[object].fail(f"Failed to parse JSON schema: {e}")
-        except OSError as e:
-            return r[object].fail(f"Failed to read schema file: {e}")
-
-    def _normalize_json_object(self, value: Mapping[object, object]) -> t.JsonObject:
-        normalized: t.JsonObject = {}
-        for key, item in value.items():
-            if _is_container_value(item):
-                normalized_value = self._to_general_value(item)
-            else:
-                normalized_value = str(item)
-            normalized[str(key)] = normalized_value
-        return normalized
-
-    @override
-    def load_schema(
-        self,
-        schema_source: str,
-    ) -> r[t.ContainerValue]:
-        """Load AsyncAPI schema from source.
-
-        Args:
-        schema_source: Schema file path
-
-        Returns:
-        FlextResult containing loaded schema or error
-
-        """
-        schema_result = self._load_schema_document(schema_source)
-        if schema_result.is_failure:
-            return r[t.ContainerValue].fail(
-                schema_result.error or "Failed to load AsyncAPI schema",
-            )
-
-        loaded_schema = schema_result.value
-        if not _is_object_mapping(loaded_schema):
-            return r[t.ContainerValue].fail(
-                "AsyncAPI schema must be a JSON/YAML object",
-            )
-
-        normalized_schema = self._normalize_json_object(loaded_schema)
-        validation_result = self.validate_schema(normalized_schema)
-        if validation_result.is_failure:
-            return r[t.ContainerValue].fail(
-                f"Invalid AsyncAPI schema: {validation_result.error}",
-            )
-
-        normalized_result: t.ContainerValue = normalized_schema
-        return r[t.ContainerValue].ok(normalized_result)
+        # Validate messages
+        return self._validate_channel_messages(channel, channel_name)
 
 
 __all__ = ["AsyncAPISchemaValidator"]

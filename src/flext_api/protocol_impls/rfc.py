@@ -126,113 +126,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
     class _StatusCodeValue(BaseModel):
         status_code: int = Field(ge=100, le=599)
 
-    def _extract_url(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
-        """Extract and validate URL from request (RFC 7230 compliant).
-
-        Args:
-        request: Request dictionary
-
-        Returns:
-        FlextResult with validated URL or error
-
-        """
-        if "url" not in request:
-            return r[str].fail("URL is required in request (RFC 7230)")
-
-        try:
-            parsed = self._UrlRequest.model_validate(request)
-        except ValidationError as exc:
-            details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
-            return r[str].fail(str(details))
-        except (ValueError, TypeError, KeyError, ConnectionError):
-            return r[str].fail("URL must be a string (RFC 7230)")
-        return r[str].ok(parsed.url)
-
-    def _extract_method(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
-        """Extract and validate HTTP method from request (RFC 7231 compliant).
-
-        Args:
-        request: Request dictionary
-
-        Returns:
-        FlextResult with validated method or error
-
-        """
-        try:
-            parsed = self._MethodRequest.model_validate(request)
-        except ValidationError as exc:
-            details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
-            return r[str].fail(str(details))
-        except (ValueError, TypeError, KeyError, ConnectionError):
-            return r[str].fail("Method must be a string (RFC 7231)")
-        return r[str].ok(parsed.method)
-
-    def _extract_headers(
-        self,
-        request: Mapping[str, t.ContainerValue],
-    ) -> Mapping[str, str]:
-        """Extract headers from request (RFC 7230 compliant).
-
-        Args:
-        request: Request dictionary
-
-        Returns:
-        Dictionary of headers (normalized to lowercase keys per RFC 7230)
-
-        """
-        if "headers" not in request:
-            return {}
-
-        try:
-            parsed = self._HeadersRequest.model_validate(request)
-        except ValidationError:
-            return {}
-
-        # Normalize header keys to lowercase per RFC 7230
-        normalized_headers: dict[str, str] = {}
-        for key, value in parsed.headers.items():
-            normalized_headers[key.lower()] = value
-
-        return normalized_headers
-
-    def _extract_body(
-        self,
-        request: Mapping[str, t.ContainerValue],
-    ) -> t.ContainerValue | None:
-        """Extract body from request (RFC 7231 compliant).
-
-        Args:
-        request: Request dictionary
-
-        Returns:
-        Request body or None
-
-        """
-        if "body" not in request:
-            return None
-
-        return request["body"]
-
-    def _extract_timeout(self, request: Mapping[str, t.ContainerValue]) -> float:
-        """Extract timeout from request with defaults.
-
-        Args:
-        request: Request dictionary
-
-        Returns:
-        Timeout value in seconds
-
-        """
-        if "timeout" in request:
-            try:
-                parsed = self._TimeoutRequest.model_validate(request)
-                return parsed.timeout
-            except ValidationError:
-                return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
-
-        # Use default timeout from constants
-        return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
-
     def _build_rfc_error_response(
         self,
         error: str,
@@ -299,38 +192,128 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             success_response["headers"] = web_headers
         return r[t.ConfigurationMapping].ok(success_response)
 
-    def _validate_status_code(self, status_code: int) -> r[int]:
-        """Validate HTTP status code (RFC 7231).
+    def _extract_body(
+        self,
+        request: Mapping[str, t.ContainerValue],
+    ) -> t.ContainerValue | None:
+        """Extract body from request (RFC 7231 compliant).
 
         Args:
-        status_code: HTTP status code to validate
+        request: Request dictionary
 
         Returns:
-        FlextResult with validated status code or error
+        Request body or None
+
+        """
+        if "body" not in request:
+            return None
+
+        return request["body"]
+
+    def _extract_headers(
+        self,
+        request: Mapping[str, t.ContainerValue],
+    ) -> Mapping[str, str]:
+        """Extract headers from request (RFC 7230 compliant).
+
+        Args:
+        request: Request dictionary
+
+        Returns:
+        Dictionary of headers (normalized to lowercase keys per RFC 7230)
+
+        """
+        if "headers" not in request:
+            return {}
+
+        try:
+            parsed = self._HeadersRequest.model_validate(request)
+        except ValidationError:
+            return {}
+
+        # Normalize header keys to lowercase per RFC 7230
+        normalized_headers: dict[str, str] = {}
+        for key, value in parsed.headers.items():
+            normalized_headers[key.lower()] = value
+
+        return normalized_headers
+
+    def _extract_method(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
+        """Extract and validate HTTP method from request (RFC 7231 compliant).
+
+        Args:
+        request: Request dictionary
+
+        Returns:
+        FlextResult with validated method or error
 
         """
         try:
-            parsed = self._StatusCodeValue(status_code=status_code)
-        except ValidationError:
-            return r[int].fail(
-                f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
-            )
-        return r[int].ok(parsed.status_code)
+            parsed = self._MethodRequest.model_validate(request)
+        except ValidationError as exc:
+            details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
+            return r[str].fail(str(details))
+        except (ValueError, TypeError, KeyError, ConnectionError):
+            return r[str].fail("Method must be a string (RFC 7231)")
+        return r[str].ok(parsed.method)
 
-    def _is_success_status(self, status_code: int) -> bool:
-        """Check if status code indicates success (RFC 7231).
+    def _extract_timeout(self, request: Mapping[str, t.ContainerValue]) -> float:
+        """Extract timeout from request with defaults.
 
         Args:
-        status_code: HTTP status code
+        request: Request dictionary
 
         Returns:
-        True if status code indicates success (2xx range)
+        Timeout value in seconds
 
         """
-        return (
-            status_code >= FlextApiConstants.Api.HTTP_SUCCESS_MIN
-            and status_code < FlextApiConstants.Api.HTTP_SUCCESS_MAX
-        )
+        if "timeout" in request:
+            try:
+                parsed = self._TimeoutRequest.model_validate(request)
+                return parsed.timeout
+            except ValidationError:
+                return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
+
+        # Use default timeout from constants
+        return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
+
+    def _extract_url(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
+        """Extract and validate URL from request (RFC 7230 compliant).
+
+        Args:
+        request: Request dictionary
+
+        Returns:
+        FlextResult with validated URL or error
+
+        """
+        if "url" not in request:
+            return r[str].fail("URL is required in request (RFC 7230)")
+
+        try:
+            parsed = self._UrlRequest.model_validate(request)
+        except ValidationError as exc:
+            details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
+            return r[str].fail(str(details))
+        except (ValueError, TypeError, KeyError, ConnectionError):
+            return r[str].fail("URL must be a string (RFC 7230)")
+        return r[str].ok(parsed.url)
+
+    def _get_content_type(self, headers: Mapping[str, str]) -> str:
+        """Extract Content-Type from headers (RFC 7231).
+
+        Args:
+        headers: Response headers
+
+        Returns:
+        Content-Type value or default
+
+        """
+        content_type_key = "content-type"
+        if content_type_key in headers:
+            return headers[content_type_key]
+
+        return FlextApiConstants.Api.ContentType.JSON
 
     def _is_client_error(self, status_code: int) -> bool:
         """Check if status code indicates client error (RFC 7231).
@@ -359,6 +342,33 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         return status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
 
+    def _is_success_status(self, status_code: int) -> bool:
+        """Check if status code indicates success (RFC 7231).
+
+        Args:
+        status_code: HTTP status code
+
+        Returns:
+        True if status code indicates success (2xx range)
+
+        """
+        return (
+            status_code >= FlextApiConstants.Api.HTTP_SUCCESS_MIN
+            and status_code < FlextApiConstants.Api.HTTP_SUCCESS_MAX
+        )
+
+    def _normalize_header_name(self, header_name: str) -> str:
+        """Normalize header name to lowercase (RFC 7230).
+
+        Args:
+        header_name: Header name to normalize
+
+        Returns:
+        Normalized header name
+
+        """
+        return header_name.lower()
+
     def _should_retry(self, status_code: int, attempt: int, max_retries: int) -> bool:
         """Determine if request should be retried (RFC 7231).
 
@@ -377,33 +387,23 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         # Retry on server errors (5xx) and specific client errors (408, 429)
         return status_code in FlextApiConstants.Api.HTTPRetry.RETRYABLE_STATUS_CODES
 
-    def _get_content_type(self, headers: Mapping[str, str]) -> str:
-        """Extract Content-Type from headers (RFC 7231).
+    def _validate_status_code(self, status_code: int) -> r[int]:
+        """Validate HTTP status code (RFC 7231).
 
         Args:
-        headers: Response headers
+        status_code: HTTP status code to validate
 
         Returns:
-        Content-Type value or default
+        FlextResult with validated status code or error
 
         """
-        content_type_key = "content-type"
-        if content_type_key in headers:
-            return headers[content_type_key]
-
-        return FlextApiConstants.Api.ContentType.JSON
-
-    def _normalize_header_name(self, header_name: str) -> str:
-        """Normalize header name to lowercase (RFC 7230).
-
-        Args:
-        header_name: Header name to normalize
-
-        Returns:
-        Normalized header name
-
-        """
-        return header_name.lower()
+        try:
+            parsed = self._StatusCodeValue(status_code=status_code)
+        except ValidationError:
+            return r[int].fail(
+                f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
+            )
+        return r[int].ok(parsed.status_code)
 
 
 __all__ = ["RFCProtocolImplementation"]

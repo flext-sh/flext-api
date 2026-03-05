@@ -23,43 +23,14 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         self.logger = FlextLogger(__name__)
 
     @override
-    def get(self, key: str) -> r[t.ApiJsonValue]:
-        """Retrieve value by key."""
+    def clear(self) -> r[bool]:
+        """Clear all stored values."""
         try:
-            if not key:
-                return r[t.ApiJsonValue].fail("Storage key cannot be empty")
-
-            if key in self._storage:
-                value = self._storage[key]
-                self.logger.debug("Retrieved data with key: %s", key)
-                return r[t.ApiJsonValue].ok(value)
-            return r[t.ApiJsonValue].fail(f"Key not found: {key}")
-
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
-
-    @override
-    def set(
-        self,
-        key: str,
-        value: t.ApiJsonValue,
-        timeout: int | None = None,
-    ) -> r[bool]:
-        """Store value with optional timeout."""
-        try:
-            if not key:
-                return r[bool].fail("Storage key cannot be empty")
-
-            # Acknowledge timeout parameter (not implemented in this simple backend)
-            _ = timeout
-            storage_data = dict(self._storage)
-            storage_data[str(key)] = FlextRuntime.normalize_to_general_value(value)
-            self._storage = storage_data
-            self.logger.debug("Stored data with key: %s", key)
+            self._storage = {}
+            self.logger.debug("Cleared all storage data")
             return r[bool].ok(value=True)
-
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Storage operation failed: {e}")
+            return r[bool].fail(f"Clear operation failed: {e}")
 
     @override
     def delete(self, key: str) -> r[bool]:
@@ -89,14 +60,20 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
             return r[bool].fail(f"Exists check failed: {e}")
 
     @override
-    def clear(self) -> r[bool]:
-        """Clear all stored values."""
+    def get(self, key: str) -> r[t.ApiJsonValue]:
+        """Retrieve value by key."""
         try:
-            self._storage = {}
-            self.logger.debug("Cleared all storage data")
-            return r[bool].ok(value=True)
+            if not key:
+                return r[t.ApiJsonValue].fail("Storage key cannot be empty")
+
+            if key in self._storage:
+                value = self._storage[key]
+                self.logger.debug("Retrieved data with key: %s", key)
+                return r[t.ApiJsonValue].ok(value)
+            return r[t.ApiJsonValue].fail(f"Key not found: {key}")
+
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Clear operation failed: {e}")
+            return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
     @override
     def keys(self) -> r[list[str]]:
@@ -106,3 +83,26 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
             return r[list[str]].ok(storage_keys)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[list[str]].fail(f"Keys operation failed: {e}")
+
+    @override
+    def set(
+        self,
+        key: str,
+        value: t.ApiJsonValue,
+        timeout: int | None = None,
+    ) -> r[bool]:
+        """Store value with optional timeout."""
+        try:
+            if not key:
+                return r[bool].fail("Storage key cannot be empty")
+
+            # Acknowledge timeout parameter (not implemented in this simple backend)
+            _ = timeout
+            storage_data = dict(self._storage)
+            storage_data[str(key)] = FlextRuntime.normalize_to_general_value(value)
+            self._storage = storage_data
+            self.logger.debug("Stored data with key: %s", key)
+            return r[bool].ok(value=True)
+
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            return r[bool].fail(f"Storage operation failed: {e}")

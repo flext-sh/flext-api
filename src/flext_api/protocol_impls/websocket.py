@@ -215,46 +215,132 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 f"Failed to initialize WebSocket protocol: {init_result.error}",
             )
 
-    def _extract_message(
+    @property
+    def is_connected(self) -> bool:
+        """Check if WebSocket is connected."""
+        return self._connected
+
+    def connect(
         self,
-        request: Mapping[str, t.ContainerValue],
-        options: _SendRequestOptions,
-    ) -> r[str | bytes]:
-        """Extract message from request or kwargs."""
-        if options.message is not None:
-            return r[str | bytes].ok(options.message)
+        url: str,
+        headers: Mapping[str, str] | None = None,
+    ) -> r[bool]:
+        """Connect to WebSocket server.
 
-        body = self._extract_body(request)
-        if body is not None:
-            if isinstance(body, (str, bytes)):
+        Args:
+        url: WebSocket URL (ws:// or wss://)
+        headers: Optional connection headers
+
+        Returns:
+        FlextResult indicating success or failure
+
+        """
+        connect_headers: dict[str, str] = {}
+        if headers is not None:
+            connect_headers.update(headers)
+        return self._connect(url, connect_headers)
+
+    def disconnect(self) -> r[bool]:
+        """Disconnect from WebSocket server.
+
+        Returns:
+        FlextResult indicating success or failure
+
+        """
+        if not self._connected:
+            return r[bool].fail("Not connected to WebSocket server")
+
+        try:
+            # Simplified sync disconnect - no async tasks to cancel
+
+            # Close connection
+            close_method = getattr(self._connection, "close", None)
+            if callable(close_method):
+                close_method()
+
+            self._connected = False
+            self._connection = None
+
+            # Notify disconnect handlers
+            for handler in self._on_disconnect_handlers:
                 try:
-                    parsed = self._InboundMessage(message=body)
-                    return r[str | bytes].ok(parsed.message)
-                except ValidationError:
-                    return r[str | bytes].ok(str(body))
-            else:
-                return r[str | bytes].ok(str(body))
+                    handler()
+                except (ValueError, TypeError, KeyError, ConnectionError):
+                    self.logger.exception("Disconnect handler error")
 
-        return r[str | bytes].fail("Message or body is required")
+            self.logger.info("WebSocket disconnected", url=self._url)
 
-    def _extract_message_type(self, options: _SendRequestOptions) -> str:
-        """Extract message type from kwargs."""
-        return options.message_type
-
-    def _ensure_connected(self, request: Mapping[str, t.ContainerValue]) -> r[bool]:
-        """Ensure WebSocket is connected."""
-        if self._connected:
             return r[bool].ok(value=True)
 
-        # Use RFC method to extract URL
-        url_result = self._extract_url(request)
-        if url_result.is_failure:
-            return r[bool].fail(url_result.error or "URL extraction failed")
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
-        # Use RFC method to extract headers
-        headers = self._extract_headers(request)
+    @override
+    def get_supported_protocols(self) -> list[str]:
+        """Get list of supported protocols.
 
-        return self._connect(url_result.value, headers)
+        Returns:
+        List of supported protocol identifiers
+
+        """
+        return [
+            FlextApiConstants.Api.WebSocket.Protocol.WEBSOCKET,
+            FlextApiConstants.Api.WebSocket.Protocol.WS,
+            FlextApiConstants.Api.WebSocket.Protocol.WSS,
+        ]
+
+    def on_connect(self, handler: Callable[[], None]) -> None:
+        """Register connection handler.
+
+        Args:
+            handler: function to call on connection
+
+        """
+        self._on_connect_handlers.append(handler)
+
+    def on_disconnect(self, handler: Callable[[], None]) -> None:
+        """Register disconnection handler.
+
+        Args:
+            handler: function to call on disconnection
+
+        """
+        self._on_disconnect_handlers.append(handler)
+
+    def on_error(self, handler: Callable[[Exception], None]) -> None:
+        """Register error handler.
+
+        Args:
+            handler: function to call on error
+
+        """
+        self._on_error_handlers.append(handler)
+
+    def on_message(self, handler: Callable[[str | bytes], None]) -> None:
+        """Register message handler.
+
+        Args:
+            handler: function to handle incoming messages
+
+        """
+        self._on_message_handlers.append(handler)
+
+    def send_message(
+        self,
+        message: str | bytes,
+        message_type: str = "text",
+    ) -> r[bool]:
+        """Send message over WebSocket.
+
+        Args:
+            message: Message content (text or binary)
+            message_type: Message type ("text" or "binary")
+
+        Returns:
+            FlextResult indicating success or failure
+
+        """
+        return self._send_message(message, message_type)
 
     @override
     def send_request(
@@ -337,133 +423,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             FlextApiConstants.Api.WebSocket.Protocol.WSS,
         }
 
-    @override
-    def get_supported_protocols(self) -> list[str]:
-        """Get list of supported protocols.
-
-        Returns:
-        List of supported protocol identifiers
-
-        """
-        return [
-            FlextApiConstants.Api.WebSocket.Protocol.WEBSOCKET,
-            FlextApiConstants.Api.WebSocket.Protocol.WS,
-            FlextApiConstants.Api.WebSocket.Protocol.WSS,
-        ]
-
-    def connect(
-        self,
-        url: str,
-        headers: Mapping[str, str] | None = None,
-    ) -> r[bool]:
-        """Connect to WebSocket server.
-
-        Args:
-        url: WebSocket URL (ws:// or wss://)
-        headers: Optional connection headers
-
-        Returns:
-        FlextResult indicating success or failure
-
-        """
-        connect_headers: dict[str, str] = {}
-        if headers is not None:
-            connect_headers.update(headers)
-        return self._connect(url, connect_headers)
-
-    def disconnect(self) -> r[bool]:
-        """Disconnect from WebSocket server.
-
-        Returns:
-        FlextResult indicating success or failure
-
-        """
-        if not self._connected:
-            return r[bool].fail("Not connected to WebSocket server")
-
-        try:
-            # Simplified sync disconnect - no async tasks to cancel
-
-            # Close connection
-            close_method = getattr(self._connection, "close", None)
-            if callable(close_method):
-                close_method()
-
-            self._connected = False
-            self._connection = None
-
-            # Notify disconnect handlers
-            for handler in self._on_disconnect_handlers:
-                try:
-                    handler()
-                except (ValueError, TypeError, KeyError, ConnectionError):
-                    self.logger.exception("Disconnect handler error")
-
-            self.logger.info("WebSocket disconnected", url=self._url)
-
-            return r[bool].ok(value=True)
-
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"WebSocket disconnect failed: {e}")
-
-    def send_message(
-        self,
-        message: str | bytes,
-        message_type: str = "text",
-    ) -> r[bool]:
-        """Send message over WebSocket.
-
-        Args:
-            message: Message content (text or binary)
-            message_type: Message type ("text" or "binary")
-
-        Returns:
-            FlextResult indicating success or failure
-
-        """
-        return self._send_message(message, message_type)
-
-    def on_message(self, handler: Callable[[str | bytes], None]) -> None:
-        """Register message handler.
-
-        Args:
-            handler: function to handle incoming messages
-
-        """
-        self._on_message_handlers.append(handler)
-
-    def on_connect(self, handler: Callable[[], None]) -> None:
-        """Register connection handler.
-
-        Args:
-            handler: function to call on connection
-
-        """
-        self._on_connect_handlers.append(handler)
-
-    def on_disconnect(self, handler: Callable[[], None]) -> None:
-        """Register disconnection handler.
-
-        Args:
-            handler: function to call on disconnection
-
-        """
-        self._on_disconnect_handlers.append(handler)
-
-    def on_error(self, handler: Callable[[Exception], None]) -> None:
-        """Register error handler.
-
-        Args:
-            handler: function to call on error
-
-        """
-        self._on_error_handlers.append(handler)
-
-    @property
-    def is_connected(self) -> bool:
-        """Check if WebSocket is connected."""
-        return self._connected
-
     def _connect(
         self,
         url: str,
@@ -528,6 +487,123 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")
 
+    def _ensure_connected(self, request: Mapping[str, t.ContainerValue]) -> r[bool]:
+        """Ensure WebSocket is connected."""
+        if self._connected:
+            return r[bool].ok(value=True)
+
+        # Use RFC method to extract URL
+        url_result = self._extract_url(request)
+        if url_result.is_failure:
+            return r[bool].fail(url_result.error or "URL extraction failed")
+
+        # Use RFC method to extract headers
+        headers = self._extract_headers(request)
+
+        return self._connect(url_result.value, headers)
+
+    def _extract_message(
+        self,
+        request: Mapping[str, t.ContainerValue],
+        options: _SendRequestOptions,
+    ) -> r[str | bytes]:
+        """Extract message from request or kwargs."""
+        if options.message is not None:
+            return r[str | bytes].ok(options.message)
+
+        body = self._extract_body(request)
+        if body is not None:
+            if isinstance(body, (str, bytes)):
+                try:
+                    parsed = self._InboundMessage(message=body)
+                    return r[str | bytes].ok(parsed.message)
+                except ValidationError:
+                    return r[str | bytes].ok(str(body))
+            else:
+                return r[str | bytes].ok(str(body))
+
+        return r[str | bytes].fail("Message or body is required")
+
+    def _extract_message_type(self, options: _SendRequestOptions) -> str:
+        """Extract message type from kwargs."""
+        return options.message_type
+
+    def _heartbeat_loop(self) -> None:
+        """Background task for heartbeat monitoring."""
+        while self._connected:
+            try:
+                time.sleep(self._ping_interval)
+
+                if self._connection:
+                    # Ping is handled automatically by websockets library
+                    self.logger.debug("WebSocket heartbeat")
+
+            except (ValueError, TypeError, KeyError, ConnectionError):
+                self.logger.exception("Heartbeat error")
+                break
+
+    def _receive_loop(self) -> None:
+        """Background task to receive messages."""
+        while self._connected and self._connection:
+            try:
+                recv_method = getattr(self._connection, "recv", None)
+                message = recv_method() if callable(recv_method) else None
+
+                # Notify message handlers only if we have valid message data
+                if isinstance(message, (str, bytes)):
+                    try:
+                        inbound = self._InboundMessage(message=message)
+                    except ValidationError:
+                        pass
+                    else:
+                        for handler in self._on_message_handlers:
+                            try:
+                                handler(inbound.message)
+                            except (ValueError, TypeError, KeyError, ConnectionError):
+                                self.logger.exception("Message handler error")
+
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+                self.logger.exception("WebSocket receive error")
+
+                # Notify error handlers
+                for handler in self._on_error_handlers:
+                    try:
+                        handler(e)
+                    except (ValueError, TypeError, KeyError, ConnectionError):
+                        self.logger.exception("Error handler error")
+
+                # Attempt reconnection if enabled
+                if self._auto_reconnect:
+                    self._reconnect()
+                break
+
+    def _reconnect(self) -> r[bool]:
+        """Attempt to reconnect with exponential backoff.
+
+        Returns:
+        FlextResult indicating success or failure
+
+        """
+        for attempt in range(self._reconnect_max_attempts):
+            delay = self._reconnect_backoff_factor**attempt
+
+            attempt_msg = (
+                f"Reconnecting... (attempt {attempt + 1}/"
+                f"{self._reconnect_max_attempts})"
+            )
+            self.logger.info(attempt_msg, delay=delay)
+
+            time.sleep(delay)
+
+            connect_result = self._connect(self._url, self._headers)
+            if connect_result.is_success:
+                self.logger.info("WebSocket reconnected successfully")
+                return connect_result
+
+        return r[bool].fail(
+            f"Failed to reconnect after {self._reconnect_max_attempts} attempts",
+        )
+
     def _send_message(
         self,
         message: str | bytes,
@@ -572,82 +648,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"WebSocket send error: {e}")
-
-    def _receive_loop(self) -> None:
-        """Background task to receive messages."""
-        while self._connected and self._connection:
-            try:
-                recv_method = getattr(self._connection, "recv", None)
-                message = recv_method() if callable(recv_method) else None
-
-                # Notify message handlers only if we have valid message data
-                if isinstance(message, (str, bytes)):
-                    try:
-                        inbound = self._InboundMessage(message=message)
-                    except ValidationError:
-                        pass
-                    else:
-                        for handler in self._on_message_handlers:
-                            try:
-                                handler(inbound.message)
-                            except (ValueError, TypeError, KeyError, ConnectionError):
-                                self.logger.exception("Message handler error")
-
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                self.logger.exception("WebSocket receive error")
-
-                # Notify error handlers
-                for handler in self._on_error_handlers:
-                    try:
-                        handler(e)
-                    except (ValueError, TypeError, KeyError, ConnectionError):
-                        self.logger.exception("Error handler error")
-
-                # Attempt reconnection if enabled
-                if self._auto_reconnect:
-                    self._reconnect()
-                break
-
-    def _heartbeat_loop(self) -> None:
-        """Background task for heartbeat monitoring."""
-        while self._connected:
-            try:
-                time.sleep(self._ping_interval)
-
-                if self._connection:
-                    # Ping is handled automatically by websockets library
-                    self.logger.debug("WebSocket heartbeat")
-
-            except (ValueError, TypeError, KeyError, ConnectionError):
-                self.logger.exception("Heartbeat error")
-                break
-
-    def _reconnect(self) -> r[bool]:
-        """Attempt to reconnect with exponential backoff.
-
-        Returns:
-        FlextResult indicating success or failure
-
-        """
-        for attempt in range(self._reconnect_max_attempts):
-            delay = self._reconnect_backoff_factor**attempt
-
-            attempt_msg = (
-                f"Reconnecting... (attempt {attempt + 1}/"
-                f"{self._reconnect_max_attempts})"
-            )
-            self.logger.info(attempt_msg, delay=delay)
-
-            time.sleep(delay)
-
-            connect_result = self._connect(self._url, self._headers)
-            if connect_result.is_success:
-                self.logger.info("WebSocket reconnected successfully")
-                return connect_result
-
-        return r[bool].fail(
-            f"Failed to reconnect after {self._reconnect_max_attempts} attempts",
-        )
 
 
 __all__ = ["WebSocketProtocolPlugin"]

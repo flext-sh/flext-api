@@ -41,9 +41,23 @@ class FlextApiPlugins:
             self._initialized = False
 
         @property
+        def is_initialized(self) -> bool:
+            """Check if plugin is initialized."""
+            return self._initialized
+
+        @property
         def logger(self) -> FlextLogger:
             """Get the plugin logger."""
             return self._logger
+
+        def get_metadata(self) -> t.JsonObject:
+            """Get plugin metadata."""
+            return {
+                "name": self.name,
+                "version": self.version,
+                "description": self.description,
+                "initialized": str(self._initialized),
+            }
 
         def initialize(self) -> r[bool]:
             """Initialize plugin resources."""
@@ -62,26 +76,16 @@ class FlextApiPlugins:
             self._initialized = False
             return r[bool].ok(value=True)
 
-        @property
-        def is_initialized(self) -> bool:
-            """Check if plugin is initialized."""
-            return self._initialized
-
         def _protocol_name(self) -> str:
             """Return protocol name for Registrable compliance."""
             return f"plugin.{self.name}"
 
-        def get_metadata(self) -> t.JsonObject:
-            """Get plugin metadata."""
-            return {
-                "name": self.name,
-                "version": self.version,
-                "description": self.description,
-                "initialized": str(self._initialized),
-            }
-
     class Protocol(Plugin):
         """Abstract protocol plugin for API protocol implementations."""
+
+        def get_supported_protocols(self) -> list[str]:
+            """Get list of supported protocols."""
+            return []
 
         @abstractmethod
         def send_request(
@@ -97,12 +101,21 @@ class FlextApiPlugins:
             """Check if this plugin supports the given protocol."""
             ...
 
-        def get_supported_protocols(self) -> list[str]:
-            """Get list of supported protocols."""
-            return []
-
     class Schema(Plugin):
         """Abstract schema plugin for schema validation and introspection."""
+
+        def get_schema_version(self) -> str:
+            """Get schema specification version."""
+            return "unknown"
+
+        @abstractmethod
+        def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
+            """Load schema from source."""
+            ...
+
+        def supports_schema_type(self) -> bool:
+            """Check if this plugin supports the given schema type."""
+            return False
 
         @abstractmethod
         def validate_request(
@@ -122,19 +135,6 @@ class FlextApiPlugins:
             """Validate response against schema."""
             ...
 
-        @abstractmethod
-        def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
-            """Load schema from source."""
-            ...
-
-        def supports_schema_type(self) -> bool:
-            """Check if this plugin supports the given schema type."""
-            return False
-
-        def get_schema_version(self) -> str:
-            """Get schema specification version."""
-            return "unknown"
-
     class Transport(Plugin):
         """Abstract transport plugin for network communication."""
 
@@ -148,15 +148,9 @@ class FlextApiPlugins:
             """Close connection."""
             ...
 
-        @abstractmethod
-        def send(
-            self,
-            connection: t.ContainerValue,
-            data: t.JsonObject | str | bytes,
-            **options: t.ContainerValue,
-        ) -> r[bool]:
-            """Send data through connection."""
-            ...
+        def get_connection_info(self) -> t.JsonObject:
+            """Get connection information."""
+            return {}
 
         @abstractmethod
         def receive(
@@ -167,13 +161,19 @@ class FlextApiPlugins:
             """Receive data from connection."""
             ...
 
+        @abstractmethod
+        def send(
+            self,
+            connection: t.ContainerValue,
+            data: t.JsonObject | str | bytes,
+            **options: t.ContainerValue,
+        ) -> r[bool]:
+            """Send data through connection."""
+            ...
+
         def supports_streaming(self) -> bool:
             """Check if transport supports streaming."""
             return False
-
-        def get_connection_info(self) -> t.JsonObject:
-            """Get connection information."""
-            return {}
 
     class Authentication(Plugin):
         """Abstract authentication plugin for credential management."""
@@ -187,21 +187,9 @@ class FlextApiPlugins:
             """Add authentication to request."""
             ...
 
-        @abstractmethod
-        def validate_credentials(
-            self,
-            credentials: t.JsonObject,
-        ) -> r[bool]:
-            """Validate authentication credentials."""
-            ...
-
         def get_auth_scheme(self) -> str:
             """Get authentication scheme name."""
             return "Unknown"
-
-        def requires_refresh(self) -> bool:
-            """Check if credentials need refresh."""
-            return False
 
         def refresh_credentials(
             self,
@@ -213,6 +201,18 @@ class FlextApiPlugins:
                 "Refresh not supported by this plugin",
             )
 
+        def requires_refresh(self) -> bool:
+            """Check if credentials need refresh."""
+            return False
+
+        @abstractmethod
+        def validate_credentials(
+            self,
+            credentials: t.JsonObject,
+        ) -> r[bool]:
+            """Validate authentication credentials."""
+            ...
+
     class Manager:
         """Plugin manager for discovery, loading, and lifecycle management."""
 
@@ -222,6 +222,29 @@ class FlextApiPlugins:
             """Initialize plugin manager."""
             self.logger = FlextLogger(__name__)
             self._loaded_plugins = {}
+
+        def get_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
+            """Get loaded plugin by name."""
+            if plugin_name not in self._loaded_plugins:
+                return r[FlextApiPlugins.Plugin].fail(
+                    f"Plugin '{plugin_name}' not loaded",
+                )
+            return r[FlextApiPlugins.Plugin].ok(self._loaded_plugins[plugin_name])
+
+        def get_plugins_by_type(
+            self,
+            plugin_type: type[FlextApiPlugins.Plugin],
+        ) -> list[FlextApiPlugins.Plugin]:
+            """Get all loaded plugins of specific type."""
+            return [
+                plugin
+                for plugin in self._loaded_plugins.values()
+                if issubclass(plugin.__class__, plugin_type)
+            ]
+
+        def list_loaded_plugins(self) -> list[str]:
+            """Get list of loaded plugin names."""
+            return list(self._loaded_plugins.keys())
 
         def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> r[bool]:
             """Load and initialize a plugin."""
@@ -234,6 +257,19 @@ class FlextApiPlugins:
                 )
             self._loaded_plugins[plugin.name] = plugin
             self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
+            return r[bool].ok(value=True)
+
+        def shutdown_all(self) -> r[bool]:
+            """Shutdown and unload all plugins."""
+            failed_plugins: list[str] = []
+            for plugin_name in list(self._loaded_plugins.keys()):
+                result = self.unload_plugin(plugin_name)
+                if result.is_failure:
+                    failed_plugins.append(plugin_name)
+            if failed_plugins:
+                return r[bool].fail(
+                    f"Failed to unload plugins: {', '.join(failed_plugins)}",
+                )
             return r[bool].ok(value=True)
 
         def unload_plugin(self, plugin_name: str) -> r[bool]:
@@ -249,42 +285,6 @@ class FlextApiPlugins:
                 )
             del self._loaded_plugins[plugin_name]
             self.logger.info("Unloaded plugin: %s", plugin_name)
-            return r[bool].ok(value=True)
-
-        def get_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
-            """Get loaded plugin by name."""
-            if plugin_name not in self._loaded_plugins:
-                return r[FlextApiPlugins.Plugin].fail(
-                    f"Plugin '{plugin_name}' not loaded",
-                )
-            return r[FlextApiPlugins.Plugin].ok(self._loaded_plugins[plugin_name])
-
-        def list_loaded_plugins(self) -> list[str]:
-            """Get list of loaded plugin names."""
-            return list(self._loaded_plugins.keys())
-
-        def get_plugins_by_type(
-            self,
-            plugin_type: type[FlextApiPlugins.Plugin],
-        ) -> list[FlextApiPlugins.Plugin]:
-            """Get all loaded plugins of specific type."""
-            return [
-                plugin
-                for plugin in self._loaded_plugins.values()
-                if issubclass(plugin.__class__, plugin_type)
-            ]
-
-        def shutdown_all(self) -> r[bool]:
-            """Shutdown and unload all plugins."""
-            failed_plugins: list[str] = []
-            for plugin_name in list(self._loaded_plugins.keys()):
-                result = self.unload_plugin(plugin_name)
-                if result.is_failure:
-                    failed_plugins.append(plugin_name)
-            if failed_plugins:
-                return r[bool].fail(
-                    f"Failed to unload plugins: {', '.join(failed_plugins)}",
-                )
             return r[bool].ok(value=True)
 
 

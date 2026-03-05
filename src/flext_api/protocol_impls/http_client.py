@@ -59,96 +59,58 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             verify=client_config.verify_ssl,
         )
 
-    def _prepare_request_headers(
-        self,
-        options: _HttpClientRequestOptions,
-    ) -> Mapping[str, str]:
-        """Prepare merged headers from config and request."""
-        headers = dict(self._config.headers)
-        headers.update(options.headers)
-        return headers
+    def __enter__(self) -> Self:
+        """Enter context manager."""
+        return self
 
-    def _create_response_from_httpx(
+    def __exit__(
         self,
-        httpx_response: httpx.Response,
-    ) -> m.HttpResponse:
-        """Convert httpx response to FlextApiModels.HttpResponse."""
-        return m.HttpResponse(
-            status_code=httpx_response.status_code,
-            headers=dict(httpx_response.headers),
-            body=httpx_response.content,
-        )
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
+        """Exit context manager and close client."""
+        self.close()
 
-    def _response_to_dict(
-        self,
-        response: m.HttpResponse,
-    ) -> t.Api.HttpResponseDict:
-        """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
-        return {
-            "status_code": response.status_code,
-            "headers": response.headers,
-            "body": response.body,
-            "request_id": response.request_id,
-        }
+    def close(self) -> None:
+        """Close the HTTP client and cleanup resources."""
+        self._client.close()
 
-    def _build_request_options(
+    @override
+    def delete(
         self,
-        kwargs: Mapping[str, t.ContainerValue],
-    ) -> r[_HttpClientRequestOptions]:
-        """Build typed request options from arbitrary kwargs."""
-        try:
-            options = _HttpClientRequestOptions.model_validate(kwargs)
-        except ValidationError as exc:
-            details = (
-                exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
-            )
-            return r[_HttpClientRequestOptions].fail(str(details))
-        return r[_HttpClientRequestOptions].ok(options)
-
-    def _execute_httpx_request(
-        self,
-        method: str,
-        full_url: str,
-        headers: Mapping[str, str],
-        options: _HttpClientRequestOptions,
+        url: str,
+        **kwargs: t.ContainerValue,
     ) -> r[t.Api.HttpResponseDict]:
-        """Execute request using typed options."""
-        try:
-            httpx_response = self._client.request(
-                method=method,
-                url=full_url,
-                headers=headers,
-                params=options.params,
-                json=options.json_data,
-                content=options.content,
-                data=options.data,
-                timeout=options.timeout,
-            )
-            response = self._create_response_from_httpx(httpx_response)
-            return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
-        except httpx.HTTPStatusError as exc:
-            error_msg = f"HTTP error {exc.response.status_code}: {exc.response.text}"
-            self.logger.warning(error_msg)
-            response = self._create_response_from_httpx(exc.response)
-            return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
-        except httpx.TimeoutException as exc:
-            error_msg = f"HTTP request timeout: {exc}"
-            self.logger.warning(error_msg)
-            return r[t.Api.HttpResponseDict].fail(error_msg)
-        except httpx.NetworkError as exc:
-            error_msg = f"HTTP network error: {exc}"
-            self.logger.warning(error_msg)
-            return r[t.Api.HttpResponseDict].fail(error_msg)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            httpx.HTTPError,
-            ConnectionError,
-        ) as exc:
-            error_msg = f"HTTP protocol request failed: {exc}"
-            self.logger.exception(error_msg)
-            return r[t.Api.HttpResponseDict].fail(error_msg)
+        """Execute HTTP DELETE request."""
+        return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)
+
+    @override
+    def get(
+        self,
+        url: str,
+        **kwargs: t.ContainerValue,
+    ) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP GET request."""
+        return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
+
+    @override
+    def post(
+        self,
+        url: str,
+        **kwargs: t.ContainerValue,
+    ) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP POST request."""
+        return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
+
+    @override
+    def put(
+        self,
+        url: str,
+        **kwargs: t.ContainerValue,
+    ) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP PUT request."""
+        return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
 
     @override
     def request(
@@ -197,55 +159,93 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         )
         return r[str].ok(full_url)
 
-    def close(self) -> None:
-        """Close the HTTP client and cleanup resources."""
-        self._client.close()
-
-    def __enter__(self) -> Self:
-        """Enter context manager."""
-        return self
-
-    def __exit__(
+    def _build_request_options(
         self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: object,
-    ) -> None:
-        """Exit context manager and close client."""
-        self.close()
+        kwargs: Mapping[str, t.ContainerValue],
+    ) -> r[_HttpClientRequestOptions]:
+        """Build typed request options from arbitrary kwargs."""
+        try:
+            options = _HttpClientRequestOptions.model_validate(kwargs)
+        except ValidationError as exc:
+            details = (
+                exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
+            )
+            return r[_HttpClientRequestOptions].fail(str(details))
+        return r[_HttpClientRequestOptions].ok(options)
 
-    @override
-    def get(
+    def _create_response_from_httpx(
         self,
-        url: str,
-        **kwargs: t.ContainerValue,
+        httpx_response: httpx.Response,
+    ) -> m.HttpResponse:
+        """Convert httpx response to FlextApiModels.HttpResponse."""
+        return m.HttpResponse(
+            status_code=httpx_response.status_code,
+            headers=dict(httpx_response.headers),
+            body=httpx_response.content,
+        )
+
+    def _execute_httpx_request(
+        self,
+        method: str,
+        full_url: str,
+        headers: Mapping[str, str],
+        options: _HttpClientRequestOptions,
     ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP GET request."""
-        return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
+        """Execute request using typed options."""
+        try:
+            httpx_response = self._client.request(
+                method=method,
+                url=full_url,
+                headers=headers,
+                params=options.params,
+                json=options.json_data,
+                content=options.content,
+                data=options.data,
+                timeout=options.timeout,
+            )
+            response = self._create_response_from_httpx(httpx_response)
+            return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
+        except httpx.HTTPStatusError as exc:
+            error_msg = f"HTTP error {exc.response.status_code}: {exc.response.text}"
+            self.logger.warning(error_msg)
+            response = self._create_response_from_httpx(exc.response)
+            return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
+        except httpx.TimeoutException as exc:
+            error_msg = f"HTTP request timeout: {exc}"
+            self.logger.warning(error_msg)
+            return r[t.Api.HttpResponseDict].fail(error_msg)
+        except httpx.NetworkError as exc:
+            error_msg = f"HTTP network error: {exc}"
+            self.logger.warning(error_msg)
+            return r[t.Api.HttpResponseDict].fail(error_msg)
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            httpx.HTTPError,
+            ConnectionError,
+        ) as exc:
+            error_msg = f"HTTP protocol request failed: {exc}"
+            self.logger.exception(error_msg)
+            return r[t.Api.HttpResponseDict].fail(error_msg)
 
-    @override
-    def post(
+    def _prepare_request_headers(
         self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP POST request."""
-        return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
+        options: _HttpClientRequestOptions,
+    ) -> Mapping[str, str]:
+        """Prepare merged headers from config and request."""
+        headers = dict(self._config.headers)
+        headers.update(options.headers)
+        return headers
 
-    @override
-    def put(
+    def _response_to_dict(
         self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP PUT request."""
-        return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
-
-    @override
-    def delete(
-        self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP DELETE request."""
-        return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)
+        response: m.HttpResponse,
+    ) -> t.Api.HttpResponseDict:
+        """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
+        return {
+            "status_code": response.status_code,
+            "headers": response.headers,
+            "body": response.body,
+            "request_id": response.request_id,
+        }

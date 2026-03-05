@@ -77,6 +77,11 @@ class BaseProtocolImplementation:
         # Protocol state
         object.__setattr__(self, "_initialized", False)
 
+    @property
+    def is_initialized(self) -> bool:
+        """Check if protocol is initialized."""
+        return self._initialized
+
     def execute(self, **kwargs: t.ContainerValue) -> r[bool]:
         """Execute protocol - return success if initialized."""
         if not self._initialized:
@@ -87,6 +92,30 @@ class BaseProtocolImplementation:
             )
         return r[bool].ok(value=True)
 
+    def get_protocol_info(self) -> t.JsonObject:
+        """Get protocol configuration information.
+
+        Returns:
+        Dictionary with protocol metadata and configuration
+
+        """
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "initialized": self._initialized,
+            "supported_protocols": self.get_supported_protocols(),
+        }
+
+    def get_supported_protocols(self) -> list[str]:
+        """Get list of supported protocols.
+
+        Returns:
+        List of supported protocol identifiers
+
+        """
+        return []
+
     def initialize(self) -> r[bool]:
         """Initialize protocol resources."""
         if self._initialized:
@@ -95,20 +124,6 @@ class BaseProtocolImplementation:
         self.logger.debug(f"Initializing protocol: {self.name}")
         self._initialized = True
         return r[bool].ok(value=True)
-
-    def shutdown(self) -> r[bool]:
-        """Shutdown protocol and release resources."""
-        if not self._initialized:
-            return r[bool].fail(f"Protocol '{self.name}' not initialized")
-
-        self.logger.debug(f"Shutting down protocol: {self.name}")
-        self._initialized = False
-        return r[bool].ok(value=True)
-
-    @property
-    def is_initialized(self) -> bool:
-        """Check if protocol is initialized."""
-        return self._initialized
 
     def send_request(
         self,
@@ -135,6 +150,15 @@ class BaseProtocolImplementation:
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
+    def shutdown(self) -> r[bool]:
+        """Shutdown protocol and release resources."""
+        if not self._initialized:
+            return r[bool].fail(f"Protocol '{self.name}' not initialized")
+
+        self.logger.debug(f"Shutting down protocol: {self.name}")
+        self._initialized = False
+        return r[bool].ok(value=True)
+
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this protocol implementation supports the given protocol.
 
@@ -150,48 +174,6 @@ class BaseProtocolImplementation:
         # Acknowledge parameter to avoid linting warnings
         _ = protocol
         return False
-
-    def get_supported_protocols(self) -> list[str]:
-        """Get list of supported protocols.
-
-        Returns:
-        List of supported protocol identifiers
-
-        """
-        return []
-
-    def get_protocol_info(self) -> t.JsonObject:
-        """Get protocol configuration information.
-
-        Returns:
-        Dictionary with protocol metadata and configuration
-
-        """
-        return {
-            "name": self.name,
-            "version": self.version,
-            "description": self.description,
-            "initialized": self._initialized,
-            "supported_protocols": self.get_supported_protocols(),
-        }
-
-    def _validate_request(
-        self,
-        request: Mapping[str, t.ContainerValue],
-    ) -> r[Mapping[str, t.ContainerValue]]:
-        """Validate request dictionary.
-
-        Args:
-            request: Request dictionary to validate
-
-        Returns:
-            FlextResult with validated request or error
-
-        """
-        if not request:
-            return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
-
-        return r[Mapping[str, t.ContainerValue]].ok(request)
 
     def _build_error_response(
         self,
@@ -239,6 +221,24 @@ class BaseProtocolImplementation:
             response["data"] = data
 
         return response
+
+    def _validate_request(
+        self,
+        request: Mapping[str, t.ContainerValue],
+    ) -> r[Mapping[str, t.ContainerValue]]:
+        """Validate request dictionary.
+
+        Args:
+            request: Request dictionary to validate
+
+        Returns:
+            FlextResult with validated request or error
+
+        """
+        if not request:
+            return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
+
+        return r[Mapping[str, t.ContainerValue]].ok(request)
 
 
 __all__ = ["BaseProtocolImplementation"]

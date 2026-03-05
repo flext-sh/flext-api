@@ -126,6 +126,33 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             self.logger.error(f"Failed to initialize SSE protocol: {init_result.error}")
 
     @override
+    def get_supported_protocols(self) -> list[str]:
+        """Get list of supported protocols."""
+        return [
+            FlextApiConstants.Api.SSE.Protocol.SSE,
+            FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
+            FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
+        ]
+
+    def on_connect(self, handler: Callable[[], None]) -> None:
+        """Register a handler to be called when connecting."""
+        self._on_connect_handlers.append(handler)
+
+    def on_disconnect(self, handler: Callable[[], None]) -> None:
+        """Register a handler to be called when disconnected."""
+        self._on_disconnect_handlers.append(handler)
+
+    def on_error(self, handler: Callable[[Exception], None]) -> None:
+        """Register a handler to be called on errors."""
+        self._on_error_handlers.append(handler)
+
+    def on_event(self, event_type: str, handler: Callable[..., None]) -> None:
+        """Register a handler for a specific SSE event type."""
+        if event_type not in self._on_event_handlers:
+            self._on_event_handlers[event_type] = []
+        self._on_event_handlers[event_type].append(handler)
+
+    @override
     def send_request(
         self,
         request: Mapping[str, t.ContainerValue],
@@ -235,6 +262,16 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         }
         return r[Mapping[str, t.ContainerValue]].ok(response)
 
+    @override
+    def supports_protocol(self, protocol: str) -> bool:
+        """Check if protocol is supported by this plugin."""
+        protocol_lower = protocol.lower()
+        return protocol_lower in {
+            FlextApiConstants.Api.SSE.Protocol.SSE,
+            FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
+            FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
+        }
+
     def _consume_stream_once(
         self,
         *,
@@ -287,6 +324,15 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             self._notify_disconnect_handlers()
 
         return events, retry_timeout
+
+    def _extract_retry_timeout(
+        self,
+        event: Mapping[str, t.ContainerValue],
+    ) -> int | None:
+        retry_value = event.get("retry")
+        if isinstance(retry_value, int) and retry_value >= 0:
+            return retry_value
+        return None
 
     def _iter_fallback_events(
         self,
@@ -343,6 +389,38 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         if payload is not None:
             yield payload
 
+    def _notify_connect_handlers(self) -> None:
+        for handler in self._on_connect_handlers:
+            try:
+                handler()
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+                self.logger.exception("SSE connect handler error")
+
+    def _notify_disconnect_handlers(self) -> None:
+        for handler in self._on_disconnect_handlers:
+            try:
+                handler()
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+                self.logger.exception("SSE disconnect handler error")
+
+    def _notify_error_handlers(self, exc: Exception) -> None:
+        for handler in self._on_error_handlers:
+            try:
+                handler(exc)
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+                self.logger.exception("SSE error handler error")
+
+    def _notify_event_handlers(self, event: Mapping[str, t.ContainerValue]) -> None:
+        event_type_raw = event.get("event")
+        event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
+        handlers = [*self._on_event_handlers.get(event_type, [])]
+        handlers.extend(self._on_event_handlers.get("*", []))
+        for handler in handlers:
+            try:
+                handler(event)
+            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+                self.logger.exception("SSE event handler error")
+
     def _parse_sse_event(
         self,
         *,
@@ -370,19 +448,14 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             event_payload["retry"] = parsed_retry
         return event_payload
 
-    def _extract_retry_timeout(
-        self,
-        event: Mapping[str, t.ContainerValue],
-    ) -> int | None:
-        retry_value = event.get("retry")
-        if isinstance(retry_value, int) and retry_value >= 0:
-            return retry_value
-        return None
-
     def _record_event_id(self, event: Mapping[str, t.ContainerValue]) -> None:
         event_id = event.get("id")
         if isinstance(event_id, str) and event_id:
             self.last_event_id = event_id
+
+    def _set_connected_state(self, *, connected: bool) -> None:
+        self._connected = connected
+        self.is_connected = connected
 
     def _sleep_before_reconnect(
         self,
@@ -395,79 +468,6 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         )
         if delay_seconds > 0:
             time.sleep(delay_seconds)
-
-    def _set_connected_state(self, *, connected: bool) -> None:
-        self._connected = connected
-        self.is_connected = connected
-
-    def _notify_event_handlers(self, event: Mapping[str, t.ContainerValue]) -> None:
-        event_type_raw = event.get("event")
-        event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
-        handlers = [*self._on_event_handlers.get(event_type, [])]
-        handlers.extend(self._on_event_handlers.get("*", []))
-        for handler in handlers:
-            try:
-                handler(event)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
-                self.logger.exception("SSE event handler error")
-
-    def _notify_connect_handlers(self) -> None:
-        for handler in self._on_connect_handlers:
-            try:
-                handler()
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
-                self.logger.exception("SSE connect handler error")
-
-    def _notify_disconnect_handlers(self) -> None:
-        for handler in self._on_disconnect_handlers:
-            try:
-                handler()
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
-                self.logger.exception("SSE disconnect handler error")
-
-    def _notify_error_handlers(self, exc: Exception) -> None:
-        for handler in self._on_error_handlers:
-            try:
-                handler(exc)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
-                self.logger.exception("SSE error handler error")
-
-    @override
-    def supports_protocol(self, protocol: str) -> bool:
-        """Check if protocol is supported by this plugin."""
-        protocol_lower = protocol.lower()
-        return protocol_lower in {
-            FlextApiConstants.Api.SSE.Protocol.SSE,
-            FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
-            FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
-        }
-
-    @override
-    def get_supported_protocols(self) -> list[str]:
-        """Get list of supported protocols."""
-        return [
-            FlextApiConstants.Api.SSE.Protocol.SSE,
-            FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
-            FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
-        ]
-
-    def on_event(self, event_type: str, handler: Callable[..., None]) -> None:
-        """Register a handler for a specific SSE event type."""
-        if event_type not in self._on_event_handlers:
-            self._on_event_handlers[event_type] = []
-        self._on_event_handlers[event_type].append(handler)
-
-    def on_connect(self, handler: Callable[[], None]) -> None:
-        """Register a handler to be called when connecting."""
-        self._on_connect_handlers.append(handler)
-
-    def on_disconnect(self, handler: Callable[[], None]) -> None:
-        """Register a handler to be called when disconnected."""
-        self._on_disconnect_handlers.append(handler)
-
-    def on_error(self, handler: Callable[[Exception], None]) -> None:
-        """Register a handler to be called on errors."""
-        self._on_error_handlers.append(handler)
 
 
 __all__ = ["SSEProtocolPlugin"]

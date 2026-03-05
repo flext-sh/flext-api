@@ -102,11 +102,19 @@ class FlextApi(s[FlextApiSettings]):
         # Initialize HTTP client with API config
         self._client = FlextApiClient(config=api_config)
 
-    def _get_config(self) -> FlextApiSettings:
-        config = self._config
-        if isinstance(config, FlextApiSettings):
-            return config
-        return FlextApiSettings()
+    def delete(
+        self,
+        url: str,
+        headers: Mapping[str, str] | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
+    ) -> r[m.HttpResponse]:
+        """HTTP DELETE - delegates to generic method."""
+        return self._http_method(
+            method=FlextApiConstants.Api.Method.DELETE,
+            url=url,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
     @override
     def execute(
@@ -118,6 +126,68 @@ class FlextApi(s[FlextApiSettings]):
             FlextLogger(__name__).info(f"Execute called with kwargs: {kwargs}")
         config = self._get_config()
         return r[FlextApiSettings].ok(config)
+
+    def get(
+        self,
+        url: str,
+        headers: Mapping[str, str] | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
+    ) -> r[m.HttpResponse]:
+        """HTTP GET - delegates to generic method."""
+        return self._http_method(
+            method=FlextApiConstants.Api.Method.GET,
+            url=url,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
+
+    def patch(
+        self,
+        url: str,
+        data: t.Api.RequestBody | None = None,
+        headers: Mapping[str, str] | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
+    ) -> r[m.HttpResponse]:
+        """HTTP PATCH - delegates to generic method."""
+        return self._http_method(
+            method=FlextApiConstants.Api.Method.PATCH,
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
+
+    def post(
+        self,
+        url: str,
+        data: t.Api.RequestBody | None = None,
+        headers: Mapping[str, str] | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
+    ) -> r[m.HttpResponse]:
+        """HTTP POST - delegates to generic method."""
+        return self._http_method(
+            method=FlextApiConstants.Api.Method.POST,
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
+
+    def put(
+        self,
+        url: str,
+        data: t.Api.RequestBody | None = None,
+        headers: Mapping[str, str] | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
+    ) -> r[m.HttpResponse]:
+        """HTTP PUT - delegates to generic method."""
+        return self._http_method(
+            method=FlextApiConstants.Api.Method.PUT,
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
     def request(
         self,
@@ -174,6 +244,12 @@ class FlextApi(s[FlextApiSettings]):
             else:
                 params_result[k] = str(v)
         return r[t.Api.WebParams].ok(params_result)
+
+    def _get_config(self) -> FlextApiSettings:
+        config = self._config
+        if isinstance(config, FlextApiSettings):
+            return config
+        return FlextApiSettings()
 
     def _http_method(
         self,
@@ -254,82 +330,6 @@ class FlextApi(s[FlextApiSettings]):
             timeout=timeout_result.value,
         )
         return self.request(http_request)
-
-    def get(
-        self,
-        url: str,
-        headers: Mapping[str, str] | None = None,
-        request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
-        """HTTP GET - delegates to generic method."""
-        return self._http_method(
-            method=FlextApiConstants.Api.Method.GET,
-            url=url,
-            headers=headers,
-            request_kwargs=request_kwargs,
-        )
-
-    def post(
-        self,
-        url: str,
-        data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
-        request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
-        """HTTP POST - delegates to generic method."""
-        return self._http_method(
-            method=FlextApiConstants.Api.Method.POST,
-            url=url,
-            data=data,
-            headers=headers,
-            request_kwargs=request_kwargs,
-        )
-
-    def put(
-        self,
-        url: str,
-        data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
-        request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
-        """HTTP PUT - delegates to generic method."""
-        return self._http_method(
-            method=FlextApiConstants.Api.Method.PUT,
-            url=url,
-            data=data,
-            headers=headers,
-            request_kwargs=request_kwargs,
-        )
-
-    def delete(
-        self,
-        url: str,
-        headers: Mapping[str, str] | None = None,
-        request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
-        """HTTP DELETE - delegates to generic method."""
-        return self._http_method(
-            method=FlextApiConstants.Api.Method.DELETE,
-            url=url,
-            headers=headers,
-            request_kwargs=request_kwargs,
-        )
-
-    def patch(
-        self,
-        url: str,
-        data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
-        request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
-        """HTTP PATCH - delegates to generic method."""
-        return self._http_method(
-            method=FlextApiConstants.Api.Method.PATCH,
-            url=url,
-            data=data,
-            headers=headers,
-            request_kwargs=request_kwargs,
-        )
 
 
 __all__ = ["FlextApi"]

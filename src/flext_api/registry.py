@@ -63,103 +63,20 @@ class FlextApiRegistry(FlextRegistry):
         """Reset global registry instance (mainly for testing)."""
         cls._global_instance = None
 
-    # Protocol Registration
+    def clear_all(self) -> r[bool]:
+        """Clear all registered plugins (mainly for testing)."""
+        for category in [
+            self.PROTOCOLS,
+            self.SCHEMAS,
+            self.TRANSPORTS,
+            self.AUTH_PROVIDERS,
+        ]:
+            plugins = self.list_plugins(category).value or []
+            for name in plugins:
+                self.unregister_plugin(category, name)
 
-    def register_protocol(
-        self,
-        name: str,
-        plugin: FlextApiPlugins.Protocol,
-    ) -> r[bool]:
-        """Register a protocol plugin."""
-        self._protocol_cache[name] = plugin
-        return self.register_plugin(self.PROTOCOLS, name, plugin)
-
-    def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
-        """Get registered protocol plugin by name."""
-        if name in self._protocol_cache:
-            return r[FlextApiPlugins.Protocol].ok(self._protocol_cache[name])
-
-        result = self.get_plugin(self.PROTOCOLS, name)
-        if result.is_failure:
-            return r[FlextApiPlugins.Protocol].fail(result.error)
-        return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
-
-    def list_protocols(self) -> r[list[str]]:
-        """List all registered protocol names."""
-        return self.list_plugins(self.PROTOCOLS)
-
-    def unregister_protocol(self, name: str) -> r[bool]:
-        """Unregister a protocol plugin."""
-        return self.unregister_plugin(self.PROTOCOLS, name)
-
-    # Schema Registration
-
-    def register_schema(
-        self,
-        name: str,
-        plugin: FlextApiPlugins.Schema,
-    ) -> r[bool]:
-        """Register a schema plugin."""
-        self._schema_cache[name] = plugin
-        return self.register_plugin(self.SCHEMAS, name, plugin)
-
-    def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
-        """Get registered schema plugin by name."""
-        if name in self._schema_cache:
-            return r[FlextApiPlugins.Schema].ok(self._schema_cache[name])
-
-        result = self.get_plugin(self.SCHEMAS, name)
-        if result.is_failure:
-            return r[FlextApiPlugins.Schema].fail(result.error)
-        return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
-
-    def list_schemas(self) -> r[list[str]]:
-        """List all registered schema system names."""
-        return self.list_plugins(self.SCHEMAS)
-
-    def unregister_schema(self, name: str) -> r[bool]:
-        """Unregister a schema plugin."""
-        return self.unregister_plugin(self.SCHEMAS, name)
-
-    # Transport Registration
-
-    def register_transport(
-        self,
-        name: str,
-        plugin: FlextApiPlugins.Transport,
-    ) -> r[bool]:
-        """Register a transport plugin."""
-        self._transport_cache[name] = plugin
-        return self.register_plugin(self.TRANSPORTS, name, plugin)
-
-    def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
-        """Get registered transport plugin by name."""
-        if name in self._transport_cache:
-            return r[FlextApiPlugins.Transport].ok(self._transport_cache[name])
-
-        result = self.get_plugin(self.TRANSPORTS, name)
-        if result.is_failure:
-            return r[FlextApiPlugins.Transport].fail(result.error)
-        return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
-
-    def list_transports(self) -> r[list[str]]:
-        """List all registered transport names."""
-        return self.list_plugins(self.TRANSPORTS)
-
-    def unregister_transport(self, name: str) -> r[bool]:
-        """Unregister a transport plugin."""
-        return self.unregister_plugin(self.TRANSPORTS, name)
-
-    # Authentication Provider Registration
-
-    def register_auth_provider(
-        self,
-        name: str,
-        plugin: FlextApiPlugins.Authentication,
-    ) -> r[bool]:
-        """Register an authentication provider plugin."""
-        self._auth_cache[name] = plugin
-        return self.register_plugin(self.AUTH_PROVIDERS, name, plugin)
+        self.logger.info("Cleared all registry plugins")
+        return r[bool].ok(value=True)
 
     def get_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name."""
@@ -173,13 +90,15 @@ class FlextApiRegistry(FlextRegistry):
             "Plugin is not an Authentication type",
         )
 
-    def list_auth_providers(self) -> r[list[str]]:
-        """List all registered authentication provider names."""
-        return self.list_plugins(self.AUTH_PROVIDERS)
+    def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
+        """Get registered protocol plugin by name."""
+        if name in self._protocol_cache:
+            return r[FlextApiPlugins.Protocol].ok(self._protocol_cache[name])
 
-    def unregister_auth_provider(self, name: str) -> r[bool]:
-        """Unregister an authentication provider."""
-        return self.unregister_plugin(self.AUTH_PROVIDERS, name)
+        result = self.get_plugin(self.PROTOCOLS, name)
+        if result.is_failure:
+            return r[FlextApiPlugins.Protocol].fail(result.error)
+        return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
 
     # Utility Methods
 
@@ -202,20 +121,101 @@ class FlextApiRegistry(FlextRegistry):
         }
         return r[Mapping[str, int]].ok(status)
 
-    def clear_all(self) -> r[bool]:
-        """Clear all registered plugins (mainly for testing)."""
-        for category in [
-            self.PROTOCOLS,
-            self.SCHEMAS,
-            self.TRANSPORTS,
-            self.AUTH_PROVIDERS,
-        ]:
-            plugins = self.list_plugins(category).value or []
-            for name in plugins:
-                self.unregister_plugin(category, name)
+    def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
+        """Get registered schema plugin by name."""
+        if name in self._schema_cache:
+            return r[FlextApiPlugins.Schema].ok(self._schema_cache[name])
 
-        self.logger.info("Cleared all registry plugins")
-        return r[bool].ok(value=True)
+        result = self.get_plugin(self.SCHEMAS, name)
+        if result.is_failure:
+            return r[FlextApiPlugins.Schema].fail(result.error)
+        return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
+
+    def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
+        """Get registered transport plugin by name."""
+        if name in self._transport_cache:
+            return r[FlextApiPlugins.Transport].ok(self._transport_cache[name])
+
+        result = self.get_plugin(self.TRANSPORTS, name)
+        if result.is_failure:
+            return r[FlextApiPlugins.Transport].fail(result.error)
+        return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
+
+    def list_auth_providers(self) -> r[list[str]]:
+        """List all registered authentication provider names."""
+        return self.list_plugins(self.AUTH_PROVIDERS)
+
+    def list_protocols(self) -> r[list[str]]:
+        """List all registered protocol names."""
+        return self.list_plugins(self.PROTOCOLS)
+
+    def list_schemas(self) -> r[list[str]]:
+        """List all registered schema system names."""
+        return self.list_plugins(self.SCHEMAS)
+
+    def list_transports(self) -> r[list[str]]:
+        """List all registered transport names."""
+        return self.list_plugins(self.TRANSPORTS)
+
+    # Authentication Provider Registration
+
+    def register_auth_provider(
+        self,
+        name: str,
+        plugin: FlextApiPlugins.Authentication,
+    ) -> r[bool]:
+        """Register an authentication provider plugin."""
+        self._auth_cache[name] = plugin
+        return self.register_plugin(self.AUTH_PROVIDERS, name, plugin)
+
+    # Protocol Registration
+
+    def register_protocol(
+        self,
+        name: str,
+        plugin: FlextApiPlugins.Protocol,
+    ) -> r[bool]:
+        """Register a protocol plugin."""
+        self._protocol_cache[name] = plugin
+        return self.register_plugin(self.PROTOCOLS, name, plugin)
+
+    # Schema Registration
+
+    def register_schema(
+        self,
+        name: str,
+        plugin: FlextApiPlugins.Schema,
+    ) -> r[bool]:
+        """Register a schema plugin."""
+        self._schema_cache[name] = plugin
+        return self.register_plugin(self.SCHEMAS, name, plugin)
+
+    # Transport Registration
+
+    def register_transport(
+        self,
+        name: str,
+        plugin: FlextApiPlugins.Transport,
+    ) -> r[bool]:
+        """Register a transport plugin."""
+        self._transport_cache[name] = plugin
+        return self.register_plugin(self.TRANSPORTS, name, plugin)
+
+    def unregister_auth_provider(self, name: str) -> r[bool]:
+        """Unregister an authentication provider."""
+        return self.unregister_plugin(self.AUTH_PROVIDERS, name)
+
+    def unregister_protocol(self, name: str) -> r[bool]:
+        """Unregister a protocol plugin."""
+        return self.unregister_plugin(self.PROTOCOLS, name)
+
+    def unregister_schema(self, name: str) -> r[bool]:
+        """Unregister a schema plugin."""
+        return self.unregister_plugin(self.SCHEMAS, name)
+
+    def unregister_transport(self, name: str) -> r[bool]:
+        """Unregister a transport plugin."""
+        return self.unregister_plugin(self.TRANSPORTS, name)
 
 
 __all__ = ["FlextApiRegistry"]

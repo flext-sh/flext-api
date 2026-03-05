@@ -63,32 +63,6 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         value: Mapping[str, t.ContainerValue]
 
-    def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
-        try:
-            if not isinstance(value, str):
-                return r[str].fail(f"'{field_name}' field must be a string")
-            parsed = self._StringField(value=value)
-        except ValidationError:
-            return r[str].fail(f"'{field_name}' field must be a string")
-        return r[str].ok(parsed.value)
-
-    def _parse_dict_field(
-        self,
-        value: t.ApiJsonValue,
-        field_name: str,
-    ) -> r[Mapping[str, t.ContainerValue]]:
-        try:
-            if not isinstance(value, Mapping):
-                return r[Mapping[str, t.ContainerValue]].fail(
-                    f"'{field_name}' field must be a dictionary",
-                )
-            parsed = self._DictField(value=value)
-        except ValidationError:
-            return r[Mapping[str, t.ContainerValue]].fail(
-                f"'{field_name}' field must be a dictionary",
-            )
-        return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
-
     def __init__(
         self,
         *,
@@ -118,125 +92,114 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Cached schemas
         self._cached_schemas: Mapping[str, Mapping[str, t.ContainerValue]] = {}
 
-    def _validate_openapi_version(
-        self,
-        schema: t.JsonObject,
-    ) -> r[str]:
-        """Validate OpenAPI version field."""
-        if "openapi" not in schema:
-            return r[str].fail("Missing 'openapi' version field")
+    def get_supported_schemas(self) -> list[str]:
+        """Get list of supported schema types.
 
-        openapi_version_value = schema["openapi"]
-        version_result = self._parse_string_field(openapi_version_value, "openapi")
-        if version_result.is_failure:
-            return version_result
+        Returns:
+        List of supported schema type identifiers
 
-        openapi_version = version_result.value
-        if not openapi_version.startswith("3."):
-            return r[str].fail(f"Unsupported OpenAPI version: {openapi_version}")
-
-        return r[str].ok(openapi_version)
-
-    def _validate_info_field(
-        self,
-        schema: t.JsonObject,
-    ) -> r[bool]:
-        """Validate info field exists and has required fields.
-
-        Single Responsibility: Only validates, does not extract or transform data.
-        Caller accesses schema["info"] directly after validation passes.
         """
-        if "info" not in schema:
-            return r[bool].fail("Missing 'info' field in schema")
+        return ["openapi", "openapi3", "openapi-3"]
 
-        info_value = schema["info"]
-        info_result = self._parse_dict_field(info_value, "info")
-        if info_result.is_failure:
-            return r[bool].fail(info_result.error)
-        info_value = info_result.value
+    @override
+    def load_schema(
+        self,
+        schema_source: str,
+    ) -> r[t.ContainerValue]:
+        """Load OpenAPI schema from source.
 
-        # Validate required fields
-        info_required = ["title", "version"]
-        info_missing = u.Collection.filter(
-            list(info_required),
-            lambda field: field not in info_value,
-        )
-        if info_missing:
-            return r[bool].fail(
-                f"Missing required info fields: {', '.join(info_missing)}",
+        Args:
+        schema_source: Schema file path
+
+        Returns:
+        FlextResult containing loaded schema or error
+
+        """
+        schema_result = self._load_schema_document(schema_source)
+        if schema_result.is_failure:
+            return r[t.ContainerValue].fail(
+                schema_result.error or "Failed to load OpenAPI schema",
             )
 
-        return r[bool].ok(value=True)
-
-    def _validate_paths_field(
-        self,
-        schema: t.JsonObject,
-    ) -> r[bool]:
-        """Validate paths field exists and contains valid path definitions.
-
-        Single Responsibility: Only validates, does not extract or transform data.
-        Caller accesses schema["paths"] directly after validation passes.
-        """
-        if "paths" not in schema:
-            return r[bool].fail("Missing 'paths' field in schema")
-
-        paths_value = schema["paths"]
-        paths_result = self._parse_dict_field(paths_value, "paths")
-        if paths_result.is_failure:
-            return r[bool].fail(paths_result.error)
-
-        # Delegate to detailed path validation
-        return self._validate_paths(paths_result.value)
-
-    def _validate_optional_components(
-        self,
-        schema: t.JsonObject,
-    ) -> r[bool]:
-        """Validate optional components and security schemes."""
-        if "components" not in schema:
-            return r[bool].ok(value=True)
-
-        components_value = schema["components"]
-        components_result = self._parse_dict_field(components_value, "components")
-        if components_result.is_failure:
-            return r[bool].fail(components_result.error)
-        components_map = components_result.value
-
-        components_validation = self._validate_components(components_map)
-        if components_validation.is_failure:
-            return components_validation
-
-        if "securitySchemes" in components_map:
-            security_schemes_value = components_map["securitySchemes"]
-            schemes_result = self._parse_dict_field(
-                security_schemes_value,
-                "securitySchemes",
+        loaded_schema = schema_result.value
+        if not _is_object_mapping(loaded_schema):
+            return r[t.ContainerValue].fail(
+                "OpenAPI schema must be a JSON/YAML object",
             )
-            if schemes_result.is_failure:
-                return r[bool].fail(schemes_result.error)
 
-            security_result = self._validate_security_schemes(schemes_result.value)
-            if security_result.is_failure:
-                return security_result
+        normalized_schema = self._normalize_json_object(loaded_schema)
+        validation_result = self.validate_schema(normalized_schema)
+        if validation_result.is_failure:
+            return r[t.ContainerValue].fail(
+                f"Invalid OpenAPI schema: {validation_result.error}",
+            )
 
+        normalized_result: t.ContainerValue = normalized_schema
+        return r[t.ContainerValue].ok(normalized_result)
+
+    def supports_schema(self, schema_type: str) -> bool:
+        """Check if this validator supports the given schema type.
+
+        Args:
+        schema_type: Schema type identifier
+
+        Returns:
+        True if schema type is supported
+
+        """
+        return schema_type.lower() in {"openapi", "openapi3", "openapi-3"}
+
+    @override
+    def validate_request(
+        self,
+        request: t.JsonObject,
+        schema: t.JsonObject,
+    ) -> r[bool]:
+        """Validate request against OpenAPI schema.
+
+        Args:
+        request: Request to validate
+        schema: OpenAPI schema
+
+        Returns:
+        FlextResult containing validation result or error
+
+        """
+        # Validate the schema first
+        schema_result = self.validate_schema(schema)
+        if schema_result.is_failure:
+            return r[bool].fail(f"Invalid schema: {schema_result.error}")
+
+        # Acknowledge unused parameters (schema endpoint)
+        _ = request, schema
+        # Implementation would validate request against OpenAPI paths/operations
         return r[bool].ok(value=True)
 
-    def _extract_title(self, info_value: t.ApiJsonValue) -> str:
-        """Extract title from validated info object."""
-        info_result = self._parse_dict_field(info_value, "info")
-        if info_result.is_failure:
-            return ""
-        info = info_result.value
-        if "title" not in info:
-            return ""
-        return str(info["title"])
+    @override
+    def validate_response(
+        self,
+        response: t.JsonObject,
+        schema: t.JsonObject,
+    ) -> r[bool]:
+        """Validate response against OpenAPI schema.
 
-    def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> list[str]:
-        """Extract path keys from validated paths object."""
-        paths_result = self._parse_dict_field(paths_value, "paths")
-        if paths_result.is_failure:
-            return []
-        return list(paths_result.value.keys())
+        Args:
+        response: Response to validate
+        schema: OpenAPI schema
+
+        Returns:
+        FlextResult containing validation result or error
+
+        """
+        # Validate the schema first
+        schema_result = self.validate_schema(schema)
+        if schema_result.is_failure:
+            return r[bool].fail(f"Invalid schema: {schema_result.error}")
+
+        # Acknowledge unused parameters (schema endpoint)
+        _ = response, schema
+        # Implementation would validate response against OpenAPI response schemas
+        return r[bool].ok(value=True)
 
     def validate_schema(
         self,
@@ -309,6 +272,254 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             "paths": paths_keys,
         })
 
+    def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> list[str]:
+        """Extract path keys from validated paths object."""
+        paths_result = self._parse_dict_field(paths_value, "paths")
+        if paths_result.is_failure:
+            return []
+        return list(paths_result.value.keys())
+
+    def _extract_title(self, info_value: t.ApiJsonValue) -> str:
+        """Extract title from validated info object."""
+        info_result = self._parse_dict_field(info_value, "info")
+        if info_result.is_failure:
+            return ""
+        info = info_result.value
+        if "title" not in info:
+            return ""
+        return str(info["title"])
+
+    def _load_schema_document(self, schema_source: str) -> r[object]:
+        schema_path = Path(schema_source)
+        if not schema_path.exists() or not schema_path.is_file():
+            return r[object].fail(f"Schema file not found: {schema_source}")
+
+        suffix = schema_path.suffix.lower()
+        try:
+            with schema_path.open("r", encoding="utf-8") as schema_file:
+                if suffix in {".yaml", ".yml"}:
+                    try:
+                        return r[object].ok(yaml.safe_load(schema_file))
+                    except Exception as e:
+                        return r[object].fail(f"Failed to parse YAML schema: {e}")
+
+                try:
+                    return r[object].ok(json.load(schema_file))
+                except json.JSONDecodeError as e:
+                    return r[object].fail(f"Failed to parse JSON schema: {e}")
+        except OSError as e:
+            return r[object].fail(f"Failed to read schema file: {e}")
+
+    def _normalize_json_object(
+        self,
+        value: Mapping[object, object],
+    ) -> t.JsonObject:
+        normalized: t.JsonObject = {}
+        for key, item in value.items():
+            if _is_container_value(item):
+                normalized_value = self._to_general_value(item)
+            else:
+                normalized_value = str(item)
+            normalized[str(key)] = normalized_value
+        return normalized
+
+    def _parse_dict_field(
+        self,
+        value: t.ApiJsonValue,
+        field_name: str,
+    ) -> r[Mapping[str, t.ContainerValue]]:
+        try:
+            if not isinstance(value, Mapping):
+                return r[Mapping[str, t.ContainerValue]].fail(
+                    f"'{field_name}' field must be a dictionary",
+                )
+            parsed = self._DictField(value=value)
+        except ValidationError:
+            return r[Mapping[str, t.ContainerValue]].fail(
+                f"'{field_name}' field must be a dictionary",
+            )
+        return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
+
+    def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
+        try:
+            if not isinstance(value, str):
+                return r[str].fail(f"'{field_name}' field must be a string")
+            parsed = self._StringField(value=value)
+        except ValidationError:
+            return r[str].fail(f"'{field_name}' field must be a string")
+        return r[str].ok(parsed.value)
+
+    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_values: list[t.ContainerValue] = [
+                self._to_general_value(item) for item in value
+            ]
+            return normalized_values
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized_mapping[str(key)] = self._to_general_value(item)
+            return normalized_mapping
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
+
+    def _validate_components(
+        self,
+        components: Mapping[str, t.ContainerValue],
+    ) -> r[bool]:
+        """Validate OpenAPI components object.
+
+        Args:
+        components: Components dictionary from OpenAPI schema
+
+        Returns:
+        FlextResult indicating validation success or failure
+
+        """
+        # Validate component sections
+        valid_sections = [
+            "schemas",
+            "responses",
+            "parameters",
+            "examples",
+            "requestBodies",
+            "headers",
+            "securitySchemes",
+            "links",
+            "callbacks",
+        ]
+
+        for section_name, section_value in components.items():
+            if section_name not in valid_sections and self._strict_mode:
+                return r[bool].fail(f"Invalid component section: {section_name}")
+
+            section_result = self._parse_dict_field(section_value, section_name)
+            if section_result.is_failure:
+                return r[bool].fail(
+                    f"Component section must be a dictionary: {section_name}",
+                )
+
+        return r[bool].ok(value=True)
+
+    def _validate_info_field(
+        self,
+        schema: t.JsonObject,
+    ) -> r[bool]:
+        """Validate info field exists and has required fields.
+
+        Single Responsibility: Only validates, does not extract or transform data.
+        Caller accesses schema["info"] directly after validation passes.
+        """
+        if "info" not in schema:
+            return r[bool].fail("Missing 'info' field in schema")
+
+        info_value = schema["info"]
+        info_result = self._parse_dict_field(info_value, "info")
+        if info_result.is_failure:
+            return r[bool].fail(info_result.error)
+        info_value = info_result.value
+
+        # Validate required fields
+        info_required = ["title", "version"]
+        info_missing = u.Collection.filter(
+            list(info_required),
+            lambda field: field not in info_value,
+        )
+        if info_missing:
+            return r[bool].fail(
+                f"Missing required info fields: {', '.join(info_missing)}",
+            )
+
+        return r[bool].ok(value=True)
+
+    def _validate_openapi_version(
+        self,
+        schema: t.JsonObject,
+    ) -> r[str]:
+        """Validate OpenAPI version field."""
+        if "openapi" not in schema:
+            return r[str].fail("Missing 'openapi' version field")
+
+        openapi_version_value = schema["openapi"]
+        version_result = self._parse_string_field(openapi_version_value, "openapi")
+        if version_result.is_failure:
+            return version_result
+
+        openapi_version = version_result.value
+        if not openapi_version.startswith("3."):
+            return r[str].fail(f"Unsupported OpenAPI version: {openapi_version}")
+
+        return r[str].ok(openapi_version)
+
+    def _validate_operation(
+        self,
+        operation: Mapping[str, t.ContainerValue],
+        path: str,
+        method: str,
+    ) -> r[bool]:
+        """Validate OpenAPI operation object.
+
+        Args:
+        operation: Operation dictionary
+        path: API path
+        method: HTTP method
+
+        Returns:
+        FlextResult indicating validation success or failure
+
+        """
+        # Validate responses (required field)
+        if "responses" not in operation:
+            return r[bool].fail(f"Missing required 'responses' field: {method} {path}")
+
+        if self._validate_responses:
+            responses_value = operation["responses"]
+            responses_result = self._parse_dict_field(responses_value, "responses")
+            if responses_result.is_failure:
+                return r[bool].fail(f"Responses must be a dictionary: {method} {path}")
+
+            responses = responses_result.value
+            if not responses:
+                return r[bool].fail(f"Responses cannot be empty: {method} {path}")
+
+        return r[bool].ok(value=True)
+
+    def _validate_optional_components(
+        self,
+        schema: t.JsonObject,
+    ) -> r[bool]:
+        """Validate optional components and security schemes."""
+        if "components" not in schema:
+            return r[bool].ok(value=True)
+
+        components_value = schema["components"]
+        components_result = self._parse_dict_field(components_value, "components")
+        if components_result.is_failure:
+            return r[bool].fail(components_result.error)
+        components_map = components_result.value
+
+        components_validation = self._validate_components(components_map)
+        if components_validation.is_failure:
+            return components_validation
+
+        if "securitySchemes" in components_map:
+            security_schemes_value = components_map["securitySchemes"]
+            schemes_result = self._parse_dict_field(
+                security_schemes_value,
+                "securitySchemes",
+            )
+            if schemes_result.is_failure:
+                return r[bool].fail(schemes_result.error)
+
+            security_result = self._validate_security_schemes(schemes_result.value)
+            if security_result.is_failure:
+                return security_result
+
+        return r[bool].ok(value=True)
+
     def _validate_paths(self, paths: Mapping[str, t.ApiJsonValue]) -> r[bool]:
         """Validate OpenAPI paths object.
 
@@ -359,121 +570,25 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def _validate_operation(
+    def _validate_paths_field(
         self,
-        operation: Mapping[str, t.ContainerValue],
-        path: str,
-        method: str,
+        schema: t.JsonObject,
     ) -> r[bool]:
-        """Validate OpenAPI operation object.
+        """Validate paths field exists and contains valid path definitions.
 
-        Args:
-        operation: Operation dictionary
-        path: API path
-        method: HTTP method
-
-        Returns:
-        FlextResult indicating validation success or failure
-
+        Single Responsibility: Only validates, does not extract or transform data.
+        Caller accesses schema["paths"] directly after validation passes.
         """
-        # Validate responses (required field)
-        if "responses" not in operation:
-            return r[bool].fail(f"Missing required 'responses' field: {method} {path}")
+        if "paths" not in schema:
+            return r[bool].fail("Missing 'paths' field in schema")
 
-        if self._validate_responses:
-            responses_value = operation["responses"]
-            responses_result = self._parse_dict_field(responses_value, "responses")
-            if responses_result.is_failure:
-                return r[bool].fail(f"Responses must be a dictionary: {method} {path}")
+        paths_value = schema["paths"]
+        paths_result = self._parse_dict_field(paths_value, "paths")
+        if paths_result.is_failure:
+            return r[bool].fail(paths_result.error)
 
-            responses = responses_result.value
-            if not responses:
-                return r[bool].fail(f"Responses cannot be empty: {method} {path}")
-
-        return r[bool].ok(value=True)
-
-    def _validate_components(
-        self,
-        components: Mapping[str, t.ContainerValue],
-    ) -> r[bool]:
-        """Validate OpenAPI components object.
-
-        Args:
-        components: Components dictionary from OpenAPI schema
-
-        Returns:
-        FlextResult indicating validation success or failure
-
-        """
-        # Validate component sections
-        valid_sections = [
-            "schemas",
-            "responses",
-            "parameters",
-            "examples",
-            "requestBodies",
-            "headers",
-            "securitySchemes",
-            "links",
-            "callbacks",
-        ]
-
-        for section_name, section_value in components.items():
-            if section_name not in valid_sections and self._strict_mode:
-                return r[bool].fail(f"Invalid component section: {section_name}")
-
-            section_result = self._parse_dict_field(section_value, section_name)
-            if section_result.is_failure:
-                return r[bool].fail(
-                    f"Component section must be a dictionary: {section_name}",
-                )
-
-        return r[bool].ok(value=True)
-
-    def _validate_security_schemes_structure(
-        self,
-        security_schemes: t.ContainerValue,
-    ) -> r[Mapping[str, t.ContainerValue]]:
-        """Validate basic structure of security schemes."""
-        schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
-        if schemes_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
-                "Security schemes must be a dictionary",
-            )
-        return r[Mapping[str, t.ContainerValue]].ok(schemes_result.value)
-
-    def _validate_single_security_scheme(
-        self,
-        scheme_name: str,
-        scheme: t.ContainerValue,
-    ) -> r[bool]:
-        """Validate a single security scheme."""
-        scheme_result = self._parse_dict_field(scheme, "scheme")
-        if scheme_result.is_failure:
-            return r[bool].fail(f"Security scheme must be a dictionary: {scheme_name}")
-        scheme = scheme_result.value
-
-        if "type" not in scheme:
-            return r[bool].fail(
-                f"Missing 'type' field in security scheme: {scheme_name}",
-            )
-
-        scheme_type_value = scheme["type"]
-        type_result = self._parse_string_field(scheme_type_value, "type")
-        if type_result.is_failure:
-            return r[bool].fail(
-                f"'type' field must be a string in security scheme: {scheme_name}",
-            )
-
-        scheme_type = type_result.value
-        valid_types = ["apiKey", "http", "oauth2", "openIdConnect"]
-        if scheme_type not in valid_types:
-            return r[bool].fail(
-                f"Invalid security scheme type '{scheme_type}': {scheme_name}",
-            )
-
-        # Validate type-specific requirements
-        return self._validate_scheme_type_requirements(scheme_name, scheme, scheme_type)
+        # Delegate to detailed path validation
+        return self._validate_paths(paths_result.value)
 
     def _validate_scheme_type_requirements(
         self,
@@ -531,165 +646,50 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def supports_schema(self, schema_type: str) -> bool:
-        """Check if this validator supports the given schema type.
-
-        Args:
-        schema_type: Schema type identifier
-
-        Returns:
-        True if schema type is supported
-
-        """
-        return schema_type.lower() in {"openapi", "openapi3", "openapi-3"}
-
-    def get_supported_schemas(self) -> list[str]:
-        """Get list of supported schema types.
-
-        Returns:
-        List of supported schema type identifiers
-
-        """
-        return ["openapi", "openapi3", "openapi-3"]
-
-    @override
-    def validate_request(
+    def _validate_security_schemes_structure(
         self,
-        request: t.JsonObject,
-        schema: t.JsonObject,
+        security_schemes: t.ContainerValue,
+    ) -> r[Mapping[str, t.ContainerValue]]:
+        """Validate basic structure of security schemes."""
+        schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
+        if schemes_result.is_failure:
+            return r[Mapping[str, t.ContainerValue]].fail(
+                "Security schemes must be a dictionary",
+            )
+        return r[Mapping[str, t.ContainerValue]].ok(schemes_result.value)
+
+    def _validate_single_security_scheme(
+        self,
+        scheme_name: str,
+        scheme: t.ContainerValue,
     ) -> r[bool]:
-        """Validate request against OpenAPI schema.
+        """Validate a single security scheme."""
+        scheme_result = self._parse_dict_field(scheme, "scheme")
+        if scheme_result.is_failure:
+            return r[bool].fail(f"Security scheme must be a dictionary: {scheme_name}")
+        scheme = scheme_result.value
 
-        Args:
-        request: Request to validate
-        schema: OpenAPI schema
-
-        Returns:
-        FlextResult containing validation result or error
-
-        """
-        # Validate the schema first
-        schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-
-        # Acknowledge unused parameters (schema endpoint)
-        _ = request, schema
-        # Implementation would validate request against OpenAPI paths/operations
-        return r[bool].ok(value=True)
-
-    @override
-    def validate_response(
-        self,
-        response: t.JsonObject,
-        schema: t.JsonObject,
-    ) -> r[bool]:
-        """Validate response against OpenAPI schema.
-
-        Args:
-        response: Response to validate
-        schema: OpenAPI schema
-
-        Returns:
-        FlextResult containing validation result or error
-
-        """
-        # Validate the schema first
-        schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-
-        # Acknowledge unused parameters (schema endpoint)
-        _ = response, schema
-        # Implementation would validate response against OpenAPI response schemas
-        return r[bool].ok(value=True)
-
-    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        if value is None:
-            return None
-        if isinstance(value, list):
-            normalized_values: list[t.ContainerValue] = [
-                self._to_general_value(item) for item in value
-            ]
-            return normalized_values
-        if isinstance(value, Mapping):
-            normalized_mapping: dict[str, t.ContainerValue] = {}
-            for key, item in value.items():
-                normalized_mapping[str(key)] = self._to_general_value(item)
-            return normalized_mapping
-        if isinstance(value, (str, int, float, bool)):
-            return value
-        return str(value)
-
-    def _load_schema_document(self, schema_source: str) -> r[object]:
-        schema_path = Path(schema_source)
-        if not schema_path.exists() or not schema_path.is_file():
-            return r[object].fail(f"Schema file not found: {schema_source}")
-
-        suffix = schema_path.suffix.lower()
-        try:
-            with schema_path.open("r", encoding="utf-8") as schema_file:
-                if suffix in {".yaml", ".yml"}:
-                    try:
-                        return r[object].ok(yaml.safe_load(schema_file))
-                    except Exception as e:
-                        return r[object].fail(f"Failed to parse YAML schema: {e}")
-
-                try:
-                    return r[object].ok(json.load(schema_file))
-                except json.JSONDecodeError as e:
-                    return r[object].fail(f"Failed to parse JSON schema: {e}")
-        except OSError as e:
-            return r[object].fail(f"Failed to read schema file: {e}")
-
-    def _normalize_json_object(
-        self,
-        value: Mapping[object, object],
-    ) -> t.JsonObject:
-        normalized: t.JsonObject = {}
-        for key, item in value.items():
-            if _is_container_value(item):
-                normalized_value = self._to_general_value(item)
-            else:
-                normalized_value = str(item)
-            normalized[str(key)] = normalized_value
-        return normalized
-
-    @override
-    def load_schema(
-        self,
-        schema_source: str,
-    ) -> r[t.ContainerValue]:
-        """Load OpenAPI schema from source.
-
-        Args:
-        schema_source: Schema file path
-
-        Returns:
-        FlextResult containing loaded schema or error
-
-        """
-        schema_result = self._load_schema_document(schema_source)
-        if schema_result.is_failure:
-            return r[t.ContainerValue].fail(
-                schema_result.error or "Failed to load OpenAPI schema",
+        if "type" not in scheme:
+            return r[bool].fail(
+                f"Missing 'type' field in security scheme: {scheme_name}",
             )
 
-        loaded_schema = schema_result.value
-        if not _is_object_mapping(loaded_schema):
-            return r[t.ContainerValue].fail(
-                "OpenAPI schema must be a JSON/YAML object",
+        scheme_type_value = scheme["type"]
+        type_result = self._parse_string_field(scheme_type_value, "type")
+        if type_result.is_failure:
+            return r[bool].fail(
+                f"'type' field must be a string in security scheme: {scheme_name}",
             )
 
-        normalized_schema = self._normalize_json_object(loaded_schema)
-        validation_result = self.validate_schema(normalized_schema)
-        if validation_result.is_failure:
-            return r[t.ContainerValue].fail(
-                f"Invalid OpenAPI schema: {validation_result.error}",
+        scheme_type = type_result.value
+        valid_types = ["apiKey", "http", "oauth2", "openIdConnect"]
+        if scheme_type not in valid_types:
+            return r[bool].fail(
+                f"Invalid security scheme type '{scheme_type}': {scheme_name}",
             )
 
-        normalized_result: t.ContainerValue = normalized_schema
-        return r[t.ContainerValue].ok(normalized_result)
+        # Validate type-specific requirements
+        return self._validate_scheme_type_requirements(scheme_name, scheme, scheme_type)
 
 
 __all__ = ["OpenAPISchemaValidator"]

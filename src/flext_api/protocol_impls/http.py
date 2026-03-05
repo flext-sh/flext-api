@@ -114,65 +114,28 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             max_retries=self._max_retries,
         )
 
-    def _build_http_request_from_dict(
-        self,
-        request: Mapping[str, t.ContainerValue],
-    ) -> r[m.HttpRequest]:
-        """Build HttpRequest from dictionary using RFC methods."""
-        # Validate request using base class method
-        validation_result = self._validate_request(request)
-        if validation_result.is_failure:
-            return r[m.HttpRequest].fail(
-                validation_result.error or "Request validation failed",
-            )
+    @override
+    def get_protocol_info(self) -> t.JsonObject:
+        """Get protocol configuration information."""
+        base_info = super().get_protocol_info()
+        updated_info: t.JsonObject = {
+            **base_info,
+            "http2_enabled": self._http2,
+            "http3_enabled": self._http3,
+            "max_retries": self._max_retries,
+            "retry_backoff_factor": self._retry_backoff_factor,
+            "follow_redirects": self._follow_redirects,
+            "max_redirects": self._max_redirects,
+        }
+        return updated_info
 
-        # Extract method using RFC method
-        method_result = self._extract_method(request)
-        if method_result.is_failure:
-            return r[m.HttpRequest].fail(
-                method_result.error or "Method extraction failed",
-            )
-
-        # Extract URL using RFC method
-        url_result = self._extract_url(request)
-        if url_result.is_failure:
-            return r[m.HttpRequest].fail(
-                url_result.error or "URL extraction failed",
-            )
-
-        # Extract headers using RFC method
-        headers = self._extract_headers(request)
-
-        # Extract body using RFC method with type narrowing
-        body_value = self._extract_body(request)
-        body = u.Api.RequestUtils.to_request_body(body_value)
-
-        http_request = m.HttpRequest(
-            method=method_result.value,
-            url=url_result.value,
-            headers=dict(headers),
-            body=body,
-            timeout=self._extract_timeout(request),
-        )
-
-        return r[m.HttpRequest].ok(http_request)
-
-    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        if value is None:
-            return None
-        if isinstance(value, list):
-            normalized_items: list[t.ContainerValue] = [
-                self._to_general_value(item) for item in value
-            ]
-            return normalized_items
-        if isinstance(value, Mapping):
-            normalized_mapping: dict[str, t.ContainerValue] = {}
-            for key, item in value.items():
-                normalized_mapping[str(key)] = self._to_general_value(item)
-            return normalized_mapping
-        if isinstance(value, (str, int, float, bool)):
-            return value
-        return str(value)
+    @override
+    def get_supported_protocols(self) -> list[str]:
+        """Get list of supported protocols."""
+        if self._http3:
+            # Convert tuple to list (tuples don't have copy method)
+            return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
+        return list(c.Api.HTTP.SUPPORTED_PROTOCOLS)
 
     @override
     def send_request(
@@ -242,6 +205,124 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             result.error or "Request execution failed",
         )
 
+    def stream_request(
+        self,
+        request: m.HttpRequest,
+        chunk_size: int = 8192,
+    ) -> r[object]:
+        """Send streaming HTTP request."""
+        self.logger.info(
+            "Streaming request",
+            url=str(request.url),
+            method=request.method,
+            chunk_size=chunk_size,
+        )
+
+        if chunk_size <= 0:
+            return r[object].fail("chunk_size must be greater than 0")
+
+        headers_result = self._extract_headers_from_model(request)
+        if headers_result.is_failure:
+            return r[object].fail(headers_result.error or "Headers extraction failed")
+
+        method = request.method.upper()
+        url = str(request.url)
+        request_kwargs = self._build_request_kwargs(
+            method,
+            url,
+            headers_result.value,
+            {},
+            request.timeout,
+            request.body,
+        )
+
+        try:
+            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
+        except ValidationError as e:
+            return r[object].fail(f"Invalid streaming request arguments: {e}")
+
+        def _iter_stream_chunks() -> Iterator[bytes]:
+            timeout_config = (
+                call_args.timeout
+                if call_args.timeout is not None
+                else float(c.Api.DEFAULT_TIMEOUT)
+            )
+            with (
+                httpx.Client(
+                    follow_redirects=self._follow_redirects,
+                    max_redirects=self._max_redirects,
+                    timeout=timeout_config,
+                    http2=self._http2,
+                ) as client,
+                client.stream(
+                    method=call_args.method,
+                    url=call_args.url,
+                    headers=call_args.headers,
+                    params=call_args.params,
+                    json=call_args.json_body,
+                    content=call_args.content,
+                    timeout=call_args.timeout,
+                ) as response,
+            ):
+                response.raise_for_status()
+                for chunk in response.iter_bytes(chunk_size=chunk_size):
+                    if chunk:
+                        yield chunk
+
+        return r[object].ok(_iter_stream_chunks())
+
+    @override
+    def supports_protocol(self, protocol: str) -> bool:
+        """Check if this plugin supports the given protocol."""
+        if self._http3:
+            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+        else:
+            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS
+        return protocol.lower() in supported
+
+    def _build_http_request_from_dict(
+        self,
+        request: Mapping[str, t.ContainerValue],
+    ) -> r[m.HttpRequest]:
+        """Build HttpRequest from dictionary using RFC methods."""
+        # Validate request using base class method
+        validation_result = self._validate_request(request)
+        if validation_result.is_failure:
+            return r[m.HttpRequest].fail(
+                validation_result.error or "Request validation failed",
+            )
+
+        # Extract method using RFC method
+        method_result = self._extract_method(request)
+        if method_result.is_failure:
+            return r[m.HttpRequest].fail(
+                method_result.error or "Method extraction failed",
+            )
+
+        # Extract URL using RFC method
+        url_result = self._extract_url(request)
+        if url_result.is_failure:
+            return r[m.HttpRequest].fail(
+                url_result.error or "URL extraction failed",
+            )
+
+        # Extract headers using RFC method
+        headers = self._extract_headers(request)
+
+        # Extract body using RFC method with type narrowing
+        body_value = self._extract_body(request)
+        body = u.Api.RequestUtils.to_request_body(body_value)
+
+        http_request = m.HttpRequest(
+            method=method_result.value,
+            url=url_result.value,
+            headers=dict(headers),
+            body=body,
+            timeout=self._extract_timeout(request),
+        )
+
+        return r[m.HttpRequest].ok(http_request)
+
     def _build_request_kwargs(
         self,
         method: str,
@@ -282,23 +363,25 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         return kwargs
 
-    def _handle_request_exception(
+    def _build_response(
         self,
-        e: Exception,
-        url: str,
-        method: str,
-        _attempt: int,
-        _max_retries: int,
-    ) -> str:
-        """Handle request exceptions and return error message."""
-        error_msg = f"Unexpected error: {e}"
-        self.logger.error(
-            "Unexpected error",
-            url=url,
-            method=method,
-            error=str(e),
-        )
-        return error_msg
+        httpx_response: httpx.Response,
+        _method: str,
+    ) -> r[m.HttpResponse]:
+        """Build FlextApiModels.HttpResponse from httpx.Response."""
+        try:
+            content = httpx_response.read()
+
+            response = m.HttpResponse(
+                status_code=httpx_response.status_code,
+                headers=dict(httpx_response.headers),
+                body=content,
+            )
+
+            return r[m.HttpResponse].ok(response)
+
+        except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
+            return r[m.HttpResponse].fail(f"Failed to build response: {e}")
 
     def _execute_with_retry(
         self,
@@ -405,123 +488,40 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         """Extract headers from HttpRequest model without fallback."""
         return r[Mapping[str, str]].ok(dict(request.headers))
 
-    def _build_response(
+    def _handle_request_exception(
         self,
-        httpx_response: httpx.Response,
-        _method: str,
-    ) -> r[m.HttpResponse]:
-        """Build FlextApiModels.HttpResponse from httpx.Response."""
-        try:
-            content = httpx_response.read()
-
-            response = m.HttpResponse(
-                status_code=httpx_response.status_code,
-                headers=dict(httpx_response.headers),
-                body=content,
-            )
-
-            return r[m.HttpResponse].ok(response)
-
-        except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
-            return r[m.HttpResponse].fail(f"Failed to build response: {e}")
-
-    @override
-    def supports_protocol(self, protocol: str) -> bool:
-        """Check if this plugin supports the given protocol."""
-        if self._http3:
-            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
-        else:
-            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS
-        return protocol.lower() in supported
-
-    @override
-    def get_supported_protocols(self) -> list[str]:
-        """Get list of supported protocols."""
-        if self._http3:
-            # Convert tuple to list (tuples don't have copy method)
-            return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
-        return list(c.Api.HTTP.SUPPORTED_PROTOCOLS)
-
-    def stream_request(
-        self,
-        request: m.HttpRequest,
-        chunk_size: int = 8192,
-    ) -> r[object]:
-        """Send streaming HTTP request."""
-        self.logger.info(
-            "Streaming request",
-            url=str(request.url),
-            method=request.method,
-            chunk_size=chunk_size,
+        e: Exception,
+        url: str,
+        method: str,
+        _attempt: int,
+        _max_retries: int,
+    ) -> str:
+        """Handle request exceptions and return error message."""
+        error_msg = f"Unexpected error: {e}"
+        self.logger.error(
+            "Unexpected error",
+            url=url,
+            method=method,
+            error=str(e),
         )
+        return error_msg
 
-        if chunk_size <= 0:
-            return r[object].fail("chunk_size must be greater than 0")
-
-        headers_result = self._extract_headers_from_model(request)
-        if headers_result.is_failure:
-            return r[object].fail(headers_result.error or "Headers extraction failed")
-
-        method = request.method.upper()
-        url = str(request.url)
-        request_kwargs = self._build_request_kwargs(
-            method,
-            url,
-            headers_result.value,
-            {},
-            request.timeout,
-            request.body,
-        )
-
-        try:
-            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
-        except ValidationError as e:
-            return r[object].fail(f"Invalid streaming request arguments: {e}")
-
-        def _iter_stream_chunks() -> Iterator[bytes]:
-            timeout_config = (
-                call_args.timeout
-                if call_args.timeout is not None
-                else float(c.Api.DEFAULT_TIMEOUT)
-            )
-            with (
-                httpx.Client(
-                    follow_redirects=self._follow_redirects,
-                    max_redirects=self._max_redirects,
-                    timeout=timeout_config,
-                    http2=self._http2,
-                ) as client,
-                client.stream(
-                    method=call_args.method,
-                    url=call_args.url,
-                    headers=call_args.headers,
-                    params=call_args.params,
-                    json=call_args.json_body,
-                    content=call_args.content,
-                    timeout=call_args.timeout,
-                ) as response,
-            ):
-                response.raise_for_status()
-                for chunk in response.iter_bytes(chunk_size=chunk_size):
-                    if chunk:
-                        yield chunk
-
-        return r[object].ok(_iter_stream_chunks())
-
-    @override
-    def get_protocol_info(self) -> t.JsonObject:
-        """Get protocol configuration information."""
-        base_info = super().get_protocol_info()
-        updated_info: t.JsonObject = {
-            **base_info,
-            "http2_enabled": self._http2,
-            "http3_enabled": self._http3,
-            "max_retries": self._max_retries,
-            "retry_backoff_factor": self._retry_backoff_factor,
-            "follow_redirects": self._follow_redirects,
-            "max_redirects": self._max_redirects,
-        }
-        return updated_info
+    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_items: list[t.ContainerValue] = [
+                self._to_general_value(item) for item in value
+            ]
+            return normalized_items
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized_mapping[str(key)] = self._to_general_value(item)
+            return normalized_mapping
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
 
 __all__ = ["FlextWebProtocolPlugin"]

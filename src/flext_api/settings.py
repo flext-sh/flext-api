@@ -85,14 +85,14 @@ class FlextApiSettings(FlextSettings):
             **self.headers,
         }
 
-    def to_json(self) -> str:
-        """Convert to JSON."""
-        return json.dumps(self.model_dump(), indent=2)
-
     @classmethod
     def from_json(cls, data: str) -> FlextApiSettings:
         """Create from JSON."""
         return cls.model_validate(json.loads(data))
+
+    def to_json(self) -> str:
+        """Convert to JSON."""
+        return json.dumps(self.model_dump(), indent=2)
 
 
 __all__ = ["FlextApiSettings"]
