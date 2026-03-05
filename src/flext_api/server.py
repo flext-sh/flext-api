@@ -32,7 +32,7 @@ from flext_core import (
 )
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import c, p, t
+from flext_api import c, p, t, u
 
 
 class FlextApiServer(FlextService[bool], x.Validation):
@@ -95,15 +95,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
 
-            options_json: dict[str, t.JsonValue] = {}
-            for k, v in options.items():
-                match v:
-                    case str() | int() | float() | bool() | None | list() | dict():
-                        options_json[k] = v
-                    case _:
-                        return r[bool].fail(
-                            f"Unsupported route option type for key: {k}",
-                        )
+            options_json: dict[str, t.JsonValue] = dict(options.items())
 
             route_data: t.Api.RouteData = {
                 "path": path,
@@ -120,17 +112,17 @@ class FlextApiServer(FlextService[bool], x.Validation):
                 schema_normalized = FlextRuntime.normalize_to_general_value(
                     normalized_schema_input,
                 )
-                match schema_normalized:
-                    case str() | int() | float() | bool() | None | list() | dict():
-                        route_data["schema"] = schema_normalized
-                    case _:
-                        route_data["schema"] = str(schema_normalized)
+                route_data["schema"] = u.Api.RequestUtils.to_json_value(
+                    schema_normalized,
+                )
 
             self._routes[route_key] = route_data
 
             self._logger.info(
                 "Endpoint registered",
-                extra={"method": method, "path": path, "key": route_key},
+                method=method,
+                path=path,
+                key=route_key,
             )
 
             return r[bool].ok(value=True)
@@ -263,7 +255,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                 for middleware in middleware_pipeline:
                     self._logger.debug(
                         "Middleware applied",
-                        extra={"middleware": middleware.__class__.__name__},
+                        middleware=middleware.__class__.__name__,
                     )
                 return r[bool].ok(value=True)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
@@ -320,7 +312,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
                     self._logger.debug(
                         "Route registered",
-                        extra={"method": method, "path": path},
+                        method=method,
+                        path=path,
                     )
 
                 return r[bool].ok(value=True)
@@ -355,12 +348,10 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
             self._logger.info(
                 "Server started",
-                extra={
-                    "host": self._host,
-                    "port": self._port,
-                    "routes": len(routes),
-                    "protocols": list(protocol_handlers.keys()),
-                },
+                host=self._host,
+                port=self._port,
+                routes=len(routes),
+                protocols=",".join(protocol_handlers.keys()),
             )
 
             return r[bool].ok(value=True)
@@ -502,7 +493,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
         self._lifecycle_manager.logger.info(
             "Protocol handler registered",
-            extra={"protocol": protocol, "handler": handler_name},
+            protocol=protocol,
+            handler=handler_name,
         )
 
         return r[bool].ok(value=True)
@@ -516,7 +508,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
         self._lifecycle_manager.logger.info(
             "Middleware added",
-            extra={"middleware": middleware.__class__.__name__},
+            middleware=middleware.__class__.__name__,
         )
 
         return r[bool].ok(value=True)
@@ -529,13 +521,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.JsonValue,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
-        options_typed: dict[str, t.JsonValue] = {}
-        for k, v in options.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    options_typed[k] = v
-                case _:
-                    return r[bool].fail(f"Unsupported route option type for key: {k}")
+        options_typed: dict[str, t.JsonValue] = dict(options.items())
         return self._route_registry.register(
             method,
             path,
@@ -552,13 +538,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.JsonValue,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
-        options_typed: dict[str, t.JsonValue] = {}
-        for k, v in options.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    options_typed[k] = v
-                case _:
-                    return r[bool].fail(f"Unsupported route option type for key: {k}")
+        options_typed: dict[str, t.JsonValue] = dict(options.items())
         return self._route_registry.register(
             "WS",
             path,
@@ -575,13 +555,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.JsonValue,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
-        options_typed: dict[str, t.JsonValue] = {}
-        for k, v in options.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    options_typed[k] = v
-                case _:
-                    return r[bool].fail(f"Unsupported route option type for key: {k}")
+        options_typed: dict[str, t.JsonValue] = dict(options.items())
         return self._route_registry.register(
             "SSE",
             path,
@@ -598,13 +572,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.JsonValue,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
-        options_typed: dict[str, t.JsonValue] = {}
-        for k, v in options.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    options_typed[k] = v
-                case _:
-                    return r[bool].fail(f"Unsupported route option type for key: {k}")
+        options_typed: dict[str, t.JsonValue] = dict(options.items())
         return self._route_registry.register(
             "GRAPHQL",
             path,

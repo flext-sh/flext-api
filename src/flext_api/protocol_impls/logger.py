@@ -7,9 +7,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from datetime import datetime
+from pathlib import Path
 from typing import override
 
-from flext_core import FlextLogger, FlextRuntime
+from flext_core import FlextLogger
+from pydantic import BaseModel
 
 from flext_api import FlextApiProtocols as api_protocols, t
 
@@ -23,16 +26,16 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
 
     def _convert_kwargs_to_context(
         self,
-        kwargs: Mapping[str, t.ContainerValue],
-    ) -> Mapping[str, t.ContainerValue]:
+        kwargs: Mapping[str, t.ApiJsonValue],
+    ) -> Mapping[str, t.Container]:
         """Convert kwargs to context dict for logger compatibility."""
-        context: dict[str, t.ContainerValue] = {}
+        context: dict[str, t.Container] = {}
         for key, value in kwargs.items():
-            if value is None or isinstance(value, str | int | float | bool):
+            if isinstance(value, (str, int, float, bool, datetime, BaseModel, Path)):
                 context[key] = value
                 continue
             if isinstance(value, (Mapping, Sequence)):
-                context[key] = FlextRuntime.normalize_to_general_value(value)
+                context[key] = str(value)
                 continue
             context[key] = str(value)
         return context

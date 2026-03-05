@@ -108,12 +108,10 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         self.logger.info(
             "HTTP protocol initialized",
-            extra={
-                "http2": http2,
-                "http3": http3,
-                "max_connections": max_connections,
-                "max_retries": self._max_retries,
-            },
+            http2=http2,
+            http3=http3,
+            max_connections=max_connections,
+            max_retries=self._max_retries,
         )
 
     def _build_http_request_from_dict(
@@ -160,29 +158,21 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         return r[m.HttpRequest].ok(http_request)
 
     def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        match value:
-            case str() | int() | float() | bool() | None:
-                return value
-            case list() as items:
-                normalized_items: list[t.ContainerValue] = []
-                for item in items:
-                    match item:
-                        case str() | int() | float() | bool() | None | list() | dict():
-                            normalized_items.append(self._to_general_value(item))
-                        case _:
-                            normalized_items.append(str(item))
-                return normalized_items
-            case dict() as mapping:
-                normalized_mapping: dict[str, t.ContainerValue] = {}
-                for key, item in mapping.items():
-                    match item:
-                        case str() | int() | float() | bool() | None | list() | dict():
-                            normalized_mapping[str(key)] = self._to_general_value(item)
-                        case _:
-                            normalized_mapping[str(key)] = str(item)
-                return normalized_mapping
-            case _:
-                return str(value)
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_items: list[t.ContainerValue] = [
+                self._to_general_value(item) for item in value
+            ]
+            return normalized_items
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized_mapping[str(key)] = self._to_general_value(item)
+            return normalized_mapping
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
     @override
     def send_request(
@@ -198,7 +188,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Build HTTP request model
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 request_result.error or "Request building failed",
             )
 
@@ -209,7 +199,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
@@ -304,13 +294,15 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         error_msg = f"Unexpected error: {e}"
         self.logger.error(
             "Unexpected error",
-            extra={"url": url, "method": method, "error": str(e)},
+            url=url,
+            method=method,
+            error=str(e),
         )
         return error_msg
 
     def _execute_with_retry(
         self,
-        connection: t.ContainerValue,
+        _connection_url: str,
         method: str,
         url: str,
         headers: Mapping[str, str],
@@ -332,8 +324,11 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     body,
                 )
                 call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
-                request_method = connection.request
-                response = request_method(
+                client = self._transport._client
+                if client is None:
+                    return r[m.HttpResponse].fail("HTTP client is not connected")
+
+                response = client.request(
                     method=call_args.method,
                     url=call_args.url,
                     headers=call_args.headers,
@@ -359,19 +354,25 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 last_error = f"Request timeout: {e}"
                 self.logger.warning(
                     f"Request timeout (attempt {attempt + 1}/{self._max_retries + 1})",
-                    extra={"url": url, "method": method, "attempt": attempt + 1},
+                    url=url,
+                    method=method,
+                    attempt=attempt + 1,
                 )
             except httpx.NetworkError as e:
                 last_error = f"Network error: {e}"
                 self.logger.warning(
                     f"Network error (attempt {attempt + 1}/{self._max_retries + 1})",
-                    extra={"url": url, "method": method, "attempt": attempt + 1},
+                    url=url,
+                    method=method,
+                    attempt=attempt + 1,
                 )
             except httpx.HTTPError as e:
                 last_error = f"HTTP error: {e}"
                 self.logger.warning(
                     f"HTTP error (attempt {attempt + 1}/{self._max_retries + 1})",
-                    extra={"url": url, "method": method, "attempt": attempt + 1},
+                    url=url,
+                    method=method,
+                    attempt=attempt + 1,
                 )
             except ValidationError as e:
                 last_error = f"Invalid request argument type: {e}"
@@ -449,11 +450,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         """Send streaming HTTP request."""
         self.logger.info(
             "Streaming request",
-            extra={
-                "url": str(request.url),
-                "method": request.method,
-                "chunk_size": chunk_size,
-            },
+            url=str(request.url),
+            method=request.method,
+            chunk_size=chunk_size,
         )
 
         if chunk_size <= 0:

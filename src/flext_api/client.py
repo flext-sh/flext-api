@@ -15,7 +15,7 @@ import json
 from typing import Self, override
 
 import httpx
-from flext_core import FlextRuntime, r, s
+from flext_core import r, s
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import FlextApiConstants, FlextApiSettings, m, t
@@ -36,7 +36,11 @@ class FlextApiClient(s[FlextApiSettings]):
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
 
-    def __new__(cls, config: FlextApiSettings | None = None) -> Self:
+    def __new__(
+        cls,
+        config: FlextApiSettings | None = None,
+        **_kwargs: t.ContainerValue,
+    ) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
@@ -53,7 +57,7 @@ class FlextApiClient(s[FlextApiSettings]):
     def __init__(
         self,
         config: FlextApiSettings | None = None,
-        **kwargs: t.JsonValue | str | int | bool,
+        **kwargs: t.ContainerValue,
     ) -> None:
         """Initialize with optional configuration model.
 
@@ -65,7 +69,8 @@ class FlextApiClient(s[FlextApiSettings]):
         """
         # Type narrowing: convert kwargs to expected type
         kwargs_typed: dict[str, t.ContainerValue] = {
-            k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
+            k: (v if isinstance(v, (str, int, float, bool, type(None))) else str(v))
+            for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
 
@@ -91,11 +96,11 @@ class FlextApiClient(s[FlextApiSettings]):
     @override
     def execute(
         self,
-        **kwargs: t.JsonValue | str | int | bool,
+        **kwargs: t.ContainerValue,
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
         if kwargs:
-            self.logger.info("Execute called with kwargs: %s", kwargs)
+            self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")
         return r[FlextApiSettings].ok(self._get_config())
 
     @property
@@ -234,9 +239,7 @@ class FlextApiClient(s[FlextApiSettings]):
                 return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")
-        if isinstance(body, str):
-            return r[bytes].ok(body.encode("utf-8"))
-        return r[bytes].fail("Unsupported request body type")
+        return r[bytes].ok(body.encode("utf-8"))
 
     @staticmethod
     def _deserialize_body(
@@ -295,8 +298,7 @@ class FlextApiClient(s[FlextApiSettings]):
                     _RESPONSE_BODY_ADAPTER.validate_python(json_data),
                 )
             except ValidationError:
-                normalized = FlextRuntime.normalize_to_general_value(json_data)
-                return r[t.Api.ResponseBody].ok({"value": str(normalized)})
+                return r[t.Api.ResponseBody].ok({"value": str(json_data)})
         except (
             AttributeError,
             ValueError,

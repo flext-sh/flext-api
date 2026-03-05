@@ -13,10 +13,15 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from typing import TypeGuard
 
 from flext_core import r
 
 from flext_api import m, t
+
+
+def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+    return isinstance(value, Mapping)
 
 
 class FlextApiSettingsManager:
@@ -41,7 +46,7 @@ class FlextApiSettingsManager:
             else:
                 process_result = self._process_config(config)
                 if process_result.is_failure:
-                    return r.fail(
+                    return r[bool].fail(
                         process_result.error or "Configuration processing failed",
                     )
                 self._config = process_result.value
@@ -49,7 +54,7 @@ class FlextApiSettingsManager:
             return self._validate_configuration()
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             error_msg = f"Configuration failed: {e}"
-            return r.fail(error_msg)
+            return r[bool].fail(error_msg)
 
     def _process_config(
         self,
@@ -59,13 +64,12 @@ class FlextApiSettingsManager:
         processed: t.JsonObject = {}
 
         for key, value in config.items():
-            if value is not None:
-                normalize_result = self._normalize_value(key, value=value)
-                if normalize_result.is_failure:
-                    return r.fail(
-                        normalize_result.error or "Value normalization failed",
-                    )
-                processed[key] = normalize_result.value
+            normalize_result = self._normalize_value(key, value=value)
+            if normalize_result.is_failure:
+                return r[t.JsonObject].fail(
+                    normalize_result.error or "Value normalization failed",
+                )
+            processed[key] = normalize_result.value
 
         return r[t.JsonObject].ok(processed)
 
@@ -74,21 +78,23 @@ class FlextApiSettingsManager:
         key: str,
         *,
         value: str | float | bool,
-    ) -> r[str | float | bool]:
+    ) -> r[t.ContainerValue]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and value.__class__ is str:
             try:
-                return r[str | float].ok(float(value))
+                return r[t.ContainerValue].ok(float(value))
             except ValueError:
-                return r.fail(f"Invalid timeout value: {value}")
+                return r[t.ContainerValue].fail(f"Invalid timeout value: {value}")
         if key == "max_retries" and value.__class__ is str:
             try:
-                return r[str | float].ok(int(value))
+                return r[t.ContainerValue].ok(int(value))
             except ValueError:
-                return r.fail(f"Invalid max_retries value: {value}")
+                return r[t.ContainerValue].fail(
+                    f"Invalid max_retries value: {value}",
+                )
         if key in {"log_requests", "log_responses"}:
-            return r[str | float].ok(bool(value))
-        return r[str | float].ok(value)
+            return r[t.ContainerValue].ok(bool(value))
+        return r[t.ContainerValue].ok(value)
 
     def _extract_timeout(self) -> r[float]:
         """Extract and validate timeout from config - no fallbacks."""
@@ -104,23 +110,23 @@ class FlextApiSettingsManager:
             try:
                 timeout_value = float(timeout_value_raw)
             except ValueError:
-                return r.fail(
+                return r[float].fail(
                     f"Timeout must be a valid number: {timeout_value_raw}",
                 )
         else:
-            return r.fail(f"Invalid timeout type: {type(timeout_value_raw)}")
+            return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
 
         if timeout_value <= 0:
-            return r.fail(f"Timeout must be positive, got: {timeout_value}")
+            return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
 
         return r[float].ok(timeout_value)
 
     def _extract_max_retries(self) -> r[int]:
         """Extract and validate max_retries from config - no fallbacks."""
         if self._config is None:
-            return r.fail("No configuration set")
+            return r[int].fail("No configuration set")
         if "max_retries" not in self._config:
-            return r.fail("Max retries not specified in configuration")
+            return r[int].fail("Max retries not specified in configuration")
 
         max_retries_raw = self._config["max_retries"]
         if isinstance(max_retries_raw, int):
@@ -129,14 +135,14 @@ class FlextApiSettingsManager:
             try:
                 max_retries_value = int(max_retries_raw)
             except (ValueError, TypeError):
-                return r.fail(
+                return r[int].fail(
                     f"Max retries must be a valid integer: {max_retries_raw}",
                 )
         else:
-            return r.fail(f"Invalid max_retries type: {type(max_retries_raw)}")
+            return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
 
         if max_retries_value < 0:
-            return r.fail(
+            return r[int].fail(
                 f"Max retries cannot be negative, got: {max_retries_value}",
             )
 
@@ -145,67 +151,69 @@ class FlextApiSettingsManager:
     def _validate_configuration(self) -> r[bool]:
         """Validate current configuration with complete checks."""
         if self._config is None:
-            return r.fail("No configuration set")
+            return r[bool].fail("No configuration set")
 
         timeout_result = self._extract_timeout()
         if timeout_result.is_failure:
-            return r.fail(timeout_result.error or "Timeout extraction failed")
+            return r[bool].fail(timeout_result.error or "Timeout extraction failed")
 
         max_retries_result = self._extract_max_retries()
         if max_retries_result.is_failure:
-            return r.fail(
+            return r[bool].fail(
                 max_retries_result.error or "Max retries extraction failed",
             )
 
-        return r.ok(value=True)
+        return r[bool].ok(value=True)
 
     def _extract_headers(self) -> r[Mapping[str, str]]:
         """Extract headers from config - no fallbacks."""
         if self._config is None:
-            return r.fail("No configuration set")
+            return r[Mapping[str, str]].fail("No configuration set")
         if "headers" not in self._config:
             return r[Mapping[str, str]].ok({})
 
         headers_value = self._config["headers"]
         if isinstance(headers_value, Mapping):
-            headers_dict: dict[str, str] = {
+            config_headers_dict: dict[str, str] = {
                 str(k): str(v) for k, v in headers_value.items()
             }
-            return r[Mapping[str, str]].ok(headers_dict)
+            return r[Mapping[str, str]].ok(config_headers_dict)
         if isinstance(headers_value, str):
             try:
-                parsed_headers = json.loads(headers_value)
-                if isinstance(parsed_headers, Mapping):
-                    headers_dict = {str(k): str(v) for k, v in parsed_headers.items()}
-                    return r[Mapping[str, str]].ok(headers_dict)
-                return r.fail(
+                parsed_headers: object = json.loads(headers_value)
+                if _is_object_mapping(parsed_headers):
+                    parsed_headers_dict: dict[str, str] = {}
+                    for key_obj, value_obj in parsed_headers.items():
+                        parsed_headers_dict[str(key_obj)] = str(value_obj)
+                    return r[Mapping[str, str]].ok(parsed_headers_dict)
+                return r[Mapping[str, str]].fail(
                     f"Parsed headers must be dict, got: {type(parsed_headers)}",
                 )
             except (json.JSONDecodeError, TypeError) as e:
-                return r.fail(f"Failed to parse headers JSON: {e}")
+                return r[Mapping[str, str]].fail(f"Failed to parse headers JSON: {e}")
         else:
-            return r.fail(
+            return r[Mapping[str, str]].fail(
                 f"Invalid headers type: {type(headers_value)}",
             )
 
     def _extract_base_url(self) -> r[str]:
         """Extract base_url from config - no fallbacks."""
         if self._config is None:
-            return r.fail("No configuration set")
+            return r[str].fail("No configuration set")
         if "base_url" not in self._config:
             return r[str].ok("")
 
         base_url_value = self._config["base_url"]
         if isinstance(base_url_value, str):
             return r[str].ok(base_url_value)
-        return r.fail(f"Invalid base_url type: {type(base_url_value)}")
+        return r[str].fail(f"Invalid base_url type: {type(base_url_value)}")
 
     def _extract_timeout_for_config(self) -> r[float]:
         """Extract timeout for config creation - no fallbacks."""
         if self._config is None:
-            return r.fail("No configuration set")
+            return r[float].fail("No configuration set")
         if "timeout" not in self._config:
-            return r.fail("Timeout not specified in configuration")
+            return r[float].fail("Timeout not specified in configuration")
 
         timeout_raw = self._config["timeout"]
         if isinstance(timeout_raw, int | float):
@@ -214,35 +222,35 @@ class FlextApiSettingsManager:
             try:
                 timeout_value = float(timeout_raw)
             except ValueError:
-                return r.fail(f"Timeout must be a valid number: {timeout_raw}")
+                return r[float].fail(f"Timeout must be a valid number: {timeout_raw}")
         else:
-            return r.fail(f"Invalid timeout type: {type(timeout_raw)}")
+            return r[float].fail(f"Invalid timeout type: {type(timeout_raw)}")
 
         if timeout_value <= 0:
-            return r.fail(f"Timeout must be positive, got: {timeout_value}")
+            return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
 
         return r[float].ok(timeout_value)
 
     def get_client_config(self) -> r[m.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._config is None:
-            return r.fail("No configuration set")
+            return r[m.ClientConfig].fail("No configuration set")
 
         headers_result = self._extract_headers()
         if headers_result.is_failure:
-            return r.fail(
+            return r[m.ClientConfig].fail(
                 headers_result.error or "Headers extraction failed",
             )
 
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
-            return r.fail(
+            return r[m.ClientConfig].fail(
                 base_url_result.error or "Base URL extraction failed",
             )
 
         timeout_result = self._extract_timeout_for_config()
         if timeout_result.is_failure:
-            return r.fail(
+            return r[m.ClientConfig].fail(
                 timeout_result.error or "Timeout extraction failed",
             )
 

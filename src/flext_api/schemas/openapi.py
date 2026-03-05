@@ -53,7 +53,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     class _DictField(BaseModel):
         model_config = ConfigDict(extra="ignore")
 
-        value: dict[str, t.ContainerValue]
+        value: Mapping[str, t.ContainerValue]
 
     def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
@@ -71,15 +71,15 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     ) -> r[Mapping[str, t.ContainerValue]]:
         try:
             if not isinstance(value, Mapping):
-                return r[t.ConfigurationMapping].fail(
+                return r[Mapping[str, t.ContainerValue]].fail(
                     f"'{field_name}' field must be a dictionary",
                 )
             parsed = self._DictField(value=value)
         except ValidationError:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 f"'{field_name}' field must be a dictionary",
             )
-        return r[t.ConfigurationMapping].ok(parsed.value)
+        return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
 
     def __init__(
         self,
@@ -437,10 +437,10 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         """Validate basic structure of security schemes."""
         schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
         if schemes_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 "Security schemes must be a dictionary",
             )
-        return r[t.ConfigurationMapping].ok(schemes_result.value)
+        return r[Mapping[str, t.ContainerValue]].ok(schemes_result.value)
 
     def _validate_single_security_scheme(
         self,

@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import ClassVar, Self, override
 
-from flext_core import FlextLogger, FlextRuntime, r, s
+from flext_core import FlextLogger, r, s
 from pydantic import ConfigDict
 
 from flext_api import (
@@ -47,7 +47,11 @@ class FlextApi(s[FlextApiSettings]):
     # Unified namespace - direct access to FLEXT components
     Models: ClassVar = m
 
-    def __new__(cls, config: FlextApiSettings | None = None) -> Self:
+    def __new__(
+        cls,
+        config: FlextApiSettings | None = None,
+        **_kwargs: t.ContainerValue,
+    ) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
@@ -63,7 +67,7 @@ class FlextApi(s[FlextApiSettings]):
     def __init__(
         self,
         config: FlextApiSettings | None = None,
-        **kwargs: t.JsonValue | str | int | bool,
+        **kwargs: t.ContainerValue,
     ) -> None:
         """Initialize with optional config.
 
@@ -87,7 +91,8 @@ class FlextApi(s[FlextApiSettings]):
 
         # Type narrowing: convert kwargs to expected type
         kwargs_typed: dict[str, t.ContainerValue] = {
-            k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
+            k: (v if isinstance(v, (str, int, float, bool, type(None))) else str(v))
+            for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
 
@@ -106,7 +111,7 @@ class FlextApi(s[FlextApiSettings]):
     @override
     def execute(
         self,
-        **kwargs: t.JsonValue | str | int | bool,
+        **kwargs: t.ContainerValue,
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
         if kwargs:

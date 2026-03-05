@@ -28,8 +28,8 @@ class FlextApiTypes(FlextWebTypes):
     """
 
     # Core type aliases for forward reference resolution
-    type JsonObject = dict[str, FlextTypes.JsonValue]
-    type ApiJsonValue = FlextTypes.JsonValue
+    type JsonObject = dict[str, FlextTypes.ContainerValue]
+    type ApiJsonValue = FlextTypes.ContainerValue
 
     class Api:
         """API types namespace for cross-project access.
@@ -54,13 +54,13 @@ class FlextApiTypes(FlextWebTypes):
 
         # Use parent's JsonValue via inheritance - no alias needed
         # Access via t.JsonValue or use directly from parent
-        type JsonObject = dict[str, FlextTypes.JsonValue]
-        type ApiJsonValue = FlextTypes.JsonValue
+        type JsonObject = dict[str, FlextTypes.ContainerValue]
+        type ApiJsonValue = FlextTypes.ContainerValue
         type WebData = str | bytes | dict[str, FlextTypes.ContainerValue]
         type WebHeaders = dict[str, str | list[str]]
         type WebParams = dict[str, str | list[str]]
         type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
-        type ResponseDict = Mapping[str, FlextTypes.JsonValue]
+        type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
 
         # =========================================================================
         # HTTP REQUEST/RESPONSE TYPES - Unified request/response types
@@ -71,7 +71,7 @@ class FlextApiTypes(FlextWebTypes):
             str | int | bool | list[str] | dict[str, FlextTypes.ContainerValue],
         ]
         type ResponseConfig = dict[
-            str, FlextTypes.JsonValue | dict[str, FlextTypes.ContainerValue]
+            str, FlextTypes.ContainerValue | dict[str, FlextTypes.ContainerValue]
         ]
         type RequestBody = dict[str, FlextTypes.ContainerValue] | str | bytes
         type ResponseBody = dict[str, FlextTypes.ContainerValue] | str | bytes | None
@@ -95,7 +95,9 @@ class FlextApiTypes(FlextWebTypes):
 
         type EndpointConfig = dict[
             str,
-            FlextTypes.JsonValue | list[str] | dict[str, FlextTypes.ContainerValue],
+            FlextTypes.ContainerValue
+            | list[str]
+            | dict[str, FlextTypes.ContainerValue],
         ]
         type EndpointMetadata = dict[
             str,
@@ -109,8 +111,8 @@ class FlextApiTypes(FlextWebTypes):
             str,
             str
             | Callable[[], object]
-            | dict[str, FlextTypes.JsonValue]
-            | FlextTypes.JsonValue
+            | dict[str, FlextTypes.ContainerValue]
+            | FlextTypes.ContainerValue
             | None,
         ]
         """Route registration data structure."""
@@ -128,7 +130,7 @@ class FlextApiTypes(FlextWebTypes):
 
         type AuthConfig = Mapping[str, str | dict[str, FlextTypes.ContainerValue]]
         type AuthCredentials = Mapping[str, str | dict[str, FlextTypes.ContainerValue]]
-        type AuthTokenData = Mapping[str, FlextTypes.JsonValue | int | bool]
+        type AuthTokenData = Mapping[str, FlextTypes.ContainerValue | int | bool]
         type SecurityConfig = Mapping[
             str,
             bool | str | list[str] | dict[str, FlextTypes.ContainerValue],
@@ -147,7 +149,7 @@ class FlextApiTypes(FlextWebTypes):
         type RequestKwargs = Mapping[
             str,
             Mapping[str, str]
-            | Mapping[str, FlextTypes.JsonValue]
+            | Mapping[str, FlextTypes.ContainerValue]
             | Mapping[str, str | list[str]]
             | float
             | None,
@@ -170,7 +172,7 @@ class FlextApiTypes(FlextWebTypes):
         ]
         type ProtocolMessage = dict[str, FlextTypes.ContainerValue] | str | bytes
         type SchemaDefinition = dict[str, FlextTypes.ContainerValue]
-        type ValidationErrors = list[dict[str, str | FlextTypes.JsonValue]]
+        type ValidationErrors = list[dict[str, str | FlextTypes.ContainerValue]]
 
         # =========================================================================
         # SERVICE & PROCESSING TYPES - Service management and pipelines

@@ -131,7 +131,7 @@ class BaseProtocolImplementation:
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return r[t.ConfigurationMapping].fail(
+        return r[Mapping[str, t.ContainerValue]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -189,9 +189,9 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[t.ConfigurationMapping].fail("Request cannot be empty")
+            return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
 
-        return r[t.ConfigurationMapping].ok(request)
+        return r[Mapping[str, t.ContainerValue]].ok(request)
 
     def _build_error_response(
         self,

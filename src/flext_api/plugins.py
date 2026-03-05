@@ -245,7 +245,7 @@ class FlextApiPlugins:
             if shutdown_result.is_failure:
                 self.logger.warning(
                     f"Plugin shutdown warning: {shutdown_result.error}",
-                    extra={"plugin": plugin_name},
+                    plugin=plugin_name,
                 )
             del self._loaded_plugins[plugin_name]
             self.logger.info("Unloaded plugin: %s", plugin_name)

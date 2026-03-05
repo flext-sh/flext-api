@@ -49,9 +49,7 @@ class FlextApiAdapters:
                     "type": "request",
                     "method": request.method,
                     "url": str(request.url),
-                    "headers": (
-                        dict(request.headers) if request.headers is not None else {}
-                    ),
+                    "headers": dict(request.headers),
                     "body": body_value,
                 }
 

@@ -65,7 +65,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _auto_reconnect: bool
     _reconnect_max_attempts: int
     _reconnect_backoff_factor: float
-    _connection: t.ContainerValue | None
+    _connection: object | None
     _connected: bool
     _url: str
     _headers: Mapping[str, str]
@@ -278,12 +278,12 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[t.ConfigurationMapping].fail(str(details))
+            return r[Mapping[str, t.ContainerValue]].fail(str(details))
 
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 message_result.error or "Message extraction failed",
             )
 
@@ -292,21 +292,21 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Connect if not connected
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
 
         # Send message
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 f"WebSocket send failed: {send_result.error}",
             )
 
         # Create response (WebSocket doesn't have traditional responses)
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
 
@@ -318,7 +318,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "body": {"status": "message_sent", "message_type": message_type},
         }
 
-        return r[t.ConfigurationMapping].ok(response)
+        return r[Mapping[str, t.ContainerValue]].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -491,7 +491,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             # Connect to WebSocket server
             # Note: websockets.connect() returns a coroutine/context manager
-            connection_obj: t.ContainerValue = websockets.connect(
+            connection_obj: object = websockets.connect(
                 url,
                 extra_headers=headers,
                 ping_interval=self._ping_interval,
@@ -516,11 +516,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             self.logger.info(
                 "WebSocket connected",
-                extra={
-                    "url": url,
-                    "ping_interval": self._ping_interval,
-                    "compression": self._compression,
-                },
+                url=url,
+                ping_interval=self._ping_interval,
+                compression=self._compression,
             )
 
             return r[bool].ok(value=True)
@@ -566,7 +564,8 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             self.logger.debug(
                 "WebSocket message sent",
-                extra={"message_type": message_type, "size": len(message)},
+                message_type=message_type,
+                size=len(message),
             )
 
             return r[bool].ok(value=True)
@@ -637,7 +636,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 f"Reconnecting... (attempt {attempt + 1}/"
                 f"{self._reconnect_max_attempts})"
             )
-            self.logger.info(attempt_msg, extra={"delay": delay})
+            self.logger.info(attempt_msg, delay=delay)
 
             time.sleep(delay)
 
