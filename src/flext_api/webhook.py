@@ -24,7 +24,7 @@ import time
 import uuid
 from collections import deque
 from collections.abc import Callable, Mapping
-from typing import override
+from typing import TypeGuard, override
 
 from flext_core import (
     FlextContainer,
@@ -36,6 +36,29 @@ from flext_core import (
 )
 
 from flext_api import t
+
+
+def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+    return isinstance(value, Mapping)
+
+
+def _is_object_list(value: object) -> TypeGuard[list[object]]:
+    return isinstance(value, list)
+
+
+def _to_container_value(value: object) -> t.ContainerValue:
+    if value is None:
+        return None
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if _is_object_list(value):
+        return [_to_container_value(item) for item in value]
+    if _is_object_mapping(value):
+        normalized: dict[str, t.ContainerValue] = {}
+        for key, item in value.items():
+            normalized[str(key)] = _to_container_value(item)
+        return normalized
+    return str(value)
 
 
 class FlextWebhookHandler(FlextService[bool]):
@@ -457,12 +480,12 @@ class FlextWebhookHandler(FlextService[bool]):
             else:
                 payload_str = payload
 
-            event_data = json.loads(payload_str)
-            if not isinstance(event_data, dict):
+            event_data: object = json.loads(payload_str)
+            if not _is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON object")
             json_object: t.JsonObject = {}
             for key, value in event_data.items():
-                json_object[str(key)] = FlextWebhookHandler._to_json_value(value)
+                json_object[str(key)] = _to_container_value(value)
             return r[t.JsonObject].ok(json_object)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[t.JsonObject].fail(f"Failed to parse payload: {e}")

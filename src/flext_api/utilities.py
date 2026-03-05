@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Annotated, TypeAlias, TypeIs
+from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
 from flext_core import FlextUtilities, r
@@ -84,7 +84,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Annotated type factories."""
 
             @staticmethod
-            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> TypeAlias:
+            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> object:
                 """Create Annotated type with automatic enum coercion."""
                 return Annotated[
                     enum_cls,
@@ -127,10 +127,10 @@ class FlextApiUtilities(FlextWebUtilities):
                     headers_value = kwargs["headers"]
                     if isinstance(headers_value, dict):
                         merged.update({k: str(v) for k, v in headers_value.items()})
-                return r.ok(merged)
+                return r[Mapping[str, str]].ok(merged)
 
             @staticmethod
-            def to_json_value(value: t.ContainerValue) -> t.JsonValue:
+            def to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
                 """Normalize arbitrary value to JsonValue."""
                 if value is None or isinstance(value, str | int | float | bool):
                     return value
@@ -181,26 +181,26 @@ class FlextApiUtilities(FlextWebUtilities):
                     try:
                         timeout_float = float(timeout)
                         if timeout_float > 0:
-                            return r.ok(timeout_float)
-                        return r.fail("Invalid timeout value: must be positive")
+                            return r[float].ok(timeout_float)
+                        return r[float].fail("Invalid timeout value: must be positive")
                     except (ValueError, TypeError):
-                        return r.fail(f"Invalid timeout value: {timeout}")
+                        return r[float].fail(f"Invalid timeout value: {timeout}")
 
                 # Check kwargs for timeout
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
                     if not isinstance(timeout_value, int | float | str):
-                        return r.fail(f"Invalid timeout value: {timeout_value}")
+                        return r[float].fail(f"Invalid timeout value: {timeout_value}")
                     try:
                         timeout_float = float(timeout_value)
                         if timeout_float > 0:
-                            return r.ok(timeout_float)
-                        return r.fail("Invalid timeout value: must be positive")
+                            return r[float].ok(timeout_float)
+                        return r[float].fail("Invalid timeout value: must be positive")
                     except (ValueError, TypeError):
-                        return r.fail(f"Invalid timeout value: {timeout_value}")
+                        return r[float].fail(f"Invalid timeout value: {timeout_value}")
 
                 # No timeout specified - use default
-                return r.ok(30.0)
+                return r[float].ok(30.0)
 
     # ═══════════════════════════════════════════════════════════════════
     # RESPONSE BUILDER: Nested inside FlextApiUtilities
@@ -278,16 +278,16 @@ class FlextApiUtilities(FlextWebUtilities):
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build paginated response."""
             if page < 1:
-                return r.fail("Page must be >= 1")
+                return r[Mapping[str, t.ApiJsonValue]].fail("Page must be >= 1")
             if page_size < 1:
-                return r.fail("Page size must be >= 1")
+                return r[Mapping[str, t.ApiJsonValue]].fail("Page size must be >= 1")
 
             total_items = total if total is not None else len(data)
             total_pages = (
                 (total_items + page_size - 1) // page_size if page_size > 0 else 0
             )
 
-            return r.ok({
+            return r[Mapping[str, t.ApiJsonValue]].ok({
                 "success": True,
                 "data": data,
                 "pagination": {
@@ -304,9 +304,11 @@ class FlextApiUtilities(FlextWebUtilities):
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
-                return r.fail("pagination_data must contain 'data' key")
+                return r[Mapping[str, t.ApiJsonValue]].fail(
+                    "pagination_data must contain 'data' key"
+                )
 
-            return r.ok({
+            return r[Mapping[str, t.ApiJsonValue]].ok({
                 "success": True,
                 "pagination": pagination_data,
             })
@@ -327,19 +329,19 @@ class FlextApiUtilities(FlextWebUtilities):
                 if isinstance(page_str, int | float | str):
                     page = int(page_str)
                 else:
-                    return r.fail("Invalid page parameter")
+                    return r[tuple[int, int]].fail("Invalid page parameter")
 
                 if isinstance(page_size_str, int | float | str):
                     page_size = int(page_size_str)
                 else:
-                    return r.fail("Invalid page_size parameter")
+                    return r[tuple[int, int]].fail("Invalid page_size parameter")
 
                 if page < 1 or page_size < 1:
-                    return r.fail("Page and page_size must be >= 1")
+                    return r[tuple[int, int]].fail("Page and page_size must be >= 1")
 
-                return r.ok((page, page_size))
+                return r[tuple[int, int]].ok((page, page_size))
             except (ValueError, TypeError):
-                return r.fail("Invalid page or page_size parameters")
+                return r[tuple[int, int]].fail("Invalid page or page_size parameters")
 
         @staticmethod
         def extract_pagination_config(
@@ -376,7 +378,9 @@ class FlextApiUtilities(FlextWebUtilities):
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
             """
             if page < 1 or page_size < 1:
-                return r.fail("Page and page_size must be >= 1")
+                return r[Mapping[str, t.ApiJsonValue]].fail(
+                    "Page and page_size must be >= 1"
+                )
 
             total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
             has_next = page < total_pages
@@ -384,7 +388,7 @@ class FlextApiUtilities(FlextWebUtilities):
             next_page = page + 1 if has_next else None
             prev_page = page - 1 if has_prev else None
 
-            return r.ok({
+            return r[Mapping[str, t.ApiJsonValue]].ok({
                 "data": data,
                 "total": total,
                 "page": page,
@@ -407,13 +411,15 @@ class FlextApiUtilities(FlextWebUtilities):
             Returns tuple of (page, page_size) if valid.
             """
             if page < 1:
-                return r.fail("Page must be >= 1")
+                return r[tuple[int, int]].fail("Page must be >= 1")
             if page_size < 1:
-                return r.fail("Page size must be >= 1")
+                return r[tuple[int, int]].fail("Page size must be >= 1")
             if page_size > max_page_size:
-                return r.fail(f"Page size cannot exceed {max_page_size}")
+                return r[tuple[int, int]].fail(
+                    f"Page size cannot exceed {max_page_size}"
+                )
 
-            return r.ok((page, page_size))
+            return r[tuple[int, int]].ok((page, page_size))
 
     # ═══════════════════════════════════════════════════════════════════
     # WEB VALIDATOR: Nested inside FlextApiUtilities
@@ -442,16 +448,16 @@ class FlextApiUtilities(FlextWebUtilities):
         def validate_hostname(host: str) -> r[str]:
             """Validate hostname format."""
             if not host or not host.strip():
-                return r.fail("Hostname cannot be empty")
+                return r[str].fail("Hostname cannot be empty")
 
             if len(host) > MAX_HOSTNAME_LENGTH:
-                return r.fail("Hostname too long")
+                return r[str].fail("Hostname too long")
 
             pattern = r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$|^localhost$|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"
             if not re.match(pattern, host):
-                return r.fail("Invalid hostname format")
+                return r[str].fail("Invalid hostname format")
 
-            return r.ok(host)
+            return r[str].ok(host)
 
         @staticmethod
         def validate_http_method(method: str) -> bool:
@@ -462,28 +468,28 @@ class FlextApiUtilities(FlextWebUtilities):
         def validate_port_number(port: int) -> r[int]:
             """Validate port number range."""
             if port < 1 or port > MAX_PORT:
-                return r.fail(f"Port must be between 1 and {MAX_PORT}")
-            return r.ok(port)
+                return r[int].fail(f"Port must be between 1 and {MAX_PORT}")
+            return r[int].ok(port)
 
         @staticmethod
         def validate_url(url: str) -> r[str]:
             """Validate URL format and structure."""
             if not url or not url.strip():
-                return r.fail("URL cannot be empty")
+                return r[str].fail("URL cannot be empty")
 
             try:
                 parsed = urlparse(url)
                 if not parsed.scheme or parsed.scheme not in {"http", "https"}:
-                    return r.fail(f"Invalid URL scheme: {parsed.scheme}")
+                    return r[str].fail(f"Invalid URL scheme: {parsed.scheme}")
                 if not parsed.netloc:
-                    return r.fail("URL must have a valid host")
+                    return r[str].fail("URL must have a valid host")
                 if parsed.port is not None and (
                     parsed.port < 1 or parsed.port > MAX_PORT
                 ):
-                    return r.fail(f"Invalid port {parsed.port}")
-                return r.ok(url)
+                    return r[str].fail(f"Invalid port {parsed.port}")
+                return r[str].ok(url)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r.fail(f"Invalid URL: {e}")
+                return r[str].fail(f"Invalid URL: {e}")
 
 
 # Short alias for runtime access

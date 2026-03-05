@@ -53,7 +53,7 @@ class FlextApiStorage:
     model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
 
     # Type annotations for dynamically-set fields
-    _storage: dict[str, t.JsonValue]
+    _storage: dict[str, t.ApiJsonValue]
     _expiry_times: dict[str, float]
     _stats: m.Api.Storage.Stats
     _operations_count: int
@@ -116,7 +116,7 @@ class FlextApiStorage:
         return self._namespace
 
     @staticmethod
-    def _to_json_value(value: t.ContainerValue) -> t.JsonValue:
+    def _to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
         """Convert arbitrary value to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
         match normalized:
@@ -145,22 +145,22 @@ class FlextApiStorage:
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(str(e))
 
-    def batch_get(self, keys: list[str]) -> r[Mapping[str, t.JsonValue]]:
+    def batch_get(self, keys: list[str]) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get multiple keys efficiently."""
         try:
-            result_dict: dict[str, t.JsonValue] = {}
+            result_dict: dict[str, t.ApiJsonValue] = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.is_success:
                     unwrapped = get_result.value
                     result_dict[key] = self._to_json_value(unwrapped)
-            return r[Mapping[str, t.JsonValue]].ok(result_dict)
+            return r[Mapping[str, t.ApiJsonValue]].ok(result_dict)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
 
     def batch_set(
         self,
-        data: Mapping[str, t.JsonValue],
+        data: Mapping[str, t.ApiJsonValue],
         ttl: int | None = None,
     ) -> r[bool]:
         """Set multiple keys efficiently using Pydantic validation."""
@@ -208,12 +208,12 @@ class FlextApiStorage:
             return r[bool].ok(value=True)
         return r[bool].fail(f"Key not found: {key}")
 
-    def deserialize_json(self, json_str: str) -> r[t.JsonValue]:
+    def deserialize_json(self, json_str: str) -> r[t.ApiJsonValue]:
         """Deserialize from JSON using json library."""
         try:
-            return r[t.JsonValue].ok(json.loads(json_str))
+            return r[t.ApiJsonValue].ok(json.loads(json_str))
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[t.JsonValue].fail(f"JSON deserialization failed: {e}")
+            return r[t.ApiJsonValue].fail(f"JSON deserialization failed: {e}")
 
     def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
         """Service lifecycle execution."""
@@ -312,10 +312,10 @@ class FlextApiStorage:
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, float]].fail(str(e))
 
-    def health_check(self) -> r[Mapping[str, t.JsonValue]]:
+    def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Perform health check with metrics."""
         try:
-            return r[Mapping[str, t.JsonValue]].ok({
+            return r[Mapping[str, t.ApiJsonValue]].ok({
                 "status": "healthy",
                 "timestamp": u.Generators.generate_iso_timestamp(),
                 "storage_accessible": True,
@@ -323,12 +323,12 @@ class FlextApiStorage:
                 "operations_count": self._operations_count,
             })
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
 
-    def info(self) -> r[Mapping[str, t.JsonValue]]:
+    def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage information using Pydantic model."""
         try:
-            return r[Mapping[str, t.JsonValue]].ok({
+            return r[Mapping[str, t.ApiJsonValue]].ok({
                 "namespace": self._namespace,
                 "backend": self._backend,
                 "size": len(self._storage),
@@ -338,12 +338,12 @@ class FlextApiStorage:
                 "operations_count": self._operations_count,
             })
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
 
-    def items(self) -> r[list[tuple[str, t.JsonValue]]]:
+    def items(self) -> r[list[tuple[str, t.ApiJsonValue]]]:
         """Get all key-value pairs."""
         self._cleanup_expired()
-        return r[list[tuple[str, t.JsonValue]]].ok(list(self._storage.items()))
+        return r[list[tuple[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
 
     def keys(self) -> r[list[str]]:
         """Get all non-namespaced keys."""
@@ -358,7 +358,7 @@ class FlextApiStorage:
         )
         return r[list[str]].ok(list(filtered_keys))
 
-    def metrics(self) -> r[Mapping[str, t.JsonValue]]:
+    def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage metrics using Pydantic stats model."""
         try:
             # Update stats using Pydantic model (immutable pattern)
@@ -377,7 +377,7 @@ class FlextApiStorage:
             )
 
             # Direct field access instead of model_dump
-            stats_dict: dict[str, t.JsonValue] = {
+            stats_dict: dict[str, t.ApiJsonValue] = {
                 "total_operations": self._stats.total_operations,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
@@ -386,9 +386,9 @@ class FlextApiStorage:
                 "memory_usage": self._stats.memory_usage,
                 "namespace": self._stats.namespace,
             }
-            return r[Mapping[str, t.JsonValue]].ok(stats_dict)
+            return r[Mapping[str, t.ApiJsonValue]].ok(stats_dict)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using json library."""
@@ -431,7 +431,7 @@ class FlextApiStorage:
         self._storage[key] = json_value
         # Convert metadata fields to JsonValue with proper type narrowing
         value_json = self._to_json_value(metadata.value)
-        ttl_json: t.JsonValue = metadata.ttl if metadata.ttl is not None else None
+        ttl_json: t.ApiJsonValue = metadata.ttl if metadata.ttl is not None else None
         metadata_dict: dict[str, t.ApiJsonValue] = {
             "value": value_json,
             "timestamp": metadata.timestamp,
@@ -461,10 +461,10 @@ class FlextApiStorage:
         self._cleanup_expired()
         return r[int].ok(len(self._storage))
 
-    def values(self) -> r[list[t.JsonValue]]:
+    def values(self) -> r[list[t.ApiJsonValue]]:
         """Get all values."""
         self._cleanup_expired()
-        return r[list[t.JsonValue]].ok(list(self._storage.values()))
+        return r[list[t.ApiJsonValue]].ok(list(self._storage.values()))
 
     def _apply_config(
         self,
