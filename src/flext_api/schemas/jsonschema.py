@@ -17,13 +17,22 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
-from typing import override
+from typing import TypeGuard, override
 
 import yaml
 from flext_core import r
 
 from flext_api import FlextApiPlugins, t as t_api
+
+
+def _is_api_json_value(value: object) -> TypeGuard[t_api.ApiJsonValue]:
+    return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
+
+
+def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+    return isinstance(value, Mapping)
 
 
 class JSONSchemaValidator(FlextApiPlugins.Schema):
@@ -112,29 +121,27 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def _to_general_value(self, value: t_api.ApiJsonValue) -> t_api.ApiJsonValue:
         """Coerce JSON-like values recursively."""
-        match value:
-            case str() | int() | float() | bool() | None:
-                return value
-            case list() as values:
-                normalized_items: list[t_api.ApiJsonValue] = []
-                for item in values:
-                    match item:
-                        case str() | int() | float() | bool() | None | list() | dict():
-                            normalized_items.append(self._to_general_value(item))
-                        case _:
-                            normalized_items.append(str(item))
-                return normalized_items
-            case dict() as mapping:
-                normalized_map: dict[str, t_api.ApiJsonValue] = {}
-                for key, item in mapping.items():
-                    match item:
-                        case str() | int() | float() | bool() | None | list() | dict():
-                            normalized_map[str(key)] = self._to_general_value(item)
-                        case _:
-                            normalized_map[str(key)] = str(item)
-                return normalized_map
-            case _:
-                return str(value)
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_items: list[t_api.ApiJsonValue] = []
+            for item in value:
+                if _is_api_json_value(item):
+                    normalized_items.append(self._to_general_value(item))
+                else:
+                    normalized_items.append(str(item))
+            return normalized_items
+        if isinstance(value, Mapping):
+            normalized_map: dict[str, t_api.ApiJsonValue] = {}
+            for key, item in value.items():
+                if _is_api_json_value(item):
+                    normalized_map[str(key)] = self._to_general_value(item)
+                else:
+                    normalized_map[str(key)] = str(item)
+            return normalized_map
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
     def _validate_schema_uri_field(
         self,
@@ -295,11 +302,9 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         self.logger.info(
             "JSON Schema validation successful",
-            extra={
-                "draft": self._draft_version,
-                "has_properties": "properties" in schema_dict,
-                "has_required": "required" in schema_dict,
-            },
+            draft=self._draft_version,
+            has_properties="properties" in schema_dict,
+            has_required="required" in schema_dict,
         )
 
         return r[t_api.Api.SchemaDefinition].ok({
@@ -421,11 +426,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         match (instance, schema["items"]):
             case (list() as instance_list, dict() as items_field_typed):
                 for i, item in enumerate(instance_list):
-                    match item:
-                        case str() | int() | float() | bool() | None | list() | dict():
-                            item_typed = self._to_general_value(item)
-                        case _:
-                            item_typed = str(item)
+                    item_typed = self._to_general_value(item)
                     item_result = self.validate_instance(
                         item_typed,
                         items_field_typed,
@@ -669,11 +670,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         # Convert schema to SchemaDefinition for validation
         schema_def: t_api.Api.SchemaDefinition = {}
         for k, v in schema.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    schema_def[k] = self._to_general_value(v)
-                case _:
-                    continue
+            schema_def[k] = self._to_general_value(v)
 
         # Validate the schema first
         schema_result = self.validate_schema(schema_def)
@@ -684,11 +681,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         # Convert JsonObject to dict[str, JsonValue] for instance validation
         request_typed: t_api.JsonObject = {}
         for k, v in request.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    request_typed[k] = self._to_general_value(v)
-                case _:
-                    continue
+            request_typed[k] = self._to_general_value(v)
         instance_result = self.validate_instance(request_typed, schema_def)
         if instance_result.is_failure:
             return r[bool].fail(instance_result.error or "Schema validation failed")
@@ -714,11 +707,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         # Convert schema to SchemaDefinition for validation
         schema_def: t_api.Api.SchemaDefinition = {}
         for k, v in schema.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    schema_def[k] = self._to_general_value(v)
-                case _:
-                    continue
+            schema_def[k] = self._to_general_value(v)
 
         # Validate the schema first
         schema_result = self.validate_schema(schema_def)
@@ -729,11 +718,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         # Convert JsonObject to dict[str, JsonValue] for instance validation
         response_typed: t_api.JsonObject = {}
         for k, v in response.items():
-            match v:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    response_typed[k] = self._to_general_value(v)
-                case _:
-                    continue
+            response_typed[k] = self._to_general_value(v)
         instance_result = self.validate_instance(response_typed, schema_def)
         if instance_result.is_failure:
             return r[bool].fail(instance_result.error or "Schema validation failed")
@@ -780,18 +765,17 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         except OSError as e:
             return r[t_api.ContainerValue].fail(f"Failed to read schema file: {e}")
 
-        if not isinstance(loaded_schema, dict):
+        if not _is_object_mapping(loaded_schema):
             return r[t_api.ContainerValue].fail(
                 "JSON schema file must contain a JSON/YAML object",
             )
 
         schema_definition: t_api.Api.SchemaDefinition = {}
         for key, value in loaded_schema.items():
-            match value:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    schema_definition[str(key)] = self._to_general_value(value)
-                case _:
-                    schema_definition[str(key)] = str(value)
+            if _is_api_json_value(value):
+                schema_definition[str(key)] = self._to_general_value(value)
+            else:
+                schema_definition[str(key)] = str(value)
 
         validation_result = self.validate_schema(schema_definition)
         if validation_result.is_failure:

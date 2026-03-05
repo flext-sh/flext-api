@@ -221,7 +221,7 @@ class FlextApiPlugins:
         def __init__(self) -> None:
             """Initialize plugin manager."""
             self.logger = FlextLogger(__name__)
-            self._loaded_plugins: dict[str, FlextApiPlugins.Plugin] = {}
+            self._loaded_plugins = {}
 
         def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> r[bool]:
             """Load and initialize a plugin."""

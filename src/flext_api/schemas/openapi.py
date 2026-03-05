@@ -19,13 +19,21 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from pathlib import Path
-from typing import override
+from typing import TypeGuard, override
 
 import yaml
 from flext_core import r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api import FlextApiPlugins, t
+
+
+def _is_container_value(value: object) -> TypeGuard[t.ContainerValue]:
+    return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
+
+
+def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+    return isinstance(value, Mapping)
 
 
 class OpenAPISchemaValidator(FlextApiPlugins.Schema):
@@ -289,11 +297,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         self.logger.info(
             "OpenAPI schema validation successful",
-            extra={
-                "version": version_result.value,
-                "title": title_str,
-                "paths_count": len(paths_keys),
-            },
+            version=version_result.value,
+            title=title_str,
+            paths_count=len(paths_keys),
         )
 
         return r[t.JsonObject].ok({
@@ -318,13 +324,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             if not path.startswith("/"):
                 return r[bool].fail(f"Path must start with '/': {path}")
 
-            match path_item:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    path_item_value = path_item
-                case _:
-                    return r[bool].fail(f"Path item must be a JSON value: {path}")
-
-            path_item_result = self._parse_dict_field(path_item_value, "path_item")
+            path_item_result = self._parse_dict_field(path_item, "path_item")
             if path_item_result.is_failure:
                 return r[bool].fail(f"Path item must be a dictionary: {path}")
             path_item = path_item_result.value
@@ -605,21 +605,21 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        match value:
-            case str() | int() | float() | bool() | None:
-                return value
-            case list() as values:
-                normalized_values: list[t.ContainerValue] = [
-                    self._to_general_value(item) for item in values
-                ]
-                return normalized_values
-            case dict() as mapping:
-                normalized_mapping: dict[str, t.ContainerValue] = {}
-                for key, item in mapping.items():
-                    normalized_mapping[str(key)] = self._to_general_value(item)
-                return normalized_mapping
-            case _:
-                return str(value)
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_values: list[t.ContainerValue] = [
+                self._to_general_value(item) for item in value
+            ]
+            return normalized_values
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized_mapping[str(key)] = self._to_general_value(item)
+            return normalized_mapping
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
     def _load_schema_document(self, schema_source: str) -> r[object]:
         schema_path = Path(schema_source)
@@ -644,16 +644,15 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _normalize_json_object(
         self,
-        value: Mapping[str, t.ApiJsonValue],
+        value: Mapping[object, object],
     ) -> t.JsonObject:
         normalized: t.JsonObject = {}
         for key, item in value.items():
-            normalized_value = self._to_general_value(item)
-            match normalized_value:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    normalized[str(key)] = normalized_value
-                case _:
-                    normalized[str(key)] = str(normalized_value)
+            if _is_container_value(item):
+                normalized_value = self._to_general_value(item)
+            else:
+                normalized_value = str(item)
+            normalized[str(key)] = normalized_value
         return normalized
 
     @override
@@ -677,7 +676,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             )
 
         loaded_schema = schema_result.value
-        if not isinstance(loaded_schema, dict):
+        if not _is_object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
                 "OpenAPI schema must be a JSON/YAML object",
             )

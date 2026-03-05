@@ -19,13 +19,21 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from pathlib import Path
-from typing import override
+from typing import TypeGuard, override
 
 import yaml
 from flext_core import r, u
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api import FlextApiPlugins, t
+
+
+def _is_container_value(value: object) -> TypeGuard[t.ContainerValue]:
+    return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
+
+
+def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+    return isinstance(value, Mapping)
 
 
 class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
@@ -305,11 +313,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         self.logger.info(
             "AsyncAPI schema validation successful",
-            extra={
-                "version": version_result.value,
-                "title": title_str,
-                "channels_count": len(channels),
-            },
+            version=version_result.value,
+            title=title_str,
+            channels_count=len(channels),
         )
 
         return r[Mapping[str, t.ContainerValue]].ok({
@@ -770,21 +776,21 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        match value:
-            case str() | int() | float() | bool() | None:
-                return value
-            case list() as values:
-                normalized_values: list[t.ContainerValue] = [
-                    self._to_general_value(item) for item in values
-                ]
-                return normalized_values
-            case dict() as mapping:
-                normalized_mapping: dict[str, t.ContainerValue] = {}
-                for key, item in mapping.items():
-                    normalized_mapping[str(key)] = self._to_general_value(item)
-                return normalized_mapping
-            case _:
-                return str(value)
+        if value is None:
+            return None
+        if isinstance(value, list):
+            normalized_values: list[t.ContainerValue] = [
+                self._to_general_value(item) for item in value
+            ]
+            return normalized_values
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized_mapping[str(key)] = self._to_general_value(item)
+            return normalized_mapping
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
 
     def _load_schema_document(self, schema_source: str) -> r[object]:
         schema_path = Path(schema_source)
@@ -807,19 +813,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         except OSError as e:
             return r[object].fail(f"Failed to read schema file: {e}")
 
-    def _normalize_json_object(self, value: Mapping[str, object]) -> t.JsonObject:
+    def _normalize_json_object(self, value: Mapping[object, object]) -> t.JsonObject:
         normalized: t.JsonObject = {}
         for key, item in value.items():
-            # Type narrowing: convert object to ContainerValue
-            if isinstance(item, (str, int, float, bool, type(None), list, dict)):
+            if _is_container_value(item):
                 normalized_value = self._to_general_value(item)
             else:
                 normalized_value = str(item)
-            match normalized_value:
-                case str() | int() | float() | bool() | None | list() | dict():
-                    normalized[str(key)] = normalized_value
-                case _:
-                    normalized[str(key)] = str(normalized_value)
+            normalized[str(key)] = normalized_value
         return normalized
 
     @override
@@ -843,7 +844,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             )
 
         loaded_schema = schema_result.value
-        if not isinstance(loaded_schema, dict):
+        if not _is_object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
                 "AsyncAPI schema must be a JSON/YAML object",
             )
