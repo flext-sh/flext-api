@@ -45,18 +45,12 @@ class FlextApiServerFactory:
         FlextResult containing FlextApiServer instance or error
 
         """
-        server = FlextApiServer(
-            host=host,
-            port=port,
-            title=title,
-            version=version,
-        )
+        server = FlextApiServer(host=host, port=port, title=title, version=version)
         return r[FlextApiServer].ok(server)
 
     @staticmethod
     def create_webhook_handler(
-        secret: str | None = None,
-        max_retries: int = 3,
+        secret: str | None = None, max_retries: int = 3
     ) -> r[FlextWebhookHandler]:
         """Create FlextWebhookHandler instance.
 
@@ -71,10 +65,7 @@ class FlextApiServerFactory:
         FlextResult containing FlextWebhookHandler instance or error
 
         """
-        handler = FlextWebhookHandler(
-            secret=secret,
-            max_retries=max_retries,
-        )
+        handler = FlextWebhookHandler(secret=secret, max_retries=max_retries)
         return r[FlextWebhookHandler].ok(handler)
 
 

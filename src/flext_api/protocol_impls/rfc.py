@@ -98,10 +98,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         super().__init__(name=name, version=version, description=description, **kwargs)
 
     def _build_rfc_error_response(
-        self,
-        error: str,
-        status_code: int = 500,
-        error_code: str | None = None,
+        self, error: str, status_code: int = 500, error_code: str | None = None
     ) -> Mapping[str, t.ContainerValue]:
         """Build RFC-compliant error response (RFC 7231).
 
@@ -114,7 +111,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         RFC-compliant error response dictionary
 
         """
-        # Build error response manually
         error_response: dict[str, t.ContainerValue] = {
             "error": error,
             "status_code": status_code,
@@ -140,23 +136,15 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         FlextResult with RFC-compliant success response
 
         """
-        # Convert dict[str, t.ContainerValue] to JsonObject and dict[str, str] to WebHeaders
         json_data: dict[str, t.ContainerValue] | None = None
         if data is not None:
-            # JsonValue is str | int | float | bool | None | Sequence[JsonValue] | Mapping[str, JsonValue]
             json_data = {}
             for key, value in data.items():
                 json_data[key] = value
-
         web_headers: dict[str, str | list[str]] | None = None
         if headers is not None:
-            # WebHeaders is dict[str, str | list[str]], convert dict[str, str]
             web_headers = dict(headers)
-
-        # Build success response manually
-        success_response: dict[str, t.ContainerValue] = {
-            "status_code": status_code,
-        }
+        success_response: dict[str, t.ContainerValue] = {"status_code": status_code}
         if json_data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
@@ -164,8 +152,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return r[t.ConfigurationMapping].ok(success_response)
 
     def _extract_body(
-        self,
-        request: Mapping[str, t.ContainerValue],
+        self, request: Mapping[str, t.ContainerValue]
     ) -> t.ContainerValue | None:
         """Extract body from request (RFC 7231 compliant).
 
@@ -178,12 +165,10 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "body" not in request:
             return None
-
         return request["body"]
 
     def _extract_headers(
-        self,
-        request: Mapping[str, t.ContainerValue],
+        self, request: Mapping[str, t.ContainerValue]
     ) -> Mapping[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
@@ -196,17 +181,13 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "headers" not in request:
             return {}
-
         try:
             parsed = self._HeadersRequest.model_validate(request)
         except ValidationError:
             return {}
-
-        # Normalize header keys to lowercase per RFC 7230
         normalized_headers: dict[str, str] = {}
         for key, value in parsed.headers.items():
             normalized_headers[key.lower()] = value
-
         return normalized_headers
 
     def _extract_method(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
@@ -244,8 +225,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                 return parsed.timeout
             except ValidationError:
                 return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
-
-        # Use default timeout from constants
         return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
 
     def _extract_url(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
@@ -260,7 +239,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "url" not in request:
             return r[str].fail("URL is required in request (RFC 7230)")
-
         try:
             parsed = self._UrlRequest.model_validate(request)
         except ValidationError as exc:
@@ -283,7 +261,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         content_type_key = "content-type"
         if content_type_key in headers:
             return headers[content_type_key]
-
         return FlextApiConstants.Api.ContentType.JSON
 
     def _is_client_error(self, status_code: int) -> bool:
@@ -354,8 +331,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if attempt >= max_retries:
             return False
-
-        # Retry on server errors (5xx) and specific client errors (408, 429)
         return status_code in FlextApiConstants.Api.HTTPRetry.RETRYABLE_STATUS_CODES
 
     def _validate_status_code(self, status_code: int) -> r[int]:
@@ -372,7 +347,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             parsed = self._StatusCodeValue(status_code=status_code)
         except ValidationError:
             return r[int].fail(
-                f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
+                f"Status code must be between 100 and 599 (RFC 7231): {status_code}"
             )
         return r[int].ok(parsed.status_code)
 

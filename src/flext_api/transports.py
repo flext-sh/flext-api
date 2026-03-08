@@ -33,15 +33,9 @@ class FlextApiTransports:
         def connect(self, url: str, **options: t.ContainerValue) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
-                # Validate URL parameter
                 if not url:
                     return r[str].fail("URL is required for HTTP connection")
-
-                # Create a basic httpx client - options can be used by subclasses
-                # The url parameter is validated but not directly used in client creation
-                # as httpx.Client doesn't take a base URL in connect()
-                # Options parameter is reserved for future extensibility
-                _ = options  # Reserved for future use
+                _ = options
                 self._client = httpx.Client()
                 return r[str].ok(url)
             except (
@@ -73,9 +67,7 @@ class FlextApiTransports:
 
         @override
         def send(
-            self,
-            connection: str,
-            data: t.Api.RequestConfig | t.Api.RequestBody,
+            self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
         ) -> r[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             try:
@@ -83,18 +75,15 @@ class FlextApiTransports:
                 client = self._client
                 if client is None:
                     return r[t.Api.HttpResponseDict | str].fail(
-                        "HTTP client is not connected",
+                        "HTTP client is not connected"
                     )
-
                 params_result = self._extract_request_params(
-                    data,
-                    connection_url=connection,
+                    data, connection_url=connection
                 )
                 if params_result.is_failure:
                     return r[t.Api.HttpResponseDict | str].fail(
-                        params_result.error or "Parameter extraction failed",
+                        params_result.error or "Parameter extraction failed"
                     )
-
                 request_model = params_result.value
                 match request_model.body:
                     case dict() as body_json:
@@ -124,8 +113,6 @@ class FlextApiTransports:
                             url=request_model.url,
                             headers=request_model.headers,
                         )
-
-                # Return response data
                 return r[t.Api.HttpResponseDict | str].ok({
                     "status_code": response.status_code,
                     "headers": dict(response.headers),
@@ -143,10 +130,7 @@ class FlextApiTransports:
                 return r[t.Api.HttpResponseDict | str].fail(f"HTTP send failed: {e}")
 
         def _extract_request_params(
-            self,
-            data: t.Api.RequestConfig | t.Api.RequestBody,
-            *,
-            connection_url: str,
+            self, data: t.Api.RequestConfig | t.Api.RequestBody, *, connection_url: str
         ) -> r[m.HttpRequest]:
             """Extract and validate request parameters from data."""
             try:
@@ -155,15 +139,11 @@ class FlextApiTransports:
                         request_model = m.HttpRequest.model_validate(payload)
                     case str() as body_text:
                         request_model = m.HttpRequest(
-                            method=c.Api.Method.GET,
-                            url=connection_url,
-                            body=body_text,
+                            method=c.Api.Method.GET, url=connection_url, body=body_text
                         )
                     case bytes() as body_bytes:
                         request_model = m.HttpRequest(
-                            method=c.Api.Method.GET,
-                            url=connection_url,
-                            body=body_bytes,
+                            method=c.Api.Method.GET, url=connection_url, body=body_bytes
                         )
                     case _:
                         return r[m.HttpRequest].fail("Unsupported request payload type")
@@ -178,6 +158,4 @@ class FlextApiTransports:
                 return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
 
-__all__ = [
-    "FlextApiTransports",
-]
+__all__ = ["FlextApiTransports"]

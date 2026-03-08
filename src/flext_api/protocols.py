@@ -56,33 +56,25 @@ class FlextApiProtocols(FlextWebProtocols):
                 """Protocol for generic HTTP client implementations."""
 
                 def delete(
-                    self,
-                    url: str,
-                    **kwargs: t.ApiJsonValue,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> FlextResult[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
 
                 def get(
-                    self,
-                    url: str,
-                    **kwargs: t.ApiJsonValue,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> FlextResult[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
                 def post(
-                    self,
-                    url: str,
-                    **kwargs: t.ApiJsonValue,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> FlextResult[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
                 def put(
-                    self,
-                    url: str,
-                    **kwargs: t.ApiJsonValue,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> FlextResult[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
@@ -124,10 +116,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
                 def set(
-                    self,
-                    key: str,
-                    value: t.ApiJsonValue,
-                    timeout: int | None = None,
+                    self, key: str, value: t.ApiJsonValue, timeout: int | None = None
                 ) -> FlextResult[bool]:
                     """Store value with optional timeout."""
                     ...
@@ -217,9 +206,7 @@ class FlextApiProtocols(FlextWebProtocols):
                 """
 
                 def connect(
-                    self,
-                    url: str,
-                    **options: t.ApiJsonValue,
+                    self, url: str, **options: t.ApiJsonValue
                 ) -> FlextResult[str]:
                     """Connect to endpoint."""
                     ...
@@ -229,9 +216,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
                 def send(
-                    self,
-                    connection: str,
-                    data: t.Api.RequestConfig | t.Api.RequestBody,
+                    self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
                 ) -> FlextResult[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...
@@ -259,8 +244,7 @@ class FlextApiProtocols(FlextWebProtocols):
                 """
 
                 def handle_request(
-                    self,
-                    request: t.ApiJsonValue,
+                    self, request: t.ApiJsonValue
                 ) -> FlextResult[t.ApiJsonValue]:
                     """Handle gRPC request.
 
@@ -294,8 +278,7 @@ class FlextApiProtocols(FlextWebProtocols):
                 """
 
                 def get_request_schema(
-                    self,
-                    method: str,
+                    self, method: str
                 ) -> FlextResult[t.Api.JsonObject]:
                     """Get request schema for method.
 
@@ -309,8 +292,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
                 def get_response_schema(
-                    self,
-                    method: str,
+                    self, method: str
                 ) -> FlextResult[t.Api.JsonObject]:
                     """Get response schema for method.
 
@@ -324,10 +306,5 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
 
-# Alias for simplified usage - exported for domain usage
 p = FlextApiProtocols
-
-__all__ = [
-    "FlextApiProtocols",
-    "p",
-]
+__all__ = ["FlextApiProtocols", "p"]

@@ -15,7 +15,6 @@ from pydantic import BeforeValidator
 
 from flext_api import t
 
-# Local constants to avoid circular import with constants.py
 MAX_HOSTNAME_LENGTH: int = 253
 MAX_PORT: int = 65535
 VALID_HTTP_METHODS: frozenset[str] = frozenset({
@@ -40,10 +39,6 @@ class FlextApiUtilities(FlextWebUtilities):
     - @validated decorators eliminating manual validation
     - Generic parsing utilities for StrEnums (inherited from parent)
     """
-
-    # ═══════════════════════════════════════════════════════════════════
-    # API NAMESPACE: Project-specific utilities
-    # ═══════════════════════════════════════════════════════════════════
 
     class Api:
         """API-specific utility namespace.
@@ -105,12 +100,12 @@ class FlextApiUtilities(FlextWebUtilities):
                 if kwargs is not None and "data" in kwargs:
                     raw_data = kwargs["data"]
                     return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data),
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data)
                     )
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
                     return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json),
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json)
                     )
                 return r[t.Api.RequestBody].ok({})
 
@@ -141,7 +136,7 @@ class FlextApiUtilities(FlextWebUtilities):
                             FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         )
                     return converted
-                if isinstance(value, Sequence) and not isinstance(value, str | bytes):
+                if isinstance(value, Sequence) and (not isinstance(value, str | bytes)):
                     return [
                         FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         for item in value
@@ -167,8 +162,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
             @staticmethod
             def validate_and_extract_timeout(
-                timeout: float | str | None,
-                kwargs: Mapping[str, t.ApiJsonValue] | None,
+                timeout: float | str | None, kwargs: Mapping[str, t.ApiJsonValue] | None
             ) -> r[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
@@ -176,7 +170,6 @@ class FlextApiUtilities(FlextWebUtilities):
                 Coerces string/int values to float.
                 Fails if timeout is explicitly provided but invalid.
                 """
-                # If timeout is explicitly provided, it must be valid
                 if timeout is not None:
                     try:
                         timeout_float = float(timeout)
@@ -185,8 +178,6 @@ class FlextApiUtilities(FlextWebUtilities):
                         return r[float].fail("Invalid timeout value: must be positive")
                     except (ValueError, TypeError):
                         return r[float].fail(f"Invalid timeout value: {timeout}")
-
-                # Check kwargs for timeout
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
                     if not isinstance(timeout_value, int | float | str):
@@ -198,22 +189,14 @@ class FlextApiUtilities(FlextWebUtilities):
                         return r[float].fail("Invalid timeout value: must be positive")
                     except (ValueError, TypeError):
                         return r[float].fail(f"Invalid timeout value: {timeout_value}")
-
-                # No timeout specified - use default
                 return r[float].ok(30.0)
-
-    # ═══════════════════════════════════════════════════════════════════
-    # RESPONSE BUILDER: Nested inside FlextApiUtilities
-    # ═══════════════════════════════════════════════════════════════════
 
     class ResponseBuilder:
         """Response builder for API responses."""
 
         @staticmethod
         def build_error_response(
-            message: str,
-            status_code: int = 400,
-            error_code: str | None = None,
+            message: str, status_code: int = 400, error_code: str | None = None
         ) -> Mapping[str, t.ApiJsonValue]:
             """Build error response - returns plain dict."""
             return {
@@ -262,10 +245,6 @@ class FlextApiUtilities(FlextWebUtilities):
                 response["headers"] = headers
             return r.ok(response)
 
-    # ═══════════════════════════════════════════════════════════════════
-    # PAGINATION BUILDER: Nested inside FlextApiUtilities
-    # ═══════════════════════════════════════════════════════════════════
-
     class PaginationBuilder:
         """Pagination builder for paginated responses."""
 
@@ -281,12 +260,10 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[Mapping[str, t.ApiJsonValue]].fail("Page must be >= 1")
             if page_size < 1:
                 return r[Mapping[str, t.ApiJsonValue]].fail("Page size must be >= 1")
-
             total_items = total if total is not None else len(data)
             total_pages = (
                 (total_items + page_size - 1) // page_size if page_size > 0 else 0
             )
-
             return r[Mapping[str, t.ApiJsonValue]].ok({
                 "success": True,
                 "data": data,
@@ -307,7 +284,6 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[Mapping[str, t.ApiJsonValue]].fail(
                     "pagination_data must contain 'data' key"
                 )
-
             return r[Mapping[str, t.ApiJsonValue]].ok({
                 "success": True,
                 "pagination": pagination_data,
@@ -325,20 +301,16 @@ class FlextApiUtilities(FlextWebUtilities):
             try:
                 page_str = params.get("page", "1")
                 page_size_str = params.get("page_size", "20")
-
                 if isinstance(page_str, int | float | str):
                     page = int(page_str)
                 else:
                     return r[tuple[int, int]].fail("Invalid page parameter")
-
                 if isinstance(page_size_str, int | float | str):
                     page_size = int(page_size_str)
                 else:
                     return r[tuple[int, int]].fail("Invalid page_size parameter")
-
                 if page < 1 or page_size < 1:
                     return r[tuple[int, int]].fail("Page and page_size must be >= 1")
-
                 return r[tuple[int, int]].ok((page, page_size))
             except (ValueError, TypeError):
                 return r[tuple[int, int]].fail("Invalid page or page_size parameters")
@@ -353,25 +325,19 @@ class FlextApiUtilities(FlextWebUtilities):
             Provides defaults if not found.
             """
             result: dict[str, t.ApiJsonValue] = {}
-
             default_page_size = getattr(config, "default_page_size", 20)
             max_page_size = getattr(config, "max_page_size", 1000)
-
             result["default_page_size"] = (
                 FlextApiUtilities.Api.RequestUtils.to_json_value(default_page_size)
             )
             result["max_page_size"] = FlextApiUtilities.Api.RequestUtils.to_json_value(
-                max_page_size,
+                max_page_size
             )
-
             return result
 
         @staticmethod
         def prepare_pagination_data(
-            data: list[t.ApiJsonValue],
-            total: int,
-            page: int,
-            page_size: int,
+            data: list[t.ApiJsonValue], total: int, page: int, page_size: int
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Prepare pagination metadata for response.
 
@@ -381,13 +347,11 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[Mapping[str, t.ApiJsonValue]].fail(
                     "Page and page_size must be >= 1"
                 )
-
             total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
             has_next = page < total_pages
             has_prev = page > 1
             next_page = page + 1 if has_next else None
             prev_page = page - 1 if has_prev else None
-
             return r[Mapping[str, t.ApiJsonValue]].ok({
                 "data": data,
                 "total": total,
@@ -402,9 +366,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def validate_pagination_params(
-            page: int,
-            page_size: int,
-            max_page_size: int = 1000,
+            page: int, page_size: int, max_page_size: int = 1000
         ) -> r[tuple[int, int]]:
             """Validate pagination parameters.
 
@@ -418,12 +380,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[tuple[int, int]].fail(
                     f"Page size cannot exceed {max_page_size}"
                 )
-
             return r[tuple[int, int]].ok((page, page_size))
-
-    # ═══════════════════════════════════════════════════════════════════
-    # WEB VALIDATOR: Nested inside FlextApiUtilities
-    # ═══════════════════════════════════════════════════════════════════
 
     class FlextWebValidator:
         """Web validation utilities for URLs and HTTP methods."""
@@ -449,14 +406,11 @@ class FlextApiUtilities(FlextWebUtilities):
             """Validate hostname format."""
             if not host or not host.strip():
                 return r[str].fail("Hostname cannot be empty")
-
             if len(host) > MAX_HOSTNAME_LENGTH:
                 return r[str].fail("Hostname too long")
-
-            pattern = r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$|^localhost$|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"
+            pattern = "^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^localhost$|^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$"
             if not re.match(pattern, host):
                 return r[str].fail("Invalid hostname format")
-
             return r[str].ok(host)
 
         @staticmethod
@@ -476,7 +430,6 @@ class FlextApiUtilities(FlextWebUtilities):
             """Validate URL format and structure."""
             if not url or not url.strip():
                 return r[str].fail("URL cannot be empty")
-
             try:
                 parsed = urlparse(url)
                 if not parsed.scheme or parsed.scheme not in {"http", "https"}:
@@ -492,10 +445,5 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[str].fail(f"Invalid URL: {e}")
 
 
-# Short alias for runtime access
 u = FlextApiUtilities
-
-__all__ = [
-    "FlextApiUtilities",
-    "u",
-]
+__all__ = ["FlextApiUtilities", "u"]

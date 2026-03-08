@@ -28,9 +28,6 @@ from pydantic import ConfigDict, ValidationError
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
-# Asyncio utilities
-# Synchronous alternatives for async functionality
-
 
 class WebSocketProtocolPlugin(RFCProtocolImplementation):
     """WebSocket protocol plugin with full lifecycle management.
@@ -51,11 +48,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     - Event callbacks for message handling
     """
 
-    # Override frozen constraint from RFCProtocolImplementation - WebSocket needs mutable state
     model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
-
-    # Declare attributes to satisfy type checkers
-    # These are initialized via object.__setattr__() in __init__()
     _ping_interval: float
     _ping_timeout: float
     _close_timeout: float
@@ -106,102 +99,75 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             version="1.0.0",
             description="WebSocket protocol support with event-driven architecture",
         )
-
-        # Use object.__setattr__() to bypass frozen Pydantic model constraints
-        # WebSocket configuration - use constants if not provided
         object.__setattr__(
             self,
             "_ping_interval",
-            (
-                ping_interval
-                if ping_interval is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_PING_INTERVAL
-            ),
+            ping_interval
+            if ping_interval is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_PING_INTERVAL,
         )
         object.__setattr__(
             self,
             "_ping_timeout",
-            (
-                ping_timeout
-                if ping_timeout is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_PING_TIMEOUT
-            ),
+            ping_timeout
+            if ping_timeout is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_PING_TIMEOUT,
         )
         object.__setattr__(
             self,
             "_close_timeout",
-            (
-                close_timeout
-                if close_timeout is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_CLOSE_TIMEOUT
-            ),
+            close_timeout
+            if close_timeout is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_CLOSE_TIMEOUT,
         )
         object.__setattr__(
             self,
             "_max_size",
-            (
-                max_size
-                if max_size is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_MAX_SIZE
-            ),
+            max_size
+            if max_size is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_MAX_SIZE,
         )
         object.__setattr__(
             self,
             "_max_queue",
-            (
-                max_queue
-                if max_queue is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_MAX_QUEUE
-            ),
+            max_queue
+            if max_queue is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_MAX_QUEUE,
         )
         object.__setattr__(
             self,
             "_compression",
-            (
-                compression
-                if compression is not None
-                else FlextApiConstants.Api.WebSocket.COMPRESSION_DEFLATE
-            ),
+            compression
+            if compression is not None
+            else FlextApiConstants.Api.WebSocket.COMPRESSION_DEFLATE,
         )
-
-        # Reconnection configuration - use constants if not provided
         object.__setattr__(self, "_auto_reconnect", auto_reconnect)
         object.__setattr__(
             self,
             "_reconnect_max_attempts",
-            (
-                reconnect_max_attempts
-                if reconnect_max_attempts is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_RECONNECT_MAX_ATTEMPTS
-            ),
+            reconnect_max_attempts
+            if reconnect_max_attempts is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_RECONNECT_MAX_ATTEMPTS,
         )
         object.__setattr__(
             self,
             "_reconnect_backoff_factor",
-            (
-                reconnect_backoff_factor
-                if reconnect_backoff_factor is not None
-                else FlextApiConstants.Api.WebSocket.DEFAULT_RECONNECT_BACKOFF_FACTOR
-            ),
+            reconnect_backoff_factor
+            if reconnect_backoff_factor is not None
+            else FlextApiConstants.Api.WebSocket.DEFAULT_RECONNECT_BACKOFF_FACTOR,
         )
-
-        # Connection state
         object.__setattr__(self, "_connection", None)
         object.__setattr__(self, "_connected", False)
         object.__setattr__(self, "_url", "")
         object.__setattr__(self, "_headers", {})
-
-        # Event handlers
         object.__setattr__(self, "_on_message_handlers", [])
         object.__setattr__(self, "_on_connect_handlers", [])
         object.__setattr__(self, "_on_disconnect_handlers", [])
         object.__setattr__(self, "_on_error_handlers", [])
-
-        # Initialize protocol
         init_result = self.initialize()
         if init_result.is_failure:
             self.logger.error(
-                f"Failed to initialize WebSocket protocol: {init_result.error}",
+                f"Failed to initialize WebSocket protocol: {init_result.error}"
             )
 
     @property
@@ -209,11 +175,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Check if WebSocket is connected."""
         return self._connected
 
-    def connect(
-        self,
-        url: str,
-        headers: Mapping[str, str] | None = None,
-    ) -> r[bool]:
+    def connect(self, url: str, headers: Mapping[str, str] | None = None) -> r[bool]:
         """Connect to WebSocket server.
 
         Args:
@@ -238,29 +200,19 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         if not self._connected:
             return r[bool].fail("Not connected to WebSocket server")
-
         try:
-            # Simplified sync disconnect - no async tasks to cancel
-
-            # Close connection
             close_method = getattr(self._connection, "close", None)
             if callable(close_method):
                 close_method()
-
             self._connected = False
             self._connection = None
-
-            # Notify disconnect handlers
             for handler in self._on_disconnect_handlers:
                 try:
                     handler()
                 except (ValueError, TypeError, KeyError, ConnectionError):
                     self.logger.exception("Disconnect handler error")
-
             self.logger.info("WebSocket disconnected", url=self._url)
-
             return r[bool].ok(value=True)
-
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
@@ -314,11 +266,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         self._on_message_handlers.append(handler)
 
-    def send_message(
-        self,
-        message: str | bytes,
-        message_type: str = "text",
-    ) -> r[bool]:
+    def send_message(self, message: str | bytes, message_type: str = "text") -> r[bool]:
         """Send message over WebSocket.
 
         Args:
@@ -333,9 +281,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self,
-        request: Mapping[str, t.ContainerValue],
-        **kwargs: t.ContainerValue,
+        self, request: Mapping[str, t.ContainerValue], **kwargs: t.ContainerValue
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send WebSocket request (connect and send message).
 
@@ -354,37 +300,27 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
             return r[Mapping[str, t.ContainerValue]].fail(str(details))
-
-        # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                message_result.error or "Message extraction failed",
+                message_result.error or "Message extraction failed"
             )
-
         message_type = self._extract_message_type(options)
-
-        # Connect if not connected
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"WebSocket connection failed: {connect_result.error}",
+                f"WebSocket connection failed: {connect_result.error}"
             )
-
-        # Send message
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"WebSocket send failed: {send_result.error}",
+                f"WebSocket send failed: {send_result.error}"
             )
-
-        # Create response (WebSocket doesn't have traditional responses)
         url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"Failed to extract URL: {url_result.error}",
+                f"Failed to extract URL: {url_result.error}"
             )
-
         response: dict[str, t.ContainerValue] = {
             "status_code": FlextApiConstants.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
@@ -392,7 +328,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
             "body": {"status": "message_sent", "message_type": message_type},
         }
-
         return r[Mapping[str, t.ContainerValue]].ok(response)
 
     @override
@@ -412,11 +347,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             FlextApiConstants.Api.WebSocket.Protocol.WSS,
         }
 
-    def _connect(
-        self,
-        url: str,
-        headers: Mapping[str, str],
-    ) -> r[bool]:
+    def _connect(self, url: str, headers: Mapping[str, str]) -> r[bool]:
         """Internal connection implementation.
 
         Args:
@@ -427,18 +358,13 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             FlextResult indicating success or failure
 
         """
-        # Check if websockets library is available
         if websockets is None:
             return r[bool].fail(
-                "websockets library not installed. Install with: pip install websockets",
+                "websockets library not installed. Install with: pip install websockets"
             )
-
         try:
             self._url = url
             self._headers = headers
-
-            # Connect to WebSocket server
-            # Note: websockets.connect() returns a coroutine/context manager
             connection_obj: object = websockets.connect(
                 url,
                 extra_headers=headers,
@@ -449,28 +375,20 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 max_queue=self._max_queue,
                 compression=self._compression,
             )
-
             self._connection = connection_obj
             self._connected = True
-
-            # Simplified sync implementation - no background tasks needed
-
-            # Notify connect handlers
             for handler in self._on_connect_handlers:
                 try:
                     handler()
                 except (ValueError, TypeError, KeyError, ConnectionError):
                     self.logger.exception("Connect handler error")
-
             self.logger.info(
                 "WebSocket connected",
                 url=url,
                 ping_interval=self._ping_interval,
                 compression=self._compression,
             )
-
             return r[bool].ok(value=True)
-
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             self._connected = False
             self._connection = None
@@ -480,26 +398,18 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
-
-        # Use RFC method to extract URL
         url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[bool].fail(url_result.error or "URL extraction failed")
-
-        # Use RFC method to extract headers
         headers = self._extract_headers(request)
-
         return self._connect(url_result.value, headers)
 
     def _extract_message(
-        self,
-        request: Mapping[str, t.ContainerValue],
-        options: _SendRequestOptions,
+        self, request: Mapping[str, t.ContainerValue], options: _SendRequestOptions
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
         if options.message is not None:
             return r[str | bytes].ok(options.message)
-
         body = self._extract_body(request)
         if body is not None:
             if isinstance(body, (str, bytes)):
@@ -510,7 +420,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     return r[str | bytes].ok(str(body))
             else:
                 return r[str | bytes].ok(str(body))
-
         return r[str | bytes].fail("Message or body is required")
 
     def _extract_message_type(self, options: _SendRequestOptions) -> str:
@@ -522,11 +431,8 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         while self._connected:
             try:
                 time.sleep(self._ping_interval)
-
                 if self._connection:
-                    # Ping is handled automatically by websockets library
                     self.logger.debug("WebSocket heartbeat")
-
             except (ValueError, TypeError, KeyError, ConnectionError):
                 self.logger.exception("Heartbeat error")
                 break
@@ -537,8 +443,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             try:
                 recv_method = getattr(self._connection, "recv", None)
                 message = recv_method() if callable(recv_method) else None
-
-                # Notify message handlers only if we have valid message data
                 if isinstance(message, (str, bytes)):
                     try:
                         inbound = self._InboundMessage(message=message)
@@ -550,18 +454,13 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                                 handler(inbound.message)
                             except (ValueError, TypeError, KeyError, ConnectionError):
                                 self.logger.exception("Message handler error")
-
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")
-
-                # Notify error handlers
                 for handler in self._on_error_handlers:
                     try:
                         handler(e)
                     except (ValueError, TypeError, KeyError, ConnectionError):
                         self.logger.exception("Error handler error")
-
-                # Attempt reconnection if enabled
                 if self._auto_reconnect:
                     self._reconnect()
                 break
@@ -575,29 +474,18 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         for attempt in range(self._reconnect_max_attempts):
             delay = self._reconnect_backoff_factor**attempt
-
-            attempt_msg = (
-                f"Reconnecting... (attempt {attempt + 1}/"
-                f"{self._reconnect_max_attempts})"
-            )
+            attempt_msg = f"Reconnecting... (attempt {attempt + 1}/{self._reconnect_max_attempts})"
             self.logger.info(attempt_msg, delay=delay)
-
             time.sleep(delay)
-
             connect_result = self._connect(self._url, self._headers)
             if connect_result.is_success:
                 self.logger.info("WebSocket reconnected successfully")
                 return connect_result
-
         return r[bool].fail(
-            f"Failed to reconnect after {self._reconnect_max_attempts} attempts",
+            f"Failed to reconnect after {self._reconnect_max_attempts} attempts"
         )
 
-    def _send_message(
-        self,
-        message: str | bytes,
-        message_type: str,
-    ) -> r[bool]:
+    def _send_message(self, message: str | bytes, message_type: str) -> r[bool]:
         """Internal send message implementation.
 
         Args:
@@ -612,7 +500,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[bool].fail("Not connected to WebSocket server")
         if not self._connection:
             return r[bool].fail("WebSocket connection is None")
-
         try:
             if message_type == FlextApiConstants.Api.WebSocket.MessageType.TEXT:
                 text_message = str(message)
@@ -626,15 +513,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     send_method(binary_message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
-
             self.logger.debug(
-                "WebSocket message sent",
-                message_type=message_type,
-                size=len(message),
+                "WebSocket message sent", message_type=message_type, size=len(message)
             )
-
             return r[bool].ok(value=True)
-
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"WebSocket send error: {e}")
 

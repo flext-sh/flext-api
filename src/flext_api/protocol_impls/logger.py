@@ -49,8 +49,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
         self.logger.warning(message, return_result=False, **context)
 
     def _convert_kwargs_to_context(
-        self,
-        kwargs: Mapping[str, t.ApiJsonValue],
+        self, kwargs: Mapping[str, t.ApiJsonValue]
     ) -> Mapping[str, t.Container]:
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.Container] = {}

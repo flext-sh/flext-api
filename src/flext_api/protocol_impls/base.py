@@ -44,7 +44,6 @@ class BaseProtocolImplementation:
 
     """
 
-    # Protocol metadata fields (set via object.__setattr__ in __init__)
     name: str
     version: str
     description: str
@@ -66,15 +65,10 @@ class BaseProtocolImplementation:
         **kwargs: Additional configuration parameters
 
         """
-        # Initialize basic object - no FlextService dependency to avoid Pydantic validation conflicts
         self.logger = FlextLogger(__name__)
-
-        # Store protocol metadata as instance attributes
         object.__setattr__(self, "name", name)
         object.__setattr__(self, "version", version)
         object.__setattr__(self, "description", description)
-
-        # Protocol state
         object.__setattr__(self, "_initialized", False)
 
     @property
@@ -88,7 +82,7 @@ class BaseProtocolImplementation:
             return r[bool].fail("Protocol not initialized")
         if kwargs:
             self.logger.debug(
-                f"Protocol.execute received kwargs: {list(kwargs.keys())}",
+                f"Protocol.execute received kwargs: {list(kwargs.keys())}"
             )
         return r[bool].ok(value=True)
 
@@ -120,15 +114,12 @@ class BaseProtocolImplementation:
         """Initialize protocol resources."""
         if self._initialized:
             return r[bool].fail(f"Protocol '{self.name}' already initialized")
-
         self.logger.debug(f"Initializing protocol: {self.name}")
         self._initialized = True
         return r[bool].ok(value=True)
 
     def send_request(
-        self,
-        request: Mapping[str, t.ContainerValue],
-        **kwargs: t.ContainerValue,
+        self, request: Mapping[str, t.ContainerValue], **kwargs: t.ContainerValue
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send request using this protocol.
 
@@ -143,18 +134,16 @@ class BaseProtocolImplementation:
         FlextResult containing response dictionary or error
 
         """
-        # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
         return r[Mapping[str, t.ContainerValue]].fail(
-            f"send_request() must be implemented by {self.__class__.__name__}",
+            f"send_request() must be implemented by {self.__class__.__name__}"
         )
 
     def shutdown(self) -> r[bool]:
         """Shutdown protocol and release resources."""
         if not self._initialized:
             return r[bool].fail(f"Protocol '{self.name}' not initialized")
-
         self.logger.debug(f"Shutting down protocol: {self.name}")
         self._initialized = False
         return r[bool].ok(value=True)
@@ -171,14 +160,11 @@ class BaseProtocolImplementation:
         True if protocol is supported, False otherwise
 
         """
-        # Acknowledge parameter to avoid linting warnings
         _ = protocol
         return False
 
     def _build_error_response(
-        self,
-        error: str,
-        status_code: int = 500,
+        self, error: str, status_code: int = 500
     ) -> Mapping[str, t.ApiJsonValue]:
         """Build error response dictionary.
 
@@ -194,13 +180,11 @@ class BaseProtocolImplementation:
             "status": "error",
             "status_code": status_code,
             "error": error,
-            "timestamp": None,  # Will be set by subclasses if needed
+            "timestamp": None,
         }
 
     def _build_success_response(
-        self,
-        data: Mapping[str, t.ApiJsonValue] | None = None,
-        status_code: int = 200,
+        self, data: Mapping[str, t.ApiJsonValue] | None = None, status_code: int = 200
     ) -> Mapping[str, t.ApiJsonValue]:
         """Build success response dictionary.
 
@@ -216,15 +200,12 @@ class BaseProtocolImplementation:
             "status": "success",
             "status_code": status_code,
         }
-
         if data is not None:
             response["data"] = data
-
         return response
 
     def _validate_request(
-        self,
-        request: Mapping[str, t.ContainerValue],
+        self, request: Mapping[str, t.ContainerValue]
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate request dictionary.
 
@@ -237,7 +218,6 @@ class BaseProtocolImplementation:
         """
         if not request:
             return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
-
         return r[Mapping[str, t.ContainerValue]].ok(request)
 
 

@@ -22,8 +22,6 @@ if TYPE_CHECKING:
     from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
     from flext_api.schemas.jsonschema import JSONSchemaValidator
     from flext_api.schemas.openapi import OpenAPISchemaValidator
-
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "AsyncAPISchemaValidator": (
         "flext_api.schemas.asyncapi",
@@ -32,15 +30,10 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "JSONSchemaValidator": ("flext_api.schemas.jsonschema", "JSONSchemaValidator"),
     "OpenAPISchemaValidator": ("flext_api.schemas.openapi", "OpenAPISchemaValidator"),
 }
-
-__all__ = [
-    "AsyncAPISchemaValidator",
-    "JSONSchemaValidator",
-    "OpenAPISchemaValidator",
-]
+__all__ = ["AsyncAPISchemaValidator", "JSONSchemaValidator", "OpenAPISchemaValidator"]
 
 
-def __getattr__(name: str) -> Any:  # noqa: ANN401
+def __getattr__(name: str) -> Any:
     """Lazy-load module attributes on first access (PEP 562)."""
     return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
 

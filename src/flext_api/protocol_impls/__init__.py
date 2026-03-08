@@ -20,8 +20,6 @@ if TYPE_CHECKING:
     from flext_api.protocol_impls.sse import SSEProtocolPlugin
     from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
     from flext_api.protocol_impls.websocket import WebSocketProtocolPlugin
-
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "BaseProtocolImplementation": (
         "flext_api.protocol_impls.base",
@@ -53,7 +51,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "WebSocketProtocolPlugin",
     ),
 }
-
 __all__ = [
     "BaseProtocolImplementation",
     "FlextWebClientImplementation",
@@ -66,7 +63,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str) -> Any:  # noqa: ANN401
+def __getattr__(name: str) -> Any:
     """Lazy-load module attributes on first access (PEP 562)."""
     return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
 

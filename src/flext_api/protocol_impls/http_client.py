@@ -29,7 +29,6 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """
         self._config = client_config
         self.logger = FlextLogger(__name__)
-
         self._client = httpx.Client(
             timeout=httpx.Timeout(
                 timeout=client_config.timeout,
@@ -40,9 +39,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             ),
             limits=httpx.Limits(
                 max_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_CONNECTIONS,
-                max_keepalive_connections=(
-                    FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS
-                ),
+                max_keepalive_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS,
             ),
             follow_redirects=True,
             verify=client_config.verify_ssl,
@@ -66,79 +63,53 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         self._client.close()
 
     @override
-    def delete(
-        self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
+    def delete(self, url: str, **kwargs: t.ContainerValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP DELETE request."""
         return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)
 
     @override
-    def get(
-        self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
+    def get(self, url: str, **kwargs: t.ContainerValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP GET request."""
         return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
 
     @override
-    def post(
-        self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
+    def post(self, url: str, **kwargs: t.ContainerValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP POST request."""
         return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
 
     @override
-    def put(
-        self,
-        url: str,
-        **kwargs: t.ContainerValue,
-    ) -> r[t.Api.HttpResponseDict]:
+    def put(self, url: str, **kwargs: t.ContainerValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP PUT request."""
         return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
 
     @override
     def request(
-        self,
-        method: str,
-        url: str,
-        **kwargs: t.ContainerValue,
+        self, method: str, url: str, **kwargs: t.ContainerValue
     ) -> r[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
         if full_url_result.is_failure:
             return r[t.Api.HttpResponseDict].fail(
-                full_url_result.error or "URL building failed",
+                full_url_result.error or "URL building failed"
             )
-
         options_result = self._build_request_options(kwargs)
         if options_result.is_failure:
             return r[t.Api.HttpResponseDict].fail(
-                options_result.error or "Invalid request options",
+                options_result.error or "Invalid request options"
             )
-
         options = options_result.value
         headers = self._prepare_request_headers(options)
         return self._execute_httpx_request(
-            method,
-            full_url_result.value,
-            headers,
-            options,
+            method, full_url_result.value, headers, options
         )
 
     def _build_full_url(self, url: str) -> r[str]:
         """Build full URL from configuration base_url and provided path."""
         if url.startswith(("http://", "https://")):
             return r[str].ok(url)
-
         base_url = self._config.base_url
         if not base_url:
             return r[str].fail("base_url is required when URL is not absolute")
-
         normalized_base = base_url.rstrip("/")
         normalized_path = str(url).lstrip("/")
         full_url = (
@@ -149,8 +120,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         return r[str].ok(full_url)
 
     def _build_request_options(
-        self,
-        kwargs: Mapping[str, t.ContainerValue],
+        self, kwargs: Mapping[str, t.ContainerValue]
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
@@ -163,8 +133,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         return r[_HttpClientRequestOptions].ok(options)
 
     def _create_response_from_httpx(
-        self,
-        httpx_response: httpx.Response,
+        self, httpx_response: httpx.Response
     ) -> m.HttpResponse:
         """Convert httpx response to FlextApiModels.HttpResponse."""
         return m.HttpResponse(
@@ -219,18 +188,14 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             return r[t.Api.HttpResponseDict].fail(error_msg)
 
     def _prepare_request_headers(
-        self,
-        options: _HttpClientRequestOptions,
+        self, options: _HttpClientRequestOptions
     ) -> Mapping[str, str]:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)
         headers.update(options.headers)
         return headers
 
-    def _response_to_dict(
-        self,
-        response: m.HttpResponse,
-    ) -> t.Api.HttpResponseDict:
+    def _response_to_dict(self, response: m.HttpResponse) -> t.Api.HttpResponseDict:
         """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
         return {
             "status_code": response.status_code,

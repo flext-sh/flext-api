@@ -15,9 +15,7 @@ from flext_api import t
 
 _MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
     t.Scalar | Mapping[str, object] | list[object] | None
-] = TypeAdapter(
-    t.Scalar | Mapping[str, object] | list[object] | None,
-)
+] = TypeAdapter(t.Scalar | Mapping[str, object] | list[object] | None)
 
 
 def _load_msgpack() -> ModuleType | None:
@@ -37,10 +35,7 @@ class FlextApiSerializers:
 
         @staticmethod
         def packb(
-            obj: Mapping[
-                str,
-                t.Scalar | Sequence[object] | Mapping[str, object] | None,
-            ]
+            obj: Mapping[str, t.Scalar | Sequence[object] | Mapping[str, object] | None]
             | t.ApiJsonValue,
         ) -> bytes:
             """Type-safe wrapper for msgpack.packb().
@@ -58,7 +53,6 @@ class FlextApiSerializers:
             packb_fn = getattr(module, "packb", None)
             if not callable(packb_fn):
                 return b""
-
             result = packb_fn(obj)
             if isinstance(result, bytes | bytearray):
                 return bytes(result)

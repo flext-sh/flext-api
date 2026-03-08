@@ -27,7 +27,6 @@ class FlextApiTypes(FlextWebTypes):
     Only TypeVar loose outside class.
     """
 
-    # Core type aliases for forward reference resolution
     type JsonObject = dict[str, FlextTypes.ContainerValue]
     type ApiJsonValue = FlextTypes.ContainerValue
 
@@ -48,12 +47,6 @@ class FlextApiTypes(FlextWebTypes):
 
         """
 
-        # =========================================================================
-        # CORE WEB TYPES - Generic HTTP types using Mapping for immutability
-        # =========================================================================
-
-        # Use parent's JsonValue via inheritance - no alias needed
-        # Access via t.JsonValue or use directly from parent
         type JsonObject = dict[str, FlextTypes.ContainerValue]
         type ApiJsonValue = FlextTypes.ContainerValue
         type WebData = str | bytes | dict[str, FlextTypes.ContainerValue]
@@ -61,14 +54,8 @@ class FlextApiTypes(FlextWebTypes):
         type WebParams = dict[str, str | list[str]]
         type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
-
-        # =========================================================================
-        # HTTP REQUEST/RESPONSE TYPES - Unified request/response types
-        # =========================================================================
-
         type RequestConfig = dict[
-            str,
-            str | int | bool | list[str] | dict[str, FlextTypes.ContainerValue],
+            str, str | int | bool | list[str] | dict[str, FlextTypes.ContainerValue]
         ]
         type ResponseConfig = dict[
             str, FlextTypes.ContainerValue | dict[str, FlextTypes.ContainerValue]
@@ -84,15 +71,10 @@ class FlextApiTypes(FlextWebTypes):
             | bytes
             | None,
         ]
-        """HTTP response as dictionary (status_code, headers, body, request_id)."""
+        "HTTP response as dictionary (status_code, headers, body, request_id)."
         type ValidationResult = dict[
             str, bool | list[str] | dict[str, FlextTypes.ContainerValue]
         ]
-
-        # =========================================================================
-        # ENDPOINT MANAGEMENT TYPES - Route and endpoint configuration
-        # =========================================================================
-
         type EndpointConfig = dict[
             str,
             FlextTypes.ContainerValue
@@ -100,13 +82,11 @@ class FlextApiTypes(FlextWebTypes):
             | dict[str, FlextTypes.ContainerValue],
         ]
         type EndpointMetadata = dict[
-            str,
-            str | int | list[str] | dict[str, FlextTypes.ContainerValue],
+            str, str | int | list[str] | dict[str, FlextTypes.ContainerValue]
         ]
         type RouteConfig = dict[
             str, str | list[str] | dict[str, FlextTypes.ContainerValue]
         ]
-
         type RouteData = dict[
             str,
             str
@@ -115,37 +95,19 @@ class FlextApiTypes(FlextWebTypes):
             | FlextTypes.ContainerValue
             | None,
         ]
-        """Route registration data structure."""
-
-        # Note: ProtocolHandler moved to protocols.py -> p.Api.Server.ProtocolHandler
-
-        # Schema types for GraphQL/OpenAPI
-        type SchemaValue = (
-            dict[str, FlextTypes.ContainerValue] | str
-        )  # GraphQL schema string or OpenAPI dict
-
-        # =========================================================================
-        # AUTHENTICATION TYPES - Auth and security configuration
-        # =========================================================================
-
+        "Route registration data structure."
+        type SchemaValue = dict[str, FlextTypes.ContainerValue] | str
         type AuthConfig = Mapping[str, str | dict[str, FlextTypes.ContainerValue]]
         type AuthCredentials = Mapping[str, str | dict[str, FlextTypes.ContainerValue]]
         type AuthTokenData = Mapping[str, FlextTypes.ContainerValue | int | bool]
         type SecurityConfig = Mapping[
-            str,
-            bool | str | list[str] | dict[str, FlextTypes.ContainerValue],
+            str, bool | str | list[str] | dict[str, FlextTypes.ContainerValue]
         ]
-
-        # =========================================================================
-        # CLIENT TYPES - HTTP client configuration with kwargs
-        # =========================================================================
-
         type ClientConfig = Mapping[
             str, str | int | dict[str, FlextTypes.ContainerValue]
         ]
         type ConnectionPool = Mapping[str, int | bool | Mapping[str, int | bool]]
         type TimeoutConfig = Mapping[str, int | float | Mapping[str, int | float]]
-
         type RequestKwargs = Mapping[
             str,
             Mapping[str, str]
@@ -154,44 +116,22 @@ class FlextApiTypes(FlextWebTypes):
             | float
             | None,
         ]
-
-        # =========================================================================
-        # STORAGE & CACHE TYPES - Storage backend configuration and metrics
-        # =========================================================================
-
         type StorageDict = dict[str, str | int | bool | None]
         type CacheDict = dict[str, str | int]
         type MetricsDict = dict[str, int]
-
-        # =========================================================================
-        # PROTOCOL & SCHEMA TYPES - Multi-protocol support
-        # =========================================================================
-
         type ProtocolConfig = dict[
             str, bool | int | str | dict[str, FlextTypes.ContainerValue]
         ]
         type ProtocolMessage = dict[str, FlextTypes.ContainerValue] | str | bytes
         type SchemaDefinition = dict[str, FlextTypes.ContainerValue]
         type ValidationErrors = list[dict[str, str | FlextTypes.ContainerValue]]
-
-        # =========================================================================
-        # SERVICE & PROCESSING TYPES - Service management and pipelines
-        # =========================================================================
-
         type ServiceConfig = dict[str, dict[str, int | float | str]]
         type ServiceHealth = dict[str, bool | str | int]
-
         type RequestPipeline = list[dict[str, FlextTypes.ContainerValue]]
         type ResponsePipeline = list[dict[str, FlextTypes.ContainerValue]]
         type ProcessingResult = dict[
             str, bool | list[str] | dict[str, FlextTypes.ContainerValue]
         ]
-        # Note: MiddlewareConfig inherited from t (dict[str, t.ContainerValue])
-
-        # =========================================================================
-        # ERROR HANDLING TYPES - Error management and recovery
-        # =========================================================================
-
         type ErrorInfo = dict[str, int | str | dict[str, FlextTypes.ContainerValue]]
         type ErrorCategory = str
         type ErrorRecovery = dict[

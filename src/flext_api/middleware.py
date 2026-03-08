@@ -33,7 +33,6 @@ class FlextApiMiddleware:
             try:
                 request = middleware(request)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                # Log exception and continue with other middleware
                 logging.getLogger(__name__).warning("Middleware failed: %s", e)
                 continue
         return request
@@ -44,9 +43,7 @@ class FlextApiMiddleware:
         return request
 
     @staticmethod
-    def validate_request(
-        request: m.HttpRequest,
-    ) -> m.HttpRequest:
+    def validate_request(request: m.HttpRequest) -> m.HttpRequest:
         """Validate HTTP request."""
         return request
 
