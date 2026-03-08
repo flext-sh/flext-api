@@ -14,11 +14,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
+    from flext_core.typings import FlextTypes
+
     from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
     from flext_api.schemas.jsonschema import JSONSchemaValidator
     from flext_api.schemas.openapi import OpenAPISchemaValidator
@@ -33,7 +35,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
 __all__ = ["AsyncAPISchemaValidator", "JSONSchemaValidator", "OpenAPISchemaValidator"]
 
 
-def __getattr__(name: str) -> Any:
+def __getattr__(name: str) -> FlextTypes.ModuleExport:
     """Lazy-load module attributes on first access (PEP 562)."""
     return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
 
