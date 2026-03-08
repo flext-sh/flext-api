@@ -10,15 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 from collections.abc import Mapping
-from typing import Annotated
-
-from flext_core import FlextSettings
-from pydantic import BeforeValidator, Field
-from pydantic_settings import SettingsConfigDict
-
-from flext_api import c
 
 
 def _validate_headers(v: Mapping[str, str]) -> Mapping[str, str]:
@@ -32,67 +24,6 @@ def _validate_headers(v: Mapping[str, str]) -> Mapping[str, str]:
             msg = f"Invalid header value for '{key}': '{value}'"
             raise ValueError(msg)
     return v
-
-
-@FlextSettings.auto_register("api")
-class FlextApiSettings(FlextSettings):
-    """HTTP configuration using Pydantic v2.
-
-    Pure configuration model with validation using c.
-    Config has priority over Constants, but uses Constants as defaults.
-    No wrappers - use Pydantic directly.
-    """
-
-    model_config = SettingsConfigDict(
-        env_prefix="FLEXT_API_",
-        env_file=FlextSettings.resolve_env_file(),
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
-    )
-
-    base_url: str = Field(
-        default=c.Api.DEFAULT_BASE_URL,
-        max_length=c.Api.MAX_URL_LENGTH,
-        description="Base URL for HTTP requests",
-    )
-
-    timeout: float = Field(
-        default=float(c.Api.DEFAULT_TIMEOUT),
-        ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-        le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
-        description="HTTP request timeout (seconds)",
-    )
-
-    max_retries: int = Field(
-        default=c.Api.DEFAULT_MAX_RETRIES,
-        ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
-        le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
-        description="Maximum retry attempts",
-    )
-
-    headers: Annotated[dict[str, str], BeforeValidator(_validate_headers)] = Field(
-        default_factory=dict,
-        description="Default HTTP headers",
-    )
-
-    @property
-    def default_headers(self) -> Mapping[str, str]:
-        """Default headers with MIME type from Constants."""
-        return {
-            c.Api.HEADER_ACCEPT: c.Api.ContentType.JSON,
-            c.Api.HEADER_CONTENT_TYPE: c.Api.ContentType.JSON,
-            **self.headers,
-        }
-
-    @classmethod
-    def from_json(cls, data: str) -> FlextApiSettings:
-        """Create from JSON."""
-        return cls.model_validate(json.loads(data))
-
-    def to_json(self) -> str:
-        """Convert to JSON."""
-        return json.dumps(self.model_dump(), indent=2)
 
 
 __all__ = ["FlextApiSettings"]

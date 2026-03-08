@@ -20,26 +20,10 @@ from typing import override
 
 import httpx
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiTransports, c, m, t, u
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-
-
-class _HttpRequestCallArgs(BaseModel):
-    model_config = ConfigDict(extra="ignore", populate_by_name=True)
-
-    method: str = "GET"
-    url: str
-    headers: dict[str, str] = Field(default_factory=dict)
-    params: dict[str, str] | None = None
-    json_body: t.ContainerValue | None = Field(default=None, alias="json")
-    content: str | bytes | None = None
-    timeout: float | None = None
-
-
-class _MappingBodyModel(BaseModel):
-    body: dict[str, t.ContainerValue]
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):

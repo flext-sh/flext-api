@@ -12,20 +12,9 @@ from typing import Self, override
 
 import httpx
 from flext_core import FlextLogger, r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, m, p, t
-
-
-class _HttpClientRequestOptions(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    headers: dict[str, str] = Field(default_factory=dict)
-    params: dict[str, str] | None = None
-    json_data: t.ContainerValue | None = Field(default=None, alias="json")
-    content: str | bytes | None = None
-    data: dict[str, t.ContainerValue] | None = None
-    timeout: float | None = None
 
 
 class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):

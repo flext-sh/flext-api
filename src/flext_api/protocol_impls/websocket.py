@@ -23,7 +23,7 @@ from typing import override
 
 import websockets
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, ValidationError
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -73,17 +73,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _on_connect_handlers: list[Callable[[], None]]
     _on_disconnect_handlers: list[Callable[[], None]]
     _on_error_handlers: list[Callable[[Exception], None]]
-
-    class _SendRequestOptions(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        message: str | bytes | None = None
-        message_type: str = Field(
-            default=FlextApiConstants.Api.WebSocket.MessageType.TEXT,
-        )
-
-    class _InboundMessage(BaseModel):
-        message: str | bytes
 
     def __init__(
         self,

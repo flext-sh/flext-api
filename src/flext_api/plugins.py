@@ -13,72 +13,12 @@ from __future__ import annotations
 from abc import abstractmethod
 
 from flext_core import FlextLogger, r
-from pydantic import BaseModel, ConfigDict, PrivateAttr
 
 from flext_api import t
 
 
 class FlextApiPlugins:
     """Unified plugin system for flext-api with FLEXT-pure patterns."""
-
-    class Plugin(BaseModel):
-        """Base plugin with lifecycle management and metadata using Pydantic."""
-
-        name: str
-        version: str = "1.0.0"
-        description: str = ""
-
-        # Private attributes for internal state
-        _logger: FlextLogger = PrivateAttr()
-        _initialized: bool = PrivateAttr(default=False)
-
-        model_config = ConfigDict(arbitrary_types_allowed=True)
-
-        def __init__(self, **data: t.ContainerValue) -> None:
-            """Initialize plugin with metadata."""
-            super().__init__(**data)
-            self._logger = FlextLogger(f"{__name__}.{self.name}")
-            self._initialized = False
-
-        @property
-        def is_initialized(self) -> bool:
-            """Check if plugin is initialized."""
-            return self._initialized
-
-        @property
-        def logger(self) -> FlextLogger:
-            """Get the plugin logger."""
-            return self._logger
-
-        def get_metadata(self) -> t.JsonObject:
-            """Get plugin metadata."""
-            return {
-                "name": self.name,
-                "version": self.version,
-                "description": self.description,
-                "initialized": str(self._initialized),
-            }
-
-        def initialize(self) -> r[bool]:
-            """Initialize plugin resources."""
-            if self._initialized:
-                msg = f"Plugin '{self.name}' already initialized"
-                return r[bool].fail(msg)
-            self.logger.debug(f"Initializing plugin: {self.name}")
-            self._initialized = True
-            return r[bool].ok(value=True)
-
-        def shutdown(self) -> r[bool]:
-            """Shutdown plugin and release resources."""
-            if not self._initialized:
-                return r[bool].fail(f"Plugin '{self.name}' not initialized")
-            self.logger.debug(f"Shutting down plugin: {self.name}")
-            self._initialized = False
-            return r[bool].ok(value=True)
-
-        def _protocol_name(self) -> str:
-            """Return protocol name for Registrable compliance."""
-            return f"plugin.{self.name}"
 
     class Protocol(Plugin):
         """Abstract protocol plugin for API protocol implementations."""

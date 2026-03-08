@@ -12,10 +12,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated
 
 from flext_core import r
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
@@ -97,34 +96,6 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         super().__init__(name=name, version=version, description=description, **kwargs)
-
-    class _UrlRequest(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        url: Annotated[str, AfterValidator(_validate_rfc_url)]
-
-    class _MethodRequest(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        method: Annotated[str, AfterValidator(_validate_rfc_method)] = Field(
-            default=FlextApiConstants.Api.Method.GET,
-        )
-
-    class _HeadersRequest(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        headers: dict[str, str] = Field(default_factory=dict)
-
-    class _TimeoutRequest(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        timeout: float = Field(
-            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
-            gt=0,
-        )
-
-    class _StatusCodeValue(BaseModel):
-        status_code: int = Field(ge=100, le=599)
 
     def _build_rfc_error_response(
         self,

@@ -23,7 +23,7 @@ from typing import TypeGuard, override
 
 import yaml
 from flext_core import r, u
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiPlugins, t
 
@@ -54,17 +54,6 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     - FlextResult for error handling
     - FlextLogger for validation logging
     """
-
-    class _StringField(BaseModel):
-        value: str
-
-    class _IntField(BaseModel):
-        value: int
-
-    class _DictField(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        value: Mapping[str, t.ContainerValue]
 
     def __init__(
         self,

@@ -12,7 +12,7 @@ from typing import override
 
 import httpx
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -39,16 +39,6 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     _read_timeout: float
     _reconnect_max_attempts: int
     _reconnect_backoff_factor: float
-
-    class _SendRequestOptions(BaseModel):
-        model_config = ConfigDict(extra="ignore")
-
-        method: str = Field(default="GET")
-        max_events: int = Field(default=1, ge=1)
-        retry_timeout: int | None = Field(default=None, ge=0)
-        auto_reconnect: bool | None = None
-        reconnect_max_attempts: int | None = Field(default=None, ge=0)
-        reconnect_backoff_factor: float | None = Field(default=None, ge=1.0)
 
     def __init__(
         self,
