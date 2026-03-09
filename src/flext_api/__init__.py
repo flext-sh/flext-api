@@ -121,7 +121,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
@@ -134,7 +134,6 @@ if TYPE_CHECKING:
         FlextResult as r,
         FlextService as s,
     )
-    from flext_core.typings import FlextTypes
 
     from flext_api.__version__ import __version__, __version_info__
     from flext_api.adapters import FlextApiAdapters
@@ -167,6 +166,8 @@ if TYPE_CHECKING:
     from flext_api.storage import FlextApiStorage
     from flext_api.typings import FlextApiTypes, FlextApiTypes as t
     from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
+
+# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "AsyncAPISchemaValidator": ("flext_api.schemas", "AsyncAPISchemaValidator"),
     "BaseProtocolImplementation": (
@@ -226,6 +227,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "u": ("flext_api.utilities", "FlextApiUtilities"),
     "x": ("flext_core", "FlextMixins"),
 }
+
 __all__ = [
     "AsyncAPISchemaValidator",
     "BaseProtocolImplementation",
@@ -269,7 +271,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
+def __getattr__(name: str) -> Any:  # noqa: ANN401  # JUSTIFIED: Ruff (any-type) with PEP 562 dynamic module exports — https://docs.astral.sh/ruff/rules/any-type/
     """Lazy-load module attributes on first access (PEP 562)."""
     return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
 
