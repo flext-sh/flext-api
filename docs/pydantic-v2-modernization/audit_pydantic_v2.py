@@ -21,7 +21,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, override
 
 from pydantic import BaseModel, Field
 
@@ -63,6 +63,7 @@ class AuditResult(BaseModel):
         """Total number of violations."""
         return len(self.critical) + len(self.high) + len(self.medium)
 
+    @override
     def __str__(self) -> str:
         """Format audit result for output."""
         lines = [
