@@ -179,6 +179,7 @@ from flext_api import FlextApiSettings
 config = FlextApiSettings(title="My API", version="1.0.0")
 app = create_fastapi_app(config)
 
+
 # Add your routes
 @app.get("/health")
 async def health_check():

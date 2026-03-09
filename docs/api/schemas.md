@@ -71,8 +71,8 @@ config = OpenApiConfig(
     license={"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
     servers=[
         {"url": "https://api.company.com", "description": "Production server"},
-        {"url": "https://staging-api.company.com", "description": "Staging server"}
-    ]
+        {"url": "https://staging-api.company.com", "description": "Staging server"},
+    ],
 )
 
 schema = OpenApiSchema(app, config=config)
@@ -92,23 +92,16 @@ asyncapi_config = {
     "info": {
         "title": "User Events API",
         "version": "1.0.0",
-        "description": "Real-time user event streaming"
+        "description": "Real-time user event streaming",
     },
     "servers": {
-        "production": {
-            "url": "wss://api.company.com/events",
-            "protocol": "wss"
-        }
+        "production": {"url": "wss://api.company.com/events", "protocol": "wss"}
     },
     "channels": {
         "user/created": {
-            "subscribe": {
-                "message": {
-                    "$ref": "#/components/messages/UserCreated"
-                }
-            }
+            "subscribe": {"message": {"$ref": "#/components/messages/UserCreated"}}
         }
-    }
+    },
 }
 
 # Generate AsyncAPI schema
@@ -130,11 +123,14 @@ from flext_api.schemas.jsonschema import JsonSchema
 from flext_api import FlextApiModels
 from typing import Optional
 
+
 class UserCreateRequest(FlextApiModels.BaseRequest):
     """Request model for user creation."""
+
     name: str
     email: str
     age: Optional[int] = None
+
 
 # Generate JSON Schema
 schema_generator = JsonSchema()
@@ -171,8 +167,7 @@ if not is_valid:
 
 # Validate with custom context
 validation_result = validator.validate_with_context(
-    test_data,
-    context={"strict": True, "allow_extra": False}
+    test_data, context={"strict": True, "allow_extra": False}
 )
 ```
 
@@ -188,6 +183,7 @@ from flext_api.schemas.openapi import FastApiOpenApiIntegration
 # Integrate with FastAPI application
 integration = FastApiOpenApiIntegration(app)
 
+
 # Configure response schemas
 @integration.response_schema(UserResponse)
 @app.get("/users/{user_id}")
@@ -195,12 +191,14 @@ async def get_user(user_id: str):
     # Implementation
     pass
 
+
 # Configure request schemas
 @integration.request_schema(UserCreateRequest)
 @app.post("/users")
 async def create_user(request: UserCreateRequest):
     # Implementation
     pass
+
 
 # Generate complete OpenAPI spec
 openapi_spec = integration.generate_complete_spec()
@@ -217,11 +215,9 @@ from flext_api.schemas.jsonschema import JsonSchemaExtension
 extension = JsonSchemaExtension()
 
 # Add example data
-extension.add_example("user_example", {
-    "name": "John Doe",
-    "email": "john@example.com",
-    "age": 30
-})
+extension.add_example(
+    "user_example", {"name": "John Doe", "email": "john@example.com", "age": 30}
+)
 
 # Add custom metadata
 extension.add_metadata("deprecated", False)
@@ -251,17 +247,20 @@ from flext_api import create_fastapi_app
 # 1. Create FastAPI application
 app = create_fastapi_app(title="User Management API", version="1.0.0")
 
+
 # 2. Define models
 class UserCreateRequest(BaseModel):
     name: str
     email: str
     age: int
 
+
 class UserResponse(BaseModel):
     id: str
     name: str
     email: str
     created_at: str
+
 
 # 3. Generate OpenAPI schema
 openapi_config = OpenApiConfig(
@@ -270,8 +269,8 @@ openapi_config = OpenApiConfig(
     description="API for managing users",
     servers=[
         {"url": "https://api.company.com", "description": "Production"},
-        {"url": "https://staging-api.company.com", "description": "Staging"}
-    ]
+        {"url": "https://staging-api.company.com", "description": "Staging"},
+    ],
 )
 
 openapi_schema = OpenApiSchema(app, config=openapi_config)
@@ -297,6 +296,7 @@ print(f"JSON Schema properties: {len(user_request_schema.properties)}")
 ```python
 from flext_api.schemas.jsonschema import JsonSchemaValidator, SchemaValidationError
 
+
 def validate_user_request(data: dict) -> tuple[bool, t.StringList]:
     """Validate user creation request data."""
     try:
@@ -311,6 +311,7 @@ def validate_user_request(data: dict) -> tuple[bool, t.StringList]:
     except SchemaValidationError as e:
         return False, [str(e)]
 
+
 # Usage in API endpoint
 @app.post("/users")
 async def create_user(request: dict):
@@ -319,8 +320,7 @@ async def create_user(request: dict):
 
     if not is_valid:
         raise HTTPException(
-            status_code=422,
-            detail={"message": "Validation failed", "errors": errors}
+            status_code=422, detail={"message": "Validation failed", "errors": errors}
         )
 
     # Process valid request

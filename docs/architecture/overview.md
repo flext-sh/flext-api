@@ -192,10 +192,12 @@ registry.register("websocket", WebSocketProtocol)
 http_protocol = registry.get_protocol("http")
 client = http_protocol.create_client({"base_url": "https://api.example.com"})
 
+
 # Add custom protocol
 class CustomProtocol:
     def create_client(self, config: dict):
         return CustomClient(config)
+
 
 registry.register("custom", CustomProtocol)
 ```
@@ -225,6 +227,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class BaseProtocol(ABC):
     """Base protocol interface."""
 
@@ -238,13 +241,16 @@ class BaseProtocol(ABC):
         """Execute protocol-specific request."""
         pass
 
+
 class FlextWebProtocol(BaseProtocol):
     """HTTP protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
         return FlextApiClient(**config)
 
-    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
+    async def execute_request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         # HTTP-specific implementation
         pass
 ```
@@ -313,19 +319,19 @@ async def request_pipeline(request, call_next):
 def create_fastapi_app(config: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
-
     # 2. Create FastAPI app
     app = FastAPI(
         title=config.title,
         version=config.version,
         description=config.description,
         docs_url=config.docs_url,
-        redoc_url=config.redoc_url
+        redoc_url=config.redoc_url,
     )
 
     # 3. Configure CORS
     if config.cors_origins:
         from fastapi.middleware.cors import CORSMiddleware
+
         app.add_middleware(
             CORSMiddleware,
             allow_origins=config.cors_origins,
@@ -357,7 +363,7 @@ def register_api_routes(app: FastAPI):
     async def list_users(
         limit: int = 10,
         offset: int = 0,
-        current_user: dict[str, object] = Depends(get_current_user)
+        current_user: dict[str, object] = Depends(get_current_user),
     ) -> List[UserResponse]:
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
@@ -376,8 +382,8 @@ def register_api_routes(app: FastAPI):
             content={
                 "error_code": exc.error_code,
                 "message": exc.message,
-                "details": exc.details
-            }
+                "details": exc.details,
+            },
         )
 ```
 
@@ -416,7 +422,9 @@ class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
     @abstractmethod
-    async def upload_file(self, file: object, path: str, metadata: dict[str, object] = None) -> FlextResult[str]:
+    async def upload_file(
+        self, file: object, path: str, metadata: dict[str, object] = None
+    ) -> FlextResult[str]:
         """Upload file to storage."""
         pass
 
@@ -435,19 +443,22 @@ class StorageBackend(ABC):
         """List files in storage."""
         pass
 
+
 class S3StorageBackend(StorageBackend):
     """Amazon S3 storage implementation."""
 
     def __init__(self, config: dict):
         self.client = boto3.client("s3", **config)
 
-    async def upload_file(self, file: object, path: str, metadata: dict[str, object] = None) -> FlextResult[str]:
+    async def upload_file(
+        self, file: object, path: str, metadata: dict[str, object] = None
+    ) -> FlextResult[str]:
         """Upload file to S3."""
         try:
             # S3 upload implementation
-            self.client.upload_fileobj(file, self.bucket, path, ExtraArgs={
-                'Metadata': metadata or {}
-            })
+            self.client.upload_fileobj(
+                file, self.bucket, path, ExtraArgs={"Metadata": metadata or {}}
+            )
             return FlextResult[str].ok(f"s3://{self.bucket}/{path}")
         except Exception as e:
             return FlextResult[str].fail(f"S3 upload failed: {e}")
@@ -492,8 +503,8 @@ redis_cache = FlextApiCache(
         "port": 6379,
         "db": 0,
         "password": os.getenv("REDIS_PASSWORD"),
-        "decode_responses": True
-    }
+        "decode_responses": True,
+    },
 )
 
 # Memory cache for development
@@ -501,8 +512,8 @@ memory_cache = FlextApiCache(
     backend="memory",
     config={
         "max_size": 1000,  # Max cached items
-        "ttl": 300         # Default TTL in seconds
-    }
+        "ttl": 300,  # Default TTL in seconds
+    },
 )
 
 # File-based cache for persistence
@@ -511,8 +522,8 @@ file_cache = FlextApiCache(
     config={
         "cache_dir": "/tmp/flext-cache",
         "max_size": 100 * 1024 * 1024,  # 100MB
-        "cleanup_interval": 3600        # Cleanup every hour
-    }
+        "cleanup_interval": 3600,  # Cleanup every hour
+    },
 )
 ```
 
@@ -551,6 +562,7 @@ Security Layer
 
 ```python
 from flext_api import SecurityMiddleware
+
 
 class ComprehensiveSecurityMiddleware(SecurityMiddleware):
     """Comprehensive security middleware."""
@@ -643,6 +655,7 @@ Performance Layer
 ```python
 from flext_api import PerformanceMonitoringMiddleware
 
+
 class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
     """Detailed performance monitoring."""
 
@@ -659,7 +672,7 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
             request_id=request.request_id,
             method=request.method,
             path=request.path,
-            user_agent=request.headers.get("User-Agent")
+            user_agent=request.headers.get("User-Agent"),
         )
 
         return FlextResult[dict].ok({})
@@ -673,23 +686,26 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
             request_id=request.request_id,
             status_code=response.status_code,
             duration_ms=duration_ms,
-            response_size=len(response.content) if response.content else 0
+            response_size=len(response.content) if response.content else 0,
         )
 
         # Add performance headers
         response.headers.update({
             "X-Response-Time": f"{duration_ms:.2f}ms",
-            "X-Request-ID": request.request_id
+            "X-Request-ID": request.request_id,
         })
 
         # Check for slow requests
         if duration_ms > 1000:  # 1 second threshold
-            self.logger.warning("Slow request detected", extra={
-                "request_id": request.request_id,
-                "duration_ms": duration_ms,
-                "path": request.path,
-                "method": request.method
-            })
+            self.logger.warning(
+                "Slow request detected",
+                extra={
+                    "request_id": request.request_id,
+                    "duration_ms": duration_ms,
+                    "path": request.path,
+                    "method": request.method,
+                },
+            )
 
         return FlextResult[dict].ok({})
 ```
@@ -813,6 +829,7 @@ spec:
 ```python
 from flext_api import BaseProtocol
 
+
 class CustomProtocol(BaseProtocol):
     """Custom protocol implementation."""
 
@@ -825,6 +842,7 @@ class CustomProtocol(BaseProtocol):
         # Custom protocol implementation
         pass
 
+
 # Register new protocol
 registry = ProtocolRegistry()
 registry.register("custom", CustomProtocol)
@@ -835,6 +853,7 @@ registry.register("custom", CustomProtocol)
 ```python
 from flext_api import FlextApiMiddleware
 
+
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""
 
@@ -843,10 +862,11 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
         # Add business-specific headers
         request.business_context = {
             "tenant_id": request.headers.get("X-Tenant-ID"),
-            "user_role": request.headers.get("X-User-Role")
+            "user_role": request.headers.get("X-User-Role"),
         }
 
         return FlextResult[dict].ok({})
+
 
 # Register middleware
 app.add_middleware(CustomBusinessMiddleware())
@@ -884,22 +904,17 @@ app.add_middleware(CustomBusinessMiddleware())
 @app.on_event("startup")
 async def setup_monitoring():
     # Setup metrics collection
-    metrics.setup(
-        namespace="flext_api",
-        subsystem="http"
-    )
+    metrics.setup(namespace="flext_api", subsystem="http")
 
     # Setup tracing
     tracer.setup(service_name="flext-api")
+
 
 # Performance metrics endpoint
 @app.get("/metrics")
 async def get_metrics():
     """Prometheus metrics endpoint."""
-    return Response(
-        content=metrics.generate_latest(),
-        media_type="text/plain"
-    )
+    return Response(content=metrics.generate_latest(), media_type="text/plain")
 ```
 
 ## Migration Guidelines

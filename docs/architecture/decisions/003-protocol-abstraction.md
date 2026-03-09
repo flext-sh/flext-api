@@ -221,10 +221,14 @@ class FlextApiClient(FlextService[None]):
         if self._protocol_name == "http":
             return FlextApiModels.HttpRequest(method=method, url=url, **kwargs)
         elif self._protocol_name == "graphql":
-            return GraphQLRequest(query=kwargs.get("query"), variables=kwargs.get("variables"))
+            return GraphQLRequest(
+                query=kwargs.get("query"), variables=kwargs.get("variables")
+            )
         # ... other protocol conversions
 
-    def _convert_from_protocol_response(self, result: FlextResult[object]) -> FlextResult[object]:
+    def _convert_from_protocol_response(
+        self, result: FlextResult[object]
+    ) -> FlextResult[object]:
         """Convert protocol-specific response to unified format."""
         # Standardize response format across protocols
         return result
@@ -241,7 +245,9 @@ class FlextWebProtocol(BaseProtocol):
     def create_client(self, config: Dict[str, object]) -> httpx.AsyncClient:
         return httpx.AsyncClient(**config)
 
-    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
+    async def execute_request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         client = self.create_client(request.config)
 
         try:
@@ -250,15 +256,17 @@ class FlextWebProtocol(BaseProtocol):
                 url=request.url,
                 headers=request.headers,
                 content=request.body,
-                timeout=request.timeout
+                timeout=request.timeout,
             )
 
-            return FlextResult.ok(FlextApiModels.HttpResponse(
-                status_code=response.status_code,
-                headers=dict(response.headers),
-                body=response.text,
-                response_time=response.elapsed.total_seconds()
-            ))
+            return FlextResult.ok(
+                FlextApiModels.HttpResponse(
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                    body=response.text,
+                    response_time=response.elapsed.total_seconds(),
+                )
+            )
         except Exception as e:
             return FlextResult.fail(f"HTTP request failed: {e}")
         finally:
@@ -270,7 +278,7 @@ class FlextWebProtocol(BaseProtocol):
             supports_binary=True,
             supports_compression=True,
             max_request_size=100 * 1024 * 1024,  # 100MB
-            timeout_range=(1, 300)  # 1 second to 5 minutes
+            timeout_range=(1, 300),  # 1 second to 5 minutes
         )
 ```
 
@@ -282,15 +290,18 @@ class GraphQLProtocol(BaseProtocol):
 
     def create_client(self, config: Dict[str, object]) -> gql.Client:
         transport = AIOHTTPTransport(url=config["url"])
-        return gql.Client(transport=transport, execute_timeout=config.get("timeout", 30))
+        return gql.Client(
+            transport=transport, execute_timeout=config.get("timeout", 30)
+        )
 
-    async def execute_request(self, request: GraphQLRequest) -> FlextResult[GraphQLResponse]:
+    async def execute_request(
+        self, request: GraphQLRequest
+    ) -> FlextResult[GraphQLResponse]:
         client = self.create_client(request.config)
 
         try:
             result = await client.execute_async(
-                gql.gql(request.query),
-                variable_values=request.variables
+                gql.gql(request.query), variable_values=request.variables
             )
 
             return FlextResult.ok(GraphQLResponse(data=result))
@@ -303,7 +314,7 @@ class GraphQLProtocol(BaseProtocol):
             supports_binary=False,
             supports_compression=True,
             supports_introspection=True,
-            query_complexity_limit=1000
+            query_complexity_limit=1000,
         )
 ```
 
@@ -355,10 +366,11 @@ await client.send({"type": "subscribe", "channel": "updates"})
 def http_protocol():
     return FlextWebProtocol()
 
+
 @pytest.mark.asyncio
 async def test_http_request_success(http_protocol):
     # Mock httpx client
-    with patch('httpx.AsyncClient') as mock_client:
+    with patch("httpx.AsyncClient") as mock_client:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.headers = {}
@@ -367,7 +379,9 @@ async def test_http_request_success(http_protocol):
 
         mock_client.return_value.request.return_value = mock_response
 
-        request = FlextApiModels.HttpRequest(method="GET", url="https://api.example.com/test")
+        request = FlextApiModels.HttpRequest(
+            method="GET", url="https://api.example.com/test"
+        )
         result = await http_protocol.execute_request(request)
 
         assert result.is_success

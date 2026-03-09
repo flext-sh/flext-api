@@ -213,10 +213,8 @@ def test_api_config_creation():
 @pytest.fixture
 def http_client():
     """Provide configured HTTP client for tests."""
-    return FlextApiClient(
-        base_url="https://httpbin.org",
-        timeout=5.0
-    )
+    return FlextApiClient(base_url="https://httpbin.org", timeout=5.0)
+
 
 @pytest.fixture
 def mock_http_server():
@@ -230,17 +228,13 @@ def mock_http_server():
 @pytest.fixture
 def valid_http_request():
     """Provide valid HTTP request model."""
-    return FlextApiModels.HttpRequest(
-        method="GET",
-        url="https://httpbin.org/get"
-    )
+    return FlextApiModels.HttpRequest(method="GET", url="https://httpbin.org/get")
+
 
 @pytest.fixture
 def valid_client_config():
     """Provide valid client configuration."""
-    return FlextApiModels.ClientConfig(
-        base_url="https://api.example.com"
-    )
+    return FlextApiModels.ClientConfig(base_url="https://api.example.com")
 ```
 
 ### Test Data Factories
@@ -255,7 +249,7 @@ class TestDataFactory:
         base = {
             "method": "GET",
             "url": "https://httpbin.org/get",
-            "headers": {"Accept": "application/json"}
+            "headers": {"Accept": "application/json"},
         }
         if overrides:
             base.update(overrides)
@@ -267,7 +261,7 @@ class TestDataFactory:
         base = {
             "status_code": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": {"status": "ok"}
+            "body": {"status": "ok"},
         }
         if overrides:
             base.update(overrides)
@@ -343,7 +337,7 @@ class TestModelValidation:
         valid_urls = [
             "https://example.com",
             "http://localhost:8080/api",
-            "https://api.example.com/v1/users"
+            "https://api.example.com/v1/users",
         ]
 
         for url in valid_urls:
@@ -351,11 +345,7 @@ class TestModelValidation:
             assert result.is_success
 
         # Invalid URLs
-        invalid_urls = [
-            "not-a-url",
-            "ftp://example.com",
-            ""
-        ]
+        invalid_urls = ["not-a-url", "ftp://example.com", ""]
 
         for url in invalid_urls:
             result = FlextModels.create_validated_http_url(url)
@@ -468,8 +458,10 @@ def test_response_time_performance(http_client):
 ```python
 import asyncio
 
+
 async def test_concurrent_requests(http_client):
     """Test concurrent request handling."""
+
     async def make_request(i):
         return await http_client.get(f"/get?request_id={i}")
 
@@ -529,16 +521,14 @@ def test_system_interaction():
 TEST_BASE_URL = "https://httpbin.org"
 TEST_TIMEOUT = 5.0
 
+
 # Test data factories
 def create_test_user_data(**overrides):
     """Create test user data with defaults."""
-    base = {
-        "name": "Test User",
-        "email": "test@example.com",
-        "age": 30
-    }
+    base = {"name": "Test User", "email": "test@example.com", "age": 30}
     base.update(overrides)
     return base
+
 
 # Parameterized test data
 VALID_HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"]

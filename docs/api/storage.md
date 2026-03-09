@@ -61,8 +61,8 @@ storage = FlextApiStorage(
         "bucket": "my-bucket",
         "region": "us-east-1",
         "access_key": "your-access-key",
-        "secret_key": "your-secret-key"
-    }
+        "secret_key": "your-secret-key",
+    },
 )
 
 # Upload file
@@ -71,7 +71,7 @@ with open("document.pdf", "rb") as file:
         file=file,
         filename="document.pdf",
         content_type="application/pdf",
-        metadata={"author": "John Doe", "category": "documents"}
+        metadata={"author": "John Doe", "category": "documents"},
     )
 
 if upload_result.is_success:
@@ -98,8 +98,8 @@ local_storage = FlextApiStorage(
     config={
         "base_path": "/var/app/uploads",
         "allowed_extensions": [".pdf", ".doc", ".docx"],
-        "max_file_size": 10 * 1024 * 1024  # 10MB
-    }
+        "max_file_size": 10 * 1024 * 1024,  # 10MB
+    },
 )
 
 # Amazon S3 storage
@@ -110,8 +110,8 @@ s3_storage = FlextApiStorage(
         "region": "us-east-1",
         "access_key": os.getenv("AWS_ACCESS_KEY"),
         "secret_key": os.getenv("AWS_SECRET_KEY"),
-        "cdn_url": "https://cdn.myapp.com"
-    }
+        "cdn_url": "https://cdn.myapp.com",
+    },
 )
 
 # Google Cloud Storage
@@ -120,8 +120,8 @@ gcs_storage = FlextApiStorage(
     config={
         "bucket": "my-app-bucket",
         "project_id": "my-gcp-project",
-        "credentials_path": "/path/to/credentials.json"
-    }
+        "credentials_path": "/path/to/credentials.json",
+    },
 )
 ```
 
@@ -136,29 +136,27 @@ Upload files with automatic validation and metadata handling.
 upload_result = storage.upload_from_path(
     local_path="/path/to/document.pdf",
     remote_path="documents/document.pdf",
-    content_type="application/pdf"
+    content_type="application/pdf",
 )
 
 # Upload from bytes
 file_bytes = b"file content here"
 upload_result = storage.upload_from_bytes(
-    data=file_bytes,
-    filename="data.txt",
-    content_type="text/plain"
+    data=file_bytes, filename="data.txt", content_type="text/plain"
 )
 
 # Upload with custom metadata
 metadata = {
     "author": "Jane Smith",
     "department": "engineering",
-    "tags": ["important", "review-needed"]
+    "tags": ["important", "review-needed"],
 }
 
 upload_result = storage.upload_file(
     file=open("report.pdf", "rb"),
     filename="report.pdf",
     content_type="application/pdf",
-    metadata=metadata
+    metadata=metadata,
 )
 ```
 
@@ -169,8 +167,7 @@ Download files with caching and access control.
 ```python
 # Download file
 download_result = storage.download_file(
-    remote_path="documents/report.pdf",
-    local_path="/tmp/downloaded_report.pdf"
+    remote_path="documents/report.pdf", local_path="/tmp/downloaded_report.pdf"
 )
 
 if download_result.is_success:
@@ -205,7 +202,7 @@ if delete_result.is_success:
 # Move/rename file
 move_result = storage.move_file(
     source_path="documents/report.pdf",
-    destination_path="documents/reports/2024/q1_report.pdf"
+    destination_path="documents/reports/2024/q1_report.pdf",
 )
 ```
 
@@ -221,13 +218,9 @@ from flext_api import FlextApiCache
 # Create cache instance
 cache = FlextApiCache(
     backend="redis",  # or "memory", "filesystem"
-    config={
-        "host": "localhost",
-        "port": 6379,
-        "db": 0,
-        "password": "cache_password"
-    }
+    config={"host": "localhost", "port": 6379, "db": 0, "password": "cache_password"},
 )
+
 
 # Cache responses
 @app.get("/users/{user_id}")
@@ -236,6 +229,7 @@ async def get_user(user_id: str):
     # Expensive database operation
     user = await database.get_user(user_id)
     return UserResponse(**user.dict())
+
 
 # Manual cache operations
 cache.set("user_123", user_data, ttl=300)
@@ -265,11 +259,13 @@ async def slow_endpoint():
     # Expensive operation
     return {"data": "expensive_result"}
 
+
 # Conditional caching
 @cache.conditional_cache(condition=lambda response: response.status_code == 200)
 @app.get("/users")
 async def get_users():
     return await user_service.get_all_users()
+
 
 # Cache with custom key
 @cache.cached(key_func=lambda request: f"user_{request.path_params['user_id']}")
@@ -289,16 +285,12 @@ from flext_api import MultiBackendStorage
 
 # Configure multiple backends
 storage_config = {
-    "primary": {
-        "backend": "s3",
-        "bucket": "primary-bucket",
-        "region": "us-east-1"
-    },
+    "primary": {"backend": "s3", "bucket": "primary-bucket", "region": "us-east-1"},
     "fallback": {
         "backend": "gcs",
         "bucket": "fallback-bucket",
-        "project_id": "my-project"
-    }
+        "project_id": "my-project",
+    },
 }
 
 # Create multi-backend storage
@@ -306,8 +298,7 @@ multi_storage = MultiBackendStorage(storage_config)
 
 # Upload with automatic failover
 upload_result = multi_storage.upload_file(
-    file=open("important.pdf", "rb"),
-    filename="important.pdf"
+    file=open("important.pdf", "rb"), filename="important.pdf"
 )
 
 if upload_result.is_success:
@@ -335,6 +326,7 @@ processor.add_processor(ImageResizer(max_width=1920, max_height=1080))
 processor.add_processor(ImageOptimizer(quality=85))
 processor.add_processor(VirusScanner())
 
+
 # Process uploaded file
 @app.post("/upload/image")
 async def upload_image(file: UploadFile = File(...)):
@@ -346,9 +338,7 @@ async def upload_image(file: UploadFile = File(...)):
 
         # Store processed file
         storage_result = await storage.upload_file(
-            file=processed_file,
-            filename=file.filename,
-            content_type=file.content_type
+            file=processed_file, filename=file.filename, content_type=file.content_type
         )
 
         return {"filename": file.filename, "url": storage_result.unwrap()}
@@ -391,9 +381,10 @@ processor.add_processor(ImageOptimizer())
 # Add upload middleware
 upload_middleware = FileUploadMiddleware(
     max_file_size=10 * 1024 * 1024,  # 10MB
-    allowed_types=["image/jpeg", "image/png", "application/pdf"]
+    allowed_types=["image/jpeg", "image/png", "application/pdf"],
 )
 app.add_middleware(upload_middleware)
+
 
 @app.post("/upload/file")
 async def upload_file(file: UploadFile = File(...)):
@@ -408,6 +399,7 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Generate unique filename
     import uuid
+
     file_id = str(uuid.uuid4())
     extension = file.filename.split(".")[-1] if "." in file.filename else ""
     remote_filename = f"{file_id}.{extension}"
@@ -420,8 +412,8 @@ async def upload_file(file: UploadFile = File(...)):
         metadata={
             "original_filename": file.filename,
             "uploaded_by": "user_123",
-            "processed": True
-        }
+            "processed": True,
+        },
     )
 
     if storage_result.is_failure:
@@ -433,8 +425,9 @@ async def upload_file(file: UploadFile = File(...)):
         "filename": file.filename,
         "url": file_url,
         "id": file_id,
-        "size": processed_file.size
+        "size": processed_file.size,
     }
+
 
 @app.get("/download/{file_id}")
 async def download_file(file_id: str):
@@ -458,7 +451,7 @@ async def download_file(file_id: str):
         media_type=file_info.content_type,
         headers={
             "Content-Disposition": f"attachment; filename={file_info.original_filename}"
-        }
+        },
     )
 ```
 
@@ -470,6 +463,7 @@ from flext_api import FlextApiStorage, FlextApiCache
 # Initialize storage and cache
 storage = FlextApiStorage(backend="s3", config=s3_config)
 cache = FlextApiCache(backend="redis", config=redis_config)
+
 
 @app.get("/users/{user_id}/avatar")
 @cache.cached(ttl=3600, key_func=lambda r: f"avatar_{r.path_params['user_id']}")

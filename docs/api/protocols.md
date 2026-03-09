@@ -77,14 +77,12 @@ from flext_core import u
 http_protocol = FlextWebProtocol(
     base_url="https://api.example.com",
     timeout=30.0,
-    headers={"User-Agent": "FLEXT-API/0.9.9"}
+    headers={"User-Agent": "FLEXT-API/0.9.9"},
 )
 
 # Execute HTTP operations
 result = http_protocol.execute_request(
-    method="GET",
-    path="/users",
-    params={"limit": 10}
+    method="GET", path="/users", params={"limit": 10}
 )
 
 if result.is_success:
@@ -141,7 +139,7 @@ from flext_api.protocol_impls.graphql import GraphQLProtocol
 # Create GraphQL protocol
 graphql_protocol = GraphQLProtocol(
     endpoint="https://api.example.com/graphql",
-    headers={"Authorization": "Bearer token123"}
+    headers={"Authorization": "Bearer token123"},
 )
 
 # Execute GraphQL query
@@ -205,12 +203,7 @@ mutation = """
     }
 """
 
-mutation_variables = {
-    "input": {
-        "name": "Bob",
-        "email": "bob@example.com"
-    }
-}
+mutation_variables = {"input": {"name": "Bob", "email": "bob@example.com"}}
 
 result = graphql_protocol.execute_mutation(mutation, mutation_variables)
 ```
@@ -226,8 +219,7 @@ from flext_api.protocol_impls.websocket import WebSocketProtocol
 
 # Create WebSocket protocol
 websocket_protocol = WebSocketProtocol(
-    url="wss://api.example.com/ws",
-    headers={"Authorization": "Bearer token123"}
+    url="wss://api.example.com/ws", headers={"Authorization": "Bearer token123"}
 )
 
 # Connect to WebSocket
@@ -270,8 +262,7 @@ from flext_api.protocol_impls.sse import ServerSentEventProtocol
 
 # Create SSE protocol
 sse_protocol = ServerSentEventProtocol(
-    url="https://api.example.com/events",
-    headers={"Authorization": "Bearer token123"}
+    url="https://api.example.com/events", headers={"Authorization": "Bearer token123"}
 )
 
 # Connect to event stream
@@ -315,14 +306,13 @@ storage_protocol = StorageBackendProtocol(
         "bucket": "my-bucket",
         "region": "us-east-1",
         "access_key": "...",
-        "secret_key": "..."
-    }
+        "secret_key": "...",
+    },
 )
 
 # File operations
 upload_result = storage_protocol.upload_file(
-    local_path="/path/to/file.txt",
-    remote_path="uploads/file.txt"
+    local_path="/path/to/file.txt", remote_path="uploads/file.txt"
 )
 
 if upload_result.is_success:
@@ -331,8 +321,7 @@ if upload_result.is_success:
 
 # Download file
 download_result = storage_protocol.download_file(
-    remote_path="uploads/file.txt",
-    local_path="/tmp/downloaded_file.txt"
+    remote_path="uploads/file.txt", local_path="/tmp/downloaded_file.txt"
 )
 
 # List files
@@ -364,7 +353,7 @@ from flext_api.protocol_stubs.grpc_stub import GrpcStub
 grpc_stub = GrpcStub(
     target="localhost:50051",
     credentials=None,  # or ssl_channel_credentials()
-    options=[("grpc.max_receive_message_size", 1024*1024*100)]
+    options=[("grpc.max_receive_message_size", 1024 * 1024 * 100)],
 )
 
 # Call gRPC methods
@@ -373,7 +362,7 @@ response = grpc_stub.call_unary(
     service="UserService",
     method="GetUser",
     request=request,
-    response_type=user_pb2.UserResponse
+    response_type=user_pb2.UserResponse,
 )
 
 if response.is_success:
@@ -421,6 +410,7 @@ from flext_api.protocol_impls.http import FlextWebProtocol
 from flext_api.protocol_impls.graphql import GraphQLProtocol
 from flext_api.protocol_impls.websocket import WebSocketProtocol
 
+
 class MultiProtocolClient:
     """Client supporting multiple protocols."""
 
@@ -464,6 +454,7 @@ class MultiProtocolClient:
             message = connection.receive().unwrap()
             callback(message)
 
+
 # Usage
 client = MultiProtocolClient()
 
@@ -491,15 +482,19 @@ registry.register("graphql", GraphQLProtocol)
 http_protocol = registry.get_protocol("http")
 graphql_protocol = registry.get_protocol("graphql")
 
+
 # Configure based on requirements
 def create_api_client(protocol_name: str, config: dict):
     """Create API client with specified protocol."""
     protocol_class = registry.get_protocol(protocol_name)
     return protocol_class(**config)
 
+
 # Create clients for different services
 user_api = create_api_client("http", {"base_url": "https://user-api.com"})
-content_api = create_api_client("graphql", {"endpoint": "https://content-api.com/graphql"})
+content_api = create_api_client(
+    "graphql", {"endpoint": "https://content-api.com/graphql"}
+)
 ```
 
 This protocol-based architecture provides a flexible foundation for supporting multiple communication patterns while maintaining consistent error handling and type safety across all protocols.

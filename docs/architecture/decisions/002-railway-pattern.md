@@ -123,7 +123,8 @@ class Result:
 ```python
 def get_user(user_id: int) -> FlextResult[User]:
     """Get user with railway error handling."""
-    return (FlextApiClient()
+    return (
+        FlextApiClient()
         .get(f"/users/{user_id}")
         .flat_map(lambda resp: validate_status_code(resp))
         .flat_map(lambda resp: parse_json_response(resp))
@@ -147,7 +148,8 @@ if result.is_failure:
     return None
 
 # Chained operations
-user_profile = (get_user(user_id)
+user_profile = (
+    get_user(user_id)
     .flat_map(lambda user: get_user_profile(user.id))
     .flat_map(lambda profile: enrich_profile(profile))
     .map_error(lambda err: log_and_notify(err))
@@ -168,6 +170,7 @@ def test_get_user_success():
     # Then
     assert result.is_success
     assert result.unwrap().name == "John"
+
 
 def test_get_user_not_found():
     # Given
