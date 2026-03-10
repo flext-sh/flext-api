@@ -144,10 +144,7 @@ class FlextApiSettingsManager:
                 lambda _e: f"Max retries must be a valid integer: {max_retries_raw}"
             )
             if retries_result.is_failure:
-                return r[int].fail(
-                    retries_result.error
-                    or f"Max retries must be a valid integer: {max_retries_raw}"
-                )
+                return retries_result
             max_retries_value = retries_result.value
         else:
             return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
@@ -174,10 +171,7 @@ class FlextApiSettingsManager:
                 lambda _e: f"Timeout must be a valid number: {timeout_value_raw}"
             )
             if timeout_result.is_failure:
-                return r[float].fail(
-                    timeout_result.error
-                    or f"Timeout must be a valid number: {timeout_value_raw}"
-                )
+                return timeout_result
             timeout_value = timeout_result.value
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
