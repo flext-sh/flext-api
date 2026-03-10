@@ -15,7 +15,7 @@ import json
 from collections.abc import Mapping
 from typing import TypeGuard
 
-from flext_core import r
+from flext_core import r, u
 
 from flext_api import m, t
 
@@ -137,12 +137,18 @@ class FlextApiSettingsManager:
         if isinstance(max_retries_raw, int):
             max_retries_value = max_retries_raw
         elif isinstance(max_retries_raw, float | str):
-            try:
-                max_retries_value = int(max_retries_raw)
-            except (ValueError, TypeError):
+            retries_result = u.try_(
+                lambda: int(max_retries_raw),
+                catch=(ValueError, TypeError),
+            ).map_error(
+                lambda _e: f"Max retries must be a valid integer: {max_retries_raw}"
+            )
+            if retries_result.is_failure:
                 return r[int].fail(
-                    f"Max retries must be a valid integer: {max_retries_raw}"
+                    retries_result.error
+                    or f"Max retries must be a valid integer: {max_retries_raw}"
                 )
+            max_retries_value = retries_result.value
         else:
             return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
         if max_retries_value < 0:
@@ -161,12 +167,18 @@ class FlextApiSettingsManager:
         if isinstance(timeout_value_raw, int | float):
             timeout_value = float(timeout_value_raw)
         elif isinstance(timeout_value_raw, str):
-            try:
-                timeout_value = float(timeout_value_raw)
-            except ValueError:
+            timeout_result = u.try_(
+                lambda: float(timeout_value_raw),
+                catch=ValueError,
+            ).map_error(
+                lambda _e: f"Timeout must be a valid number: {timeout_value_raw}"
+            )
+            if timeout_result.is_failure:
                 return r[float].fail(
-                    f"Timeout must be a valid number: {timeout_value_raw}"
+                    timeout_result.error
+                    or f"Timeout must be a valid number: {timeout_value_raw}"
                 )
+            timeout_value = timeout_result.value
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
         if timeout_value <= 0:
@@ -183,10 +195,13 @@ class FlextApiSettingsManager:
         if isinstance(timeout_raw, int | float):
             timeout_value = float(timeout_raw)
         elif isinstance(timeout_raw, str):
-            try:
-                timeout_value = float(timeout_raw)
-            except ValueError:
-                return r[float].fail(f"Timeout must be a valid number: {timeout_raw}")
+            timeout_result = u.try_(
+                lambda: float(timeout_raw),
+                catch=ValueError,
+            ).map_error(lambda _e: f"Timeout must be a valid number: {timeout_raw}")
+            if timeout_result.is_failure:
+                return timeout_result
+            timeout_value = timeout_result.value
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_raw)}")
         if timeout_value <= 0:
@@ -198,15 +213,25 @@ class FlextApiSettingsManager:
     ) -> r[t.ContainerValue]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and value.__class__ is str:
-            try:
-                return r[t.ContainerValue].ok(float(value))
-            except ValueError:
-                return r[t.ContainerValue].fail(f"Invalid timeout value: {value}")
+            timeout_result = u.try_(
+                lambda: float(value),
+                catch=ValueError,
+            ).map_error(lambda _e: f"Invalid timeout value: {value}")
+            if timeout_result.is_failure:
+                return r[t.ContainerValue].fail(
+                    timeout_result.error or f"Invalid timeout value: {value}"
+                )
+            return r[t.ContainerValue].ok(timeout_result.value)
         if key == "max_retries" and value.__class__ is str:
-            try:
-                return r[t.ContainerValue].ok(int(value))
-            except ValueError:
-                return r[t.ContainerValue].fail(f"Invalid max_retries value: {value}")
+            retries_result = u.try_(
+                lambda: int(value),
+                catch=ValueError,
+            ).map_error(lambda _e: f"Invalid max_retries value: {value}")
+            if retries_result.is_failure:
+                return r[t.ContainerValue].fail(
+                    retries_result.error or f"Invalid max_retries value: {value}"
+                )
+            return r[t.ContainerValue].ok(retries_result.value)
         if key in {"log_requests", "log_responses"}:
             return r[t.ContainerValue].ok(bool(value))
         return r[t.ContainerValue].ok(value)
