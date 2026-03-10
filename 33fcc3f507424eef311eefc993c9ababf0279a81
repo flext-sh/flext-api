@@ -1,0 +1,25 @@
+src/flext_api/protocol_impls/http.py
+  68f3f0cb2421905e 23,29-61
+src/flext_api/protocol_impls/http_client.py
+  68f3f0cb2421905e 15,20-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.10",
+  "base_commit_sha": "33fcc3f507424eef311eefc993c9ababf0279a81",
+  "prompts": {
+    "68f3f0cb2421905e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_327461d53ffeTqU47jbVmMgs51",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 70,
+      "total_deletions": 15,
+      "accepted_lines": 57,
+      "overriden_lines": 0
+    }
+  }
+}
