@@ -20,7 +20,7 @@ from flext_api import t
 class FlextApiPlugins:
     """Unified plugin system for flext-api with FLEXT-pure patterns."""
 
-    class Protocol(Plugin):
+    class Protocol(Plugin):  # noqa: F821
         """Abstract protocol plugin for API protocol implementations."""
 
         def get_supported_protocols(self) -> list[str]:
@@ -39,7 +39,7 @@ class FlextApiPlugins:
             """Check if this plugin supports the given protocol."""
             ...
 
-    class Schema(Plugin):
+    class Schema(Plugin):  # noqa: F821
         """Abstract schema plugin for schema validation and introspection."""
 
         def get_schema_version(self) -> str:
@@ -69,7 +69,7 @@ class FlextApiPlugins:
             """Validate response against schema."""
             ...
 
-    class Transport(Plugin):
+    class Transport(Plugin):  # noqa: F821
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
@@ -107,7 +107,7 @@ class FlextApiPlugins:
             """Check if transport supports streaming."""
             return False
 
-    class Authentication(Plugin):
+    class Authentication(Plugin):  # noqa: F821
         """Abstract authentication plugin for credential management."""
 
         @abstractmethod

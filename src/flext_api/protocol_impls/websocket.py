@@ -405,7 +405,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         return self._connect(url_result.value, headers)
 
     def _extract_message(
-        self, request: Mapping[str, t.ContainerValue], options: _SendRequestOptions
+        self,
+        request: Mapping[str, t.ContainerValue],
+        options: _SendRequestOptions,  # noqa: F821
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
         if options.message is not None:
@@ -422,7 +424,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return r[str | bytes].ok(str(body))
         return r[str | bytes].fail("Message or body is required")
 
-    def _extract_message_type(self, options: _SendRequestOptions) -> str:
+    def _extract_message_type(self, options: _SendRequestOptions) -> str:  # noqa: F821
         """Extract message type from kwargs."""
         return options.message_type
 

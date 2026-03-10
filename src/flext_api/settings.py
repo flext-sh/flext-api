@@ -26,4 +26,4 @@ def _validate_headers(v: Mapping[str, str]) -> Mapping[str, str]:
     return v
 
 
-__all__ = ["FlextApiSettings"]
+__all__ = ["FlextApiSettings"]  # noqa: F822

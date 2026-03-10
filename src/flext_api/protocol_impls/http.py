@@ -181,7 +181,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             method, url, headers_result.value, {}, request.timeout, request.body
         )
         try:
-            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
+            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)  # noqa: F821
         except ValidationError as e:
             return r[object].fail(f"Invalid streaming request arguments: {e}")
 
@@ -275,7 +275,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         content_type = self._get_content_type(headers)
         if isinstance(body, dict):
             try:
-                parsed_mapping = _MappingBodyModel(body=body)
+                parsed_mapping = _MappingBodyModel(body=body)  # noqa: F821
                 if c.Api.ContentType.FORM in content_type:
                     kwargs["data"] = str(parsed_mapping.body)
                 else:
@@ -321,8 +321,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 request_kwargs = self._build_request_kwargs(
                     method, url, headers, params, timeout, body
                 )
-                call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
-                client = self._transport._client
+                call_args = _HttpRequestCallArgs.model_validate(request_kwargs)  # noqa: F821
+                client = self._transport._client  # noqa: SLF001
                 if client is None:
                     return r[m.HttpResponse].fail("HTTP client is not connected")
                 response = client.request(
