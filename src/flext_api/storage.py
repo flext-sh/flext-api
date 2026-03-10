@@ -158,13 +158,15 @@ class FlextApiStorage:
 
     def cleanup_expired(self) -> r[int]:
         """Clean up expired entries (TTL management)."""
-        try:
+
+        def _cleanup() -> int:
             initial_size = len(self._storage)
             self._cleanup_expired()
-            removed = initial_size - len(self._storage)
-            return r[int].ok(removed)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[int].fail(f"Cleanup failed: {e}")
+            return initial_size - len(self._storage)
+
+        return u.try_(
+            _cleanup, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(lambda e: f"Cleanup failed: {e}")
 
     def clear(self) -> r[bool]:
         """Clear all storage."""
@@ -191,10 +193,10 @@ class FlextApiStorage:
 
     def deserialize_json(self, json_str: str) -> r[t.ApiJsonValue]:
         """Deserialize from JSON using json library."""
-        try:
-            return r[t.ApiJsonValue].ok(json.loads(json_str))
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[t.ApiJsonValue].fail(f"JSON deserialization failed: {e}")
+        return u.try_(
+            lambda: json.loads(json_str),
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"JSON deserialization failed: {e}")
 
     def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
         """Service lifecycle execution."""
@@ -245,63 +247,76 @@ class FlextApiStorage:
 
     def get_cache_stats(self) -> r[t.Api.CacheDict]:
         """Get cache statistics using Pydantic validation."""
-        try:
-            return r[t.Api.CacheDict].ok({
+
+        def _get_stats() -> t.Api.CacheDict:
+            return {
                 "size": len(self._storage),
                 "backend": self._backend,
                 "hits": self._stats.cache_hits,
                 "misses": self._stats.cache_misses,
-            })
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[t.Api.CacheDict].fail(str(e))
+            }
+
+        return u.try_(
+            _get_stats, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(str)
 
     def get_storage_metrics(self) -> r[t.Api.MetricsDict]:
         """Get complete storage metrics."""
-        try:
-            return r[t.Api.MetricsDict].ok({
+
+        def _get_metrics() -> t.Api.MetricsDict:
+            return {
                 "total_operations": self._operations_count,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
-            })
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[t.Api.MetricsDict].fail(str(e))
+            }
+
+        return u.try_(
+            _get_metrics, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(str)
 
     def get_storage_statistics(self) -> r[Mapping[str, float]]:
         """Get storage statistics with hit ratio calculation."""
-        try:
+
+        def _get_statistics() -> Mapping[str, float]:
             hit_ratio = (
                 self._stats.cache_hits / self._stats.total_operations
                 if self._stats.total_operations > 0
                 else 0.0
             )
-            return r[Mapping[str, float]].ok({
+            return {
                 "total_operations": float(self._operations_count),
                 "cache_hits": float(self._stats.cache_hits),
                 "cache_misses": float(self._stats.cache_misses),
                 "hit_ratio": hit_ratio,
                 "storage_size": float(len(self._storage)),
                 "memory_usage": float(len(str(self._storage))),
-            })
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, float]].fail(str(e))
+            }
+
+        return u.try_(
+            _get_statistics, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(str)
 
     def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Perform health check with metrics."""
-        try:
-            return r[Mapping[str, t.ApiJsonValue]].ok({
+
+        def _check_health() -> Mapping[str, t.ApiJsonValue]:
+            return {
                 "status": "healthy",
                 "timestamp": u.Generators.generate_iso_timestamp(),
                 "storage_accessible": True,
                 "size": len(self._storage),
                 "operations_count": self._operations_count,
-            })
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
+            }
+
+        return u.try_(
+            _check_health, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(str)
 
     def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage information using Pydantic model."""
-        try:
-            return r[Mapping[str, t.ApiJsonValue]].ok({
+
+        def _get_info() -> Mapping[str, t.ApiJsonValue]:
+            return {
                 "namespace": self._namespace,
                 "backend": self._backend,
                 "size": len(self._storage),
@@ -309,9 +324,11 @@ class FlextApiStorage:
                 "max_size": self._max_size,
                 "default_ttl": self._default_ttl,
                 "operations_count": self._operations_count,
-            })
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
+            }
+
+        return u.try_(
+            _get_info, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(str)
 
     def items(self) -> r[list[tuple[str, t.ApiJsonValue]]]:
         """Get all key-value pairs."""
@@ -332,7 +349,8 @@ class FlextApiStorage:
 
     def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage metrics using Pydantic stats model."""
-        try:
+
+        def _get_metrics() -> Mapping[str, t.ApiJsonValue]:
             hit_ratio = 0.0
             if self._stats.total_operations > 0:
                 hit_ratio = self._stats.cache_hits / self._stats.total_operations
@@ -354,16 +372,18 @@ class FlextApiStorage:
                 "memory_usage": self._stats.memory_usage,
                 "namespace": self._stats.namespace,
             }
-            return r[Mapping[str, t.ApiJsonValue]].ok(stats_dict)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
+            return stats_dict
+
+        return u.try_(
+            _get_metrics, catch=(ValueError, TypeError, KeyError, ConnectionError)
+        ).map_error(str)
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using json library."""
-        try:
-            return r[str].ok(json.dumps(data, default=str))
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[str].fail(f"JSON serialization failed: {e}")
+        return u.try_(
+            lambda: json.dumps(data, default=str),
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"JSON serialization failed: {e}")
 
     def set(
         self,
@@ -382,14 +402,17 @@ class FlextApiStorage:
             if ttl is not None
             else self._default_ttl
         )
-        try:
-            metadata = m.Storage.Metadata(
+        metadata_result = u.try_(
+            lambda: m.Storage.Metadata(
                 value=value,
                 timestamp=u.Generators.generate_iso_timestamp(),
                 ttl=ttl_val,
-            )
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Metadata validation failed: {e}")
+            ),
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Metadata validation failed: {e}")
+        if metadata_result.is_failure:
+            return r[bool].fail(metadata_result.error)
+        metadata = metadata_result.value
         json_value = self._to_json_value(value)
         self._storage[key] = json_value
         value_json = self._to_json_value(metadata.value)
@@ -507,23 +530,27 @@ class FlextApiStorage:
         The caller should check for -1 to determine if default_ttl was not set.
         """
         if default_ttl_val is not None:
-            try:
-                ttl_int = int(str(default_ttl_val))
-                if ttl_int > 0:
-                    return r[int].ok(ttl_int)
-                return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
-            except (ValueError, TypeError) as e:
-                return r[int].fail(f"Invalid default_ttl value: {e}")
+            ttl_result = u.try_(
+                lambda: int(str(default_ttl_val)), catch=(ValueError, TypeError)
+            ).map_error(lambda e: f"Invalid default_ttl value: {e}")
+            if ttl_result.is_failure:
+                return ttl_result
+            ttl_int = ttl_result.value
+            if ttl_int > 0:
+                return r[int].ok(ttl_int)
+            return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
         if "default_ttl" in config_dict:
             default_ttl_config = config_dict["default_ttl"]
             if default_ttl_config is not None:
-                try:
-                    ttl_int = int(str(default_ttl_config))
-                    if ttl_int > 0:
-                        return r[int].ok(ttl_int)
-                    return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
-                except (ValueError, TypeError) as e:
-                    return r[int].fail(f"Invalid default_ttl value: {e}")
+                ttl_result = u.try_(
+                    lambda: int(str(default_ttl_config)), catch=(ValueError, TypeError)
+                ).map_error(lambda e: f"Invalid default_ttl value: {e}")
+                if ttl_result.is_failure:
+                    return ttl_result
+                ttl_int = ttl_result.value
+                if ttl_int > 0:
+                    return r[int].ok(ttl_int)
+                return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
         return r[int].ok(-1)
 
     def _extract_init_params(
@@ -551,25 +578,27 @@ class FlextApiStorage:
         The caller should check for -1 to determine if max_size was not set.
         """
         if max_size_val is not None:
-            try:
-                max_size_int = int(str(max_size_val))
-                if max_size_int > 0:
-                    return r[int].ok(max_size_int)
-                return r[int].fail(f"Max size must be positive, got: {max_size_int}")
-            except (ValueError, TypeError) as e:
-                return r[int].fail(f"Invalid max_size value: {e}")
+            max_size_result = u.try_(
+                lambda: int(str(max_size_val)), catch=(ValueError, TypeError)
+            ).map_error(lambda e: f"Invalid max_size value: {e}")
+            if max_size_result.is_failure:
+                return max_size_result
+            max_size_int = max_size_result.value
+            if max_size_int > 0:
+                return r[int].ok(max_size_int)
+            return r[int].fail(f"Max size must be positive, got: {max_size_int}")
         if "max_size" in config_dict:
             max_size_config = config_dict["max_size"]
             if max_size_config is not None:
-                try:
-                    max_size_int = int(str(max_size_config))
-                    if max_size_int > 0:
-                        return r[int].ok(max_size_int)
-                    return r[int].fail(
-                        f"Max size must be positive, got: {max_size_int}"
-                    )
-                except (ValueError, TypeError) as e:
-                    return r[int].fail(f"Invalid max_size value: {e}")
+                max_size_result = u.try_(
+                    lambda: int(str(max_size_config)), catch=(ValueError, TypeError)
+                ).map_error(lambda e: f"Invalid max_size value: {e}")
+                if max_size_result.is_failure:
+                    return max_size_result
+                max_size_int = max_size_result.value
+                if max_size_int > 0:
+                    return r[int].ok(max_size_int)
+                return r[int].fail(f"Max size must be positive, got: {max_size_int}")
         return r[int].ok(-1)
 
     def _extract_namespace(self, config_dict: t.Api.StorageDict) -> r[str]:
