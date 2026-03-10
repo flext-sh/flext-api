@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextLogger, FlextRuntime, r
+from flext_core import FlextLogger, FlextRuntime, r, u
 
 from flext_api import p, t
 
@@ -25,12 +25,16 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
     @override
     def clear(self) -> r[bool]:
         """Clear all stored values."""
-        try:
+
+        def _clear() -> bool:
             self._storage = {}
             self.logger.debug("Cleared all storage data")
-            return r[bool].ok(value=True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Clear operation failed: {e}")
+            return True
+
+        return u.try_(
+            _clear,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Clear operation failed: {e}")
 
     @override
     def delete(self, key: str) -> r[bool]:
@@ -51,11 +55,10 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
     @override
     def exists(self, key: str) -> r[bool]:
         """Check if key exists."""
-        try:
-            exists = str(key) in self._storage
-            return r[bool].ok(exists)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Exists check failed: {e}")
+        return u.try_(
+            lambda: str(key) in self._storage,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Exists check failed: {e}")
 
     @override
     def get(self, key: str) -> r[t.ApiJsonValue]:
@@ -74,25 +77,28 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
     @override
     def keys(self) -> r[list[str]]:
         """Get all keys."""
-        try:
-            storage_keys: list[str] = list(self._storage)
-            return r[list[str]].ok(storage_keys)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[list[str]].fail(f"Keys operation failed: {e}")
+        return u.try_(
+            lambda: list(self._storage),
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Keys operation failed: {e}")
 
     @override
     def set(
         self, key: str, value: t.ApiJsonValue, timeout: int | None = None
     ) -> r[bool]:
         """Store value with optional timeout."""
-        try:
-            if not key:
-                return r[bool].fail("Storage key cannot be empty")
+        if not key:
+            return r[bool].fail("Storage key cannot be empty")
+
+        def _set() -> bool:
             _ = timeout
             storage_data = dict(self._storage)
             storage_data[str(key)] = FlextRuntime.normalize_to_general_value(value)
             self._storage = storage_data
             self.logger.debug("Stored data with key: %s", key)
-            return r[bool].ok(value=True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Storage operation failed: {e}")
+            return True
+
+        return u.try_(
+            _set,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Storage operation failed: {e}")
