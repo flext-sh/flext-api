@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from flext_core import r
-from pydantic import ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
@@ -49,6 +49,36 @@ def _validate_rfc_method(value: str) -> str:
         msg = f"Invalid HTTP method: {method_upper} (RFC 7231)"
         raise ValueError(msg)
     return method_upper
+
+
+class _HeadersRequest(BaseModel):
+    headers: dict[str, str] = Field(default_factory=dict)
+
+
+class _MethodRequest(BaseModel):
+    method: str = Field(min_length=1)
+
+    @field_validator("method")
+    @classmethod
+    def _validate_method(cls, value: str) -> str:
+        return _validate_rfc_method(value)
+
+
+class _TimeoutRequest(BaseModel):
+    timeout: float = Field(gt=0)
+
+
+class _UrlRequest(BaseModel):
+    url: str = Field(min_length=1)
+
+    @field_validator("url")
+    @classmethod
+    def _validate_url(cls, value: str) -> str:
+        return _validate_rfc_url(value)
+
+
+class _StatusCodeValue(BaseModel):
+    status_code: int = Field(ge=100, le=599)
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):
@@ -182,7 +212,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "headers" not in request:
             return {}
         try:
-            parsed = self._HeadersRequest.model_validate(request)
+            parsed = _HeadersRequest.model_validate(request)
         except ValidationError:
             return {}
         normalized_headers: dict[str, str] = {}
@@ -201,7 +231,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = self._MethodRequest.model_validate(request)
+            parsed = _MethodRequest.model_validate(request)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
             return r[str].fail(str(details))
@@ -221,7 +251,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "timeout" in request:
             try:
-                parsed = self._TimeoutRequest.model_validate(request)
+                parsed = _TimeoutRequest.model_validate(request)
                 return parsed.timeout
             except ValidationError:
                 return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
@@ -240,7 +270,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "url" not in request:
             return r[str].fail("URL is required in request (RFC 7230)")
         try:
-            parsed = self._UrlRequest.model_validate(request)
+            parsed = _UrlRequest.model_validate(request)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
             return r[str].fail(str(details))
@@ -344,7 +374,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = self._StatusCodeValue(status_code=status_code)
+            parsed = _StatusCodeValue(status_code=status_code)
         except ValidationError:
             return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}"

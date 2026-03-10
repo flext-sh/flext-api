@@ -12,9 +12,31 @@ from typing import Self, override
 
 import httpx
 from flext_core import FlextLogger, r
-from pydantic import ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api import FlextApiConstants, m, p, t
+
+
+class _HttpClientRequestOptions(BaseModel):
+    """Internal model for HTTP client request options.
+
+    Validates and structures optional request parameters passed to httpx.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    params: Mapping[str, str] | None = Field(
+        default=None, description="Query parameters"
+    )
+    json_data: t.JsonValue | None = Field(default=None, description="JSON body")
+    content: bytes | None = Field(default=None, description="Raw content body")
+    data: Mapping[str, t.ContainerValue] | None = Field(
+        default=None, description="Form data"
+    )
+    timeout: float | None = Field(default=None, description="Request timeout")
+    headers: Mapping[str, str] = Field(
+        default_factory=dict, description="Request headers"
+    )
 
 
 class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
@@ -121,16 +143,16 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
 
     def _build_request_options(
         self, kwargs: Mapping[str, t.ContainerValue]
-    ) -> r[_HttpClientRequestOptions]:  # noqa: F821
+    ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
-            options = _HttpClientRequestOptions.model_validate(kwargs)  # noqa: F821
+            options = _HttpClientRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
             )
-            return r[_HttpClientRequestOptions].fail(str(details))  # noqa: F821
-        return r[_HttpClientRequestOptions].ok(options)  # noqa: F821
+            return r[_HttpClientRequestOptions].fail(str(details))
+        return r[_HttpClientRequestOptions].ok(options)
 
     def _create_response_from_httpx(
         self, httpx_response: httpx.Response
@@ -147,7 +169,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         method: str,
         full_url: str,
         headers: Mapping[str, str],
-        options: _HttpClientRequestOptions,  # noqa: F821
+        options: _HttpClientRequestOptions,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute request using typed options."""
         try:
@@ -189,7 +211,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
 
     def _prepare_request_headers(
         self,
-        options: _HttpClientRequestOptions,  # noqa: F821
+        options: _HttpClientRequestOptions,
     ) -> Mapping[str, str]:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)

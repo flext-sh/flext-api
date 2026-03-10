@@ -12,7 +12,7 @@ from typing import override
 
 import httpx
 from flext_core import r
-from pydantic import ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -21,6 +21,15 @@ try:
     from httpx_sse import connect_sse
 except ImportError:
     connect_sse = None
+
+
+class _SendRequestOptions(BaseModel):
+    method: str = Field(default="GET", min_length=1)
+    max_events: int = Field(default=1, ge=1)
+    auto_reconnect: bool | None = Field(default=None)
+    reconnect_max_attempts: int | None = Field(default=None, ge=0)
+    reconnect_backoff_factor: float | None = Field(default=None, gt=0)
+    retry_timeout: int | None = Field(default=None, ge=0)
 
 
 class SSEProtocolPlugin(RFCProtocolImplementation):
@@ -141,7 +150,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 validation_result.error or "Request validation failed"
             )
         try:
-            options = self._SendRequestOptions.model_validate(kwargs)
+            options = _SendRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[Mapping[str, t.ContainerValue]].fail(str(details))

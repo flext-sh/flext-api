@@ -23,10 +23,23 @@ from typing import override
 
 import websockets
 from flext_core import r
-from pydantic import ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from websockets.sync.client import ClientConnection, connect as websocket_connect
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
+
+
+class _SendRequestOptions(BaseModel):
+    message: str | bytes | None = Field(default=None)
+    message_type: str = Field(
+        default=FlextApiConstants.Api.WebSocket.MessageType.TEXT,
+        min_length=1,
+    )
+
+
+class _InboundMessage(BaseModel):
+    message: str | bytes
 
 
 class WebSocketProtocolPlugin(RFCProtocolImplementation):
@@ -58,7 +71,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _auto_reconnect: bool
     _reconnect_max_attempts: int
     _reconnect_backoff_factor: float
-    _connection: object | None
+    _connection: ClientConnection | None
     _connected: bool
     _url: str
     _headers: Mapping[str, str]
@@ -201,9 +214,8 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         if not self._connected:
             return r[bool].fail("Not connected to WebSocket server")
         try:
-            close_method = getattr(self._connection, "close", None)
-            if callable(close_method):
-                close_method()
+            if self._connection is not None:
+                self._connection.close()
             self._connected = False
             self._connection = None
             for handler in self._on_disconnect_handlers:
@@ -294,7 +306,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         try:
-            options = self._SendRequestOptions.model_validate(kwargs)
+            options = _SendRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
@@ -365,7 +377,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         try:
             self._url = url
             self._headers = headers
-            connection_obj: object = websockets.connect(
+            connection_obj = websocket_connect(
                 url,
                 extra_headers=headers,
                 ping_interval=self._ping_interval,
@@ -407,7 +419,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def _extract_message(
         self,
         request: Mapping[str, t.ContainerValue],
-        options: _SendRequestOptions,  # noqa: F821
+        options: _SendRequestOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
         if options.message is not None:
@@ -416,7 +428,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         if body is not None:
             if isinstance(body, (str, bytes)):
                 try:
-                    parsed = self._InboundMessage(message=body)
+                    parsed = _InboundMessage(message=body)
                     return r[str | bytes].ok(parsed.message)
                 except ValidationError:
                     return r[str | bytes].ok(str(body))
@@ -424,7 +436,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return r[str | bytes].ok(str(body))
         return r[str | bytes].fail("Message or body is required")
 
-    def _extract_message_type(self, options: _SendRequestOptions) -> str:  # noqa: F821
+    def _extract_message_type(self, options: _SendRequestOptions) -> str:
         """Extract message type from kwargs."""
         return options.message_type
 
@@ -443,19 +455,17 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Background task to receive messages."""
         while self._connected and self._connection:
             try:
-                recv_method = getattr(self._connection, "recv", None)
-                message = recv_method() if callable(recv_method) else None
-                if isinstance(message, (str, bytes)):
-                    try:
-                        inbound = self._InboundMessage(message=message)
-                    except ValidationError:
-                        pass
-                    else:
-                        for handler in self._on_message_handlers:
-                            try:
-                                handler(inbound.message)
-                            except (ValueError, TypeError, KeyError, ConnectionError):
-                                self.logger.exception("Message handler error")
+                message = self._connection.recv()
+                try:
+                    inbound = _InboundMessage(message=message)
+                except ValidationError:
+                    pass
+                else:
+                    for handler in self._on_message_handlers:
+                        try:
+                            handler(inbound.message)
+                        except (ValueError, TypeError, KeyError, ConnectionError):
+                            self.logger.exception("Message handler error")
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")
                 for handler in self._on_error_handlers:
@@ -505,14 +515,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         try:
             if message_type == FlextApiConstants.Api.WebSocket.MessageType.TEXT:
                 text_message = str(message)
-                send_method = getattr(self._connection, "send", None)
-                if callable(send_method):
-                    send_method(text_message)
+                self._connection.send(text_message)
             elif message_type == FlextApiConstants.Api.WebSocket.MessageType.BINARY:
                 binary_message = bytes(str(message), encoding="utf-8")
-                send_method = getattr(self._connection, "send", None)
-                if callable(send_method):
-                    send_method(binary_message)
+                self._connection.send(binary_message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
             self.logger.debug(

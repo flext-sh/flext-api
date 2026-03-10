@@ -17,10 +17,39 @@ from flext_core import FlextLogger, r
 from flext_api import t
 
 
+class _FlextApiPluginBase:
+    name: str
+    version: str
+    description: str
+    logger: FlextLogger
+
+    def __init__(
+        self,
+        name: str = "plugin",
+        version: str = "0.0.0",
+        description: str = "",
+    ) -> None:
+        self.name = name
+        self.version = version
+        self.description = description
+        self.logger = FlextLogger(__name__)
+
+    def initialize(self) -> r[bool]:
+        return r[bool].ok(value=True)
+
+    def shutdown(self) -> r[bool]:
+        return r[bool].ok(value=True)
+
+
 class FlextApiPlugins:
     """Unified plugin system for flext-api with FLEXT-pure patterns."""
 
-    class Protocol(Plugin):  # noqa: F821
+    class Plugin(_FlextApiPluginBase):
+        """Base plugin type used by manager APIs."""
+
+        pass
+
+    class Protocol(_FlextApiPluginBase):
         """Abstract protocol plugin for API protocol implementations."""
 
         def get_supported_protocols(self) -> list[str]:
@@ -39,7 +68,7 @@ class FlextApiPlugins:
             """Check if this plugin supports the given protocol."""
             ...
 
-    class Schema(Plugin):  # noqa: F821
+    class Schema(_FlextApiPluginBase):
         """Abstract schema plugin for schema validation and introspection."""
 
         def get_schema_version(self) -> str:
@@ -69,7 +98,7 @@ class FlextApiPlugins:
             """Validate response against schema."""
             ...
 
-    class Transport(Plugin):  # noqa: F821
+    class Transport(_FlextApiPluginBase):
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
@@ -107,7 +136,7 @@ class FlextApiPlugins:
             """Check if transport supports streaming."""
             return False
 
-    class Authentication(Plugin):  # noqa: F821
+    class Authentication(_FlextApiPluginBase):
         """Abstract authentication plugin for credential management."""
 
         @abstractmethod

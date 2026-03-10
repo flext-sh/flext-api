@@ -105,9 +105,8 @@ class FlextApiStorage:
     def _to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
         """Convert arbitrary value to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
-        match normalized:
-            case None | str() | int() | float() | bool():
-                return normalized
+        if normalized is None or isinstance(normalized, (str, int, float, bool)):
+            return normalized
         if isinstance(normalized, dict):
             converted: t.JsonObject = {}
             for key, item in normalized.items():
@@ -486,7 +485,8 @@ class FlextApiStorage:
                     if s:
                         return r[str].ok(s)
                     return r[str].fail("Backend cannot be empty")
-            return r[str].fail(f"Invalid backend type: {type(backend_val)}")
+                case _:
+                    return r[str].fail(f"Invalid backend type: {type(backend_val)}")
         return r[str].ok("memory")
 
     def _extract_config_field(
@@ -494,9 +494,8 @@ class FlextApiStorage:
     ) -> str:
         """Extract string field from config object."""
         field_value = config_obj.model_dump().get(field_name)
-        match field_value:
-            case str() as s:
-                return s
+        if isinstance(field_value, str):
+            return field_value
         return default_value
 
     def _extract_default_ttl(
@@ -582,7 +581,8 @@ class FlextApiStorage:
                     if s:
                         return r[str].ok(s)
                     return r[str].fail("Namespace cannot be empty")
-            return r[str].fail(f"Invalid namespace type: {type(namespace_val)}")
+                case _:
+                    return r[str].fail(f"Invalid namespace type: {type(namespace_val)}")
         return r[str].ok("flext_api")
 
     def _extract_optional_config_field(
@@ -616,11 +616,12 @@ class FlextApiStorage:
             normalized: t.Api.StorageDict = {}
             for key, value in config_obj.items():
                 key_str = str(key)
-                match value:
-                    case None | str() | int() | bool():
-                        normalized[key_str] = value
-                    case float() as f:
-                        normalized[key_str] = int(f)
+                if value is None or isinstance(value, (str, int, bool)):
+                    normalized[key_str] = value
+                elif isinstance(value, float):
+                    normalized[key_str] = int(value)
+                else:
+                    normalized[key_str] = str(value)
             return normalized
         if isinstance(config_obj, BaseModel):
             namespace_str = self._extract_config_field(config_obj, "namespace", "flext")

@@ -23,7 +23,7 @@ from typing import TypeGuard, override
 
 import yaml
 from flext_core import r, u
-from pydantic import ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from flext_api import FlextApiPlugins, t
 
@@ -34,6 +34,14 @@ def _is_container_value(value: object) -> TypeGuard[t.ContainerValue]:
 
 def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
     return isinstance(value, Mapping)
+
+
+class _DictField(BaseModel):
+    value: Mapping[str, t.ContainerValue] = Field(default_factory=dict)
+
+
+class _StringField(BaseModel):
+    value: str
 
 
 class OpenAPISchemaValidator(FlextApiPlugins.Schema):
@@ -272,7 +280,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 return r[Mapping[str, t.ContainerValue]].fail(
                     f"'{field_name}' field must be a dictionary"
                 )
-            parsed = self._DictField(value=value)
+            parsed = _DictField(value=value)
         except ValidationError:
             return r[Mapping[str, t.ContainerValue]].fail(
                 f"'{field_name}' field must be a dictionary"
@@ -283,7 +291,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         try:
             if not isinstance(value, str):
                 return r[str].fail(f"'{field_name}' field must be a string")
-            parsed = self._StringField(value=value)
+            parsed = _StringField(value=value)
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)

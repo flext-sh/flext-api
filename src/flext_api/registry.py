@@ -151,24 +151,24 @@ class FlextApiRegistry(FlextRegistry):
     ) -> r[bool]:
         """Register an authentication provider plugin."""
         self._auth_cache[name] = plugin
-        return self.register_plugin(self.AUTH_PROVIDERS, name, plugin)
+        return self.register_plugin(self.AUTH_PROVIDERS, name, plugin.name)
 
     def register_protocol(self, name: str, plugin: FlextApiPlugins.Protocol) -> r[bool]:
         """Register a protocol plugin."""
         self._protocol_cache[name] = plugin
-        return self.register_plugin(self.PROTOCOLS, name, plugin)
+        return self.register_plugin(self.PROTOCOLS, name, plugin.name)
 
     def register_schema(self, name: str, plugin: FlextApiPlugins.Schema) -> r[bool]:
         """Register a schema plugin."""
         self._schema_cache[name] = plugin
-        return self.register_plugin(self.SCHEMAS, name, plugin)
+        return self.register_plugin(self.SCHEMAS, name, plugin.name)
 
     def register_transport(
         self, name: str, plugin: FlextApiPlugins.Transport
     ) -> r[bool]:
         """Register a transport plugin."""
         self._transport_cache[name] = plugin
-        return self.register_plugin(self.TRANSPORTS, name, plugin)
+        return self.register_plugin(self.TRANSPORTS, name, plugin.name)
 
     def unregister_auth_provider(self, name: str) -> r[bool]:
         """Unregister an authentication provider."""

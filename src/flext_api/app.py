@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from flext_api import FlextApiSettings
+from flext_api.settings import FlextApiSettings
 
 
 class FlextApiApp:
