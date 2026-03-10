@@ -204,14 +204,12 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """
         if "asyncapi" not in schema:
             return r[bool].fail("Schema missing 'asyncapi' version field")
-        channels_result = self._validate_response_channels(schema)
-        if channels_result.is_failure:
-            return channels_result
-        status_result = self._validate_response_status_code(response)
-        if status_result.is_failure:
-            return status_result
-        self.logger.debug("AsyncAPI response validation completed")
-        return r[bool].ok(value=True)
+        return (
+            self
+            ._validate_response_channels(schema)
+            .flat_map(lambda _: self._validate_response_status_code(response))
+            .tap(lambda _: self.logger.debug("AsyncAPI response validation completed"))
+        )
 
     def validate_schema(
         self, schema: Mapping[str, t.ContainerValue]
