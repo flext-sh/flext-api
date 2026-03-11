@@ -89,7 +89,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                 **options: Additional options
 
             Returns:
-                FlextResult indicating success or failure
+                r indicating success or failure
 
             """
             route_key = f"{prefix}{method}:{path}" if prefix else f"{method}:{path}"

@@ -32,13 +32,13 @@ class BaseProtocolImplementation:
     - Provide common error handling
     - Define required method signatures
     - Ensure consistent logging
-    - Enforce FlextResult patterns
+    - Enforce r patterns
 
     All protocol implementations must:
     1. Extend this class
     2. Implement send_request() method
     3. Implement supports_protocol() method
-    4. Use FlextResult for all return values
+    4. Use r for all return values
     5. Use FlextApiConstants for all constants
     6. Follow railway-oriented error handling
 
@@ -131,7 +131,7 @@ class BaseProtocolImplementation:
         **kwargs: Additional protocol-specific parameters
 
         Returns:
-        FlextResult containing response dictionary or error
+        r containing response dictionary or error
 
         """
         _ = request
@@ -213,7 +213,7 @@ class BaseProtocolImplementation:
             request: Request dictionary to validate
 
         Returns:
-            FlextResult with validated request or error
+            r with validated request or error
 
         """
         if not request:

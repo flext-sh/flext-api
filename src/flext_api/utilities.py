@@ -215,7 +215,7 @@ class FlextApiUtilities(FlextWebUtilities):
             data: t.ApiJsonValue | None = None,
             headers: Mapping[str, str] | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
-            """Build error result - returns FlextResult with error response."""
+            """Build error result - returns r with error response."""
             response: dict[str, t.ApiJsonValue] = {
                 "error": error,
                 "status_code": status_code,

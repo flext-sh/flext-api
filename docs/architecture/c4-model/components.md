@@ -75,7 +75,7 @@ Container_Boundary(config_layer, "Configuration Layer") {
 }
 
 Container_Boundary(flext_core, "FLEXT-Core Foundation") {
-    Component(flext_result, "FlextResult[T]", "Python", "Railway-oriented error handling")
+    Component(flext_result, "r[T]", "Python", "Railway-oriented error handling")
     Component(flext_container, "FlextContainer", "Python", "Dependency injection and service management")
     Component(flext_models, "FlextModels", "Python", "Domain modeling with Pydantic")
     Component(flext_logger, "FlextLogger", "Python", "Structured logging with correlation")
@@ -88,7 +88,7 @@ Rel(client_core, retry_logic, "Uses", "handles retries")
 Rel(client_core, auth_handler, "Uses", "manages auth")
 
 Rel(request_builder, flext_models, "Uses", "request models")
-Rel(response_handler, flext_result, "Returns", "FlextResult")
+Rel(response_handler, flext_result, "Returns", "r")
 Rel(auth_handler, flext_container, "Uses", "credential storage")
 
 Rel(app_factory, route_registry, "Configures", "route setup")
@@ -484,7 +484,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 1. **Connection Pool** provides connection for request
 1. **Retry Logic** handles transient failures
 1. **Response Handler** processes and validates response
-1. **Client Core** returns final `FlextResult[T]`
+1. **Client Core** returns final `r[T]`
 
 ### Application Startup Flow
 
@@ -499,7 +499,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 
 1. **Storage Router** selects appropriate backend
 1. **Backend Component** executes storage operation
-1. **Error handling** wraps operation in `FlextResult[T]`
+1. **Error handling** wraps operation in `r[T]`
 1. **Metrics collection** records operation performance
 1. **Result** returned to calling component
 

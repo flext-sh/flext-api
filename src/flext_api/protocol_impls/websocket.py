@@ -6,7 +6,7 @@ Implements WebSocket protocol support with:
 - Event-driven architecture
 - Automatic reconnection logic
 - Ping/pong heartbeat mechanism
-- Integration with FlextResult patterns
+- Integration with r patterns
 
 See TRANSFORMATION_PLAN.md - Phase 3 for implementation details.
 
@@ -56,7 +56,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     Integration:
     - Uses websockets library for transport
-    - FlextResult for error handling
+    - r for error handling
     - FlextLogger for structured logging
     - Event callbacks for message handling
     """
@@ -194,7 +194,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         headers: Optional connection headers
 
         Returns:
-        FlextResult indicating success or failure
+        r indicating success or failure
 
         """
         connect_headers: dict[str, str] = {}
@@ -206,7 +206,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Disconnect from WebSocket server.
 
         Returns:
-        FlextResult indicating success or failure
+        r indicating success or failure
 
         """
         if not self._connected:
@@ -284,7 +284,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             message_type: Message type ("text" or "binary")
 
         Returns:
-            FlextResult indicating success or failure
+            r indicating success or failure
 
         """
         return self._send_message(message, message_type)
@@ -300,7 +300,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         **kwargs: Additional WebSocket-specific parameters
 
         Returns:
-        FlextResult containing response or error
+        r containing response or error
 
         """
         try:
@@ -365,7 +365,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             headers: Connection headers
 
         Returns:
-            FlextResult indicating success or failure
+            r indicating success or failure
 
         """
         if websockets is None:
@@ -479,7 +479,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Attempt to reconnect with exponential backoff.
 
         Returns:
-        FlextResult indicating success or failure
+        r indicating success or failure
 
         """
         for attempt in range(self._reconnect_max_attempts):
@@ -503,7 +503,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         message_type: Message type
 
         Returns:
-        FlextResult indicating success or failure
+        r indicating success or failure
 
         """
         if not self._connected:

@@ -163,7 +163,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         headers: Response headers
 
         Returns:
-        FlextResult with RFC-compliant success response
+        r with RFC-compliant success response
 
         """
         json_data: dict[str, t.ContainerValue] | None = None
@@ -227,7 +227,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         request: Request dictionary
 
         Returns:
-        FlextResult with validated method or error
+        r with validated method or error
 
         """
         try:
@@ -264,7 +264,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         request: Request dictionary
 
         Returns:
-        FlextResult with validated URL or error
+        r with validated URL or error
 
         """
         if "url" not in request:
@@ -370,7 +370,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         status_code: HTTP status code to validate
 
         Returns:
-        FlextResult with validated status code or error
+        r with validated status code or error
 
         """
         try:

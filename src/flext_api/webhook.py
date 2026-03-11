@@ -71,7 +71,7 @@ class FlextWebhookHandler(FlextService[bool]):
     - Signature verification using HMAC
     - Event routing to registered handlers
     - Retry queue with configurable attempts
-    - FlextResult for railway-oriented error handling
+    - r for railway-oriented error handling
     - FlextLogger for structured audit logging
     - FlextService for service lifecycle management
     - ual utility functions
@@ -169,7 +169,7 @@ class FlextWebhookHandler(FlextService[bool]):
         event_id: Event ID
 
         Returns:
-        FlextResult containing delivery status or error
+        r containing delivery status or error
 
         """
         if event_id not in self._delivery_confirmations:
@@ -203,7 +203,7 @@ class FlextWebhookHandler(FlextService[bool]):
         """Process events in retry queue.
 
         Returns:
-        FlextResult containing processing statistics
+        r containing processing statistics
 
         """
         processed = 0
@@ -227,7 +227,7 @@ class FlextWebhookHandler(FlextService[bool]):
         headers: HTTP headers
 
         Returns:
-        FlextResult containing processing result or error
+        r containing processing result or error
 
         """
         if self._secret:
@@ -273,7 +273,7 @@ class FlextWebhookHandler(FlextService[bool]):
             handler: Event handler function
 
         Returns:
-            FlextResult indicating success or failure
+            r indicating success or failure
 
         """
         if event_type not in self._event_handlers:
@@ -420,7 +420,7 @@ class FlextWebhookHandler(FlextService[bool]):
         event: Event dictionary
 
         Returns:
-        FlextResult indicating processing success or failure
+        r indicating processing success or failure
 
         """
         event_type_value = event.get("type")
@@ -481,7 +481,7 @@ class FlextWebhookHandler(FlextService[bool]):
         headers: HTTP headers
 
         Returns:
-        FlextResult indicating verification success or failure
+        r indicating verification success or failure
 
         """
         if self._signature_header not in headers:

@@ -30,7 +30,7 @@
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
 [![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](../)
 
-**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with FlextResult patterns and synchronous architecture.
+**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with r patterns and synchronous architecture.
 
 > **✅ STATUS**: Version 0.9.9 - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
 
@@ -42,7 +42,7 @@ FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data integrat
 
 ### 🎯 Core Features
 
-- **🔗 HTTP Client Foundation** - Comprehensive client wrapper with FlextResult patterns
+- **🔗 HTTP Client Foundation** - Comprehensive client wrapper with r patterns
 - **🌐 FastAPI Integration** - Application factory patterns for web services
 - **📊 Domain Models** - Pydantic v2 validation and business logic
 - **⚙️ Configuration Management** - Environment-aware settings and validation
@@ -51,7 +51,7 @@ FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data integrat
 
 ### 🏢 Integration with FLEXT Ecosystem
 
-- **flext-core** → Foundation patterns (FlextResult, FlextService, FlextModels)
+- **flext-core** → Foundation patterns (r, FlextService, FlextModels)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
@@ -106,7 +106,7 @@ src/flext_api/
 ### 🎯 Key Architectural Patterns
 
 - **Clean Architecture** - Clear separation between domain, use cases, and infrastructure
-- **Railway Pattern** - Error handling with FlextResult (90% implementation)
+- **Railway Pattern** - Error handling with r (90% implementation)
 - **Factory Pattern** - Application and client factory methods
 - **Plugin Architecture** - Extensible protocol implementations
 - **Configuration Management** - Environment-aware settings with validation
@@ -219,7 +219,7 @@ ______________________________________________________________________
 
 ### 🎯 Production Readiness
 
-- **Enterprise Patterns**: Complete FlextResult, FlextService integration
+- **Enterprise Patterns**: Complete r, FlextService integration
 - **Error Handling**: Comprehensive railway-oriented error management
 - **Configuration**: Environment-aware settings with validation
 - **Documentation**: Complete API reference and guides

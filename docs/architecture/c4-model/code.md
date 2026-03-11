@@ -150,7 +150,7 @@ package "flext_api" as flext_api {
 }
 
 package "flext_core" as flext_core {
-    class FlextResult
+    class r
     class FlextContainer
     class FlextModels
     class FlextLogger
@@ -183,7 +183,7 @@ package "External Libraries" as external {
 }
 
 ' Relationships
-FlextApiClient --> FlextResult : uses
+FlextApiClient --> r : uses
 FlextApiClient --> AsyncClient : uses
 FlextApiModels --> BaseModel : extends
 FlextApiSettings --> BaseModel : extends
@@ -252,31 +252,27 @@ class FlextApiClient(FlextService[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
     # Core HTTP methods
-    def get(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+    def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP GET request."""
 
-    def post(
-        self, url: str, data=None, **kwargs
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    def post(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP POST request."""
 
-    def put(
-        self, url: str, data=None, **kwargs
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    def put(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP PUT request."""
 
-    def delete(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+    def delete(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP DELETE request."""
 
     # Advanced features
     def request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         """Generic HTTP request."""
 
     async def arequest(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         """Async HTTP request."""
 ```
 
@@ -333,7 +329,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> FlextResult[object]:
+    async def execute_request(self, request: object) -> r[object]:
         """Execute protocol-specific request."""
         pass
 
@@ -348,7 +344,7 @@ class FlextWebProtocol(BaseProtocol):
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request with error handling."""
         try:
             # HTTP-specific implementation
@@ -361,7 +357,7 @@ class FlextWebProtocol(BaseProtocol):
                     timeout=request.timeout,
                 )
 
-                return FlextResult.ok(
+                return r.ok(
                     FlextApiModels.HttpResponse(
                         status_code=response.status_code,
                         headers=dict(response.headers),
@@ -371,7 +367,7 @@ class FlextWebProtocol(BaseProtocol):
                 )
 
         except Exception as e:
-            return FlextResult.fail(f"HTTP request failed: {e}")
+            return r.fail(f"HTTP request failed: {e}")
 ```
 
 ### Protocol Registry Pattern
@@ -436,29 +432,29 @@ store = storage.unwrap()
 ### Railway Pattern Implementation
 
 ```python
-# All public methods return FlextResult[T]
-def get(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+# All public methods return r[T]
+def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
 
     # Input validation
     validation_result = self._validate_url(url)
     if validation_result.is_failure:
-        return FlextResult.fail(validation_result.error)
+        return r.fail(validation_result.error)
 
     # Request building
     request_result = self._build_request("GET", url, **kwargs)
     if request_result.is_failure:
-        return FlextResult.fail(f"Request building failed: {request_result.error}")
+        return r.fail(f"Request building failed: {request_result.error}")
 
     # HTTP execution
     response_result = await self._execute_request(request_result.unwrap())
     if response_result.is_failure:
-        return FlextResult.fail(f"HTTP execution failed: {response_result.error}")
+        return r.fail(f"HTTP execution failed: {response_result.error}")
 
     # Response processing
     processed_result = self._process_response(response_result.unwrap())
     if processed_result.is_failure:
-        return FlextResult.fail(f"Response processing failed: {processed_result.error}")
+        return r.fail(f"Response processing failed: {processed_result.error}")
 
     return processed_result
 
@@ -547,27 +543,27 @@ class StorageBackend(ABC):
     @abstractmethod
     async def upload_file(
         self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Upload file to storage."""
         pass
 
     @abstractmethod
-    async def download_file(self, path: str) -> FlextResult[bytes]:
+    async def download_file(self, path: str) -> r[bytes]:
         """Download file from storage."""
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> FlextResult[bool]:
+    async def delete_file(self, path: str) -> r[bool]:
         """Delete file from storage."""
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> FlextResult[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> r[List[FileInfo]]:
         """List files in storage."""
         pass
 
     @abstractmethod
-    async def get_file_info(self, path: str) -> FlextResult[FileInfo]:
+    async def get_file_info(self, path: str) -> r[FileInfo]:
         """Get file information."""
         pass
 
@@ -587,7 +583,7 @@ class S3Backend(StorageBackend):
 
     async def upload_file(
         self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Upload file to S3."""
         try:
             self.client.upload_fileobj(
@@ -596,9 +592,9 @@ class S3Backend(StorageBackend):
                 path,
                 ExtraArgs={"Metadata": metadata or {}, "ACL": "private"},
             )
-            return FlextResult.ok(f"s3://{self.bucket}/{path}")
+            return r.ok(f"s3://{self.bucket}/{path}")
         except Exception as e:
-            return FlextResult.fail(f"S3 upload failed: {e}")
+            return r.fail(f"S3 upload failed: {e}")
 ```
 
 ## Testing Architecture
@@ -628,7 +624,7 @@ tests/
 def mock_http_client():
     """Mock HTTP client for testing."""
     client = Mock(spec=FlextApiClient)
-    client.get.return_value = FlextResult.ok(MockHttpResponse())
+    client.get.return_value = r.ok(MockHttpResponse())
     return client
 
 
@@ -739,16 +735,16 @@ class AuthenticationManager:
 
     async def authenticate_request(
         self, request: FlextApiModels.HttpRequest, credentials: AuthCredentials
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
+    ) -> r[FlextApiModels.HttpRequest]:
         """Add authentication to request."""
         handler = self.get_handler(credentials.scheme)
 
         auth_result = await handler.authenticate(request, credentials)
         if auth_result.is_failure:
-            return FlextResult.fail(f"Authentication failed: {auth_result.error}")
+            return r.fail(f"Authentication failed: {auth_result.error}")
 
         authenticated_request = auth_result.unwrap()
-        return FlextResult.ok(authenticated_request)
+        return r.ok(authenticated_request)
 ```
 
 ______________________________________________________________________

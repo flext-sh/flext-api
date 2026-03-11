@@ -26,7 +26,7 @@ This section covers the core HTTP client and server classes that form the founda
 
 ### FlextApiClient - Main HTTP Client
 
-The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with FlextResult patterns.
+The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with r patterns.
 
 ```python
 from flext_api import FlextApiClient
@@ -45,7 +45,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -327,7 +327,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -344,23 +344,23 @@ class UserApiClient(FlextApiClient):
             headers={"User-Agent": "FLEXT-API-Example/0.9.9"},
         )
 
-    def get_users(self, limit: int = 10) -> FlextResult[list]:
+    def get_users(self, limit: int = 10) -> r[list]:
         """Get list of users with pagination."""
         return self.get("/users", params={"_limit": limit})
 
-    def get_user(self, user_id: int) -> FlextResult[dict]:
+    def get_user(self, user_id: int) -> r[dict]:
         """Get single user by ID."""
         return self.get(f"/users/{user_id}")
 
-    def create_user(self, user_data: dict) -> FlextResult[dict]:
+    def create_user(self, user_data: dict) -> r[dict]:
         """Create new user."""
         return self.post("/users", json=user_data)
 
-    def update_user(self, user_id: int, user_data: dict) -> FlextResult[dict]:
+    def update_user(self, user_id: int, user_data: dict) -> r[dict]:
         """Update existing user."""
         return self.put(f"/users/{user_id}", json=user_data)
 
-    def delete_user(self, user_id: int) -> FlextResult[bool]:
+    def delete_user(self, user_id: int) -> r[bool]:
         """Delete user."""
         return self.delete(f"/users/{user_id}")
 
@@ -406,7 +406,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t

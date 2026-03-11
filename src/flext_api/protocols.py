@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextResult
+from flext_core import r
 from flext_web import FlextWebProtocols
 
 from flext_api import FlextApiConstants, t
@@ -57,25 +57,25 @@ class FlextApiProtocols(FlextWebProtocols):
 
                 def delete(
                     self, url: str, **kwargs: t.ApiJsonValue
-                ) -> FlextResult[t.Api.HttpResponseDict]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
 
                 def get(
                     self, url: str, **kwargs: t.ApiJsonValue
-                ) -> FlextResult[t.Api.HttpResponseDict]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
                 def post(
                     self, url: str, **kwargs: t.ApiJsonValue
-                ) -> FlextResult[t.Api.HttpResponseDict]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
                 def put(
                     self, url: str, **kwargs: t.ApiJsonValue
-                ) -> FlextResult[t.Api.HttpResponseDict]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
 
@@ -84,7 +84,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     method: FlextApiConstants.Api.Method | str,
                     url: str,
                     **kwargs: t.ApiJsonValue,
-                ) -> FlextResult[t.Api.HttpResponseDict]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute an HTTP request."""
                     ...
 
@@ -95,29 +95,29 @@ class FlextApiProtocols(FlextWebProtocols):
             class StorageBackendProtocol(Protocol):
                 """Protocol for generic storage backend implementations."""
 
-                def clear(self) -> FlextResult[bool]:
+                def clear(self) -> r[bool]:
                     """Clear all stored values."""
                     ...
 
-                def delete(self, key: str) -> FlextResult[bool]:
+                def delete(self, key: str) -> r[bool]:
                     """Delete value by key."""
                     ...
 
-                def exists(self, key: str) -> FlextResult[bool]:
+                def exists(self, key: str) -> r[bool]:
                     """Check if key exists."""
                     ...
 
-                def get(self, key: str) -> FlextResult[t.ApiJsonValue]:
+                def get(self, key: str) -> r[t.ApiJsonValue]:
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
-                def keys(self) -> FlextResult[list[str]]:
+                def keys(self) -> r[list[str]]:
                     """Get all keys."""
                     ...
 
                 def set(
                     self, key: str, value: t.ApiJsonValue, timeout: int | None = None
-                ) -> FlextResult[bool]:
+                ) -> r[bool]:
                     """Store value with optional timeout."""
                     ...
 
@@ -205,19 +205,17 @@ class FlextApiProtocols(FlextWebProtocols):
                 including HTTP, WebSocket, SSE, GraphQL, and gRPC.
                 """
 
-                def connect(
-                    self, url: str, **options: t.ApiJsonValue
-                ) -> FlextResult[str]:
+                def connect(self, url: str, **options: t.ApiJsonValue) -> r[str]:
                     """Connect to endpoint."""
                     ...
 
-                def disconnect(self, connection: str) -> FlextResult[bool]:
+                def disconnect(self, connection: str) -> r[bool]:
                     """Disconnect from endpoint."""
                     ...
 
                 def send(
                     self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
-                ) -> FlextResult[t.Api.HttpResponseDict | str]:
+                ) -> r[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...
 
@@ -243,16 +241,14 @@ class FlextApiProtocols(FlextWebProtocols):
                 implement when flext-grpc is integrated.
                 """
 
-                def handle_request(
-                    self, request: t.ApiJsonValue
-                ) -> FlextResult[t.ApiJsonValue]:
+                def handle_request(self, request: t.ApiJsonValue) -> r[t.ApiJsonValue]:
                     """Handle gRPC request.
 
                     Args:
                         request: gRPC request
 
                     Returns:
-                        FlextResult containing response or error
+                        r containing response or error
 
                     """
                     ...
@@ -277,30 +273,26 @@ class FlextApiProtocols(FlextWebProtocols):
                 when flext-grpc is integrated.
                 """
 
-                def get_request_schema(
-                    self, method: str
-                ) -> FlextResult[t.Api.JsonObject]:
+                def get_request_schema(self, method: str) -> r[t.Api.JsonObject]:
                     """Get request schema for method.
 
                     Args:
                         method: Method name
 
                     Returns:
-                        FlextResult containing schema or error
+                        r containing schema or error
 
                     """
                     ...
 
-                def get_response_schema(
-                    self, method: str
-                ) -> FlextResult[t.Api.JsonObject]:
+                def get_response_schema(self, method: str) -> r[t.Api.JsonObject]:
                     """Get response schema for method.
 
                     Args:
                         method: Method name
 
                     Returns:
-                        FlextResult containing schema or error
+                        r containing schema or error
 
                     """
                     ...

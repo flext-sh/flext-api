@@ -52,7 +52,7 @@ System_Boundary(flext_api_system, "FLEXT-API System") {
 }
 
 System_Boundary(flext_core_system, "FLEXT-Core Foundation") {
-    Container(flext_core, "FLEXT-Core Library", "Python", "Foundation patterns: FlextResult, FlextContainer, FlextModels, FlextLogger")
+    Container(flext_core, "FLEXT-Core Library", "Python", "Foundation patterns: r, FlextContainer, FlextModels, FlextLogger")
 }
 
 System_Ext(httpx_lib, "HTTPX Library", "Python HTTP library")

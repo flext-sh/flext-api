@@ -59,7 +59,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     Integration:
     - Uses openapi-spec-validator for validation
     - Supports JSON and YAML OpenAPI documents
-    - FlextResult for error handling
+    - r for error handling
     - FlextLogger for validation logging
     """
 
@@ -105,7 +105,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         schema_source: Schema file path
 
         Returns:
-        FlextResult containing loaded schema or error
+        r containing loaded schema or error
 
         """
         schema_result = self._load_schema_document(schema_source)
@@ -146,7 +146,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         schema: OpenAPI schema
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         _ = (request, schema)
@@ -166,7 +166,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         schema: OpenAPI schema
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         _ = (response, schema)
@@ -182,7 +182,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         schema: OpenAPI schema dictionary
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         version_result = self._validate_openapi_version(schema)
@@ -321,7 +321,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         components: Components dictionary from OpenAPI schema
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         valid_sections = [
@@ -392,7 +392,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         method: HTTP method
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         if "responses" not in operation:
@@ -438,7 +438,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         paths: Paths dictionary from OpenAPI schema
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         for path_key, path_item in paths.items():
@@ -519,7 +519,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         security_schemes: Security schemes dictionary
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         schemes_dict_result = self._validate_security_schemes_structure(

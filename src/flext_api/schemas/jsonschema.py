@@ -50,7 +50,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     Integration:
     - Uses jsonschema library for validation
     - Supports custom format checkers
-    - FlextResult for error handling
+    - r for error handling
     - FlextLogger for validation logging
     """
 
@@ -114,7 +114,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema_source: Schema file path
 
         Returns:
-        FlextResult containing loaded schema or error
+        r containing loaded schema or error
 
         """
         schema_path = Path(schema_source)
@@ -181,7 +181,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema: JSON Schema to validate against
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         schema_validation = self._validate_instance_schema(schema)
@@ -216,7 +216,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema: JSON Schema
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         schema_def: t_api.Api.SchemaDefinition = {}
@@ -245,7 +245,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema: JSON Schema
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         schema_def: t_api.Api.SchemaDefinition = {}
@@ -272,7 +272,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema: JSON Schema dictionary
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         schema_dict_result = self._validate_schema_basic_structure(schema)
@@ -378,7 +378,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         type_value: Type constraint
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         json_mapping_type = "".join([
@@ -622,7 +622,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema_uri: Schema URI to validate
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         valid_uris = [
@@ -657,7 +657,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         type_value: Type field value
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         json_mapping_type = "".join([

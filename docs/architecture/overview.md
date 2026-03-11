@@ -69,14 +69,14 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 ┌─────────────────────────────────────────────────────────────┐
 │                    Foundation Layer                          │
 │   (Core patterns from flext-core)                           │
-│   FlextResult, FlextContainer, FlextService, FlextModels   │
+│   r, FlextContainer, FlextService, FlextModels   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Key Principles:**
 
 - **Protocol Abstraction**: Plugin architecture for multiple protocols
-- **Railway Pattern**: All operations return `FlextResult[T]` for type-safe error handling
+- **Railway Pattern**: All operations return `r[T]` for type-safe error handling
 - **Dependency Injection**: `FlextContainer` for service management
 - **Domain-Driven Design**: `FlextModels` for HTTP-specific entities
 
@@ -96,7 +96,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 **Integration with FLEXT-Core:**
 
 - Extends `FlextService` for domain service patterns
-- Uses `FlextResult[T]` for error handling
+- Uses `r[T]` for error handling
 - Integrates with `FlextContainer` for dependency injection
 - Leverages `FlextModels` for entity modeling
 
@@ -126,15 +126,15 @@ class FlextWebEndpoint(FlextModels.Entity):
 class EndpointService(FlextService):
     """Domain service for HTTP endpoint management."""
 
-    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> FlextResult[bool]:
+    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> r[bool]:
         """Validate HTTP endpoint configuration."""
         if not endpoint.path.startswith("/"):
-            return FlextResult[bool].fail("Path must start with /")
+            return r[bool].fail("Path must start with /")
 
         if endpoint.method not in ["GET", "POST", "PUT", "DELETE"]:
-            return FlextResult[bool].fail("Invalid HTTP method")
+            return r[bool].fail("Invalid HTTP method")
 
-        return FlextResult[bool].| ok(value=True)
+        return r[bool].| ok(value=True)
 ```
 
 ### Application Layer (Protocol Implementations)
@@ -221,7 +221,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -237,7 +237,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> FlextResult[object]:
+    async def execute_request(self, request: object) -> r[object]:
         """Execute protocol-specific request."""
         pass
 
@@ -250,7 +250,7 @@ class FlextWebProtocol(BaseProtocol):
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         # HTTP-specific implementation
         pass
 ```
@@ -424,22 +424,22 @@ class StorageBackend(ABC):
     @abstractmethod
     async def upload_file(
         self, file: object, path: str, metadata: dict[str, object] = None
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Upload file to storage."""
         pass
 
     @abstractmethod
-    async def download_file(self, path: str) -> FlextResult[bytes]:
+    async def download_file(self, path: str) -> r[bytes]:
         """Download file from storage."""
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> FlextResult[bool]:
+    async def delete_file(self, path: str) -> r[bool]:
         """Delete file from storage."""
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> FlextResult[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> r[List[FileInfo]]:
         """List files in storage."""
         pass
 
@@ -452,16 +452,16 @@ class S3StorageBackend(StorageBackend):
 
     async def upload_file(
         self, file: object, path: str, metadata: dict[str, object] = None
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Upload file to S3."""
         try:
             # S3 upload implementation
             self.client.upload_fileobj(
                 file, self.bucket, path, ExtraArgs={"Metadata": metadata or {}}
             )
-            return FlextResult[str].ok(f"s3://{self.bucket}/{path}")
+            return r[str].ok(f"s3://{self.bucket}/{path}")
         except Exception as e:
-            return FlextResult[str].fail(f"S3 upload failed: {e}")
+            return r[str].fail(f"S3 upload failed: {e}")
 ```
 
 ## Caching Architecture
@@ -567,7 +567,7 @@ from flext_api import SecurityMiddleware
 class ComprehensiveSecurityMiddleware(SecurityMiddleware):
     """Comprehensive security middleware."""
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Apply security checks to request."""
 
         # 1. Rate limiting
@@ -590,9 +590,9 @@ class ComprehensiveSecurityMiddleware(SecurityMiddleware):
         if authz_result.is_failure:
             return authz_result
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def check_rate_limit(self, request) -> FlextResult[dict]:
+    async def check_rate_limit(self, request) -> r[dict]:
         """Check rate limiting."""
         client_ip = self.get_client_ip(request)
         endpoint = f"{request.method} {request.path}"
@@ -601,23 +601,23 @@ class ComprehensiveSecurityMiddleware(SecurityMiddleware):
         current_count = self.rate_limiter.get_count(client_ip, endpoint)
 
         if current_count > self.max_requests_per_minute:
-            return FlextResult[dict].fail("Rate limit exceeded")
+            return r[dict].fail("Rate limit exceeded")
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def validate_request(self, request) -> FlextResult[dict]:
+    async def validate_request(self, request) -> r[dict]:
         """Validate request data."""
         # Validate request size
         if self.get_request_size(request) > self.max_request_size:
-            return FlextResult[dict].fail("Request too large")
+            return r[dict].fail("Request too large")
 
         # Validate content type
         if request.method in ["POST", "PUT", "PATCH"]:
             content_type = request.headers.get("Content-Type", "")
             if not self.is_valid_content_type(content_type):
-                return FlextResult[dict].fail("Invalid content type")
+                return r[dict].fail("Invalid content type")
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 ```
 
 ## Performance Architecture
@@ -662,7 +662,7 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
     def __init__(self, metrics_client):
         self.metrics_client = metrics_client
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Start performance monitoring."""
         request.start_time = time.time()
         request.request_id = str(uuid.uuid4())
@@ -675,9 +675,9 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
             user_agent=request.headers.get("User-Agent"),
         )
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Record performance metrics."""
         duration_ms = (time.time() - request.start_time) * 1000
 
@@ -707,7 +707,7 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
                 },
             )
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 ```
 
 ## Deployment Architecture
@@ -837,7 +837,7 @@ class CustomProtocol(BaseProtocol):
         """Create protocol-specific client."""
         return CustomClient(**config)
 
-    async def execute_request(self, request: object) -> FlextResult[object]:
+    async def execute_request(self, request: object) -> r[object]:
         """Execute protocol-specific request."""
         # Custom protocol implementation
         pass
@@ -857,7 +857,7 @@ from flext_api import FlextApiMiddleware
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Add business context to request."""
         # Add business-specific headers
         request.business_context = {
@@ -865,7 +865,7 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
             "user_role": request.headers.get("X-User-Role"),
         }
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
 
 # Register middleware

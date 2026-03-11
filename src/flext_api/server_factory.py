@@ -42,7 +42,7 @@ class FlextApiServerFactory:
         version: API server version
 
         Returns:
-        FlextResult containing FlextApiServer instance or error
+        r containing FlextApiServer instance or error
 
         """
         server = FlextApiServer(host=host, port=port, title=title, version=version)
@@ -62,7 +62,7 @@ class FlextApiServerFactory:
         max_retries: Maximum retry attempts
 
         Returns:
-        FlextResult containing FlextWebhookHandler instance or error
+        r containing FlextWebhookHandler instance or error
 
         """
         handler = FlextWebhookHandler(secret=secret, max_retries=max_retries)

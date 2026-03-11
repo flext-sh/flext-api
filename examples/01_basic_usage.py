@@ -166,7 +166,7 @@ def main() -> None:
     example_app_creation()
     example_batch_operations()
     print("\n🎉 All examples completed successfully using refactored classes!")
-    print("✅ FlextResult pattern used throughout")
+    print("✅ r pattern used throughout")
     print("✅ flext-core compliance maintained")
     print("✅ No legacy APIs or helpers used")
     print("✅ Synchronous architecture - no /await needed")

@@ -63,7 +63,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     Integration:
     - Validates AsyncAPI specifications
     - Supports WebSocket, SSE, MQTT, Kafka bindings
-    - FlextResult for error handling
+    - r for error handling
     - FlextLogger for validation logging
     """
 
@@ -120,7 +120,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         schema_source: Schema file path
 
         Returns:
-        FlextResult containing loaded schema or error
+        r containing loaded schema or error
 
         """
         schema_result = self._load_schema_document(schema_source)
@@ -168,7 +168,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         schema: AsyncAPI schema
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         if "asyncapi" not in schema:
@@ -199,7 +199,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         schema: AsyncAPI schema
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         if "asyncapi" not in schema:
@@ -220,7 +220,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         schema: AsyncAPI schema dictionary
 
         Returns:
-        FlextResult containing validation result or error
+        r containing validation result or error
 
         """
         version_result = self._validate_asyncapi_version(schema)
@@ -451,7 +451,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         version: AsyncAPI version
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         if not channels:
@@ -480,7 +480,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         components: Components dictionary from AsyncAPI schema
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         valid_sections = [
@@ -540,7 +540,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         op_type: Operation type
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         if "payload" in message:
@@ -562,7 +562,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         channel_name: Channel name
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         for message_name, message in messages.items():
@@ -589,7 +589,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         op_type: Operation type (publish/subscribe)
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         if "message" in operation and self._validate_messages:
@@ -679,7 +679,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         servers: Servers dictionary from AsyncAPI schema
 
         Returns:
-        FlextResult indicating validation success or failure
+        r indicating validation success or failure
 
         """
         for server_name, server in servers.items():

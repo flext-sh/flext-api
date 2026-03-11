@@ -54,7 +54,7 @@ Key challenges:
 
 ## Decision
 
-FLEXT-API will use **Railway-Oriented Programming** with `FlextResult[T]` for all HTTP operations. Every public method returns `FlextResult[T]` instead of throwing exceptions. Operations are composed using `flat_map`, `map`, and `map_error` methods.
+FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP operations. Every public method returns `r[T]` instead of throwing exceptions. Operations are composed using `flat_map`, `map`, and `map_error` methods.
 
 ## Consequences
 
@@ -107,7 +107,7 @@ class Result:
 
 - **Pros**: Simple implementation, explicit error handling
 - **Cons**: No composability, reinventing the wheel, less type-safe
-- **Rejected**: FlextResult from flext-core is more robust and feature-complete
+- **Rejected**: r from flext-core is more robust and feature-complete
 
 ### Option 3: Hybrid Approach
 
@@ -121,7 +121,7 @@ class Result:
 ### Basic HTTP Operation
 
 ```python
-def get_user(user_id: int) -> FlextResult[User]:
+def get_user(user_id: int) -> r[User]:
     """Get user with railway error handling."""
     return (
         FlextApiClient()
@@ -162,7 +162,7 @@ user_profile = (
 def test_get_user_success():
     # Given
     mock_response = MockHttpResponse(status_code=200, body='{"name": "John"}')
-    client.get.return_value = FlextResult.ok(mock_response)
+    client.get.return_value = r.ok(mock_response)
 
     # When
     result = get_user(123)
@@ -174,7 +174,7 @@ def test_get_user_success():
 
 def test_get_user_not_found():
     # Given
-    client.get.return_value = FlextResult.fail("HTTP 404")
+    client.get.return_value = r.fail("HTTP 404")
 
     # When
     result = get_user(123)
@@ -188,8 +188,8 @@ def test_get_user_not_found():
 
 ### Phase 1: Core Implementation
 
-- [x] Implement FlextResult integration in all HTTP operations
-- [x] Update FlextApiClient to return FlextResult[T]
+- [x] Implement r integration in all HTTP operations
+- [x] Update FlextApiClient to return r[T]
 - [x] Add railway pattern utilities and helpers
 
 ### Phase 2: Ecosystem Migration
@@ -210,7 +210,7 @@ def test_get_user_not_found():
 
 ### Railway Pattern Guidelines
 
-1. **Always Return FlextResult**: Every public method should return FlextResult[T]
+1. **Always Return r**: Every public method should return r[T]
 1. **Use Descriptive Errors**: Error messages should be user-friendly and actionable
 1. **Chain Operations**: Use `flat_map` for sequential operations, `map` for transformations
 1. **Handle Errors Early**: Validate inputs and fail fast with clear error messages
@@ -220,13 +220,13 @@ def test_get_user_not_found():
 
 ```python
 # Good error messages
-FlextResult.fail("Invalid user ID: must be positive integer")
-FlextResult.fail("HTTP request timeout after 30 seconds")
-FlextResult.fail("JSON parsing failed: invalid response format")
+r.fail("Invalid user ID: must be positive integer")
+r.fail("HTTP request timeout after 30 seconds")
+r.fail("JSON parsing failed: invalid response format")
 
 # Avoid generic messages
-FlextResult.fail("Error")  # Too vague
-FlextResult.fail("Something went wrong")  # Not helpful
+r.fail("Error")  # Too vague
+r.fail("Something went wrong")  # Not helpful
 ```
 
 ### Performance Considerations

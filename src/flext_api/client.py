@@ -1,7 +1,7 @@
 """Generic HTTP Client - Domain-agnostic HTTP operations.
 
 Pure HTTP client wrapper with FLEXT patterns. Single responsibility:
-Execute HTTP requests and return FlextResult. All retry, timeout, and
+Execute HTTP requests and return r. All retry, timeout, and
 configuration handled via FlextApiSettings model passed at construction.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -31,7 +31,7 @@ _RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
 class FlextApiClient(s[FlextApiSettings]):
     """Generic HTTP client using FLEXT patterns.
 
-    Single responsibility: Execute HTTP requests with FlextResult error handling.
+    Single responsibility: Execute HTTP requests with r error handling.
     All configuration through FlextApiSettings model (Pydantic v2).
     Domain-agnostic - works with any HTTP endpoint.
 
