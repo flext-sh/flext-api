@@ -29,6 +29,11 @@ class FlextApiTransports:
             """Initialize HTTP transport."""
             self._client: httpx.Client | None = None
 
+        @property
+        def client(self) -> httpx.Client | None:
+            """Expose the active HTTP client instance."""
+            return self._client
+
         @override
         def connect(self, url: str, **options: t.ContainerValue) -> r[str]:
             """Connect to HTTP endpoint."""
@@ -108,10 +113,8 @@ class FlextApiTransports:
                             content=body_bytes,
                         )
                     case _:
-                        response = client.request(
-                            method=str(request_model.method),
-                            url=request_model.url,
-                            headers=request_model.headers,
+                        return r[t.Api.HttpResponseDict | str].fail(
+                            "Unsupported HTTP request body type"
                         )
                 return r[t.Api.HttpResponseDict | str].ok({
                     "status_code": response.status_code,
@@ -146,7 +149,9 @@ class FlextApiTransports:
                             method=c.Api.Method.GET, url=connection_url, body=body_bytes
                         )
                     case _:
-                        return r[m.HttpRequest].fail("Unsupported request payload type")
+                        return r[m.HttpRequest].fail(
+                            "Unsupported HTTP request payload type"
+                        )
                 return r[m.HttpRequest].ok(request_model)
             except (
                 ValueError,

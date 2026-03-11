@@ -59,6 +59,7 @@ class FlextApiStorage:
     _max_size: int | None
     _default_ttl: float | None
     _backend: str
+    _flext_storage_kwargs: dict[str, t.ApiJsonValue]
 
     def __new__(
         cls, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue

@@ -424,11 +424,11 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 return r[bool].fail(
                     f"'messages' must be a dictionary in channel: {channel_name}"
                 )
-            messages_result = self._validate_messages_object(
+            message_validation_result = self._validate_messages_object(
                 messages_result.value, channel_name
             )
-            if messages_result.is_failure:
-                return messages_result
+            if message_validation_result.is_failure:
+                return message_validation_result
         return r[bool].ok(value=True)
 
     def _validate_channel_structure(

@@ -15,7 +15,8 @@ from collections.abc import Mapping
 import cbor2
 from flext_core import r
 
-from flext_api import FlextApiSerializers, m, t
+from flext_api import m, t
+from flext_api.serializers import FlextApiSerializers
 
 
 class FlextApiAdapters:
