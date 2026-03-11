@@ -516,9 +516,10 @@ class FlextApiServer(FlextService[bool], x.Validation):
             version_result = r[str].fail("Version cannot be empty")
         else:
             version_result = r[str].ok(version)
-        if version_result.is_failure:
-            return r[bool].fail(version_result.error or "Version validation failed")
-        return r[bool].ok(value=True)
+        return version_result.fold(
+            on_failure=lambda e: r[bool].fail(e or "Version validation failed"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
 
 __all__ = ["FlextApiServer"]

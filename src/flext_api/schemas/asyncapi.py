@@ -436,11 +436,12 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic channel structure."""
         channel_result = self._parse_dict_field(channel, "channel")
-        if channel_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+        return channel_result.fold(
+            on_failure=lambda _: r[Mapping[str, t.ContainerValue]].fail(
                 f"Channel must be a dictionary: {channel_name}"
-            )
-        return r[Mapping[str, t.ContainerValue]].ok(channel_result.value)
+            ),
+            on_success=lambda v: r[Mapping[str, t.ContainerValue]].ok(v),
+        )
 
     def _validate_channels(
         self, channels: Mapping[str, t.ContainerValue], version: str

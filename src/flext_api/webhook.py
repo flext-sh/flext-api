@@ -256,10 +256,11 @@ class FlextWebhookHandler(FlextService[bool]):
         }
         self._event_queue.append(event)
         process_result = self._process_event(event)
-        if process_result.is_success:
-            return self._handle_processing_success(event_id, event_type)
-        return self._handle_processing_failure(
-            event, event_id, event_type, process_result
+        return process_result.fold(
+            on_failure=lambda _: self._handle_processing_failure(
+                event, event_id, event_type, process_result
+            ),
+            on_success=lambda _: self._handle_processing_success(event_id, event_type),
         )
 
     def register_event_handler(

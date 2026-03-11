@@ -229,9 +229,10 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> list[str]:
         """Extract path keys from validated paths object."""
         paths_result = self._parse_dict_field(paths_value, "paths")
-        if paths_result.is_failure:
-            return []
-        return list(paths_result.value.keys())
+        return paths_result.fold(
+            on_failure=lambda _: [],
+            on_success=lambda v: list(v.keys()),
+        )
 
     def _extract_title(self, info_value: t.ApiJsonValue) -> str:
         """Extract title from validated info object."""
@@ -485,9 +486,10 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail("Missing 'paths' field in schema")
         paths_value = schema["paths"]
         paths_result = self._parse_dict_field(paths_value, "paths")
-        if paths_result.is_failure:
-            return r[bool].fail(paths_result.error)
-        return self._validate_paths(paths_result.value)
+        return paths_result.fold(
+            on_failure=lambda e: r[bool].fail(e),
+            on_success=lambda v: self._validate_paths(v),
+        )
 
     def _validate_scheme_type_requirements(
         self, scheme_name: str, scheme: Mapping[str, t.ContainerValue], scheme_type: str
@@ -541,11 +543,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic structure of security schemes."""
         schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
-        if schemes_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+        return schemes_result.fold(
+            on_failure=lambda _: r[Mapping[str, t.ContainerValue]].fail(
                 "Security schemes must be a dictionary"
-            )
-        return r[Mapping[str, t.ContainerValue]].ok(schemes_result.value)
+            ),
+            on_success=lambda v: r[Mapping[str, t.ContainerValue]].ok(v),
+        )
 
     def _validate_single_security_scheme(
         self, scheme_name: str, scheme: t.ContainerValue

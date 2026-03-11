@@ -74,16 +74,17 @@ class FlextApiSettingsManager:
                 base_url_result.error or "Base URL extraction failed"
             )
         timeout_result = self._extract_timeout_for_config()
-        if timeout_result.is_failure:
-            return r[m.ClientConfig].fail(
-                timeout_result.error or "Timeout extraction failed"
-            )
-        return r[m.ClientConfig].ok(
-            m.create_config(
-                base_url=base_url_result.value,
-                timeout=timeout_result.value,
-                headers=headers_result.value,
-            )
+        return timeout_result.fold(
+            on_failure=lambda e: r[m.ClientConfig].fail(
+                e or "Timeout extraction failed"
+            ),
+            on_success=lambda timeout: r[m.ClientConfig].ok(
+                m.create_config(
+                    base_url=base_url_result.value,
+                    timeout=timeout,
+                    headers=headers_result.value,
+                )
+            ),
         )
 
     def _extract_base_url(self) -> r[str]:
@@ -252,8 +253,7 @@ class FlextApiSettingsManager:
         if timeout_result.is_failure:
             return r[bool].fail(timeout_result.error or "Timeout extraction failed")
         max_retries_result = self._extract_max_retries()
-        if max_retries_result.is_failure:
-            return r[bool].fail(
-                max_retries_result.error or "Max retries extraction failed"
-            )
-        return r[bool].ok(value=True)
+        return max_retries_result.fold(
+            on_failure=lambda e: r[bool].fail(e or "Max retries extraction failed"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )

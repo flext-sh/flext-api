@@ -229,9 +229,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         for k, v in request.items():
             request_typed[k] = self._to_general_value(v)
         instance_result = self.validate_instance(request_typed, schema_def)
-        if instance_result.is_failure:
-            return r[bool].fail(instance_result.error or "Schema validation failed")
-        return r[bool].ok(value=True)
+        return instance_result.fold(
+            on_failure=lambda e: r[bool].fail(e or "Schema validation failed"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
     @override
     def validate_response(
@@ -257,9 +258,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         for k, v in response.items():
             response_typed[k] = self._to_general_value(v)
         instance_result = self.validate_instance(response_typed, schema_def)
-        if instance_result.is_failure:
-            return r[bool].fail(instance_result.error or "Schema validation failed")
-        return r[bool].ok(value=True)
+        return instance_result.fold(
+            on_failure=lambda e: r[bool].fail(e or "Schema validation failed"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
     def validate_schema(
         self, schema: t_api.Api.SchemaDefinition
@@ -361,9 +363,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     def _validate_instance_schema(self, schema: t_api.Api.SchemaDefinition) -> r[bool]:
         """Validate that the schema itself is valid."""
         schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-        return r[bool].ok(value=True)
+        return schema_result.fold(
+            on_failure=lambda e: r[bool].fail(f"Invalid schema: {e}"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
     def _validate_instance_type(
         self, instance: t_api.ApiJsonValue, type_value: t_api.ApiJsonValue
@@ -607,9 +610,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if "type" not in schema:
             return r[bool].ok(value=True)
         type_result = self._validate_type_field(schema["type"])
-        if type_result.is_failure:
-            return r[bool].fail(f"Invalid type field: {type_result.error}")
-        return r[bool].ok(value=True)
+        return type_result.fold(
+            on_failure=lambda e: r[bool].fail(f"Invalid type field: {e}"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
     def _validate_schema_uri(self, schema_uri: str) -> r[bool]:
         """Validate $schema URI.
@@ -641,9 +645,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                 draft_result = self._validate_schema_uri(schema_uri_str)
             case _:
                 return r[bool].fail("$schema must be a string")
-        if draft_result.is_failure:
-            return r[bool].fail(draft_result.error or "Schema URI validation failed")
-        return r[bool].ok(value=True)
+        return draft_result.fold(
+            on_failure=lambda e: r[bool].fail(e or "Schema URI validation failed"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
     def _validate_type_field(self, type_value: t_api.ApiJsonValue) -> r[bool]:
         """Validate type field value.
@@ -699,9 +704,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if "type" not in schema:
             return r[bool].ok(value=True)
         type_result = self._validate_instance_type(instance, schema["type"])
-        if type_result.is_failure:
-            return r[bool].fail(type_result.error or "Type validation failed")
-        return r[bool].ok(value=True)
+        return type_result.fold(
+            on_failure=lambda e: r[bool].fail(e or "Type validation failed"),
+            on_success=lambda _: r[bool].ok(value=True),
+        )
 
 
 __all__ = ["JSONSchemaValidator"]
