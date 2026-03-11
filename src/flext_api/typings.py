@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 
 from flext_core import FlextTypes
 from flext_web import FlextWebTypes
@@ -51,7 +51,8 @@ class FlextApiTypes(FlextWebTypes):
         type ApiJsonValue = FlextTypes.ContainerValue
         type WebData = FlextTypes.FileContent | dict[str, FlextTypes.ContainerValue]
         type WebHeaders = dict[str, FlextTypes.Scalar | list[str]]
-        type WebParams = dict[str, FlextTypes.Scalar | list[str]]
+        type WebParamValue = str | list[str]
+        type WebParams = dict[str, WebParamValue]
         type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
         type RequestConfig = dict[
@@ -92,7 +93,7 @@ class FlextApiTypes(FlextWebTypes):
         type RouteData = dict[
             str,
             str
-            | Callable[[], object]
+            | FlextTypes.ResourceCallable
             | dict[str, FlextTypes.ContainerValue]
             | FlextTypes.ContainerValue
             | None,

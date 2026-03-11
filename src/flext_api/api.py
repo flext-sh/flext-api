@@ -193,7 +193,7 @@ class FlextApi(s[FlextApiSettings]):
         if not isinstance(params_value, Mapping):
             return r[t.Api.WebParams].fail(f"Invalid params type: {type(params_value)}")
         params_mapping: Mapping[str, t.ApiJsonValue] = params_value
-        params_result: dict[str, str | list[str]] = {}
+        params_result: t.Api.WebParams = {}
         for k, v in params_mapping.items():
             if isinstance(v, list):
                 str_list: list[str] = [str(item) for item in v]

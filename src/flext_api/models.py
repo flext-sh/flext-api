@@ -385,7 +385,7 @@ class FlextApiModels(FlextWebModels):
                 description="Query parameters",
             )
 
-            def get_param(self, name: str) -> str | list[str]:
+            def get_param(self, name: str) -> t.Api.WebParamValue:
                 """Get query parameter value."""
                 if name in self.params:
                     return self.params[name]

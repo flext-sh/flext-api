@@ -217,7 +217,7 @@ class FlextApiClient(s[FlextApiSettings]):
                 request_method: str = request.method
                 request_url: str = url
                 request_headers: dict[str, str] = headers
-                request_params: dict[str, str | list[str]] = request.query_params
+                request_params: t.Api.WebParams = request.query_params
                 if serialized_body:
                     response = client.request(
                         method=request_method,
