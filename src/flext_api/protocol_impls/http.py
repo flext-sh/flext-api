@@ -181,15 +181,15 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         result = self._execute_with_retry(
             connection, method, url, headers_dict, {}, timeout, body
         )
-        if result.is_success:
-            response = result.value
-            return r[Mapping[str, t.ApiJsonValue]].ok({
+        return result.fold(
+            on_failure=lambda e: r[Mapping[str, t.ApiJsonValue]].fail(
+                e or "Request execution failed"
+            ),
+            on_success=lambda response: r[Mapping[str, t.ApiJsonValue]].ok({
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
                 "body": str(getattr(response, "text", response.body)),
-            })
-        return r[Mapping[str, t.ApiJsonValue]].fail(
-            result.error or "Request execution failed"
+            }),
         )
 
     def stream_request(
