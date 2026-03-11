@@ -138,7 +138,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> FlextResult[object]:
+    async def execute_request(self, request: object) -> r[object]:
         """Execute request using protocol-specific logic."""
         pass
 
@@ -148,7 +148,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def health_check(self) -> FlextResult[bool]:
+    async def health_check(self) -> r[bool]:
         """Check protocol connectivity and health."""
         pass
 ```
@@ -203,7 +203,7 @@ class FlextApiClient(FlextService[None]):
             self._protocol_instance = registry.get_protocol(self._protocol_name)
         return self._protocol_instance
 
-    async def request(self, method: str, url: str, **kwargs) -> FlextResult[object]:
+    async def request(self, method: str, url: str, **kwargs) -> r[object]:
         """Unified request method that delegates to protocol."""
         protocol = await self._get_protocol_instance()
 
@@ -226,9 +226,7 @@ class FlextApiClient(FlextService[None]):
             )
         # ... other protocol conversions
 
-    def _convert_from_protocol_response(
-        self, result: FlextResult[object]
-    ) -> FlextResult[object]:
+    def _convert_from_protocol_response(self, result: r[object]) -> r[object]:
         """Convert protocol-specific response to unified format."""
         # Standardize response format across protocols
         return result
@@ -247,7 +245,7 @@ class FlextWebProtocol(BaseProtocol):
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         client = self.create_client(request.config)
 
         try:
@@ -259,7 +257,7 @@ class FlextWebProtocol(BaseProtocol):
                 timeout=request.timeout,
             )
 
-            return FlextResult.ok(
+            return r.ok(
                 FlextApiModels.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
@@ -268,7 +266,7 @@ class FlextWebProtocol(BaseProtocol):
                 )
             )
         except Exception as e:
-            return FlextResult.fail(f"HTTP request failed: {e}")
+            return r.fail(f"HTTP request failed: {e}")
         finally:
             await client.aclose()
 
@@ -294,9 +292,7 @@ class GraphQLProtocol(BaseProtocol):
             transport=transport, execute_timeout=config.get("timeout", 30)
         )
 
-    async def execute_request(
-        self, request: GraphQLRequest
-    ) -> FlextResult[GraphQLResponse]:
+    async def execute_request(self, request: GraphQLRequest) -> r[GraphQLResponse]:
         client = self.create_client(request.config)
 
         try:
@@ -304,9 +300,9 @@ class GraphQLProtocol(BaseProtocol):
                 gql.gql(request.query), variable_values=request.variables
             )
 
-            return FlextResult.ok(GraphQLResponse(data=result))
+            return r.ok(GraphQLResponse(data=result))
         except Exception as e:
-            return FlextResult.fail(f"GraphQL request failed: {e}")
+            return r.fail(f"GraphQL request failed: {e}")
 
     def get_capabilities(self) -> ProtocolCapabilities:
         return ProtocolCapabilities(

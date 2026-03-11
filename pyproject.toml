@@ -536,22 +536,22 @@ extraPaths = [
 ]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
-typeCheckingMode = "strict"
-reportMissingImports = "error"
-reportMissingModuleSource = "error"
-reportMissingTypeStubs = "warning"
-reportUnusedImport = "error"
-reportUnusedVariable = "error"
-reportUnusedClass = "error"
-reportUnusedFunction = "error"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
 reportIncompatibleVariableOverride = "error"
 reportInconsistentConstructor = "error"
-reportUnnecessaryIsInstance = "warning"
+reportMissingImports = "error"
+reportMissingModuleSource = "error"
+reportMissingTypeStubs = "warning"
+reportPrivateUsage = "warning"
 reportUnnecessaryCast = "error"
 reportUnnecessaryComparison = "warning"
-reportPrivateUsage = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnusedClass = "error"
+reportUnusedFunction = "error"
+reportUnusedImport = "error"
+reportUnusedVariable = "error"
+typeCheckingMode = "strict"
 
 [[tool.pyright.executionEnvironments]]
 reportPrivateUsage = "error"
@@ -580,7 +580,6 @@ preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
 
-
 [tool.pytest.ini_options]
 addopts = [ "--strict-markers" ]
 markers = [
@@ -604,9 +603,8 @@ python_files = [ "*_test.py", "*_tests.py", "test_*.py" ]
 # [MANAGED] pyrefly
 enable_assertion_pass_hook = true
 
-
 [tool.coverage.report]
 fail_under = 25
+precision = 2
 show_missing = true
 skip_covered = false
-precision = 2

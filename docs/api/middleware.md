@@ -48,7 +48,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -62,7 +62,7 @@ class LoggingMiddleware(FlextApiMiddleware):
     def __init__(self, logger):
         self.logger = logger
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Process incoming request."""
         self.logger.info(
             "Processing request",
@@ -72,9 +72,9 @@ class LoggingMiddleware(FlextApiMiddleware):
                 "user_agent": request.headers.get("User-Agent"),
             },
         )
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Process outgoing response."""
         self.logger.info(
             "Request completed",
@@ -83,7 +83,7 @@ class LoggingMiddleware(FlextApiMiddleware):
                 "duration_ms": response.duration_ms,
             },
         )
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
 
 # Usage
@@ -151,7 +151,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -166,12 +166,12 @@ class JwtAuthenticationMiddleware(AuthenticationMiddleware):
         self.secret_key = secret_key
         self.algorithm = algorithm
 
-    async def authenticate_request(self, request) -> FlextResult[dict]:
+    async def authenticate_request(self, request) -> r[dict]:
         """Authenticate request using JWT token."""
         auth_header = request.headers.get("Authorization")
 
         if not auth_header or not auth_header.startswith("Bearer "):
-            return FlextResult[dict].fail("Missing or invalid authorization header")
+            return r[dict].fail("Missing or invalid authorization header")
 
         token = auth_header.split(" ")[1]
 
@@ -187,12 +187,12 @@ class JwtAuthenticationMiddleware(AuthenticationMiddleware):
                 "exp": payload.get("exp"),
             }
 
-            return FlextResult[dict].ok(user_info)
+            return r[dict].ok(user_info)
 
         except jwt.ExpiredSignatureError:
-            return FlextResult[dict].fail("Token has expired")
+            return r[dict].fail("Token has expired")
         except jwt.InvalidTokenError:
-            return FlextResult[dict].fail("Invalid token")
+            return r[dict].fail("Invalid token")
 
 
 # Usage
@@ -246,24 +246,24 @@ from flext_api import RequestMiddleware
 class RequestValidationMiddleware(RequestMiddleware):
     """Validate and sanitize incoming requests."""
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Validate request format and content."""
 
         # Validate content type
         if request.method in ["POST", "PUT", "PATCH"]:
             content_type = request.headers.get("Content-Type", "")
             if not content_type.startswith("application/json"):
-                return FlextResult[dict].fail("Content-Type must be application/json")
+                return r[dict].fail("Content-Type must be application/json")
 
         # Validate request size
         if hasattr(request, "body") and len(request.body) > 1024 * 1024:  # 1MB limit
-            return FlextResult[dict].fail("Request body too large")
+            return r[dict].fail("Request body too large")
 
         # Sanitize input data
         if hasattr(request, "json"):
             request.json = self.sanitize_data(request.json)
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
     def sanitize_data(self, data: dict) -> dict[str, object]:
         """Sanitize input data."""
@@ -290,7 +290,7 @@ from flext_api import ResponseMiddleware
 class ResponseFormattingMiddleware(ResponseMiddleware):
     """Format and enhance response data."""
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Format response data and add metadata."""
 
         # Add standard response headers
@@ -309,7 +309,7 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
                     "per_page": request.query_params.get("per_page", 10),
                 }
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 ```
 
 ## Error Handling Middleware
@@ -326,7 +326,7 @@ from flext_api import m
 class FlextApiErrorHandler(ErrorHandlingMiddleware):
     """Centralized error handling with FLEXT patterns."""
 
-    async def process_exception(self, request, exception) -> FlextResult[dict]:
+    async def process_exception(self, request, exception) -> r[dict]:
         """Process and format exceptions."""
 
         # Map exceptions to appropriate HTTP status codes
@@ -351,7 +351,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
             },
         )
 
-        return FlextResult[dict].ok({
+        return r[dict].ok({
             "status_code": status_code,
             "response": error_response.dict(),
         })
@@ -390,13 +390,13 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
     def __init__(self, metrics_client):
         self.metrics_client = metrics_client
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Start performance monitoring."""
         request.start_time = time.time()
         request.request_id = str(uuid.uuid4())
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Record performance metrics."""
         duration = time.time() - request.start_time
 
@@ -415,7 +415,7 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
             "X-Request-ID": request.request_id,
         })
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 ```
 
 ## Quality Metrics
@@ -475,7 +475,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -488,12 +488,12 @@ class CustomHeaderMiddleware(FlextApiMiddleware):
     def __init__(self, custom_headers: dict):
         self.custom_headers = custom_headers
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Add custom headers to response."""
         for header_name, header_value in self.custom_headers.items():
             response.headers[header_name] = header_value
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
 
 # Usage
@@ -522,7 +522,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -535,19 +535,19 @@ class DatabaseMiddleware(FlextApiMiddleware):
     def __init__(self):
         self.container = FlextContainer.get_global()
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Inject database connection into request."""
         db_result = self.container.get("database")
         if db_result.is_success:
             request.db = db_result.unwrap()
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Clean up database connection."""
         if hasattr(request, "db"):
             # Close database connection
             await request.db.close()
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
 
 # Register database service

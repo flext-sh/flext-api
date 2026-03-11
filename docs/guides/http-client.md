@@ -59,7 +59,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -91,7 +91,7 @@ custom_client = FlextApiClient(
 
 ### HTTP Methods
 
-All HTTP methods return `FlextResult[T]` for type-safe error handling.
+All HTTP methods return `r[T]` for type-safe error handling.
 
 ```python
 # GET request
@@ -145,7 +145,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -252,7 +252,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -266,16 +266,16 @@ def safe_api_call():
     # Type-safe error handling
     if result.is_success:
         user = result.unwrap()
-        return FlextResult[dict].ok(user)
+        return r[dict].ok(user)
     else:
         error = result.error
         # Handle different error types
         if error.code == "NOT_FOUND":
-            return FlextResult[dict].fail("User not found")
+            return r[dict].fail("User not found")
         elif error.code == "UNAUTHORIZED":
-            return FlextResult[dict].fail("Authentication required")
+            return r[dict].fail("Authentication required")
         else:
-            return FlextResult[dict].fail(f"API error: {error.message}")
+            return r[dict].fail(f"API error: {error.message}")
 
 
 # Usage
@@ -444,11 +444,11 @@ if result.is_success:
 from typing import List
 
 
-async def batch_create_users(users: List[dict]) -> List[FlextResult[dict]]:
+async def batch_create_users(users: List[dict]) -> List[r[dict]]:
     """Create multiple users in parallel."""
     import asyncio
 
-    async def create_user(user_data: dict) -> FlextResult[dict]:
+    async def create_user(user_data: dict) -> r[dict]:
         return client.post("/users", json=user_data)
 
     # Execute requests concurrently
@@ -527,7 +527,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -673,13 +673,13 @@ client = FlextApiClient(
 ```python
 from typing import List, Dict, object
 
-def batch_requests(requests: List[t.Dict]) -> List[FlextResult[object]]:
+def batch_requests(requests: List[t.Dict]) -> List[r[object]]:
     """Execute multiple HTTP requests efficiently."""
 
     async def execute_batch():
         import asyncio
 
-        async def execute_request(req_data: t.Dict) -> FlextResult[object]:
+        async def execute_request(req_data: t.Dict) -> r[object]:
             method = req_data.get("method", "GET")
             url = req_data["url"]
             **kwargs = req_data.get("kwargs", {})
