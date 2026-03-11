@@ -12,15 +12,11 @@ from typing import override
 
 import httpx
 from flext_core import r
+from httpx_sse import connect_sse
 from pydantic import BaseModel, Field, ValidationError
 
 from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-
-try:
-    from httpx_sse import connect_sse
-except ImportError:
-    connect_sse = None
 
 
 class _SendRequestOptions(BaseModel):
@@ -108,9 +104,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             if reconnect_backoff_factor is not None
             else FlextApiConstants.Api.SSE.DEFAULT_RECONNECT_BACKOFF_FACTOR,
         )
-        init_result = self.initialize()
-        if init_result.is_failure:
-            self.logger.error(f"Failed to initialize SSE protocol: {init_result.error}")
+        self.initialize().tap_error(
+            lambda e: self.logger.error(f"Failed to initialize SSE protocol: {e}")
+        )
 
     @override
     def get_supported_protocols(self) -> list[str]:
@@ -253,34 +249,23 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         self._set_connected_state(connected=True)
         self._notify_connect_handlers()
         try:
-            with httpx.Client(timeout=timeout) as client:
-                if connect_sse is not None:
-                    with connect_sse(
-                        client, method, url, headers=headers
-                    ) as event_source:
-                        for event in event_source.iter_sse():
-                            parsed = self._parse_sse_event(
-                                event_id=getattr(event, "id", ""),
-                                event_type=getattr(event, "event", ""),
-                                data=getattr(event, "data", ""),
-                                retry=getattr(event, "retry", None),
-                            )
-                            retry_timeout = self._extract_retry_timeout(parsed)
-                            self._record_event_id(parsed)
-                            self._notify_event_handlers(parsed)
-                            events.append(parsed)
-                            if len(events) >= remaining:
-                                break
-                else:
-                    with client.stream(method, url, headers=headers) as response:
-                        response.raise_for_status()
-                        for parsed in self._iter_fallback_events(response.iter_lines()):
-                            retry_timeout = self._extract_retry_timeout(parsed)
-                            self._record_event_id(parsed)
-                            self._notify_event_handlers(parsed)
-                            events.append(parsed)
-                            if len(events) >= remaining:
-                                break
+            with (
+                httpx.Client(timeout=timeout) as client,
+                connect_sse(client, method, url, headers=headers) as event_source,
+            ):
+                for event in event_source.iter_sse():
+                    parsed = self._parse_sse_event(
+                        event_id=getattr(event, "id", ""),
+                        event_type=getattr(event, "event", ""),
+                        data=getattr(event, "data", ""),
+                        retry=getattr(event, "retry", None),
+                    )
+                    retry_timeout = self._extract_retry_timeout(parsed)
+                    self._record_event_id(parsed)
+                    self._notify_event_handlers(parsed)
+                    events.append(parsed)
+                    if len(events) >= remaining:
+                        break
         finally:
             self._set_connected_state(connected=False)
             self._notify_disconnect_handlers()

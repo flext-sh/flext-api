@@ -22,8 +22,9 @@ import httpx
 from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api import FlextApiTransports, c, m, t, u
+from flext_api import c, m, t, u
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
+from flext_api.transports import FlextApiTransports
 
 
 class _HttpRequestCallArgs(BaseModel):
@@ -54,7 +55,7 @@ class _MappingBodyModel(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    body: Mapping[str, t.ContainerValue] = Field(
+    body: dict[str, t.ContainerValue] = Field(
         ..., description="Request body as mapping"
     )
 
@@ -112,11 +113,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self._follow_redirects = follow_redirects
         self._max_redirects = max_redirects
         self._transport = FlextApiTransports.FlextWebTransport()
-        init_result = self.initialize()
-        if init_result.is_failure:
-            self.logger.error(
-                f"Failed to initialize HTTP protocol: {init_result.error}"
-            )
+        self.initialize().tap_error(
+            lambda e: self.logger.error(f"Failed to initialize HTTP protocol: {e}")
+        )
         self.logger.info(
             "HTTP protocol initialized",
             http2=http2,
@@ -355,7 +354,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     method, url, headers, params, timeout, body
                 )
                 call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
-                client = self._transport._client  # noqa: SLF001
+                client = self._transport.client
                 if client is None:
                     return r[m.HttpResponse].fail("HTTP client is not connected")
                 response = client.request(

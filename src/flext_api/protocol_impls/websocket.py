@@ -177,11 +177,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         object.__setattr__(self, "_on_connect_handlers", [])
         object.__setattr__(self, "_on_disconnect_handlers", [])
         object.__setattr__(self, "_on_error_handlers", [])
-        init_result = self.initialize()
-        if init_result.is_failure:
-            self.logger.error(
-                f"Failed to initialize WebSocket protocol: {init_result.error}"
-            )
+        self.initialize().tap_error(
+            lambda e: self.logger.error(f"Failed to initialize WebSocket protocol: {e}")
+        )
 
     @property
     def is_connected(self) -> bool:
@@ -468,9 +466,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                             self.logger.exception("Message handler error")
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")
-                for handler in self._on_error_handlers:
+                for error_handler in self._on_error_handlers:
                     try:
-                        handler(e)
+                        error_handler(e)
                     except (ValueError, TypeError, KeyError, ConnectionError):
                         self.logger.exception("Error handler error")
                 if self._auto_reconnect:

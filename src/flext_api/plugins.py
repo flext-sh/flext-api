@@ -227,12 +227,12 @@ class FlextApiPlugins:
             if plugin_name not in self._loaded_plugins:
                 return r[bool].fail(f"Plugin '{plugin_name}' not loaded")
             plugin = self._loaded_plugins[plugin_name]
-            shutdown_result = plugin.shutdown()
-            if shutdown_result.is_failure:
-                self.logger.warning(
-                    f"Plugin shutdown warning: {shutdown_result.error}",
+            plugin.shutdown().tap_error(
+                lambda e: self.logger.warning(
+                    f"Plugin shutdown warning: {e}",
                     plugin=plugin_name,
                 )
+            )
             del self._loaded_plugins[plugin_name]
             self.logger.info("Unloaded plugin: %s", plugin_name)
             return r[bool].ok(value=True)
