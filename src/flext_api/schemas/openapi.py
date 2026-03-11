@@ -149,11 +149,11 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         FlextResult containing validation result or error
 
         """
-        schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
         _ = (request, schema)
-        return r[bool].ok(value=True)
+        return self.validate_schema(schema).fold(
+            on_failure=lambda e: r[bool].fail(f"Invalid schema: {e}"),
+            on_success=lambda _v: r[bool].ok(value=True),
+        )
 
     @override
     def validate_response(
@@ -169,11 +169,11 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         FlextResult containing validation result or error
 
         """
-        schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
         _ = (response, schema)
-        return r[bool].ok(value=True)
+        return self.validate_schema(schema).fold(
+            on_failure=lambda e: r[bool].fail(f"Invalid schema: {e}"),
+            on_success=lambda _v: r[bool].ok(value=True),
+        )
 
     def validate_schema(self, schema: t.JsonObject) -> r[t.JsonObject]:
         """Validate OpenAPI schema against OpenAPI specification.
@@ -252,14 +252,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
-                    try:
-                        return r[object].ok(yaml.safe_load(schema_file))
-                    except Exception as e:
-                        return r[object].fail(f"Failed to parse YAML schema: {e}")
-                try:
-                    return r[object].ok(json.load(schema_file))
-                except json.JSONDecodeError as e:
-                    return r[object].fail(f"Failed to parse JSON schema: {e}")
+                    return u.try_(lambda: yaml.safe_load(schema_file)).map_error(
+                        lambda e: f"Failed to parse YAML schema: {e}"
+                    )
+                return u.try_(
+                    lambda: json.load(schema_file), catch=json.JSONDecodeError
+                ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
         except OSError as e:
             return r[object].fail(f"Failed to read schema file: {e}")
 

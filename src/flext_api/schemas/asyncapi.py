@@ -289,14 +289,12 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
-                    try:
-                        return r[object].ok(yaml.safe_load(schema_file))
-                    except Exception as e:
-                        return r[object].fail(f"Failed to parse YAML schema: {e}")
-                try:
-                    return r[object].ok(json.load(schema_file))
-                except json.JSONDecodeError as e:
-                    return r[object].fail(f"Failed to parse JSON schema: {e}")
+                    return u.try_(lambda: yaml.safe_load(schema_file)).map_error(
+                        lambda e: f"Failed to parse YAML schema: {e}"
+                    )
+                return u.try_(
+                    lambda: json.load(schema_file), catch=json.JSONDecodeError
+                ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
         except OSError as e:
             return r[object].fail(f"Failed to read schema file: {e}")
 
