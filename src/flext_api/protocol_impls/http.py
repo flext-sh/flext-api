@@ -42,7 +42,10 @@ class _HttpRequestCallArgs(BaseModel):
     params: Mapping[str, str] = Field(
         default_factory=dict, description="Query parameters"
     )
-    json_body: objectne = Field(default=None, description="JSON request body")
+    json_body: t.Container | None = Field(
+        default=None,
+        description="JSON request body",
+    )
     content: bytes | None = Field(default=None, description="Raw content body")
     timeout: float | None = Field(default=None, description="Request timeout")
 

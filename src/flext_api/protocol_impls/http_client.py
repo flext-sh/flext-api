@@ -28,7 +28,7 @@ class _HttpClientRequestOptions(BaseModel):
     params: Mapping[str, str] | None = Field(
         default=None, description="Query parameters"
     )
-    json_data: objectne = Field(default=None, description="JSON body")
+    json_data: t.Container | None = Field(default=None, description="JSON body")
     content: bytes | None = Field(default=None, description="Raw content body")
     data: Mapping[str, object] | None = Field(default=None, description="Form data")
     timeout: float | None = Field(default=None, description="Request timeout")
