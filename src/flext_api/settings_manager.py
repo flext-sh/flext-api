@@ -205,7 +205,7 @@ class FlextApiSettingsManager:
 
     def _normalize_value(self, key: str, *, value: str | float | bool) -> r[object]:
         """Normalize configuration value based on key type - no fallbacks."""
-        if key == "timeout" and value.__class__ is str:
+        if key == "timeout" and isinstance(value, str):
             timeout_result = u.try_(
                 lambda: float(value),
                 catch=ValueError,
@@ -216,7 +216,7 @@ class FlextApiSettingsManager:
                 ),
                 on_success=lambda v: r[object].ok(v),
             )
-        if key == "max_retries" and value.__class__ is str:
+        if key == "max_retries" and isinstance(value, str):
             retries_result = u.try_(
                 lambda: int(value),
                 catch=ValueError,
