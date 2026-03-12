@@ -38,7 +38,9 @@ class FlextApiClient(s[FlextApiSettings]):
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
 
-    def __new__(cls, config: FlextApiSettings | None = None, **_kwargs: object) -> Self:
+    def __new__(
+        cls, config: FlextApiSettings | None = None, **_kwargs: t.Scalar
+    ) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
@@ -51,7 +53,7 @@ class FlextApiClient(s[FlextApiSettings]):
         return instance
 
     def __init__(
-        self, config: FlextApiSettings | None = None, **kwargs: object
+        self, config: FlextApiSettings | None = None, **kwargs: t.Scalar
     ) -> None:
         """Initialize with optional configuration model.
 
@@ -161,7 +163,7 @@ class FlextApiClient(s[FlextApiSettings]):
         return r[bytes].ok(body.encode("utf-8"))
 
     @override
-    def execute(self, **kwargs: object) -> r[FlextApiSettings]:
+    def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")

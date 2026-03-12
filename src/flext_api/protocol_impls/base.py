@@ -54,7 +54,7 @@ class BaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: object,
+        **_kwargs: t.Scalar,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -76,7 +76,7 @@ class BaseProtocolImplementation:
         """Check if protocol is initialized."""
         return self._initialized
 
-    def execute(self, **kwargs: object) -> r[bool]:
+    def execute(self, **kwargs: t.Scalar) -> r[bool]:
         """Execute protocol - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
@@ -119,7 +119,7 @@ class BaseProtocolImplementation:
         return r[bool].ok(value=True)
 
     def send_request(
-        self, request: Mapping[str, object], **kwargs: object
+        self, request: Mapping[str, object], **kwargs: t.Scalar
     ) -> r[Mapping[str, object]]:
         """Send request using this protocol.
 

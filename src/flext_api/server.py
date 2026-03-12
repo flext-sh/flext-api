@@ -76,7 +76,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             handler: Callable[..., t.Api.HttpResponseDict | str | None],
             prefix: str = "",
             schema: t.Api.SchemaValue | None = None,
-            **options: object,
+            **options: t.Scalar,
         ) -> r[bool]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
 
@@ -394,7 +394,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         self,
         path: str = "/graphql",
         schema: t.Api.SchemaValue | None = None,
-        **options: object,
+        **options: t.Scalar,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
         options_typed: dict[str, t.Scalar] = dict(options.items())
@@ -435,7 +435,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         path: str,
         method: c.Api.Method | str,
         handler: Callable[..., t.Api.HttpResponseDict | str | None],
-        **options: object,
+        **options: t.Scalar,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         options_typed: dict[str, t.Scalar] = dict(options.items())
@@ -447,7 +447,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         self,
         path: str,
         handler: Callable[..., t.Api.HttpResponseDict | str | None],
-        **options: object,
+        **options: t.Scalar,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         options_typed: dict[str, t.Scalar] = dict(options.items())
@@ -459,7 +459,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         self,
         path: str,
         handler: Callable[..., t.Api.HttpResponseDict | str | None],
-        **options: object,
+        **options: t.Scalar,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         options_typed: dict[str, t.Scalar] = dict(options.items())

@@ -15,7 +15,7 @@ from flext_core import r
 from httpx_sse import connect_sse
 from pydantic import BaseModel, Field, ValidationError
 
-from flext_api import FlextApiConstants
+from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
@@ -137,7 +137,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, object], **kwargs: object
+        self, request: Mapping[str, object], **kwargs: t.Scalar
     ) -> r[Mapping[str, object]]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)

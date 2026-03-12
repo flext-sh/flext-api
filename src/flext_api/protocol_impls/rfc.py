@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from flext_core import r
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from flext_api import FlextApiConstants
+from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
 
 
@@ -114,7 +114,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **kwargs: object,
+        **kwargs: t.Scalar,
     ) -> None:
         """Initialize RFC protocol implementation.
 

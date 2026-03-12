@@ -26,7 +26,7 @@ from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import FlextApiConstants
+from flext_api import FlextApiConstants, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
@@ -291,7 +291,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, object], **kwargs: object
+        self, request: Mapping[str, object], **kwargs: t.Scalar
     ) -> r[Mapping[str, object]]:
         """Send WebSocket request (connect and send message).
 

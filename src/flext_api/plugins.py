@@ -58,7 +58,7 @@ class FlextApiPlugins:
 
         @abstractmethod
         def send_request(
-            self, request: t.JsonObject, **kwargs: object
+            self, request: t.JsonObject, **kwargs: t.Scalar
         ) -> r[t.JsonObject]:
             """Send request using this protocol."""
             ...
@@ -102,7 +102,7 @@ class FlextApiPlugins:
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
-        def connect(self, url: str, **options: object) -> r[bool]:
+        def connect(self, url: str, **options: t.Scalar) -> r[bool]:
             """Establish connection to endpoint."""
             ...
 
@@ -117,7 +117,7 @@ class FlextApiPlugins:
 
         @abstractmethod
         def receive(
-            self, connection: object, **options: object
+            self, connection: object, **options: t.Scalar
         ) -> r[t.JsonObject | str | bytes]:
             """Receive data from connection."""
             ...
@@ -127,7 +127,7 @@ class FlextApiPlugins:
             self,
             connection: object,
             data: t.JsonObject | str | bytes,
-            **options: object,
+            **options: t.Scalar,
         ) -> r[bool]:
             """Send data through connection."""
             ...

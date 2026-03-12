@@ -37,7 +37,9 @@ class FlextApi(s[FlextApiSettings]):
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar = m
 
-    def __new__(cls, config: FlextApiSettings | None = None, **_kwargs: object) -> Self:
+    def __new__(
+        cls, config: FlextApiSettings | None = None, **_kwargs: t.Scalar
+    ) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
@@ -50,7 +52,7 @@ class FlextApi(s[FlextApiSettings]):
         return instance
 
     def __init__(
-        self, config: FlextApiSettings | None = None, **kwargs: object
+        self, config: FlextApiSettings | None = None, **kwargs: t.Scalar
     ) -> None:
         """Initialize with optional config.
 
@@ -89,7 +91,7 @@ class FlextApi(s[FlextApiSettings]):
         )
 
     @override
-    def execute(self, **kwargs: object) -> r[FlextApiSettings]:
+    def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
         if kwargs:
             FlextLogger(__name__).info(f"Execute called with kwargs: {kwargs}")
