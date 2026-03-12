@@ -61,7 +61,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """
 
         class Args(FlextUtilities.Args):
-            """Args utilities extending u.Args via inheritance.
+            """Args utilities extending u via inheritance.
 
             Exposes all flext-core Args methods through inheritance hierarchy,
             including validated, validated_with_result, parse_kwargs, and get_enum_params.
