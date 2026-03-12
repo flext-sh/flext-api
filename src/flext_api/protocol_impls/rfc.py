@@ -179,7 +179,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
-        return r[t.ConfigurationMapping].ok(success_response)
+        return r[object].ok(success_response)
 
     def _extract_body(self, request: Mapping[str, object]) -> object | None:
         """Extract body from request (RFC 7231 compliant).

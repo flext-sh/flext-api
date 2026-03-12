@@ -126,7 +126,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
             @staticmethod
             def to_json_value(value: object) -> t.ApiJsonValue:
-                """Normalize arbitrary value to JsonValue."""
+                """Normalize arbitrary value to object."""
                 if value is None or isinstance(value, t.Primitives):
                     return value
                 if isinstance(value, Mapping):

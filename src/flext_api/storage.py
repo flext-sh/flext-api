@@ -104,7 +104,7 @@ class FlextApiStorage:
 
     @staticmethod
     def _to_json_value(value: object) -> t.ApiJsonValue:
-        """Convert arbitrary value to JsonValue recursively."""
+        """Convert arbitrary value to object recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
         if normalized is None or isinstance(normalized, (str, int, float, bool)):
             return normalized
