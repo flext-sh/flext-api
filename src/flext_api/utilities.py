@@ -224,7 +224,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 response["data"] = data
             if headers:
                 response["headers"] = headers
-            return r.ok(response)
+            return r[Mapping[str, t.ApiJsonValue]].ok(response)
 
         @staticmethod
         def build_success_response(
@@ -243,7 +243,7 @@ class FlextApiUtilities(FlextWebUtilities):
             }
             if headers:
                 response["headers"] = headers
-            return r.ok(response)
+            return r[Mapping[str, t.ApiJsonValue]].ok(response)
 
     class PaginationBuilder:
         """Pagination builder for paginated responses."""
