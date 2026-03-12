@@ -203,9 +203,7 @@ class FlextApiSettingsManager:
             return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
         return r[float].ok(timeout_value)
 
-    def _normalize_value(
-        self, key: str, *, value: str | float | bool
-    ) -> r[t.ContainerValue]:
+    def _normalize_value(self, key: str, *, value: str | float | bool) -> r[object]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and value.__class__ is str:
             timeout_result = u.try_(
@@ -213,10 +211,10 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid timeout value: {value}")
             return timeout_result.fold(
-                on_failure=lambda e: r[t.ContainerValue].fail(
+                on_failure=lambda e: r[object].fail(
                     e or f"Invalid timeout value: {value}"
                 ),
-                on_success=lambda v: r[t.ContainerValue].ok(v),
+                on_success=lambda v: r[object].ok(v),
             )
         if key == "max_retries" and value.__class__ is str:
             retries_result = u.try_(
@@ -224,14 +222,14 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid max_retries value: {value}")
             return retries_result.fold(
-                on_failure=lambda e: r[t.ContainerValue].fail(
+                on_failure=lambda e: r[object].fail(
                     e or f"Invalid max_retries value: {value}"
                 ),
-                on_success=lambda v: r[t.ContainerValue].ok(v),
+                on_success=lambda v: r[object].ok(v),
             )
         if key in {"log_requests", "log_responses"}:
-            return r[t.ContainerValue].ok(bool(value))
-        return r[t.ContainerValue].ok(value)
+            return r[object].ok(bool(value))
+        return r[object].ok(value)
 
     def _process_config(
         self, config: Mapping[str, str | float | bool]

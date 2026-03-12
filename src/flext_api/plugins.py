@@ -58,7 +58,7 @@ class FlextApiPlugins:
 
         @abstractmethod
         def send_request(
-            self, request: t.JsonObject, **kwargs: t.ContainerValue
+            self, request: t.JsonObject, **kwargs: object
         ) -> r[t.JsonObject]:
             """Send request using this protocol."""
             ...
@@ -76,7 +76,7 @@ class FlextApiPlugins:
             return "unknown"
 
         @abstractmethod
-        def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
+        def load_schema(self, schema_source: str) -> r[object]:
             """Load schema from source."""
             ...
 
@@ -102,12 +102,12 @@ class FlextApiPlugins:
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
-        def connect(self, url: str, **options: t.ContainerValue) -> r[bool]:
+        def connect(self, url: str, **options: object) -> r[bool]:
             """Establish connection to endpoint."""
             ...
 
         @abstractmethod
-        def disconnect(self, connection: t.ContainerValue) -> r[bool]:
+        def disconnect(self, connection: object) -> r[bool]:
             """Close connection."""
             ...
 
@@ -117,7 +117,7 @@ class FlextApiPlugins:
 
         @abstractmethod
         def receive(
-            self, connection: t.ContainerValue, **options: t.ContainerValue
+            self, connection: object, **options: object
         ) -> r[t.JsonObject | str | bytes]:
             """Receive data from connection."""
             ...
@@ -125,9 +125,9 @@ class FlextApiPlugins:
         @abstractmethod
         def send(
             self,
-            connection: t.ContainerValue,
+            connection: object,
             data: t.JsonObject | str | bytes,
-            **options: t.ContainerValue,
+            **options: object,
         ) -> r[bool]:
             """Send data through connection."""
             ...

@@ -54,7 +54,7 @@ class BaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: t.ContainerValue,
+        **_kwargs: object,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -76,7 +76,7 @@ class BaseProtocolImplementation:
         """Check if protocol is initialized."""
         return self._initialized
 
-    def execute(self, **kwargs: t.ContainerValue) -> r[bool]:
+    def execute(self, **kwargs: object) -> r[bool]:
         """Execute protocol - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
@@ -119,8 +119,8 @@ class BaseProtocolImplementation:
         return r[bool].ok(value=True)
 
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **kwargs: t.ContainerValue
-    ) -> r[Mapping[str, t.ContainerValue]]:
+        self, request: Mapping[str, object], **kwargs: object
+    ) -> r[Mapping[str, object]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -136,7 +136,7 @@ class BaseProtocolImplementation:
         """
         _ = request
         _ = kwargs
-        return r[Mapping[str, t.ContainerValue]].fail(
+        return r[Mapping[str, object]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}"
         )
 
@@ -205,8 +205,8 @@ class BaseProtocolImplementation:
         return response
 
     def _validate_request(
-        self, request: Mapping[str, t.ContainerValue]
-    ) -> r[Mapping[str, t.ContainerValue]]:
+        self, request: Mapping[str, object]
+    ) -> r[Mapping[str, object]]:
         """Validate request dictionary.
 
         Args:
@@ -217,8 +217,8 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
-        return r[Mapping[str, t.ContainerValue]].ok(request)
+            return r[Mapping[str, object]].fail("Request cannot be empty")
+        return r[Mapping[str, object]].ok(request)
 
 
 __all__ = ["BaseProtocolImplementation"]

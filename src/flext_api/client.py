@@ -38,9 +38,7 @@ class FlextApiClient(s[FlextApiSettings]):
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
 
-    def __new__(
-        cls, config: FlextApiSettings | None = None, **_kwargs: t.ContainerValue
-    ) -> Self:
+    def __new__(cls, config: FlextApiSettings | None = None, **_kwargs: object) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
@@ -53,7 +51,7 @@ class FlextApiClient(s[FlextApiSettings]):
         return instance
 
     def __init__(
-        self, config: FlextApiSettings | None = None, **kwargs: t.ContainerValue
+        self, config: FlextApiSettings | None = None, **kwargs: object
     ) -> None:
         """Initialize with optional configuration model.
 
@@ -63,7 +61,7 @@ class FlextApiClient(s[FlextApiSettings]):
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
         """
-        kwargs_typed: dict[str, t.ContainerValue] = {
+        kwargs_typed: dict[str, object] = {
             k: v if isinstance(v, (str, int, float, bool, type(None))) else str(v)
             for k, v in kwargs.items()
         }
@@ -163,7 +161,7 @@ class FlextApiClient(s[FlextApiSettings]):
         return r[bytes].ok(body.encode("utf-8"))
 
     @override
-    def execute(self, **kwargs: t.ContainerValue) -> r[FlextApiSettings]:
+    def execute(self, **kwargs: object) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")

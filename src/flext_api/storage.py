@@ -103,7 +103,7 @@ class FlextApiStorage:
         return self._namespace
 
     @staticmethod
-    def _to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
+    def _to_json_value(value: object) -> t.ApiJsonValue:
         """Convert arbitrary value to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
         if normalized is None or isinstance(normalized, (str, int, float, bool)):
@@ -617,7 +617,7 @@ class FlextApiStorage:
 
     def _extract_optional_config_field(
         self, config_obj: BaseModel, field_name: str
-    ) -> t.ContainerValue | None:
+    ) -> object | None:
         """Extract optional field from config object."""
         field_value = config_obj.model_dump().get(field_name)
         if field_value is not None:

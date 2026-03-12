@@ -26,7 +26,7 @@ from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import FlextApiConstants, t
+from flext_api import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
@@ -291,8 +291,8 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **kwargs: t.ContainerValue
-    ) -> r[Mapping[str, t.ContainerValue]]:
+        self, request: Mapping[str, object], **kwargs: object
+    ) -> r[Mapping[str, object]]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -309,36 +309,36 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[Mapping[str, t.ContainerValue]].fail(str(details))
+            return r[Mapping[str, object]].fail(str(details))
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[Mapping[str, object]].fail(
                 message_result.error or "Message extraction failed"
             )
         message_type = self._extract_message_type(options)
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[Mapping[str, object]].fail(
                 f"WebSocket connection failed: {connect_result.error}"
             )
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[Mapping[str, object]].fail(
                 f"WebSocket send failed: {send_result.error}"
             )
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[Mapping[str, object]].fail(
                 f"Failed to extract URL: {url_result.error}"
             )
-        response: dict[str, t.ContainerValue] = {
+        response: dict[str, object] = {
             "status_code": FlextApiConstants.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
             "method": "WEBSOCKET",
             "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
             "body": {"status": "message_sent", "message_type": message_type},
         }
-        return r[Mapping[str, t.ContainerValue]].ok(response)
+        return r[Mapping[str, object]].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -404,7 +404,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")
 
-    def _ensure_connected(self, request: Mapping[str, t.ContainerValue]) -> r[bool]:
+    def _ensure_connected(self, request: Mapping[str, object]) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
@@ -416,7 +416,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: Mapping[str, object],
         options: _SendRequestOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""

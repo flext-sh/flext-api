@@ -39,7 +39,7 @@ def _is_object_list(value: object) -> TypeGuard[list[object]]:
     return isinstance(value, list)
 
 
-def _to_container_value(value: object) -> t.ContainerValue:
+def _to_container_value(value: object) -> object:
     if value is None:
         return None
     if isinstance(value, (str, int, float, bool)):
@@ -47,7 +47,7 @@ def _to_container_value(value: object) -> t.ContainerValue:
     if _is_object_list(value):
         return [_to_container_value(item) for item in value]
     if _is_object_mapping(value):
-        normalized: dict[str, t.ContainerValue] = {}
+        normalized: dict[str, object] = {}
         for key, item in value.items():
             normalized[str(key)] = _to_container_value(item)
         return normalized
@@ -134,7 +134,7 @@ class FlextWebhookHandler(FlextService[bool]):
         self._retry_queue = deque(maxlen=500)
 
     @staticmethod
-    def _to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
+    def _to_json_value(value: object) -> t.ApiJsonValue:
         """Convert arbitrary object to JsonValue recursively."""
         if value is None or isinstance(value, t.Primitives):
             return value

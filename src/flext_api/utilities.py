@@ -125,7 +125,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[Mapping[str, str]].ok(merged)
 
             @staticmethod
-            def to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
+            def to_json_value(value: object) -> t.ApiJsonValue:
                 """Normalize arbitrary value to JsonValue."""
                 if value is None or isinstance(value, t.Primitives):
                     return value
@@ -146,7 +146,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 return str(value)
 
             @staticmethod
-            def to_request_body(value: t.ContainerValue) -> t.Api.RequestBody:
+            def to_request_body(value: object) -> t.Api.RequestBody:
                 """Convert arbitrary value to RequestBody-compatible payload."""
                 if isinstance(value, str | bytes):
                     return value
@@ -317,7 +317,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def extract_pagination_config(
-            config: t.ContainerValue,
+            config: object,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Extract pagination configuration from config object.
 
@@ -386,7 +386,7 @@ class FlextApiUtilities(FlextWebUtilities):
         """Web validation utilities for URLs and HTTP methods."""
 
         @staticmethod
-        def is_valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
+        def is_valid_port_number(port: object) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False

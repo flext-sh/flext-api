@@ -35,7 +35,7 @@ class FlextApiTransports:
             return self._client
 
         @override
-        def connect(self, url: str, **options: t.ContainerValue) -> r[str]:
+        def connect(self, url: str, **options: object) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
                 if not url:

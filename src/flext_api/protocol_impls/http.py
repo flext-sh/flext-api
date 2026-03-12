@@ -55,9 +55,7 @@ class _MappingBodyModel(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    body: dict[str, t.ContainerValue] = Field(
-        ..., description="Request body as mapping"
-    )
+    body: dict[str, object] = Field(..., description="Request body as mapping")
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):
@@ -148,15 +146,15 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **_kwargs: t.ContainerValue
-    ) -> r[Mapping[str, t.ContainerValue]]:
+        self, request: Mapping[str, object], **_kwargs: object
+    ) -> r[Mapping[str, object]]:
         """Send HTTP request with retry logic and error handling."""
-        request_general: dict[str, t.ContainerValue] = {}
+        request_general: dict[str, object] = {}
         for key, value in request.items():
             request_general[key] = self._to_general_value(value)
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[Mapping[str, object]].fail(
                 request_result.error or "Request building failed"
             )
         http_request = request_result.value
@@ -164,7 +162,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[Mapping[str, object]].fail(
                 headers_result.error or "Headers extraction failed"
             )
         headers_dict = headers_result.value
@@ -257,7 +255,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         return protocol.lower() in supported
 
     def _build_http_request_from_dict(
-        self, request: Mapping[str, t.ContainerValue]
+        self, request: Mapping[str, object]
     ) -> r[m.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         validation_result = self._validate_request(request)
@@ -425,16 +423,16 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self.logger.error("Unexpected error", url=url, method=method, error=str(e))
         return error_msg
 
-    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
+    def _to_general_value(self, value: object) -> object:
         if value is None:
             return None
         if isinstance(value, list):
-            normalized_items: list[t.ContainerValue] = [
+            normalized_items: list[object] = [
                 self._to_general_value(item) for item in value
             ]
             return normalized_items
         if isinstance(value, Mapping):
-            normalized_mapping: dict[str, t.ContainerValue] = {}
+            normalized_mapping: dict[str, object] = {}
             for key, item in value.items():
                 normalized_mapping[str(key)] = self._to_general_value(item)
             return normalized_mapping

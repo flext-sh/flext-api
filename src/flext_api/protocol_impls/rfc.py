@@ -114,7 +114,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **kwargs: t.ContainerValue,
+        **kwargs: object,
     ) -> None:
         """Initialize RFC protocol implementation.
 
@@ -129,7 +129,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _build_rfc_error_response(
         self, error: str, status_code: int = 500, error_code: str | None = None
-    ) -> Mapping[str, t.ContainerValue]:
+    ) -> Mapping[str, object]:
         """Build RFC-compliant error response (RFC 7231).
 
         Args:
@@ -141,7 +141,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         RFC-compliant error response dictionary
 
         """
-        error_response: dict[str, t.ContainerValue] = {
+        error_response: dict[str, object] = {
             "error": error,
             "status_code": status_code,
         }
@@ -151,10 +151,10 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _build_rfc_success_response(
         self,
-        data: Mapping[str, t.ContainerValue] | None = None,
+        data: Mapping[str, object] | None = None,
         status_code: int = 200,
         headers: Mapping[str, str] | None = None,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[Mapping[str, object]]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -166,7 +166,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         r with RFC-compliant success response
 
         """
-        json_data: dict[str, t.ContainerValue] | None = None
+        json_data: dict[str, object] | None = None
         if data is not None:
             json_data = {}
             for key, value in data.items():
@@ -174,16 +174,14 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         web_headers: dict[str, str | list[str]] | None = None
         if headers is not None:
             web_headers = dict(headers)
-        success_response: dict[str, t.ContainerValue] = {"status_code": status_code}
+        success_response: dict[str, object] = {"status_code": status_code}
         if json_data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
         return r[t.ConfigurationMapping].ok(success_response)
 
-    def _extract_body(
-        self, request: Mapping[str, t.ContainerValue]
-    ) -> t.ContainerValue | None:
+    def _extract_body(self, request: Mapping[str, object]) -> object | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:
@@ -197,9 +195,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return None
         return request["body"]
 
-    def _extract_headers(
-        self, request: Mapping[str, t.ContainerValue]
-    ) -> Mapping[str, str]:
+    def _extract_headers(self, request: Mapping[str, object]) -> Mapping[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
         Args:
@@ -220,7 +216,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             normalized_headers[key.lower()] = value
         return normalized_headers
 
-    def _extract_method(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
+    def _extract_method(self, request: Mapping[str, object]) -> r[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
 
         Args:
@@ -239,7 +235,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[str].fail("Method must be a string (RFC 7231)")
         return r[str].ok(parsed.method)
 
-    def _extract_timeout(self, request: Mapping[str, t.ContainerValue]) -> float:
+    def _extract_timeout(self, request: Mapping[str, object]) -> float:
         """Extract timeout from request with defaults.
 
         Args:
@@ -257,7 +253,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                 return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
         return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
 
-    def _extract_url(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
+    def _extract_url(self, request: Mapping[str, object]) -> r[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
 
         Args:
