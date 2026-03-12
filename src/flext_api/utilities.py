@@ -53,8 +53,8 @@ class FlextApiUtilities(FlextWebUtilities):
 
         """
 
-        class Collection(FlextUtilities.Collection):
-            """Collection utilities extending u.Collection via inheritance.
+        class Collection(FlextUtilities):
+            """Collection utilities extending u via inheritance.
 
             Exposes all flext-core Collection methods through inheritance hierarchy.
             Access via FlextUtilities.Api.Collection.* pattern.
@@ -68,8 +68,8 @@ class FlextApiUtilities(FlextWebUtilities):
             Access via FlextUtilities.Api.Args.* pattern.
             """
 
-        class Model(FlextUtilities.Model):
-            """Model utilities extending u.Model via inheritance.
+        class Model(FlextUtilities):
+            """Model utilities extending u via inheritance.
 
             Exposes all flext-core Model methods through inheritance hierarchy.
             Access via FlextUtilities.Api.Model.* pattern.

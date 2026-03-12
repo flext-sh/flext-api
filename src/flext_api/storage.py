@@ -90,7 +90,7 @@ class FlextApiStorage:
         object.__setattr__(self, "_expiry_times", {})
         object.__setattr__(self, "_stats", m.Storage.Stats(namespace=self._namespace))
         object.__setattr__(self, "_operations_count", 0)
-        object.__setattr__(self, "_created_at", u.Generators.generate_iso_timestamp())
+        object.__setattr__(self, "_created_at", u.generate_iso_timestamp())
 
     @property
     def backend(self) -> str:
@@ -303,7 +303,7 @@ class FlextApiStorage:
         def _check_health() -> Mapping[str, t.ApiJsonValue]:
             return {
                 "status": "healthy",
-                "timestamp": u.Generators.generate_iso_timestamp(),
+                "timestamp": u.generate_iso_timestamp(),
                 "storage_accessible": True,
                 "size": len(self._storage),
                 "operations_count": self._operations_count,
@@ -343,9 +343,7 @@ class FlextApiStorage:
         def key_not_namespaced(k: str) -> bool:
             return not k.startswith(f"{self._namespace}:")
 
-        filtered_keys = u.Collection.filter(
-            list(self._storage.keys()), key_not_namespaced
-        )
+        filtered_keys = u.filter(list(self._storage.keys()), key_not_namespaced)
         return r[list[str]].ok(list(filtered_keys))
 
     def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
@@ -406,7 +404,7 @@ class FlextApiStorage:
         metadata_result = u.try_(
             lambda: m.Storage.Metadata(
                 value=value,
-                timestamp=u.Generators.generate_iso_timestamp(),
+                timestamp=u.generate_iso_timestamp(),
                 ttl=ttl_val,
             ),
             catch=(ValueError, TypeError, KeyError, ConnectionError),

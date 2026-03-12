@@ -506,9 +506,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             return r[Mapping[str, object]].fail(info_result.error)
         info = info_result.value
         info_required = ["title", "version"]
-        info_missing = u.Collection.filter(
-            list(info_required), lambda field: field not in info
-        )
+        info_missing = u.filter(list(info_required), lambda field: field not in info)
         if info_missing:
             return r[Mapping[str, object]].fail(
                 f"Missing required info fields: {', '.join(info_missing)}"
@@ -623,7 +621,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         required_fields = ["info"]
         if version.startswith(("2.", "3.")):
             required_fields.append("channels")
-        missing_fields = u.Collection.filter(
+        missing_fields = u.filter(
             list(required_fields), lambda field: field not in schema
         )
         if missing_fields:

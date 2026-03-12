@@ -189,7 +189,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 version_result.error or "Version validation failed"
             )
         required_fields = ["info", "paths"]
-        missing_fields = u.Collection.filter(
+        missing_fields = u.filter(
             list(required_fields), lambda field: field not in schema
         )
         if missing_fields:
@@ -355,7 +355,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(info_result.error)
         info_value = info_result.value
         info_required = ["title", "version"]
-        info_missing = u.Collection.filter(
+        info_missing = u.filter(
             list(info_required), lambda field: field not in info_value
         )
         if info_missing:

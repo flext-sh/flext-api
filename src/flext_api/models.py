@@ -423,7 +423,7 @@ class FlextApiModels(FlextWebModels):
                 def matches_header_key(k: str) -> bool:
                     return k.lower() == name.lower()
 
-                keys_to_remove = u.Collection.filter(
+                keys_to_remove = u.filter(
                     list(self.headers.keys()),
                     matches_header_key,
                 )
