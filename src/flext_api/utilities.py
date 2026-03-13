@@ -53,28 +53,6 @@ class FlextApiUtilities(FlextWebUtilities):
 
         """
 
-        class Collection(FlextUtilities):
-            """Collection utilities extending u via inheritance.
-
-            Exposes all flext-core Collection methods through inheritance hierarchy.
-            Access via FlextUtilities.Api.Collection.* pattern.
-            """
-
-        class Args(FlextUtilities.Args):
-            """Args utilities extending u via inheritance.
-
-            Exposes all flext-core Args methods through inheritance hierarchy,
-            including validated, validated_with_result, parse_kwargs, and get_enum_params.
-            Access via FlextUtilities.Api.Args.* pattern.
-            """
-
-        class Model(FlextUtilities):
-            """Model utilities extending u via inheritance.
-
-            Exposes all flext-core Model methods through inheritance hierarchy.
-            Access via FlextUtilities.Api.Model.* pattern.
-            """
-
         class Pydantic:
             """Annotated type factories."""
 

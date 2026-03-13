@@ -25,7 +25,7 @@ from flext_core import r, u
 from pydantic import TypeAdapter, ValidationError
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from flext_api import FlextApiPlugins, t
 
