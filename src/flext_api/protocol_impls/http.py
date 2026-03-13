@@ -20,14 +20,11 @@ from typing import Annotated, override
 
 import httpx
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api import c, m, t, u
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
-
-_OBJECT_LIST_ADAPTER: TypeAdapter[list[object]] = TypeAdapter(list[object])
-_OBJECT_MAPPING_ADAPTER: TypeAdapter[dict[str, object]] = TypeAdapter(dict[str, object])
 
 
 class _HttpRequestCallArgs(BaseModel):
@@ -446,25 +443,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         if value is None:
             return None
         if isinstance(value, list):
-            try:
-                list_value: list[object] = _OBJECT_LIST_ADAPTER.validate_python(value)
-            except ValidationError:
-                return "<invalid-list>"
-            normalized_items: list[object] = [
-                self._to_general_value(item) for item in list_value
-            ]
-            return normalized_items
+            return value
         if isinstance(value, Mapping):
-            try:
-                mapping_value: dict[str, object] = (
-                    _OBJECT_MAPPING_ADAPTER.validate_python(value)
-                )
-            except ValidationError:
-                return "<invalid-mapping>"
-            normalized_mapping: dict[str, object] = {}
-            for key, item in mapping_value.items():
-                normalized_mapping[str(key)] = self._to_general_value(item)
-            return normalized_mapping
+            return value
         if isinstance(value, (str, int, float, bool)):
             return value
         return str(value)
