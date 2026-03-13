@@ -43,8 +43,8 @@ class _HttpClientRequestOptions(BaseModel):
     ]
 
 
-class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
-    """HTTP client implementation conforming to FlextWebClientProtocol."""
+class FlextWebClientImplementation(p.Api.Client.HttpClient):
+    """HTTP client implementation conforming to FlextWebClient."""
 
     def __init__(self, client_config: m.ClientConfig) -> None:
         """Initialize HTTP client protocol implementation.

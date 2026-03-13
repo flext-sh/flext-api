@@ -22,7 +22,7 @@ from flext_api.serializers import FlextApiSerializers
 class FlextApiAdapters:
     """Adapters factory implementing API system protocols."""
 
-    class HttpProtocol:
+    class Http:
         """HTTP protocol adapter following SOLID principles.
 
         Single responsibility: HTTP to WebSocket protocol adaptation.
@@ -155,10 +155,8 @@ class FlextApiAdapters:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
-                    result = (
-                        FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(
-                            request
-                        )
+                    result = FlextApiAdapters.Http.adapt_http_request_to_websocket(
+                        request
                     )
                     if result.is_success:
                         return result
@@ -185,8 +183,10 @@ class FlextApiAdapters:
                         return r[m.HttpResponse].fail(
                             "Invalid WebSocket response payload"
                         )
-                    return FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
-                        dict(response)
+                    return (
+                        FlextApiAdapters.Http.adapt_websocket_message_to_http_response(
+                            dict(response)
+                        )
                     )
                 return r[m.HttpResponse].ok(m.HttpResponse.model_validate(response))
             except (ValueError, TypeError, KeyError, ConnectionError) as e:

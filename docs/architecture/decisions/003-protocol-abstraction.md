@@ -14,10 +14,10 @@
   - [Option 2: Inheritance Hierarchy](#option-2-inheritance-hierarchy)
   - [Option 3: Facade Pattern Only](#option-3-facade-pattern-only)
 - [Implementation Architecture](#implementation-architecture)
-  - [Protocol Interface](#protocol-interface)
-  - [Protocol Registry](#protocol-registry)
+  - [Interface](#protocol-interface)
+  - [Registry](#protocol-registry)
   - [Unified Client Interface](#unified-client-interface)
-- [Protocol Implementations](#protocol-implementations)
+- [Implementations](#protocol-implementations)
   - [HTTP Protocol](#http-protocol)
   - [GraphQL Protocol](#graphql-protocol)
 - [Usage Examples](#usage-examples)
@@ -25,7 +25,7 @@
   - [GraphQL Usage](#graphql-usage)
   - [WebSocket Usage](#websocket-usage)
 - [Testing Strategy](#testing-strategy)
-  - [Protocol Isolation Testing](#protocol-isolation-testing)
+  - [Isolation Testing](#protocol-isolation-testing)
   - [Integration Testing](#integration-testing)
 - [Performance Considerations](#performance-considerations)
   - [Connection Pooling](#connection-pooling)
@@ -34,7 +34,7 @@
 - [Extension Points](#extension-points)
   - [Adding New Protocols](#adding-new-protocols)
 - [Monitoring and Observability](#monitoring-and-observability)
-  - [Protocol Metrics](#protocol-metrics)
+  - [Metrics](#protocol-metrics)
   - [Health Checks](#health-checks)
 - [Migration Strategy](#migration-strategy)
   - [Phase 1: Core Architecture](#phase-1-core-architecture)
@@ -129,7 +129,7 @@ FLEXT-API will implement a **Protocol Plugin Architecture** with:
 ### Protocol Interface
 
 ```python
-class BaseProtocol(ABC):
+class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
@@ -160,16 +160,16 @@ class ProtocolRegistry:
     """Registry for protocol implementations with discovery."""
 
     def __init__(self):
-        self._protocols: Dict[str, Type[BaseProtocol]] = {}
+        self._protocols: Dict[str, Type[Base]] = {}
         self._capabilities: Dict[str, ProtocolCapabilities] = {}
 
-    def register(self, name: str, protocol_class: Type[BaseProtocol]):
+    def register(self, name: str, protocol_class: Type[Base]):
         """Register a protocol implementation."""
         self._protocols[name] = protocol_class
         # Cache capabilities for performance
         self._capabilities[name] = protocol_class().get_capabilities()
 
-    def get_protocol(self, name: str) -> BaseProtocol:
+    def get_protocol(self, name: str) -> Base:
         """Get protocol instance by name."""
         if name not in self._protocols:
             raise ValueError(f"Protocol '{name}' not registered")
@@ -213,7 +213,7 @@ class FlextApiClient(FlextService[None]):
 ### HTTP Protocol
 
 ```python
-class FlextWebProtocol(BaseProtocol):
+class FlextWeb(Base):
     """HTTP/REST protocol implementation."""
 
     def create_client(self, config: Dict[str, object]) -> httpx.AsyncClient:
@@ -259,7 +259,7 @@ class FlextWebProtocol(BaseProtocol):
 ### GraphQL Protocol
 
 ```python
-class GraphQLProtocol(BaseProtocol):
+class GraphQL(Base):
     """GraphQL protocol implementation."""
 
     def create_client(self, config: Dict[str, object]) -> gql.Client:
@@ -336,7 +336,7 @@ await client.send({"type": "subscribe", "channel": "updates"})
 ```python
 @pytest.fixture
 def http_protocol():
-    return FlextWebProtocol()
+    return FlextWeb()
 
 
 @pytest.mark.asyncio
@@ -369,12 +369,12 @@ async def test_protocol_registry_integration():
     registry = ProtocolRegistry()
 
     # Test protocol registration
-    registry.register("test", TestProtocol)
+    registry.register("test", Test)
     assert "test" in registry.list_protocols()
 
     # Test protocol instantiation
     protocol = registry.get_protocol("test")
-    assert isinstance(protocol, TestProtocol)
+    assert isinstance(protocol, Test)
 
     # Test capabilities caching
     capabilities = registry.get_capabilities("test")
@@ -408,7 +408,7 @@ async def test_protocol_registry_integration():
 1. **Implement Protocol Class**:
 
 ```python
-class CustomProtocol(BaseProtocol):
+class Custom(Base):
     def create_client(self, config: Dict[str, object]):
         return CustomClient(**config)
 
@@ -424,7 +424,7 @@ class CustomProtocol(BaseProtocol):
 
 ```python
 registry = ProtocolRegistry()
-registry.register("custom", CustomProtocol)
+registry.register("custom", Custom)
 ```
 
 1. **Use in Client**:
@@ -472,7 +472,7 @@ client = FlextApiClient(protocol="custom", **config)
 
 ## References
 
-- [Protocol Abstraction Pattern](https://martinfowler.com/eaaCatalog/plugin.html)
+- [Abstraction Pattern](https://martinfowler.com/eaaCatalog/plugin.html)
 - [Strategy Pattern](https://refactoring.guru/design-patterns/strategy)
 - [Dependency Injection in Python](https://github.com/google/guice)
 - GitHub Issue: #234 - Protocol Plugin Architecture

@@ -17,8 +17,8 @@ from pydantic import BaseModel
 from flext_api import FlextApiProtocols as api_protocols, t
 
 
-class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
-    """Logger implementation conforming to LoggerProtocol."""
+class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
+    """Logger implementation conforming to Logger."""
 
     def __init__(self) -> None:
         """Initialize logger protocol implementation."""

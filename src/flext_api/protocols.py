@@ -34,9 +34,9 @@ class FlextApiProtocols(FlextWebProtocols):
     from flext_api import p
 
     # Access API protocols via .Api namespace
-    client: p.Api.Client.HttpClientProtocol
-    storage: p.Api.Storage.StorageBackendProtocol
-    logger: p.Api.Logger.LoggerProtocol
+    client: p.Api.Client.HttpClient
+    storage: p.Api.Storage.StorageBackend
+    logger: p.Api.Logger.Logger
     ```
     """
 
@@ -52,7 +52,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """HTTP client protocols."""
 
             @runtime_checkable
-            class HttpClientProtocol(Protocol):
+            class HttpClient(Protocol):
                 """Protocol for generic HTTP client implementations."""
 
                 def delete(
@@ -92,7 +92,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """Storage backend protocols."""
 
             @runtime_checkable
-            class StorageBackendProtocol(Protocol):
+            class StorageBackend(Protocol):
                 """Protocol for generic storage backend implementations."""
 
                 def clear(self) -> r[bool]:
@@ -125,7 +125,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """Logger protocols for API operations."""
 
             @runtime_checkable
-            class LoggerProtocol(Protocol):
+            class Logger(Protocol):
                 """Protocol for generic logger implementations."""
 
                 def debug(self, message: str, **kwargs: t.ApiJsonValue) -> None:
@@ -144,7 +144,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """Serialization protocols."""
 
             @runtime_checkable
-            class SerializerProtocol(Protocol):
+            class Serializer(Protocol):
                 """Protocol for custom serializers.
 
                 Defines the interface for serialization implementations
@@ -184,7 +184,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """HTTP resource lifecycle protocols."""
 
             @runtime_checkable
-            class HttpResourceProtocol(Protocol):
+            class HttpResource(Protocol):
                 """Protocol for HTTP resources that can be managed."""
 
                 async def aclose(self) -> None:
@@ -234,7 +234,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """gRPC-related protocols (stubs until flext-grpc integration)."""
 
             @runtime_checkable
-            class GrpcServiceProtocol(Protocol):
+            class GrpcService(Protocol):
                 """Protocol for gRPC service implementations.
 
                 This protocol defines the interface that gRPC services should
@@ -266,7 +266,7 @@ class FlextApiProtocols(FlextWebProtocols):
             """Protobuf-related protocols (stubs until flext-grpc integration)."""
 
             @runtime_checkable
-            class ProtobufServiceProtocol(Protocol):
+            class ProtobufService(Protocol):
                 """Protocol for Protobuf service definitions.
 
                 This protocol defines the interface for Protobuf-based services

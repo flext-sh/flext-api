@@ -7,9 +7,9 @@
   - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
   - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
   - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
-- [Protocol Plugin System](#protocol-plugin-system)
-  - [Protocol Registry](#protocol-registry)
-  - [Protocol Interface](#protocol-interface)
+- [ Plugin System](#protocol-plugin-system)
+  - [y](#protocol-registry)
+  - [ce](#protocol-interface)
 - [HTTP Client Architecture](#http-client-architecture)
   - [FlextApiClient Design](#flextapiclient-design)
   - [Request Processing Pipeline](#request-processing-pipeline)
@@ -184,9 +184,9 @@ from flext_api import ProtocolRegistry
 
 # Register protocols
 registry = ProtocolRegistry()
-registry.register("http", FlextWebProtocol)
-registry.register("graphql", GraphQLProtocol)
-registry.register("websocket", WebSocketProtocol)
+registry.register("http", FlextWeb
+registry.register("graphql", GraphQL
+registry.register("websocket", WebSocket
 
 # Use protocols dynamically
 http_protocol = registry.get_protocol("http")
@@ -194,12 +194,12 @@ client = http_protocol.create_client({"base_url": "https://api.example.com"})
 
 
 # Add custom protocol
-class CustomProtocol:
+class Custom
     def create_client(self, config: dict):
         return CustomClient(config)
 
 
-registry.register("custom", CustomProtocol)
+registry.register("custom", Custom
 ```
 
 ### Protocol Interface
@@ -228,7 +228,7 @@ from flext_core import t
 from flext_core import u
 
 
-class BaseProtocol(ABC):
+class Base
     """Base protocol interface."""
 
     @abstractmethod
@@ -242,7 +242,7 @@ class BaseProtocol(ABC):
         pass
 
 
-class FlextWebProtocol(BaseProtocol):
+class FlextWebBase
     """HTTP protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
@@ -827,10 +827,10 @@ spec:
 ### Adding New Protocols
 
 ```python
-from flext_api import BaseProtocol
+from flext_api import Base
 
 
-class CustomProtocol(BaseProtocol):
+class CustomBase
     """Custom protocol implementation."""
 
     def create_client(self, config: dict) -> object:
@@ -845,7 +845,7 @@ class CustomProtocol(BaseProtocol):
 
 # Register new protocol
 registry = ProtocolRegistry()
-registry.register("custom", CustomProtocol)
+registry.register("custom", Custom
 ```
 
 ### Custom Middleware

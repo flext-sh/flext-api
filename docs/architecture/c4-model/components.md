@@ -7,7 +7,7 @@
 - [Component Descriptions](#component-descriptions)
   - [HTTP Client Components](#http-client-components)
   - [FastAPI Application Components](#fastapi-application-components)
-  - [Protocol Layer Components](#protocol-layer-components)
+  - [Layer Components](#protocol-layer-components)
   - [Storage Layer Components](#storage-layer-components)
   - [Configuration Layer Components](#configuration-layer-components)
 - [Component Interactions](#component-interactions)

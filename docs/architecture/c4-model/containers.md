@@ -7,7 +7,7 @@
 - [Container Descriptions](#container-descriptions)
   - [HTTP Client Container](#http-client-container)
   - [FastAPI Application Container](#fastapi-application-container)
-  - [Protocol Layer Container](#protocol-layer-container)
+  - [Layer Container](#protocol-layer-container)
   - [Storage Layer Container](#storage-layer-container)
   - [Configuration Layer Container](#configuration-layer-container)
 - [Technology Choices](#technology-choices)

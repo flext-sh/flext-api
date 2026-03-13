@@ -130,10 +130,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
             logger: Logger instance
 
             """
-            self._websocket_connections: dict[
-                str, p.Api.Lifecycle.HttpResourceProtocol
-            ] = {}
-            self._sse_connections: dict[str, p.Api.Lifecycle.HttpResourceProtocol] = {}
+            self._websocket_connections: dict[str, p.Api.Lifecycle.HttpResource] = {}
+            self._sse_connections: dict[str, p.Api.Lifecycle.HttpResource] = {}
             self._logger = logger
 
         def close_all(self) -> r[bool]:

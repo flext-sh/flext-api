@@ -7,9 +7,9 @@
 - [Code Structure Analysis](#code-structure-analysis)
   - [Core Module Relationships](#core-module-relationships)
   - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-- [Protocol Implementation Details](#protocol-implementation-details)
-  - [Protocol Architecture](#protocol-architecture)
-  - [Protocol Registry Pattern](#protocol-registry-pattern)
+- [ Implementation Details](#protocol-implementation-details)
+  - [cture](#protocol-architecture)
+  - [y Pattern](#protocol-registry-pattern)
 - [Dependency Injection Pattern](#dependency-injection-pattern)
   - [FlextContainer Integration](#flextcontainer-integration)
 - [Error Handling Architecture](#error-handling-architecture)
@@ -105,28 +105,28 @@ package "flext_api" as flext_api {
     package "protocols/" as protocols {
         package "__init__.py" {
             class FlextApiProtocols
-            class BaseProtocol
+            class Base
             interface ProtocolInterface
         }
 
         package "http.py" {
-            class FlextWebProtocol
+            class FlextWeb
             class FlextWebClientImplementation
         }
 
         package "graphql.py" {
-            class GraphQLProtocol
+            class GraphQL
             class GraphQLClient
         }
 
         package "websocket.py" {
-            class WebSocketProtocol
+            class WebSocket
             class WebSocketClient
         }
 
-        BaseProtocol <|-- FlextWebProtocol
-        BaseProtocol <|-- GraphQLProtocol
-        BaseProtocol <|-- WebSocketProtocol
+        BaseextWebFlextWeb
+        BaseaphQLGraphQL
+        BasebSockeWebSocket
     }
 
     package "storage.py" as storage {
@@ -178,7 +178,7 @@ package "External Libraries" as external {
     }
 
     package "websockets" {
-        class WebSocketClientProtocol
+        class WebSocketClient
     }
 }
 
@@ -190,8 +190,8 @@ FlextApiSettings --> BaseModel : extends
 FlextApi --> FlextService : extends
 FlextApiClient --> FlextService : extends
 
-FlextWebProtocol --> AsyncClient : uses
-WebSocketProtocol --> WebSocketClientProtocol : uses
+FlextWebncClient : uses
+WebSocketSockeWebSocketClient
 
 create_fastapi_app --> FastAPI : creates
 create_fastapi_app --> FlextApiClient : integrates
@@ -320,7 +320,7 @@ class FlextApiModels(FlextModels):
 
 ```python
 # Protocol base interface
-class BaseProtocol(ABC):
+class Base
     """Abstract base class for all protocols."""
 
     @abstractmethod
@@ -335,7 +335,7 @@ class BaseProtocol(ABC):
 
 
 # HTTP Protocol Implementation
-class FlextWebProtocol(BaseProtocol):
+class FlextWebBase
     """HTTP/REST protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
@@ -377,13 +377,13 @@ class ProtocolRegistry:
     """Registry for protocol implementations."""
 
     def __init__(self):
-        self._protocols: Dict[str, Type[BaseProtocol]] = {}
+        self._protocols: Dict[str, Type[Base
 
-    def register(self, name: str, protocol_class: Type[BaseProtocol]):
+    def register(self, name: str, protocol_class: Type[Base
         """Register a protocol implementation."""
         self._protocols[name] = protocol_class
 
-    def get_protocol(self, name: str) -> BaseProtocol:
+    def get_protocol(self, name: str) -> Base
         """Get protocol instance by name."""
         if name not in self._protocols:
             raise ValueError(f"Protocol '{name}' not registered")

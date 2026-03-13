@@ -14,8 +14,8 @@ from flext_core import FlextLogger, FlextRuntime, r, u
 from flext_api import p, t
 
 
-class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
-    """Storage backend implementation conforming to StorageBackendProtocol."""
+class StorageBackendImplementation(p.Api.Storage.StorageBackend):
+    """Storage backend implementation conforming to StorageBackend."""
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
