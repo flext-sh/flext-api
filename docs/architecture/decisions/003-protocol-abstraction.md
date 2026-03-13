@@ -192,16 +192,7 @@ class FlextApiClient(FlextService[None]):
 
     def __init__(self, protocol: str = "http", **config):
         super().__init__()
-        self._protocol_name = protocol
         self._config = config
-        self._protocol_instance = None
-
-    async def _get_protocol_instance(self) -> BaseProtocol:
-        """Lazy initialization of protocol instance."""
-        if self._protocol_instance is None:
-            registry = ProtocolRegistry()
-            self._protocol_instance = registry.get_protocol(self._protocol_name)
-        return self._protocol_instance
 
     async def request(self, method: str, url: str, **kwargs) -> r[object]:
         """Unified request method that delegates to protocol."""
@@ -215,21 +206,6 @@ class FlextApiClient(FlextService[None]):
 
         # Convert back to unified response format
         return self._convert_from_protocol_response(result)
-
-    def _convert_to_protocol_request(self, method: str, url: str, kwargs) -> object:
-        """Convert unified request to protocol-specific format."""
-        if self._protocol_name == "http":
-            return FlextApiModels.HttpRequest(method=method, url=url, **kwargs)
-        elif self._protocol_name == "graphql":
-            return GraphQLRequest(
-                query=kwargs.get("query"), variables=kwargs.get("variables")
-            )
-        # ... other protocol conversions
-
-    def _convert_from_protocol_response(self, result: r[object]) -> r[object]:
-        """Convert protocol-specific response to unified format."""
-        # Standardize response format across protocols
-        return result
 ```
 
 ## Protocol Implementations
