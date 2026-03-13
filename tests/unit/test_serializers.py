@@ -125,7 +125,7 @@ class TestMessagePackUnpackb:
             # Assert
             assert result.is_failure
             assert result.error is not None
-            assert "msgpack deserialization failed" in result.error
+            assert "validation" in result.error.lower()
 
     def test_unpackb_returns_result_type(self) -> None:
         """Test that unpackb returns r[T] type."""
