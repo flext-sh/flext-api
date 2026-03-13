@@ -447,18 +447,20 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return None
         if isinstance(value, list):
             try:
-                list_value = _OBJECT_LIST_ADAPTER.validate_python(value)
+                list_value: list[object] = _OBJECT_LIST_ADAPTER.validate_python(value)
             except ValidationError:
-                return str(value)
+                return "<invalid-list>"
             normalized_items: list[object] = [
                 self._to_general_value(item) for item in list_value
             ]
             return normalized_items
         if isinstance(value, Mapping):
             try:
-                mapping_value = _OBJECT_MAPPING_ADAPTER.validate_python(value)
+                mapping_value: dict[str, object] = (
+                    _OBJECT_MAPPING_ADAPTER.validate_python(value)
+                )
             except ValidationError:
-                return str(value)
+                return "<invalid-mapping>"
             normalized_mapping: dict[str, object] = {}
             for key, item in mapping_value.items():
                 normalized_mapping[str(key)] = self._to_general_value(item)
