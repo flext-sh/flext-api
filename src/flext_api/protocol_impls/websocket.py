@@ -307,7 +307,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         try:
-            options = _SendRequestOptions.model_validate(kwargs)
+            options = _SendRequestOptions(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
