@@ -29,6 +29,7 @@ class FlextApiTypes(FlextWebTypes):
 
     type JsonObject = dict[str, object]
     type ApiJsonValue = object
+    type object = ApiJsonValue
 
     class Api:
         """API types namespace for cross-project access.

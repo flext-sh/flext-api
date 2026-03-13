@@ -31,6 +31,9 @@ from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 from flext_api import m, t
 
 _JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_STORAGE_ENTRY_ADAPTER: TypeAdapter[dict[str, t.ApiJsonValue]] = TypeAdapter(
+    dict[str, t.ApiJsonValue]
+)
 
 
 class FlextApiStorage:
@@ -628,17 +631,7 @@ class FlextApiStorage:
         if config_obj is None:
             return {}
         if isinstance(config_obj, dict):
-            config_map: dict[object, object] = config_obj
-            normalized: t.Api.StorageDict = {}
-            for key, value in config_map.items():
-                key_str = str(key)
-                if value is None or isinstance(value, (str, int, bool)):
-                    normalized[key_str] = value
-                elif isinstance(value, float):
-                    normalized[key_str] = int(value)
-                else:
-                    normalized[key_str] = str(value)
-            return normalized
+            return {}
         if isinstance(config_obj, BaseModel):
             namespace_str = self._extract_config_field(config_obj, "namespace", "flext")
             backend_str = self._extract_config_field(config_obj, "backend", "memory")
@@ -662,11 +655,9 @@ class FlextApiStorage:
         try:
             if not isinstance(data, dict):
                 return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
-            data_dict: dict[str, t.ApiJsonValue] = {}
-            for item_key, item_value in data.items():
-                data_dict[str(item_key)] = FlextRuntime.normalize_to_general_value(
-                    item_value
-                )
+            data_dict: dict[str, t.ApiJsonValue] = (
+                _STORAGE_ENTRY_ADAPTER.validate_python(data)
+            )
             ttl_value = data_dict.get("ttl")
             ttl_int: int | None = None
             if ttl_value is not None:

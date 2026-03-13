@@ -142,11 +142,21 @@ class FlextApiTransports:
                         request_model = m.HttpRequest.model_validate(payload)
                     case str() as body_text:
                         request_model = m.HttpRequest(
-                            method=c.Api.Method.GET, url=connection_url, body=body_text
+                            method=c.Api.Method.GET,
+                            url=connection_url,
+                            body=body_text,
+                            headers={},
+                            query_params={},
+                            timeout=float(c.Api.DEFAULT_TIMEOUT),
                         )
                     case bytes() as body_bytes:
                         request_model = m.HttpRequest(
-                            method=c.Api.Method.GET, url=connection_url, body=body_bytes
+                            method=c.Api.Method.GET,
+                            url=connection_url,
+                            body=body_bytes,
+                            headers={},
+                            query_params={},
+                            timeout=float(c.Api.DEFAULT_TIMEOUT),
                         )
                     case _:
                         return r[m.HttpRequest].fail(
