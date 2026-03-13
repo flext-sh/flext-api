@@ -27,9 +27,8 @@ class FlextApiTypes(FlextWebTypes):
     Only TypeVar loose outside class.
     """
 
-    type JsonObject = dict[str, object]
-    type ApiJsonValue = object
-    type object = ApiJsonValue
+    type JsonObject = dict[str, FlextTypes.ContainerValue]
+    type ApiJsonValue = FlextTypes.ContainerValue | None
 
     class Api:
         """API types namespace for cross-project access.
@@ -48,53 +47,38 @@ class FlextApiTypes(FlextWebTypes):
 
         """
 
-        type JsonObject = dict[str, object]
-        type ApiJsonValue = object
-        type WebData = FlextTypes.FileContent | dict[str, object]
+        type JsonObject = dict[str, FlextTypes.ContainerValue]
+        type ApiJsonValue = FlextTypes.ContainerValue | None
+        type WebData = FlextTypes.FileContent | dict[str, FlextTypes.ContainerValue]
         type WebHeaders = dict[str, FlextTypes.Scalar | list[str]]
         type WebParamValue = str | list[str]
         type WebParams = dict[str, WebParamValue]
-        type ResponseList = list[dict[str, object]]
-        type ResponseDict = Mapping[str, object]
-        type RequestConfig = dict[
-            str,
-            FlextTypes.Primitives | list[str] | dict[str, object],
-        ]
-        type ResponseConfig = dict[str, object | dict[str, object]]
-        type RequestBody = dict[str, object] | str | bytes
-        type ResponseBody = dict[str, object] | str | bytes | None
+        type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
+        type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
+        type RequestConfig = dict[str, FlextTypes.ContainerValue]
+        type ResponseConfig = dict[str, FlextTypes.ContainerValue]
+        type RequestBody = dict[str, FlextTypes.ContainerValue] | str | bytes
+        type ResponseBody = dict[str, FlextTypes.ContainerValue] | str | bytes | None
         type HttpResponseDict = dict[
             str,
-            FlextTypes.Primitives | dict[str, str] | dict[str, object] | bytes | None,
+            FlextTypes.ContainerValue | dict[str, str] | bytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type ValidationResult = dict[
-            str,
-            FlextTypes.Primitives | list[str] | dict[str, object],
-        ]
-        type EndpointConfig = dict[
-            str,
-            object | list[str] | dict[str, object],
-        ]
-        type EndpointMetadata = dict[
-            str,
-            FlextTypes.Primitives | list[str] | dict[str, object],
-        ]
-        type RouteConfig = dict[str, FlextTypes.Scalar | list[str] | dict[str, object]]
+        type ValidationResult = dict[str, FlextTypes.ContainerValue]
+        type EndpointConfig = dict[str, FlextTypes.ContainerValue]
+        type EndpointMetadata = dict[str, FlextTypes.ContainerValue]
+        type RouteConfig = dict[str, FlextTypes.ContainerValue]
         type RouteData = dict[
             str,
-            str | FlextTypes.ResourceCallable | dict[str, object] | object | None,
+            FlextTypes.ContainerValue | FlextTypes.ResourceCallable | None,
         ]
         "Route registration data structure."
-        type SchemaValue = dict[str, object] | str
-        type AuthConfig = Mapping[str, FlextTypes.Scalar | dict[str, object]]
-        type AuthCredentials = Mapping[str, FlextTypes.Scalar | dict[str, object]]
-        type AuthTokenData = Mapping[str, object]
-        type SecurityConfig = Mapping[
-            str,
-            FlextTypes.Primitives | list[str] | dict[str, object],
-        ]
-        type ClientConfig = Mapping[str, FlextTypes.Primitives | dict[str, object]]
+        type SchemaValue = dict[str, FlextTypes.ContainerValue] | str
+        type AuthConfig = Mapping[str, FlextTypes.ContainerValue]
+        type AuthCredentials = Mapping[str, FlextTypes.ContainerValue]
+        type AuthTokenData = Mapping[str, FlextTypes.ContainerValue]
+        type SecurityConfig = Mapping[str, FlextTypes.ContainerValue]
+        type ClientConfig = Mapping[str, FlextTypes.ContainerValue]
         type ConnectionPool = Mapping[
             str, FlextTypes.Primitives | Mapping[str, FlextTypes.Primitives]
         ]
@@ -104,7 +88,7 @@ class FlextApiTypes(FlextWebTypes):
         type RequestKwargs = Mapping[
             str,
             Mapping[str, str]
-            | Mapping[str, object]
+            | Mapping[str, FlextTypes.ContainerValue]
             | Mapping[str, FlextTypes.Scalar | list[str]]
             | float
             | None,
@@ -112,21 +96,18 @@ class FlextApiTypes(FlextWebTypes):
         type StorageDict = dict[str, FlextTypes.Primitives | None]
         type CacheDict = dict[str, FlextTypes.Primitives]
         type MetricsDict = dict[str, int]
-        type ProtocolConfig = dict[str, FlextTypes.Primitives | dict[str, object]]
-        type ProtocolMessage = dict[str, object] | str | bytes
-        type SchemaDefinition = dict[str, object]
-        type ValidationErrors = list[dict[str, object]]
+        type ProtocolConfig = dict[str, FlextTypes.ContainerValue]
+        type ProtocolMessage = dict[str, FlextTypes.ContainerValue] | str | bytes
+        type SchemaDefinition = dict[str, FlextTypes.ContainerValue]
+        type ValidationErrors = list[dict[str, FlextTypes.ContainerValue]]
         type ServiceConfig = dict[str, dict[str, FlextTypes.Scalar]]
         type ServiceHealth = dict[str, FlextTypes.Primitives]
-        type RequestPipeline = list[dict[str, object]]
-        type ResponsePipeline = list[dict[str, object]]
-        type ProcessingResult = dict[
-            str,
-            FlextTypes.Primitives | list[str] | dict[str, object],
-        ]
-        type ErrorInfo = dict[str, FlextTypes.Primitives | dict[str, object]]
+        type RequestPipeline = list[dict[str, FlextTypes.ContainerValue]]
+        type ResponsePipeline = list[dict[str, FlextTypes.ContainerValue]]
+        type ProcessingResult = dict[str, FlextTypes.ContainerValue]
+        type ErrorInfo = dict[str, FlextTypes.ContainerValue]
         type ErrorCategory = str
-        type ErrorRecovery = dict[str, FlextTypes.Scalar | dict[str, object]]
+        type ErrorRecovery = dict[str, FlextTypes.ContainerValue]
         type RetryStrategy = dict[str, FlextTypes.Scalar]
         type CircuitBreaker = dict[str, FlextTypes.Primitives]
 
