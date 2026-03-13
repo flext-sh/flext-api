@@ -9,6 +9,7 @@ import importlib
 from collections.abc import Mapping, Sequence
 from types import ModuleType
 
+from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
@@ -61,24 +62,40 @@ class FlextApiSerializers:
         @staticmethod
         def unpackb(
             data: bytes,
-        ) -> t.Scalar | Mapping[str, object] | list[object] | None:
+        ) -> r[t.Scalar | Mapping[str, object] | list[object]]:
             """Type-safe wrapper for msgpack.unpackb().
 
             Args:
                 data: Binary data to unpack.
 
             Returns:
-                Unpacked object (dict, list, scalar, or None).
+                Result containing unpacked object (dict, list, or scalar).
 
             """
             module = _load_msgpack()
             if module is None:
-                return None
+                return r[t.Scalar | Mapping[str, object] | list[object]].fail(
+                    "msgpack module not available"
+                )
             unpackb_fn = getattr(module, "unpackb", None)
             if unpackb_fn is None:
-                return None
-            result = unpackb_fn(data)
+                return r[t.Scalar | Mapping[str, object] | list[object]].fail(
+                    "msgpack.unpackb function not found"
+                )
             try:
-                return _MESSAGEPACK_RESULT_ADAPTER.validate_python(result)
-            except ValidationError:
-                return None
+                result = unpackb_fn(data)
+                validated = _MESSAGEPACK_RESULT_ADAPTER.validate_python(result)
+                if validated is None:
+                    return r[t.Scalar | Mapping[str, object] | list[object]].fail(
+                        "msgpack deserialization returned None"
+                    )
+                non_none_value: t.Scalar | Mapping[str, object] | list[object] = (
+                    validated
+                )
+                return r[t.Scalar | Mapping[str, object] | list[object]].ok(
+                    non_none_value
+                )
+            except (ValidationError, Exception) as e:
+                return r[t.Scalar | Mapping[str, object] | list[object]].fail(
+                    f"msgpack deserialization failed: {e}"
+                )
