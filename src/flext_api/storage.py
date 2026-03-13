@@ -21,13 +21,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import contextlib
-import json
 import time
 from collections.abc import Mapping
 from typing import Self
 
 from flext_core import FlextLogger, FlextRuntime, r, u
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
+
+_JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 from flext_api import m, t
 
@@ -193,10 +194,10 @@ class FlextApiStorage:
         return r[bool].fail(f"Key not found: {key}")
 
     def deserialize_json(self, json_str: str) -> r[t.ApiJsonValue]:
-        """Deserialize from JSON using json library."""
+        """Deserialize from JSON using Pydantic TypeAdapter."""
         return u.try_(
-            lambda: json.loads(json_str),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
+            lambda: _JSON_VALUE_ADAPTER.validate_json(json_str),
+            catch=(ValueError, TypeError, KeyError, ConnectionError, ValidationError),
         ).map_error(lambda e: f"JSON deserialization failed: {e}")
 
     def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
@@ -378,9 +379,9 @@ class FlextApiStorage:
         ).map_error(str)
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
-        """Serialize to JSON using json library."""
+        """Serialize to JSON using Pydantic TypeAdapter."""
         return u.try_(
-            lambda: json.dumps(data, default=str),
+            lambda: _JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"JSON serialization failed: {e}")
 

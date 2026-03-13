@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import json
 import time
 import uuid
 from collections import deque
@@ -27,8 +26,11 @@ from collections.abc import Callable, Mapping
 from typing import TypeGuard, override
 
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, p, r
+from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
+
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
@@ -403,14 +405,14 @@ class FlextWebhookHandler(FlextService[bool]):
                 payload_str = payload.decode("utf-8")
             else:
                 payload_str = payload
-            event_data: object = json.loads(payload_str)
+            event_data: object = _JSON_OBJECT_ADAPTER.validate_json(payload_str)
             if not _is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON object")
             json_object: t.JsonObject = {}
             for key, value in event_data.items():
                 json_object[str(key)] = _to_container_value(value)
             return r[t.JsonObject].ok(json_object)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+        except (ValueError, TypeError, KeyError, ConnectionError, ValidationError) as e:
             return r[t.JsonObject].fail(f"Failed to parse payload: {e}")
 
     def _process_event(self, event: t.JsonObject) -> r[bool]:

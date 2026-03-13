@@ -11,11 +11,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 from collections.abc import Mapping
 from typing import TypeGuard
 
 from flext_core import r, u
+from pydantic import TypeAdapter, ValidationError
+
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 from flext_api import m, t
 
@@ -112,7 +114,9 @@ class FlextApiSettingsManager:
             return r[Mapping[str, str]].ok(config_headers_dict)
         if isinstance(headers_value, str):
             try:
-                parsed_headers: object = json.loads(headers_value)
+                parsed_headers: object = _JSON_OBJECT_ADAPTER.validate_json(
+                    headers_value
+                )
                 if _is_object_mapping(parsed_headers):
                     parsed_headers_dict: dict[str, str] = {}
                     for key_obj, value_obj in parsed_headers.items():
@@ -121,7 +125,7 @@ class FlextApiSettingsManager:
                 return r[Mapping[str, str]].fail(
                     f"Parsed headers must be dict, got: {type(parsed_headers)}"
                 )
-            except (json.JSONDecodeError, TypeError) as e:
+            except (ValidationError, TypeError) as e:
                 return r[Mapping[str, str]].fail(f"Failed to parse headers JSON: {e}")
         else:
             return r[Mapping[str, str]].fail(

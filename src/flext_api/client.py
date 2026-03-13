@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 from typing import Self, override
 
 import httpx
@@ -26,6 +25,7 @@ from flext_api.typings import t
 _RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
     t.Api.ResponseBody
 )
+_DICT_BODY_ADAPTER: TypeAdapter[dict[str, object]] = TypeAdapter(dict[str, object])
 
 
 class FlextApiClient(s[FlextApiSettings]):
@@ -156,7 +156,7 @@ class FlextApiClient(s[FlextApiSettings]):
             return r[bytes].ok(body)
         if isinstance(body, dict):
             try:
-                serialized = json.dumps(body).encode("utf-8")
+                serialized = _DICT_BODY_ADAPTER.dump_json(body)
                 return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")

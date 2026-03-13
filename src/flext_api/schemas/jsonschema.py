@@ -16,13 +16,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import TypeGuard, override
 
 import yaml
 from flext_core import r
+from pydantic import TypeAdapter, ValidationError
+
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 from flext_api import FlextApiPlugins, t as t_api
 
@@ -130,8 +132,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                         return r[t_api.object].fail(f"Failed to parse YAML schema: {e}")
                 else:
                     try:
-                        loaded_schema = json.load(schema_file)
-                    except json.JSONDecodeError as e:
+                        loaded_schema = _JSON_OBJECT_ADAPTER.validate_json(
+                            schema_file.read()
+                        )
+                    except ValidationError as e:
                         return r[t_api.object].fail(f"Failed to parse JSON schema: {e}")
         except OSError as e:
             return r[t_api.object].fail(f"Failed to read schema file: {e}")
