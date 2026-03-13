@@ -180,9 +180,11 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         object.__setattr__(self, "_on_connect_handlers", [])
         object.__setattr__(self, "_on_disconnect_handlers", [])
         object.__setattr__(self, "_on_error_handlers", [])
-        self.initialize().tap_error(
-            lambda e: self.logger.error(f"Failed to initialize WebSocket protocol: {e}")
-        )
+
+        def _log_initialize_error(error: str) -> None:
+            self.logger.error(f"Failed to initialize WebSocket protocol: {error}")
+
+        self.initialize().tap_error(_log_initialize_error)
 
     @property
     def is_connected(self) -> bool:
@@ -307,7 +309,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         try:
-            options = _SendRequestOptions(kwargs)
+            options = _SendRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"

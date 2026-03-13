@@ -14,9 +14,15 @@ from collections.abc import Mapping
 
 import cbor2
 from flext_core import r, u
+from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t
 from flext_api.serializers import FlextApiSerializers
+
+_HEADERS_ADAPTER: TypeAdapter[dict[str, str]] = TypeAdapter(dict[str, str])
+_HTTP_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
+    t.Api.ResponseBody
+)
 
 
 class FlextApiAdapters:
@@ -68,21 +74,25 @@ class FlextApiAdapters:
             """
             try:
                 headers_raw = message.get("headers")
-                headers = (
-                    {str(k): str(v) for k, v in headers_raw.items()}
-                    if isinstance(headers_raw, Mapping)
-                    else {}
-                )
+                headers: dict[str, str] = {}
+                if isinstance(headers_raw, Mapping):
+                    try:
+                        headers = _HEADERS_ADAPTER.validate_python(headers_raw)
+                    except ValidationError:
+                        headers = {}
                 status_code = message.get("status", 200)
                 if not isinstance(status_code, int):
                     status_code = 200
                 body = message.get("body")
-                if isinstance(body, (dict, str, bytes)) or body is None:
-                    response_body = body
-                else:
+                try:
+                    response_body = _HTTP_RESPONSE_BODY_ADAPTER.validate_python(body)
+                except ValidationError:
                     response_body = str(body) if body else None
                 response = m.HttpResponse(
-                    status_code=status_code, headers=headers, body=response_body
+                    status_code=status_code,
+                    headers=headers,
+                    body=response_body,
+                    request_id="",
                 )
                 return r[m.HttpResponse].ok(response)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
@@ -188,7 +198,7 @@ class FlextApiAdapters:
                             dict(response)
                         )
                     )
-                return r[m.HttpResponse].ok(m.HttpResponse(response))
+                return r[m.HttpResponse].ok(m.HttpResponse.model_validate(response))
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[m.HttpResponse].fail(f"Response transformation failed: {e}")
 

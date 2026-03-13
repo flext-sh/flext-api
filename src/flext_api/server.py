@@ -467,6 +467,10 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
     def restart(self) -> r[bool]:
         """Restart server (orchestrate stop/start)."""
+
+        def _log_restart(_: bool) -> None:
+            FlextLogger(__name__).info("Server restarted")
+
         return (
             self
             .stop()
@@ -474,7 +478,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             .flat_map(
                 lambda _: self.start().map_error(lambda e: f"Failed to start: {e}")
             )
-            .tap(lambda _: FlextLogger(__name__).info("Server restarted"))
+            .tap(_log_restart)
         )
 
     def start(self) -> r[bool]:

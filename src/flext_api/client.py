@@ -63,11 +63,8 @@ class FlextApiClient(s[FlextApiSettings]):
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
         """
-        kwargs_typed: dict[str, object] = {
-            k: v if isinstance(v, (str, int, float, bool, type(None))) else str(v)
-            for k, v in kwargs.items()
-        }
-        super().__init__(**kwargs_typed)
+        _ = kwargs
+        super().__init__()
         init_config = getattr(self, "_init_config", None)
         if init_config is not None:
             api_config = init_config

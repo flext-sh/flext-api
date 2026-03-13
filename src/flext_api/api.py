@@ -68,11 +68,8 @@ class FlextApi(s[FlextApiSettings]):
             api_config = config
         else:
             api_config = FlextApiSettings()
-        kwargs_typed: dict[str, object] = {
-            k: v if isinstance(v, (str, int, float, bool, type(None))) else str(v)
-            for k, v in kwargs.items()
-        }
-        super().__init__(**kwargs_typed)
+        _ = kwargs
+        super().__init__()
         object.__setattr__(self, "_config", api_config)
         self._client = FlextApiClient(config=api_config)
 

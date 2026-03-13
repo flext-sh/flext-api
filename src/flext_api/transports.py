@@ -139,7 +139,7 @@ class FlextApiTransports:
             try:
                 match data:
                     case dict() as payload:
-                        request_model = m.HttpRequest(payload)
+                        request_model = m.HttpRequest.model_validate(payload)
                     case str() as body_text:
                         request_model = m.HttpRequest(
                             method=c.Api.Method.GET, url=connection_url, body=body_text

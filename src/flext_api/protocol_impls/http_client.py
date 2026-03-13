@@ -150,7 +150,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
-            options = _HttpClientRequestOptions(kwargs)
+            options = _HttpClientRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"

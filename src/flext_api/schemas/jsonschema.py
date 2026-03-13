@@ -109,7 +109,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         return ["json-schema", "jsonschema", "json"]
 
     @override
-    def load_schema(self, schema_source: str) -> r[t_api.object]:
+    def load_schema(self, schema_source: str) -> r[object]:
         """Load JSON Schema from source.
 
         Args:
@@ -121,7 +121,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         """
         schema_path = Path(schema_source)
         if not schema_path.exists() or not schema_path.is_file():
-            return r[t_api.object].fail(f"Schema file not found: {schema_source}")
+            return r[object].fail(f"Schema file not found: {schema_source}")
         suffix = schema_path.suffix.lower()
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
@@ -129,20 +129,18 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     try:
                         loaded_schema = yaml.safe_load(schema_file)
                     except Exception as e:
-                        return r[t_api.object].fail(f"Failed to parse YAML schema: {e}")
+                        return r[object].fail(f"Failed to parse YAML schema: {e}")
                 else:
                     try:
                         loaded_schema = _JSON_OBJECT_ADAPTER.validate_json(
                             schema_file.read()
                         )
                     except ValidationError as e:
-                        return r[t_api.object].fail(f"Failed to parse JSON schema: {e}")
+                        return r[object].fail(f"Failed to parse JSON schema: {e}")
         except OSError as e:
-            return r[t_api.object].fail(f"Failed to read schema file: {e}")
+            return r[object].fail(f"Failed to read schema file: {e}")
         if not _is_object_mapping(loaded_schema):
-            return r[t_api.object].fail(
-                "JSON schema file must contain a JSON/YAML object"
-            )
+            return r[object].fail("JSON schema file must contain a JSON/YAML object")
         schema_definition: t_api.Api.SchemaDefinition = {}
         for key, value in loaded_schema.items():
             if _is_api_json_value(value):
@@ -151,11 +149,9 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                 schema_definition[str(key)] = str(value)
         validation_result = self.validate_schema(schema_definition)
         if validation_result.is_failure:
-            return r[t_api.object].fail(
-                f"Invalid JSON schema: {validation_result.error}"
-            )
-        schema_result: t_api.object = schema_definition
-        return r[t_api.object].ok(schema_result)
+            return r[object].fail(f"Invalid JSON schema: {validation_result.error}")
+        schema_result: object = schema_definition
+        return r[object].ok(schema_result)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.

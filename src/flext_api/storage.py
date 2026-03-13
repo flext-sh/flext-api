@@ -125,7 +125,7 @@ class FlextApiStorage:
                 get_result = self.get(key)
                 if get_result.is_success:
                     unwrapped = get_result.value
-                    result_dict[key] = self._to_json_value(unwrapped)
+                    result_dict[key] = unwrapped
             return r[Mapping[str, t.ApiJsonValue]].ok(result_dict)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
@@ -398,9 +398,9 @@ class FlextApiStorage:
         if metadata_result.is_failure:
             return r[bool].fail(metadata_result.error)
         metadata = metadata_result.value
-        json_value = self._to_json_value(value)
+        json_value = value
         self._storage[key] = json_value
-        value_json = self._to_json_value(metadata.value)
+        value_json = metadata.value
         ttl_json: t.ApiJsonValue = metadata.ttl if metadata.ttl is not None else None
         metadata_dict: dict[str, t.ApiJsonValue] = {
             "value": value_json,

@@ -209,7 +209,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "headers" not in request:
             return {}
         try:
-            parsed = _HeadersRequest(request)
+            parsed = _HeadersRequest.model_validate(request)
         except ValidationError:
             return {}
         normalized_headers: dict[str, str] = {}
@@ -228,7 +228,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = _MethodRequest(request)
+            parsed = _MethodRequest.model_validate(request)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
             return r[str].fail(str(details))
@@ -248,7 +248,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "timeout" in request:
             try:
-                parsed = _TimeoutRequest(request)
+                parsed = _TimeoutRequest.model_validate(request)
                 return parsed.timeout
             except ValidationError:
                 return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
@@ -267,7 +267,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "url" not in request:
             return r[str].fail("URL is required in request (RFC 7230)")
         try:
-            parsed = _UrlRequest(request)
+            parsed = _UrlRequest.model_validate(request)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
             return r[str].fail(str(details))

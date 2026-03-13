@@ -12,8 +12,6 @@ from pathlib import Path
 from typing import override
 
 from flext_core import FlextLogger
-from pydantic import BaseModel
-
 from flext_api import FlextApiProtocols as api_protocols, t
 
 
@@ -54,7 +52,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.Container] = {}
         for key, value in kwargs.items():
-            if isinstance(value, (str, int, float, bool, datetime, BaseModel, Path)):
+            if isinstance(value, (str, int, float, bool, datetime, Path)):
                 context[key] = value
                 continue
             if isinstance(value, (Mapping, Sequence)):

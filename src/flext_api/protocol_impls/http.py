@@ -123,9 +123,11 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self._follow_redirects = follow_redirects
         self._max_redirects = max_redirects
         self._transport = FlextApiTransports.FlextWebTransport()
-        self.initialize().tap_error(
-            lambda e: self.logger.error(f"Failed to initialize HTTP protocol: {e}")
-        )
+
+        def _log_initialize_error(error: str) -> None:
+            self.logger.error(f"Failed to initialize HTTP protocol: {error}")
+
+        self.initialize().tap_error(_log_initialize_error)
         self.logger.info(
             "HTTP protocol initialized",
             http2=http2,
@@ -223,7 +225,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             method, url, headers_result.value, {}, request.timeout, request.body
         )
         try:
-            call_args = _HttpRequestCallArgs(request_kwargs)
+            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
         except ValidationError as e:
             return r[object].fail(f"Invalid streaming request arguments: {e}")
 
@@ -363,7 +365,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 request_kwargs = self._build_request_kwargs(
                     method, url, headers, params, timeout, body
                 )
-                call_args = _HttpRequestCallArgs(request_kwargs)
+                call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
                 client = self._transport.client
                 if client is None:
                     return r[m.HttpResponse].fail("HTTP client is not connected")

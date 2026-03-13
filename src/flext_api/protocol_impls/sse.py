@@ -104,9 +104,11 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             if reconnect_backoff_factor is not None
             else FlextApiConstants.Api.SSE.DEFAULT_RECONNECT_BACKOFF_FACTOR,
         )
-        self.initialize().tap_error(
-            lambda e: self.logger.error(f"Failed to initialize SSE protocol: {e}")
-        )
+
+        def _log_initialize_error(error: str) -> None:
+            self.logger.error(f"Failed to initialize SSE protocol: {error}")
+
+        self.initialize().tap_error(_log_initialize_error)
 
     @override
     def get_supported_protocols(self) -> list[str]:
@@ -146,7 +148,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 validation_result.error or "Request validation failed"
             )
         try:
-            options = _SendRequestOptions(kwargs)
+            options = _SendRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[Mapping[str, object]].fail(str(details))
