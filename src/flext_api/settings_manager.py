@@ -17,9 +17,9 @@ from typing import TypeGuard
 from flext_core import r, u
 from pydantic import TypeAdapter, ValidationError
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
-
 from flext_api import m, t
+
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:

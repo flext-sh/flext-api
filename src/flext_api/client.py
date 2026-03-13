@@ -64,14 +64,26 @@ class FlextApiClient(s[FlextApiSettings]):
 
         """
         _ = kwargs
-        super().__init__()
+        super().__init__(
+            config_type=None,
+            config_overrides=None,
+            initial_context=None,
+            subproject=None,
+            services=None,
+            factories=None,
+            resources=None,
+            container_overrides=None,
+            wire_modules=None,
+            wire_packages=None,
+            wire_classes=None,
+        )
         init_config = getattr(self, "_init_config", None)
         if init_config is not None:
             api_config = init_config
         elif config is not None:
             api_config = config
         else:
-            api_config = FlextApiSettings()
+            api_config = FlextApiSettings.model_validate({})
         object.__setattr__(self, "_config", api_config)
 
     @property
@@ -239,6 +251,7 @@ class FlextApiClient(s[FlextApiSettings]):
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=body,
+                    request_id="",
                 )
             )
         except (
@@ -255,7 +268,7 @@ class FlextApiClient(s[FlextApiSettings]):
         config = self._config
         if isinstance(config, FlextApiSettings):
             return config
-        return FlextApiSettings()
+        return FlextApiSettings.model_validate({})
 
 
 __all__ = ["FlextApiClient"]

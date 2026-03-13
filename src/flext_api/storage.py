@@ -28,9 +28,9 @@ from typing import Self
 from flext_core import FlextLogger, FlextRuntime, r, u
 from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
-_JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
-
 from flext_api import m, t
+
+_JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 class FlextApiStorage:
@@ -392,6 +392,7 @@ class FlextApiStorage:
                 value=value,
                 timestamp=u.generate_iso_timestamp(),
                 ttl=ttl_val,
+                created_at=time.time(),
             ),
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Metadata validation failed: {e}")
@@ -627,8 +628,9 @@ class FlextApiStorage:
         if config_obj is None:
             return {}
         if isinstance(config_obj, dict):
+            config_map: dict[object, object] = config_obj
             normalized: t.Api.StorageDict = {}
-            for key, value in config_obj.items():
+            for key, value in config_map.items():
                 key_str = str(key)
                 if value is None or isinstance(value, (str, int, bool)):
                     normalized[key_str] = value
@@ -660,22 +662,27 @@ class FlextApiStorage:
         try:
             if not isinstance(data, dict):
                 return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
-            ttl_value = data.get("ttl")
+            data_dict: dict[str, t.ApiJsonValue] = {}
+            for item_key, item_value in data.items():
+                data_dict[str(item_key)] = FlextRuntime.normalize_to_general_value(
+                    item_value
+                )
+            ttl_value = data_dict.get("ttl")
             ttl_int: int | None = None
             if ttl_value is not None:
                 try:
                     ttl_int = int(str(ttl_value))
                 except (ValueError, TypeError):
                     ttl_int = None
-            created_at_value = data.get("created_at", 0.0)
+            created_at_value = data_dict.get("created_at", 0.0)
             created_at_float = 0.0
             try:
                 created_at_float = float(str(created_at_value))
             except (ValueError, TypeError):
                 created_at_float = 0.0
             metadata = m.Storage.Metadata(
-                value=data.get("value"),
-                timestamp=str(data.get("timestamp", "")),
+                value=data_dict.get("value"),
+                timestamp=str(data_dict.get("timestamp", "")),
                 ttl=ttl_int,
                 created_at=created_at_float,
             )

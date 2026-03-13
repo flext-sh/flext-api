@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import override
 
 from flext_core import FlextLogger
+
 from flext_api import FlextApiProtocols as api_protocols, t
 
 
@@ -56,7 +57,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
                 context[key] = value
                 continue
             if isinstance(value, (Mapping, Sequence)):
-                context[key] = str(value)
+                context[key] = "<structured>"
                 continue
-            context[key] = str(value)
+            context[key] = "<unstructured>"
         return context

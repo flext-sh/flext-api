@@ -67,9 +67,21 @@ class FlextApi(s[FlextApiSettings]):
         elif config is not None:
             api_config = config
         else:
-            api_config = FlextApiSettings()
+            api_config = FlextApiSettings.model_validate({})
         _ = kwargs
-        super().__init__()
+        super().__init__(
+            config_type=None,
+            config_overrides=None,
+            initial_context=None,
+            subproject=None,
+            services=None,
+            factories=None,
+            resources=None,
+            container_overrides=None,
+            wire_modules=None,
+            wire_packages=None,
+            wire_classes=None,
+        )
         object.__setattr__(self, "_config", api_config)
         self._client = FlextApiClient(config=api_config)
 
@@ -192,21 +204,19 @@ class FlextApi(s[FlextApiSettings]):
         params_mapping: Mapping[str, t.ApiJsonValue] = params_value
         params_result: t.Api.WebParams = {}
         for k, v in params_mapping.items():
-            if isinstance(v, list):
-                str_list: list[str] = [str(item) for item in v]
-                params_result[k] = str_list
-            elif isinstance(v, tuple):
-                str_list = [str(item) for item in v]
-                params_result[k] = str_list
+            if isinstance(v, str):
+                params_result[k] = v
+            elif isinstance(v, (int, float, bool)) or v is None:
+                params_result[k] = f"{v}"
             else:
-                params_result[k] = str(v)
+                params_result[k] = ""
         return r[t.Api.WebParams].ok(params_result)
 
     def _get_config(self) -> FlextApiSettings:
         config = self._config
         if isinstance(config, FlextApiSettings):
             return config
-        return FlextApiSettings()
+        return FlextApiSettings.model_validate({})
 
     def _http_method(
         self,

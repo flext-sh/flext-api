@@ -20,11 +20,14 @@ from typing import Annotated, override
 
 import httpx
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from flext_api import c, m, t, u
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
+
+_OBJECT_LIST_ADAPTER: TypeAdapter[list[object]] = TypeAdapter(list[object])
+_OBJECT_MAPPING_ADAPTER: TypeAdapter[dict[str, object]] = TypeAdapter(dict[str, object])
 
 
 class _HttpRequestCallArgs(BaseModel):
@@ -293,6 +296,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             url=url_result.value,
             headers=dict(headers),
             body=body,
+            query_params={},
             timeout=self._extract_timeout(request),
         )
         return r[m.HttpRequest].ok(http_request)
@@ -343,6 +347,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 status_code=httpx_response.status_code,
                 headers=dict(httpx_response.headers),
                 body=content,
+                request_id="",
             )
             return r[m.HttpResponse].ok(response)
         except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
@@ -441,13 +446,21 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         if value is None:
             return None
         if isinstance(value, list):
+            try:
+                list_value = _OBJECT_LIST_ADAPTER.validate_python(value)
+            except ValidationError:
+                return str(value)
             normalized_items: list[object] = [
-                self._to_general_value(item) for item in value
+                self._to_general_value(item) for item in list_value
             ]
             return normalized_items
         if isinstance(value, Mapping):
+            try:
+                mapping_value = _OBJECT_MAPPING_ADAPTER.validate_python(value)
+            except ValidationError:
+                return str(value)
             normalized_mapping: dict[str, object] = {}
-            for key, item in value.items():
+            for key, item in mapping_value.items():
                 normalized_mapping[str(key)] = self._to_general_value(item)
             return normalized_mapping
         if isinstance(value, (str, int, float, bool)):

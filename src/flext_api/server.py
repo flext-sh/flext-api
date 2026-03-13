@@ -324,7 +324,19 @@ class FlextApiServer(FlextService[bool], x.Validation):
         version: str = "1.0.0",
     ) -> None:
         """Initialize API server with Flext patterns."""
-        super().__init__()
+        super().__init__(
+            config_type=None,
+            config_overrides=None,
+            initial_context=None,
+            subproject=None,
+            services=None,
+            factories=None,
+            resources=None,
+            container_overrides=None,
+            wire_modules=None,
+            wire_packages=None,
+            wire_classes=None,
+        )
         logger = FlextLogger(__name__)
         server_host = host if host is not None else c.Api.Server.DEFAULT_HOST
         server_port = port if port is not None else c.Api.Server.DEFAULT_PORT
@@ -468,7 +480,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
     def restart(self) -> r[bool]:
         """Restart server (orchestrate stop/start)."""
 
-        def _log_restart(_: bool) -> None:
+        def _log_restart(_: object) -> None:
             FlextLogger(__name__).info("Server restarted")
 
         return (

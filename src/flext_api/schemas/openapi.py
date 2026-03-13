@@ -22,12 +22,11 @@ from typing import Annotated, TypeGuard, override
 
 import yaml
 from flext_core import r, u
-from pydantic import TypeAdapter, ValidationError
-
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t
+
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 def _is_container_value(value: object) -> TypeGuard[object]:

@@ -166,6 +166,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
             status_code=httpx_response.status_code,
             headers=dict(httpx_response.headers),
             body=httpx_response.content,
+            request_id="",
         )
 
     def _execute_httpx_request(

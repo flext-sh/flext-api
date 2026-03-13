@@ -24,9 +24,9 @@ import yaml
 from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
-
 from flext_api import FlextApiPlugins, t as t_api
+
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 def _is_api_json_value(value: object) -> TypeGuard[t_api.ApiJsonValue]:
