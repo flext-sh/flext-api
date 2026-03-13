@@ -443,9 +443,18 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         if value is None:
             return None
         if isinstance(value, list):
-            return value
+            typed_list: list[object] = []
+            for item in value:
+                item_obj: object = item
+                typed_list.append(item_obj)
+            return typed_list
         if isinstance(value, Mapping):
-            return value
+            typed_mapping: dict[str, object] = {}
+            for key, item in value.items():
+                key_obj: object = key
+                item_obj: object = item
+                typed_mapping[str(key_obj)] = item_obj
+            return typed_mapping
         if isinstance(value, (str, int, float, bool)):
             return value
         return str(value)
