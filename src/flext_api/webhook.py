@@ -135,22 +135,6 @@ class FlextWebhookHandler(FlextService[bool]):
         self._delivery_confirmations = {}
         self._retry_queue = deque(maxlen=500)
 
-    @staticmethod
-    def _to_json_value(value: object) -> t.ApiJsonValue:
-        """Convert arbitrary object to object recursively."""
-        if value is None or isinstance(value, t.PRIMITIVES_TYPES):
-            return value
-        if isinstance(value, Mapping):
-            converted: t.JsonObject = {}
-            for key, item in value.items():
-                converted[str(key)] = FlextWebhookHandler._to_json_value(item)
-            return converted
-        if isinstance(value, (list, tuple)):
-            return [FlextWebhookHandler._to_json_value(item) for item in list(value)]
-        if isinstance(value, bytes):
-            return value.decode("utf-8", errors="replace")
-        return str(value)
-
     @override
     def execute(self) -> r[bool]:
         """Execute webhook service lifecycle operations.

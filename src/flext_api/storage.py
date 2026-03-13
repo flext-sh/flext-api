@@ -103,21 +103,6 @@ class FlextApiStorage:
         """Get namespace."""
         return self._namespace
 
-    @staticmethod
-    def _to_json_value(value: object) -> t.ApiJsonValue:
-        """Convert arbitrary value to object recursively."""
-        normalized = FlextRuntime.normalize_to_general_value(value)
-        if normalized is None or isinstance(normalized, (str, int, float, bool)):
-            return normalized
-        if isinstance(normalized, dict):
-            converted: t.JsonObject = {}
-            for key, item in normalized.items():
-                converted[str(key)] = FlextApiStorage._to_json_value(item)
-            return converted
-        if isinstance(normalized, (list, tuple)):
-            return [FlextApiStorage._to_json_value(item) for item in normalized]
-        return str(normalized)
-
     def batch_delete(self, keys: list[str]) -> r[bool]:
         """Delete multiple keys efficiently."""
         try:
