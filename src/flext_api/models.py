@@ -61,41 +61,59 @@ class FlextApiModels(FlextWebModels):
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
 
-            method: c.Api.Method | str = Field(
-                default="GET",
-                min_length=3,
-                max_length=8,
-                description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
-                pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
-            )
-            url: str = Field(
-                ...,
-                min_length=1,
-                max_length=c.Api.MAX_URL_LENGTH,
-                description="Request URL",
-            )
-            headers: dict[str, str] = Field(
-                default_factory=dict,
-                description="HTTP request headers",
-            )
+            method: Annotated[
+                c.Api.Method | str,
+                Field(
+                    default="GET",
+                    min_length=3,
+                    max_length=8,
+                    description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
+                    pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
+                ),
+            ]
+            url: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=1,
+                    max_length=c.Api.MAX_URL_LENGTH,
+                    description="Request URL",
+                ),
+            ]
+            headers: Annotated[
+                dict[str, str],
+                Field(
+                    default_factory=dict,
+                    description="HTTP request headers",
+                ),
+            ]
             body: Annotated[
-                t.Api.RequestBody,
-                BeforeValidator(_normalize_request_body),
-            ] = Field(
-                default_factory=dict,
-                description="Request body",
-            )
+                Annotated[
+                    t.Api.RequestBody,
+                    BeforeValidator(_normalize_request_body),
+                ],
+                Field(
+                    default_factory=dict,
+                    description="Request body",
+                ),
+            ]
 
-            query_params: t.Api.WebParams = Field(
-                default_factory=dict,
-                description="Query parameters",
-            )
-            timeout: float = Field(
-                default=float(c.Api.DEFAULT_TIMEOUT),
-                ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-                le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
-                description="Request timeout in seconds",
-            )
+            query_params: Annotated[
+                t.Api.WebParams,
+                Field(
+                    default_factory=dict,
+                    description="Query parameters",
+                ),
+            ]
+            timeout: Annotated[
+                float,
+                Field(
+                    default=float(c.Api.DEFAULT_TIMEOUT),
+                    ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+                    le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+                    description="Request timeout in seconds",
+                ),
+            ]
 
             @computed_field
             def content_type(self) -> str:
@@ -117,28 +135,40 @@ class FlextApiModels(FlextWebModels):
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
 
-            status_code: int = Field(
-                ...,
-                ge=c.Api.HTTP_STATUS_MIN,
-                le=c.Api.HTTP_STATUS_MAX,
-                description=f"HTTP status code ({c.Api.HTTP_STATUS_MIN}-{c.Api.HTTP_STATUS_MAX})",
-            )
-            headers: dict[str, str] = Field(
-                default_factory=dict,
-                description="HTTP response headers",
-            )
+            status_code: Annotated[
+                int,
+                Field(
+                    ...,
+                    ge=c.Api.HTTP_STATUS_MIN,
+                    le=c.Api.HTTP_STATUS_MAX,
+                    description=f"HTTP status code ({c.Api.HTTP_STATUS_MIN}-{c.Api.HTTP_STATUS_MAX})",
+                ),
+            ]
+            headers: Annotated[
+                dict[str, str],
+                Field(
+                    default_factory=dict,
+                    description="HTTP response headers",
+                ),
+            ]
             body: Annotated[
-                t.Api.ResponseBody,
-                BeforeValidator(_normalize_response_body),
-            ] = Field(
-                default_factory=dict,
-                description="Response body (empty dict by default, None allowed for 204)",
-            )
+                Annotated[
+                    t.Api.ResponseBody,
+                    BeforeValidator(_normalize_response_body),
+                ],
+                Field(
+                    default_factory=dict,
+                    description="Response body (empty dict by default, None allowed for 204)",
+                ),
+            ]
 
-            request_id: str = Field(
-                default="",
-                description="Associated request ID for tracking",
-            )
+            request_id: Annotated[
+                str,
+                Field(
+                    default="",
+                    description="Associated request ID for tracking",
+                ),
+            ]
 
             @computed_field
             def is_client_error(self) -> bool:
@@ -182,12 +212,15 @@ class FlextApiModels(FlextWebModels):
         class Url(FlextModels.Value):
             """URL parsing and validation model (immutable value object)."""
 
-            url: str = Field(
-                ...,
-                min_length=1,
-                max_length=c.Api.MAX_URL_LENGTH,
-                description="Full URL string",
-            )
+            url: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=1,
+                    max_length=c.Api.MAX_URL_LENGTH,
+                    description="Full URL string",
+                ),
+            ]
 
             @property
             def _parsed_url(self) -> ParseResult:
@@ -253,31 +286,46 @@ class FlextApiModels(FlextWebModels):
         class ClientConfig(FlextModels.Value):
             """HTTP client configuration model (immutable value object)."""
 
-            base_url: str = Field(
-                default=c.Api.DEFAULT_BASE_URL,
-                max_length=c.Api.MAX_URL_LENGTH,
-                description="Base URL for all requests",
-            )
-            timeout: float = Field(
-                default=float(c.Api.DEFAULT_TIMEOUT),
-                ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-                le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
-                description="Request timeout in seconds",
-            )
-            max_retries: int = Field(
-                default=c.Api.DEFAULT_MAX_RETRIES,
-                ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
-                le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
-                description="Maximum retry attempts",
-            )
-            headers: dict[str, str] = Field(
-                default_factory=dict,
-                description="Default headers for all requests",
-            )
-            verify_ssl: bool = Field(
-                default=True,
-                description="Verify SSL certificates",
-            )
+            base_url: Annotated[
+                str,
+                Field(
+                    default=c.Api.DEFAULT_BASE_URL,
+                    max_length=c.Api.MAX_URL_LENGTH,
+                    description="Base URL for all requests",
+                ),
+            ]
+            timeout: Annotated[
+                float,
+                Field(
+                    default=float(c.Api.DEFAULT_TIMEOUT),
+                    ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+                    le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+                    description="Request timeout in seconds",
+                ),
+            ]
+            max_retries: Annotated[
+                int,
+                Field(
+                    default=c.Api.DEFAULT_MAX_RETRIES,
+                    ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
+                    le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
+                    description="Maximum retry attempts",
+                ),
+            ]
+            headers: Annotated[
+                dict[str, str],
+                Field(
+                    default_factory=dict,
+                    description="Default headers for all requests",
+                ),
+            ]
+            verify_ssl: Annotated[
+                bool,
+                Field(
+                    default=True,
+                    description="Verify SSL certificates",
+                ),
+            ]
 
             @computed_field
             def is_configured(self) -> bool:
@@ -293,27 +341,39 @@ class FlextApiModels(FlextWebModels):
         class PaginationInfo(FlextModels.Value):
             """Pagination information model for HTTP operations (immutable value object)."""
 
-            page: int = Field(
-                default=1,
-                ge=1,
-                description="Current page number (1-based)",
-            )
-            page_size: int = Field(
-                default=c.Pagination.DEFAULT_PAGE_SIZE,
-                ge=c.Pagination.MIN_PAGE_SIZE,
-                le=c.Pagination.MAX_PAGE_SIZE,
-                description="Items per page",
-            )
-            total_items: int = Field(
-                default=0,
-                ge=0,
-                description="Total number of items",
-            )
-            total_pages: int = Field(
-                default=0,
-                ge=0,
-                description="Total number of pages",
-            )
+            page: Annotated[
+                int,
+                Field(
+                    default=1,
+                    ge=1,
+                    description="Current page number (1-based)",
+                ),
+            ]
+            page_size: Annotated[
+                int,
+                Field(
+                    default=c.Pagination.DEFAULT_PAGE_SIZE,
+                    ge=c.Pagination.MIN_PAGE_SIZE,
+                    le=c.Pagination.MAX_PAGE_SIZE,
+                    description="Items per page",
+                ),
+            ]
+            total_items: Annotated[
+                int,
+                Field(
+                    default=0,
+                    ge=0,
+                    description="Total number of items",
+                ),
+            ]
+            total_pages: Annotated[
+                int,
+                Field(
+                    default=0,
+                    ge=0,
+                    description="Total number of pages",
+                ),
+            ]
 
             @computed_field
             def has_next(self) -> bool:
@@ -339,25 +399,39 @@ class FlextApiModels(FlextWebModels):
         class Error(FlextModels.Value):
             """HTTP error response model (immutable value object)."""
 
-            message: str = Field(..., description="Human-readable error message")
-            error_code: str = Field(
-                default="",
-                description="Machine-readable error code",
-            )
-            status_code: int = Field(
-                default=c.Api.HTTP_SERVER_ERROR_MIN,
-                ge=c.Api.HTTP_STATUS_MIN,
-                le=c.Api.HTTP_STATUS_MAX,
-                description="HTTP status code",
-            )
-            details: t.Api.JsonObject = Field(
-                default_factory=dict,
-                description="Additional error details",
-            )
-            request_id: str = Field(
-                default="",
-                description="Associated request ID for tracking",
-            )
+            message: Annotated[
+                str, Field(..., description="Human-readable error message")
+            ]
+            error_code: Annotated[
+                str,
+                Field(
+                    default="",
+                    description="Machine-readable error code",
+                ),
+            ]
+            status_code: Annotated[
+                int,
+                Field(
+                    default=c.Api.HTTP_SERVER_ERROR_MIN,
+                    ge=c.Api.HTTP_STATUS_MIN,
+                    le=c.Api.HTTP_STATUS_MAX,
+                    description="HTTP status code",
+                ),
+            ]
+            details: Annotated[
+                t.Api.JsonObject,
+                Field(
+                    default_factory=dict,
+                    description="Additional error details",
+                ),
+            ]
+            request_id: Annotated[
+                str,
+                Field(
+                    default="",
+                    description="Associated request ID for tracking",
+                ),
+            ]
 
             @computed_field
             def is_client_error(self) -> bool:
@@ -380,10 +454,13 @@ class FlextApiModels(FlextWebModels):
         class QueryParams(FlextModels.Value):
             """Query parameters model (immutable value object)."""
 
-            params: t.Api.WebParams = Field(
-                default_factory=dict,
-                description="Query parameters",
-            )
+            params: Annotated[
+                t.Api.WebParams,
+                Field(
+                    default_factory=dict,
+                    description="Query parameters",
+                ),
+            ]
 
             def get_param(self, name: str) -> t.Api.WebParamValue:
                 """Get query parameter value."""
@@ -399,10 +476,13 @@ class FlextApiModels(FlextWebModels):
         class Headers(FlextModels.Value):
             """HTTP headers model (immutable value object)."""
 
-            headers: dict[str, str] = Field(
-                default_factory=dict,
-                description="HTTP headers",
-            )
+            headers: Annotated[
+                dict[str, str],
+                Field(
+                    default_factory=dict,
+                    description="HTTP headers",
+                ),
+            ]
 
             def get_header(self, name: str) -> str:
                 """Get header value (case-insensitive)."""
@@ -523,23 +603,34 @@ class FlextApiModels(FlextWebModels):
             Immutable pagination metadata for paginated API responses.
             """
 
-            page: int = Field(default=1, ge=1, description="Current page number")
-            page_size: int = Field(
-                default=c.Pagination.DEFAULT_PAGE_SIZE,
-                ge=c.Pagination.MIN_PAGE_SIZE,
-                le=c.Pagination.MAX_PAGE_SIZE,
-                description="Items per page",
-            )
-            total_items: int = Field(
-                default=0,
-                ge=0,
-                description="Total number of items",
-            )
-            total_pages: int = Field(
-                default=0,
-                ge=0,
-                description="Total number of pages",
-            )
+            page: Annotated[
+                int, Field(default=1, ge=1, description="Current page number")
+            ]
+            page_size: Annotated[
+                int,
+                Field(
+                    default=c.Pagination.DEFAULT_PAGE_SIZE,
+                    ge=c.Pagination.MIN_PAGE_SIZE,
+                    le=c.Pagination.MAX_PAGE_SIZE,
+                    description="Items per page",
+                ),
+            ]
+            total_items: Annotated[
+                int,
+                Field(
+                    default=0,
+                    ge=0,
+                    description="Total number of items",
+                ),
+            ]
+            total_pages: Annotated[
+                int,
+                Field(
+                    default=0,
+                    ge=0,
+                    description="Total number of pages",
+                ),
+            ]
 
             @computed_field
             def has_next(self) -> bool:
@@ -571,7 +662,7 @@ class FlextApiModels(FlextWebModels):
                 value: t.ApiJsonValue
                 timestamp: str
                 ttl: float | int | None = None
-                created_at: float = Field(default_factory=time.time)
+                created_at: Annotated[float, Field(default_factory=time.time)]
 
                 def is_expired(self) -> bool:
                     """Check if entry has expired using Pydantic-validated TTL."""

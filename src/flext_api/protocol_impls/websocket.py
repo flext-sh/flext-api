@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Mapping
-from typing import override
+from typing import Annotated, override
 
 import websockets
 from flext_core import r
@@ -31,11 +31,14 @@ from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
 class _SendRequestOptions(BaseModel):
-    message: str | bytes | None = Field(default=None)
-    message_type: str = Field(
-        default=FlextApiConstants.Api.WebSocket.MessageType.TEXT,
-        min_length=1,
-    )
+    message: Annotated[str | bytes | None, Field(default=None)]
+    message_type: Annotated[
+        str,
+        Field(
+            default=FlextApiConstants.Api.WebSocket.MessageType.TEXT,
+            min_length=1,
+        ),
+    ]
 
 
 class _InboundMessage(BaseModel):

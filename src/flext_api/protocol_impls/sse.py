@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterator, Mapping
-from typing import override
+from typing import Annotated, override
 
 import httpx
 from flext_core import r
@@ -20,12 +20,12 @@ from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
 class _SendRequestOptions(BaseModel):
-    method: str = Field(default="GET", min_length=1)
-    max_events: int = Field(default=1, ge=1)
-    auto_reconnect: bool | None = Field(default=None)
-    reconnect_max_attempts: int | None = Field(default=None, ge=0)
-    reconnect_backoff_factor: float | None = Field(default=None, gt=0)
-    retry_timeout: int | None = Field(default=None, ge=0)
+    method: Annotated[str, Field(default="GET", min_length=1)]
+    max_events: Annotated[int, Field(default=1, ge=1)]
+    auto_reconnect: Annotated[bool | None, Field(default=None)]
+    reconnect_max_attempts: Annotated[int | None, Field(default=None, ge=0)]
+    reconnect_backoff_factor: Annotated[float | None, Field(default=None, gt=0)]
+    retry_timeout: Annotated[int | None, Field(default=None, ge=0)]
 
 
 class SSEProtocolPlugin(RFCProtocolImplementation):

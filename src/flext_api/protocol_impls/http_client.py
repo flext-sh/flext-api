@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Self, override
+from typing import Annotated, Self, override
 
 import httpx
 from flext_core import FlextLogger, r
@@ -25,16 +25,22 @@ class _HttpClientRequestOptions(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    params: Mapping[str, str] | None = Field(
-        default=None, description="Query parameters"
-    )
-    json_data: t.Container | None = Field(default=None, description="JSON body")
-    content: bytes | None = Field(default=None, description="Raw content body")
-    data: Mapping[str, object] | None = Field(default=None, description="Form data")
-    timeout: float | None = Field(default=None, description="Request timeout")
-    headers: Mapping[str, str] = Field(
-        default_factory=dict, description="Request headers"
-    )
+    params: Annotated[
+        Mapping[str, str] | None, Field(default=None, description="Query parameters")
+    ]
+    json_data: Annotated[
+        t.Container | None, Field(default=None, description="JSON body")
+    ]
+    content: Annotated[
+        bytes | None, Field(default=None, description="Raw content body")
+    ]
+    data: Annotated[
+        Mapping[str, object] | None, Field(default=None, description="Form data")
+    ]
+    timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
+    headers: Annotated[
+        Mapping[str, str], Field(default_factory=dict, description="Request headers")
+    ]
 
 
 class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterator, Mapping
-from typing import override
+from typing import Annotated, override
 
 import httpx
 from flext_core import r
@@ -36,18 +36,25 @@ class _HttpRequestCallArgs(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    method: str = Field(..., description="HTTP method")
-    url: str = Field(..., description="Request URL")
-    headers: Mapping[str, str] = Field(default_factory=dict, description="HTTP headers")
-    params: Mapping[str, str] = Field(
-        default_factory=dict, description="Query parameters"
-    )
-    json_body: t.Container | None = Field(
-        default=None,
-        description="JSON request body",
-    )
-    content: bytes | None = Field(default=None, description="Raw content body")
-    timeout: float | None = Field(default=None, description="Request timeout")
+    method: Annotated[str, Field(..., description="HTTP method")]
+    url: Annotated[str, Field(..., description="Request URL")]
+    headers: Annotated[
+        Mapping[str, str], Field(default_factory=dict, description="HTTP headers")
+    ]
+    params: Annotated[
+        Mapping[str, str], Field(default_factory=dict, description="Query parameters")
+    ]
+    json_body: Annotated[
+        t.Container | None,
+        Field(
+            default=None,
+            description="JSON request body",
+        ),
+    ]
+    content: Annotated[
+        bytes | None, Field(default=None, description="Raw content body")
+    ]
+    timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
 
 
 class _MappingBodyModel(BaseModel):
@@ -58,7 +65,9 @@ class _MappingBodyModel(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    body: dict[str, object] = Field(..., description="Request body as mapping")
+    body: Annotated[
+        dict[str, object], Field(..., description="Request body as mapping")
+    ]
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):

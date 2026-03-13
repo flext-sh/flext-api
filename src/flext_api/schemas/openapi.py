@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import Path
-from typing import TypeGuard, override
+from typing import Annotated, TypeGuard, override
 
 import yaml
 from flext_core import r, u
@@ -39,7 +39,7 @@ def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
 
 
 class _DictField(BaseModel):
-    value: Mapping[str, object] = Field(default_factory=dict)
+    value: Annotated[Mapping[str, object], Field(default_factory=dict)]
 
 
 class _StringField(BaseModel):

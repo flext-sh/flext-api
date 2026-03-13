@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Annotated
 
 from flext_core import r
 from pydantic import BaseModel, Field, ValidationError, field_validator
@@ -52,11 +53,11 @@ def _validate_rfc_method(value: str) -> str:
 
 
 class _HeadersRequest(BaseModel):
-    headers: dict[str, str] = Field(default_factory=dict)
+    headers: Annotated[dict[str, str], Field(default_factory=dict)]
 
 
 class _MethodRequest(BaseModel):
-    method: str = Field(min_length=1)
+    method: Annotated[str, Field(min_length=1)]
 
     @field_validator("method")
     @classmethod
@@ -65,11 +66,11 @@ class _MethodRequest(BaseModel):
 
 
 class _TimeoutRequest(BaseModel):
-    timeout: float = Field(gt=0)
+    timeout: Annotated[float, Field(gt=0)]
 
 
 class _UrlRequest(BaseModel):
-    url: str = Field(min_length=1)
+    url: Annotated[str, Field(min_length=1)]
 
     @field_validator("url")
     @classmethod
@@ -78,7 +79,7 @@ class _UrlRequest(BaseModel):
 
 
 class _StatusCodeValue(BaseModel):
-    status_code: int = Field(ge=100, le=599)
+    status_code: Annotated[int, Field(ge=100, le=599)]
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):
