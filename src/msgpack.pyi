@@ -1,6 +1,0 @@
-def packb(obj: object) -> bytes: ...
-
-# unpackb returns a union of possible msgpack types
-def unpackb(
-    data: bytes,
-) -> str | int | float | bool | dict[str, object] | list[object] | None: ...

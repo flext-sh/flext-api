@@ -21,9 +21,10 @@ from types import MappingProxyType
 from typing import Final, Literal
 
 from flext_core import FlextConstants
+from flext_web import FlextWebConstants
 
 
-class FlextApiConstants(FlextConstants):
+class FlextApiConstants(FlextWebConstants):
     """FlextApi domain constants extending FlextConstants.
 
     Architecture: Layer 1 (Domain Constants - Extends Core)
@@ -46,7 +47,7 @@ class FlextApiConstants(FlextConstants):
 
     Usage Patterns:
         # Direct access (recommended)
-        >>> from flext_api.constants import FlextApiConstants as ApiConst
+        >>> from flext_api import FlextApiConstants as ApiConst
         >>> method = ApiConst.Api.Method.GET
         >>> status = ApiConst.Api.Status.SUCCESS
 
@@ -58,20 +59,12 @@ class FlextApiConstants(FlextConstants):
         >>> status: ApiConst.Api.StatusLiteral  # Type-safe: "idle" | "pending" | ...
     """
 
-    # =========================================================================
-    # NAMESPACE: .Api - All API domain constants
-    # =========================================================================
-
     class Api:
         """API domain constants namespace.
 
         All API-specific constants are organized here for better namespace
         organization and to enable composition with other domain constants.
         """
-
-        # ═══════════════════════════════════════════════════════════════════
-        # STRENUM: Single declaration needed for automatic validation
-        # ═══════════════════════════════════════════════════════════════════
 
         class Method(StrEnum):
             """HTTP method enumeration - automatic Pydantic validation.
@@ -145,187 +138,110 @@ class FlextApiConstants(FlextConstants):
             CBOR = "cbor"
             CUSTOM = "custom"
 
-        # ═══════════════════════════════════════════════════════════════════
-        # SUBSETS: Literal referencing StrEnum members (NO string duplication!)
-        # ═══════════════════════════════════════════════════════════════════
-        # Use to accept only SOME enum values in methods
-        # References StrEnum members directly - NO string duplication!
-
         type ActiveMethods = Literal["GET", "POST", "PUT", "DELETE"]
-        """Active HTTP methods for operations."""
+        "Active HTTP methods for operations."
         type SafeMethods = Literal["GET", "HEAD", "OPTIONS", "TRACE"]
-        """Safe HTTP methods (no side effects)."""
+        "Safe HTTP methods (no side effects)."
         type TerminalStatuses = Literal["completed", "failed", "error"]
-        """Terminal operation statuses."""
+        "Terminal operation statuses."
         type SuccessStatuses = Literal["success", "completed"]
-        """Success operation statuses."""
-        type JsonCompatibleTypes = Literal["application/json", "text/plain"]
-        """Content types compatible with JSON serialization."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Success operation statuses."
         VALID_METHODS: Final[frozenset[str]] = frozenset(
             member.value for member in Method.__members__.values()
         )
-        """Immutable set of all valid HTTP methods for O(1) validation."""
-
+        "Immutable set of all valid HTTP methods for O(1) validation."
         VALID_STATUSES: Final[frozenset[str]] = frozenset(
             member.value for member in Status.__members__.values()
         )
-        """Immutable set of all valid operation statuses."""
-
+        "Immutable set of all valid operation statuses."
         VALID_CONTENT_TYPES: Final[frozenset[str]] = frozenset(
             member.value for member in ContentType.__members__.values()
         )
-        """Immutable set of all valid content types."""
-
+        "Immutable set of all valid content types."
         ACTIVE_METHODS_SET: Final[frozenset[str]] = frozenset({
             Method.GET.value,
             Method.POST.value,
             Method.PUT.value,
             Method.DELETE.value,
         })
-        """Active HTTP methods for validation - references Method enum members."""
-
+        "Active HTTP methods for validation - references Method enum members."
         SAFE_METHODS_SET: Final[frozenset[str]] = frozenset({
             Method.GET.value,
             Method.HEAD.value,
             Method.OPTIONS.value,
             Method.TRACE.value,
         })
-        """Safe HTTP methods for validation - references Method enum members."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # CONFIGURATION CONSTANTS: Default values and limits
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Safe HTTP methods for validation - references Method enum members."
         DEFAULT_TIMEOUT: Final[float] = 30.0
-        """Default request timeout in seconds."""
-
+        "Default request timeout in seconds."
         DEFAULT_MAX_RETRIES: Final[int] = 3
-        """Default maximum retry attempts."""
-
+        "Default maximum retry attempts."
         DEFAULT_BASE_URL: Final[str] = (
             f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
         )
-        """Default base URL for API operations."""
-
+        "Default base URL for API operations."
         API_VERSION: Final[str] = "v1"
-        """API version string."""
-
+        "API version string."
         MAX_URL_LENGTH: Final[int] = 2048
-        """Maximum URL length."""
-
+        "Maximum URL length."
         MIN_URL_LENGTH: Final[int] = 8
-        """Minimum URL length."""
-
+        "Minimum URL length."
         MIN_PORT: Final[int] = 1
-        """Minimum port number."""
-
+        "Minimum port number."
         MAX_PORT: Final[int] = 65535
-        """Maximum port number."""
-
+        "Maximum port number."
         BACKOFF_FACTOR: Final[float] = 0.5
-        """Exponential backoff factor."""
-
+        "Exponential backoff factor."
         HTTP_SUCCESS_MIN: Final[int] = 200
-        """Minimum HTTP success status code."""
-
+        "Minimum HTTP success status code."
         HTTP_SUCCESS_MAX: Final[int] = 300
-        """Maximum HTTP success status code."""
-
+        "Maximum HTTP success status code."
         HTTP_REDIRECT_MIN: Final[int] = 300
-        """Minimum HTTP redirect status code."""
-
+        "Minimum HTTP redirect status code."
         HTTP_REDIRECT_MAX: Final[int] = 400
-        """Maximum HTTP redirect status code."""
-
+        "Maximum HTTP redirect status code."
         HTTP_CLIENT_ERROR_MIN: Final[int] = 400
-        """Minimum HTTP client error status code."""
-
+        "Minimum HTTP client error status code."
         HTTP_CLIENT_ERROR_MAX: Final[int] = 500
-        """Maximum HTTP client error status code."""
-
+        "Maximum HTTP client error status code."
         HTTP_STATUS_MIN: Final[int] = 100
-        """Minimum valid HTTP status code."""
-
+        "Minimum valid HTTP status code."
         HTTP_STATUS_MAX: Final[int] = 599
-        """Maximum valid HTTP status code."""
-
+        "Maximum valid HTTP status code."
         HTTP_SERVER_ERROR_MIN: Final[int] = 500
-        """Minimum HTTP server error status code."""
-
+        "Minimum HTTP server error status code."
         HTTP_ERROR_MIN: Final[int] = 400
-        """Minimum HTTP error status code."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # RESPONSE TEMPLATES: Immutable mappings
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Minimum HTTP error status code."
         SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
             "status": "success",
             "data": None,
             "error": None,
             "message": None,
         })
-        """Template for successful API responses."""
-
+        "Template for successful API responses."
         ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
             "status": "error",
             "data": None,
             "error": None,
             "message": None,
         })
-        """Template for error API responses."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # HEADER CONSTANTS: HTTP headers padronizados
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Template for error API responses."
         HEADER_CONTENT_TYPE: Final[str] = "Content-Type"
-        """Content-Type header name."""
-
+        "Content-Type header name."
         HEADER_AUTHORIZATION: Final[str] = "Authorization"
-        """Authorization header name."""
-
+        "Authorization header name."
         HEADER_USER_AGENT: Final[str] = "User-Agent"
-        """User-Agent header name."""
-
+        "User-Agent header name."
         HEADER_ACCEPT: Final[str] = "Accept"
-        """Accept header name."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # DERIVED CONSTANTS: Constants derived from others
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Accept header name."
         DEFAULT_USER_AGENT: Final[str] = f"FlextAPI/{API_VERSION}"
-        """Default User-Agent string."""
-
+        "Default User-Agent string."
         DEFAULT_RETRIES: Final[int] = 3
-        """Default retry count."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # RATE LIMITING: Configuração de limites
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Default retry count."
         RATE_LIMIT_REQUESTS: Final[int] = 1000
-        """Rate limit requests per window."""
-
+        "Rate limit requests per window."
         RATE_LIMIT_WINDOW: Final[int] = 3600
-        """Rate limit window in seconds."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # PAGINATION: Default settings
-        # ═══════════════════════════════════════════════════════════════════
-        # Note: DEFAULT_PAGE_SIZE, MIN_PAGE_SIZE, MAX_PAGE_SIZE are Final in base class
-        # Use FlextConstants.Pagination.* for access instead of overriding
-
-        # ═══════════════════════════════════════════════════════════════════
-        # VALIDATION LIMITS: Immutable mappings for validation
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Rate limit window in seconds."
         VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
             "MAX_URL_LENGTH": MAX_URL_LENGTH,
             "MIN_TIMEOUT": 0.1,
@@ -333,39 +249,18 @@ class FlextApiConstants(FlextConstants):
             "MIN_RETRIES": 0,
             "MAX_RETRIES": 10,
         })
-        """Validation limits mapping."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # CORS CONFIGURATION: Configuração CORS
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Validation limits mapping."
         CORS_CONFIG: Final[Mapping[str, list[str]]] = MappingProxyType({
             "origins": ["*"],
-            "methods": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-            ],
+            "methods": ["GET", "POST", "PUT", "DELETE"],
             "headers": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
         })
-        """CORS configuration."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # URL CONFIGURATION: Default URLs
-        # ═══════════════════════════════════════════════════════════════════
-
+        "CORS configuration."
         URL_CONFIG: Final[Mapping[str, str]] = MappingProxyType({
             "EXAMPLE_BASE_URL": "https://api.example.com",
             "LOCALHOST_BASE_URL": "https://localhost:8000",
         })
-        """URL configuration mapping."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
-        # ═══════════════════════════════════════════════════════════════════
-        # All Literal types reference StrEnum members - NO string duplication!
-
+        "URL configuration mapping."
         type MethodLiteral = Literal[
             "GET",
             "POST",
@@ -377,13 +272,11 @@ class FlextApiConstants(FlextConstants):
             "CONNECT",
             "TRACE",
         ]
-        """HTTP method literal - string values matching Method StrEnum."""
-
+        "HTTP method literal - string values matching Method StrEnum."
         type StatusLiteral = Literal[
             "idle", "pending", "running", "completed", "failed", "error", "success"
         ]
-        """Status literal - string values matching Status StrEnum."""
-
+        "Status literal - string values matching Status StrEnum."
         type ContentTypeLiteral = Literal[
             "application/json",
             "application/xml",
@@ -393,14 +286,9 @@ class FlextApiConstants(FlextConstants):
             "multipart/form-data",
             "application/octet-stream",
         ]
-        """Content type literal - string values matching ContentType StrEnum."""
-
+        "Content type literal - string values matching ContentType StrEnum."
         type SerializationFormatLiteral = Literal["json", "msgpack", "cbor", "custom"]
-        """Serialization format literal - string values matching HttpSerializationFormat StrEnum."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # ADDITIONAL DOMAIN CLASSES: HTTP, Server, etc. (restaurados)
-        # ═══════════════════════════════════════════════════════════════════
+        "Serialization format literal - string values matching HttpSerializationFormat StrEnum."
 
         class HTTP:
             """HTTP protocol-specific constants."""
@@ -419,15 +307,13 @@ class FlextApiConstants(FlextConstants):
                 HTTP_2 = "http/2"
                 HTTP_3 = "http/3"
 
-            # Supported protocols - using frozenset for immutability
-            # DRY Pattern: References Protocol enum members - NO string duplication!
             SUPPORTED_PROTOCOLS: Final[frozenset[str]] = frozenset({
                 Protocol.HTTP.value,
                 Protocol.HTTPS.value,
                 Protocol.HTTP_1_1.value,
                 Protocol.HTTP_2.value,
             })
-            """Supported HTTP protocols - references Protocol enum members."""
+            "Supported HTTP protocols - references Protocol enum members."
             SUPPORTED_PROTOCOLS_WITH_HTTP3: Final[frozenset[str]] = frozenset({
                 Protocol.HTTP.value,
                 Protocol.HTTPS.value,
@@ -435,7 +321,7 @@ class FlextApiConstants(FlextConstants):
                 Protocol.HTTP_2.value,
                 Protocol.HTTP_3.value,
             })
-            """Supported HTTP protocols including HTTP/3 - references Protocol enum members."""
+            "Supported HTTP protocols including HTTP/3 - references Protocol enum members."
 
         class Server:
             """Server configuration constants."""
@@ -449,7 +335,7 @@ class FlextApiConstants(FlextConstants):
             DEFAULT_PING_INTERVAL: Final[float] = 20.0
             DEFAULT_PING_TIMEOUT: Final[float] = 20.0
             DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
-            DEFAULT_MAX_SIZE: Final[int] = 10 * 1024 * 1024  # 10MB
+            DEFAULT_MAX_SIZE: Final[int] = 10 * 1024 * 1024
             DEFAULT_MAX_QUEUE: Final[int] = 32
             DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
             DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
@@ -539,20 +425,6 @@ class FlextApiConstants(FlextConstants):
             DEFAULT_PAGE_SIZE_STRING: Final[str] = "20"
             DEFAULT_MAX_PAGE_SIZE_FALLBACK: Final[int] = 1000
 
-    # ═══════════════════════════════════════════════════════════════════
-    # PROTOCOL LITERALS - Defined at class level to reference sibling classes
-    # ═══════════════════════════════════════════════════════════════════
-    # Note: HTTP, WebSocket, SSE, and GraphQL protocol Literals are defined
-    # after the class definition to avoid forward reference issues.
-    # The StrEnum types themselves provide type safety and can be used directly.
 
-    # NOTE: Root-level aliases removed per architecture rules.
-    # Always use full namespace: c.Api.DEFAULT_TIMEOUT, c.Api.HTTPRetry, etc.
-
-
-c = FlextApiConstants  # Runtime alias (not TypeAlias to avoid PYI042)
-
-__all__ = [
-    "FlextApiConstants",
-    "c",
-]
+c = FlextApiConstants
+__all__ = ["FlextApiConstants", "c"]

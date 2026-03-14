@@ -32,7 +32,7 @@ This section covers the HTTP middleware and handler system for request/response 
 Base class for implementing HTTP middleware with FLEXT patterns.
 
 ```python
-from flext_api.middleware import FlextApiMiddleware
+from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -48,12 +48,13 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 from typing import Callable, Awaitable
+
 
 class LoggingMiddleware(FlextApiMiddleware):
     """Middleware for request/response logging."""
@@ -61,22 +62,29 @@ class LoggingMiddleware(FlextApiMiddleware):
     def __init__(self, logger):
         self.logger = logger
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Process incoming request."""
-        self.logger.info("Processing request", extra={
-            "method": request.method,
-            "path": request.path,
-            "user_agent": request.headers.get("User-Agent")
-        })
-        return FlextResult[dict].ok({})
+        self.logger.info(
+            "Processing request",
+            extra={
+                "method": request.method,
+                "path": request.path,
+                "user_agent": request.headers.get("User-Agent"),
+            },
+        )
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Process outgoing response."""
-        self.logger.info("Request completed", extra={
-            "status_code": response.status_code,
-            "duration_ms": response.duration_ms
-        })
-        return FlextResult[dict].ok({})
+        self.logger.info(
+            "Request completed",
+            extra={
+                "status_code": response.status_code,
+                "duration_ms": response.duration_ms,
+            },
+        )
+        return r[dict].ok({})
+
 
 # Usage
 middleware = LoggingMiddleware(logger)
@@ -94,7 +102,7 @@ app.add_middleware(middleware)
 Chain multiple middleware components for complex request processing.
 
 ```python
-from flext_api.middleware import MiddlewarePipeline
+from flext_api import MiddlewarePipeline
 
 # Create middleware pipeline
 pipeline = MiddlewarePipeline()
@@ -104,6 +112,7 @@ pipeline.add_middleware(RateLimitingMiddleware())
 pipeline.add_middleware(AuthenticationMiddleware())
 pipeline.add_middleware(LoggingMiddleware(logger))
 pipeline.add_middleware(CORSMiddleware())
+
 
 # Process request through pipeline
 async def handle_request(request):
@@ -126,7 +135,7 @@ async def handle_request(request):
 Middleware for handling user authentication and authorization.
 
 ```python
-from flext_api.middleware import AuthenticationMiddleware
+from flext_api import AuthenticationMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -142,11 +151,12 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+
 
 class JwtAuthenticationMiddleware(AuthenticationMiddleware):
     """JWT-based authentication middleware."""
@@ -156,12 +166,12 @@ class JwtAuthenticationMiddleware(AuthenticationMiddleware):
         self.secret_key = secret_key
         self.algorithm = algorithm
 
-    async def authenticate_request(self, request) -> FlextResult[dict]:
+    async def authenticate_request(self, request) -> r[dict]:
         """Authenticate request using JWT token."""
         auth_header = request.headers.get("Authorization")
 
         if not auth_header or not auth_header.startswith("Bearer "):
-            return FlextResult[dict].fail("Missing or invalid authorization header")
+            return r[dict].fail("Missing or invalid authorization header")
 
         token = auth_header.split(" ")[1]
 
@@ -174,15 +184,16 @@ class JwtAuthenticationMiddleware(AuthenticationMiddleware):
                 "user_id": payload.get("sub"),
                 "email": payload.get("email"),
                 "roles": payload.get("roles", []),
-                "exp": payload.get("exp")
+                "exp": payload.get("exp"),
             }
 
-            return FlextResult[dict].ok(user_info)
+            return r[dict].ok(user_info)
 
         except jwt.ExpiredSignatureError:
-            return FlextResult[dict].fail("Token has expired")
+            return r[dict].fail("Token has expired")
         except jwt.InvalidTokenError:
-            return FlextResult[dict].fail("Invalid token")
+            return r[dict].fail("Invalid token")
+
 
 # Usage
 auth_middleware = JwtAuthenticationMiddleware("your-secret-key")
@@ -199,21 +210,24 @@ app.add_middleware(auth_middleware)
 ### Authorization Decorator
 
 ```python
-from flext_api.middleware import require_roles, require_permissions
+from flext_api import require_roles, require_permissions
+
 
 # Role-based authorization
 @app.get("/REDACTED_LDAP_BIND_PASSWORD/users")
 @require_roles(["REDACTED_LDAP_BIND_PASSWORD", "superuser"])
-async def get_REDACTED_LDAP_BIND_PASSWORD_users(current_user: dict[str, object] = Depends(get_current_user)):
+async def get_REDACTED_LDAP_BIND_PASSWORD_users(
+    current_user: dict[str, object] = Depends(get_current_user),
+):
     """Get all users (REDACTED_LDAP_BIND_PASSWORD only)."""
     return await REDACTED_LDAP_BIND_PASSWORD_service.get_all_users()
+
 
 # Permission-based authorization
 @app.post("/users/{user_id}/delete")
 @require_permissions(["user.delete"])
 async def delete_user(
-    user_id: str,
-    current_user: dict[str, object] = Depends(get_current_user)
+    user_id: str, current_user: dict[str, object] = Depends(get_current_user)
 ):
     """Delete user (requires delete permission)."""
     return await user_service.delete_user(user_id)
@@ -226,29 +240,30 @@ async def delete_user(
 Middleware for preprocessing incoming requests.
 
 ```python
-from flext_api.middleware import RequestMiddleware
+from flext_api import RequestMiddleware
+
 
 class RequestValidationMiddleware(RequestMiddleware):
     """Validate and sanitize incoming requests."""
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Validate request format and content."""
 
         # Validate content type
         if request.method in ["POST", "PUT", "PATCH"]:
             content_type = request.headers.get("Content-Type", "")
             if not content_type.startswith("application/json"):
-                return FlextResult[dict].fail("Content-Type must be application/json")
+                return r[dict].fail("Content-Type must be application/json")
 
         # Validate request size
-        if hasattr(request, 'body') and len(request.body) > 1024 * 1024:  # 1MB limit
-            return FlextResult[dict].fail("Request body too large")
+        if hasattr(request, "body") and len(request.body) > 1024 * 1024:  # 1MB limit
+            return r[dict].fail("Request body too large")
 
         # Sanitize input data
-        if hasattr(request, 'json'):
+        if hasattr(request, "json"):
             request.json = self.sanitize_data(request.json)
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
     def sanitize_data(self, data: dict) -> dict[str, object]:
         """Sanitize input data."""
@@ -269,31 +284,32 @@ class RequestValidationMiddleware(RequestMiddleware):
 Middleware for postprocessing outgoing responses.
 
 ```python
-from flext_api.middleware import ResponseMiddleware
+from flext_api import ResponseMiddleware
+
 
 class ResponseFormattingMiddleware(ResponseMiddleware):
     """Format and enhance response data."""
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Format response data and add metadata."""
 
         # Add standard response headers
         response.headers.update({
             "X-API-Version": "1.0.0",
             "X-Response-Time": f"{response.duration_ms}ms",
-            "X-Request-ID": request.request_id or "unknown"
+            "X-Request-ID": request.request_id or "unknown",
         })
 
         # Add pagination metadata for list endpoints
-        if hasattr(response, 'data') and isinstance(response.data, dict):
-            if 'items' in response.data and 'total' in response.data:
-                response.data['_metadata'] = {
-                    'total': response.data['total'],
-                    'page': request.query_params.get('page', 1),
-                    'per_page': request.query_params.get('per_page', 10)
+        if hasattr(response, "data") and isinstance(response.data, dict):
+            if "items" in response.data and "total" in response.data:
+                response.data["_metadata"] = {
+                    "total": response.data["total"],
+                    "page": request.query_params.get("page", 1),
+                    "per_page": request.query_params.get("per_page", 10),
                 }
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 ```
 
 ## Error Handling Middleware
@@ -303,37 +319,41 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
 Middleware for centralized error handling and response formatting.
 
 ```python
-from flext_api.middleware import ErrorHandlingMiddleware
-from flext_api.models import ErrorResponse
+from flext_api import ErrorHandlingMiddleware
+from flext_api import m
+
 
 class FlextApiErrorHandler(ErrorHandlingMiddleware):
     """Centralized error handling with FLEXT patterns."""
 
-    async def process_exception(self, request, exception) -> FlextResult[dict]:
+    async def process_exception(self, request, exception) -> r[dict]:
         """Process and format exceptions."""
 
         # Map exceptions to appropriate HTTP status codes
         status_code = self.map_exception_to_status(exception)
 
         # Create error response
-        error_response = ErrorResponse(
+        error_response = m.Api.ErrorResponse(
             error_code=self.get_error_code(exception),
             message=str(exception),
             details=self.get_exception_details(exception),
-            request_id=request.request_id
+            request_id=request.request_id,
         )
 
         # Log error with context
-        self.logger.error("Request failed", extra={
-            "error": str(exception),
-            "status_code": status_code,
-            "path": request.path,
-            "method": request.method
-        })
+        self.logger.error(
+            "Request failed",
+            extra={
+                "error": str(exception),
+                "status_code": status_code,
+                "path": request.path,
+                "method": request.method,
+            },
+        )
 
-        return FlextResult[dict].ok({
+        return r[dict].ok({
             "status_code": status_code,
-            "response": error_response.dict()
+            "response": error_response.dict(),
         })
 
     def map_exception_to_status(self, exception) -> int:
@@ -345,7 +365,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
             NotFoundError: 404,
             ConflictError: 409,
             RateLimitError: 429,
-            Exception: 500
+            Exception: 500,
         }
 
         for exc_type, status in mapping.items():
@@ -361,7 +381,8 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
 Middleware for monitoring request performance and metrics.
 
 ```python
-from flext_api.middleware import PerformanceMonitoringMiddleware
+from flext_api import PerformanceMonitoringMiddleware
+
 
 class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
     """Monitor request performance and timing."""
@@ -369,13 +390,13 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
     def __init__(self, metrics_client):
         self.metrics_client = metrics_client
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Start performance monitoring."""
         request.start_time = time.time()
         request.request_id = str(uuid.uuid4())
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Record performance metrics."""
         duration = time.time() - request.start_time
 
@@ -385,16 +406,16 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
             path=request.path,
             status_code=response.status_code,
             duration_ms=duration * 1000,
-            user_agent=request.headers.get("User-Agent")
+            user_agent=request.headers.get("User-Agent"),
         )
 
         # Add performance headers
         response.headers.update({
-            "X-Response-Time": f"{duration*1000:.2f}ms",
-            "X-Request-ID": request.request_id
+            "X-Response-Time": f"{duration * 1000:.2f}ms",
+            "X-Request-ID": request.request_id,
         })
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 ```
 
 ## Quality Metrics
@@ -412,13 +433,13 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 ### Complete Middleware Stack
 
 ```python
-from flext_api.middleware import (
+from flext_api import (
     MiddlewarePipeline,
     LoggingMiddleware,
     AuthenticationMiddleware,
     ValidationMiddleware,
     ErrorHandlingMiddleware,
-    PerformanceMonitoringMiddleware
+    PerformanceMonitoringMiddleware,
 )
 
 # Create middleware pipeline
@@ -438,7 +459,7 @@ app.middleware("http")(middleware_pipeline.process_request)
 ### Custom Middleware Implementation
 
 ```python
-from flext_api.middleware import FlextApiMiddleware
+from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -454,11 +475,12 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+
 
 class CustomHeaderMiddleware(FlextApiMiddleware):
     """Add custom headers to all responses."""
@@ -466,17 +488,18 @@ class CustomHeaderMiddleware(FlextApiMiddleware):
     def __init__(self, custom_headers: dict):
         self.custom_headers = custom_headers
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Add custom headers to response."""
         for header_name, header_value in self.custom_headers.items():
             response.headers[header_name] = header_value
 
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
+
 
 # Usage
 custom_middleware = CustomHeaderMiddleware({
     "X-API-Version": "1.0.0",
-    "X-Powered-By": "FLEXT-API"
+    "X-Powered-By": "FLEXT-API",
 })
 app.add_middleware(custom_middleware)
 ```
@@ -499,11 +522,12 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+
 
 class DatabaseMiddleware(FlextApiMiddleware):
     """Middleware that provides database connection."""
@@ -511,19 +535,20 @@ class DatabaseMiddleware(FlextApiMiddleware):
     def __init__(self):
         self.container = FlextContainer.get_global()
 
-    async def process_request(self, request) -> FlextResult[dict]:
+    async def process_request(self, request) -> r[dict]:
         """Inject database connection into request."""
         db_result = self.container.get("database")
         if db_result.is_success:
             request.db = db_result.unwrap()
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
 
-    async def process_response(self, request, response) -> FlextResult[dict]:
+    async def process_response(self, request, response) -> r[dict]:
         """Clean up database connection."""
-        if hasattr(request, 'db'):
+        if hasattr(request, "db"):
             # Close database connection
             await request.db.close()
-        return FlextResult[dict].ok({})
+        return r[dict].ok({})
+
 
 # Register database service
 container = FlextContainer.get_global()

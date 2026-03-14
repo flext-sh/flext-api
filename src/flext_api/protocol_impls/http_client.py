@@ -7,21 +7,48 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Self
+from collections.abc import Mapping
+from types import TracebackType
+from typing import Annotated, Self, override
 
 import httpx
 from flext_core import FlextLogger, r
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
-from flext_api.protocols import p
-from flext_api.typings import t
+from flext_api import FlextApiConstants, m, p, t
 
 
-class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
-    """HTTP client implementation conforming to FlextWebClientProtocol."""
+class _HttpClientRequestOptions(BaseModel):
+    """Internal model for HTTP client request options.
 
-    def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:
+    Validates and structures optional request parameters passed to httpx.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    params: Annotated[
+        Mapping[str, str] | None, Field(default=None, description="Query parameters")
+    ]
+    json_data: Annotated[
+        t.Container | None, Field(default=None, description="JSON body")
+    ]
+    content: Annotated[
+        bytes | None, Field(default=None, description="Raw content body")
+    ]
+    data: Annotated[
+        Mapping[str, t.ContainerValue] | None,
+        Field(default=None, description="Form data"),
+    ]
+    timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
+    headers: Annotated[
+        Mapping[str, str], Field(default_factory=dict, description="Request headers")
+    ]
+
+
+class FlextWebClientImplementation(p.Api.Client.HttpClient):
+    """HTTP client implementation conforming to FlextWebClient."""
+
+    def __init__(self, client_config: m.ClientConfig) -> None:
         """Initialize HTTP client protocol implementation.
 
         Args:
@@ -30,8 +57,6 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         """
         self._config = client_config
         self.logger = FlextLogger(__name__)
-
-        # Create httpx client with configuration
         self._client = httpx.Client(
             timeout=httpx.Timeout(
                 timeout=client_config.timeout,
@@ -42,86 +67,165 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             ),
             limits=httpx.Limits(
                 max_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_CONNECTIONS,
-                max_keepalive_connections=(
-                    FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS
-                ),
+                max_keepalive_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS,
             ),
             follow_redirects=True,
             verify=client_config.verify_ssl,
         )
 
-    def _prepare_request_headers(
-        self, kwargs: dict[str, t.GeneralValueType]
-    ) -> dict[str, str]:
-        """Prepare merged headers from config and request."""
-        headers = dict(self._config.headers)
-        if "headers" in kwargs:
-            kwargs_headers = kwargs["headers"]
-            if isinstance(kwargs_headers, dict):
-                headers.update({
-                    k: v for k, v in kwargs_headers.items() if isinstance(v, str)
-                })
-        return headers
+    def __enter__(self) -> Self:
+        """Enter context manager."""
+        return self
 
-    def _extract_request_data(
+    def __exit__(
         self,
-        kwargs: dict[str, t.GeneralValueType],
-    ) -> dict[str, t.GeneralValueType | None]:
-        """Extract and type request data parameters."""
-        params: dict[str, str] | None = None
-        if "params" in kwargs:
-            params_value = kwargs["params"]
-            if isinstance(params_value, dict):
-                # Convert dict values to strings
-                params = {str(k): str(v) for k, v in params_value.items()}
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        """Exit context manager and close client."""
+        self.close()
 
-        json_data: t.GeneralValueType | None = None
-        if "json" in kwargs:
-            json_val = kwargs["json"]
-            if isinstance(json_val, (str, int, float, bool, type(None), list, dict)):
-                json_data = json_val
+    def close(self) -> None:
+        """Close the HTTP client and cleanup resources."""
+        self._client.close()
 
-        content: t.GeneralValueType | None = None
-        if "content" in kwargs:
-            content_val = kwargs["content"]
-            if isinstance(content_val, (str, bytes, int, float, bool, type(None))):
-                content = content_val
+    @override
+    def delete(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP DELETE request."""
+        return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)
 
-        data: t.GeneralValueType | None = None
-        if "data" in kwargs:
-            data_val = kwargs["data"]
-            if isinstance(data_val, (str, int, float, bool, type(None), list, dict)):
-                data = data_val
+    @override
+    def get(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP GET request."""
+        return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
 
-        files: t.GeneralValueType | None = None
-        if "files" in kwargs:
-            files_val = kwargs["files"]
-            if isinstance(files_val, (str, bytes, dict, list)):
-                files = files_val
+    @override
+    def post(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP POST request."""
+        return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
 
-        return {
-            "params": params,
-            "json": json_data,
-            "content": content,
-            "data": data,
-            "files": files,
-        }
+    @override
+    def put(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+        """Execute HTTP PUT request."""
+        return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
+
+    @override
+    def request(
+        self, method: str, url: str, **kwargs: t.Scalar
+    ) -> r[t.Api.HttpResponseDict]:
+        """Execute an HTTP request conforming to protocol."""
+        full_url_result = self._build_full_url(url)
+        if full_url_result.is_failure:
+            return r[t.Api.HttpResponseDict].fail(
+                full_url_result.error or "URL building failed"
+            )
+        options_result = self._build_request_options(kwargs)
+        if options_result.is_failure:
+            return r[t.Api.HttpResponseDict].fail(
+                options_result.error or "Invalid request options"
+            )
+        options = options_result.value
+        headers = self._prepare_request_headers(options)
+        return self._execute_httpx_request(
+            method, full_url_result.value, headers, options
+        )
+
+    def _build_full_url(self, url: str) -> r[str]:
+        """Build full URL from configuration base_url and provided path."""
+        if url.startswith(("http://", "https://")):
+            return r[str].ok(url)
+        base_url = self._config.base_url
+        if not base_url:
+            return r[str].fail("base_url is required when URL is not absolute")
+        normalized_base = base_url.rstrip("/")
+        normalized_path = str(url).lstrip("/")
+        full_url = (
+            f"{normalized_base}/{normalized_path}"
+            if normalized_path
+            else normalized_base
+        )
+        return r[str].ok(full_url)
+
+    def _build_request_options(
+        self, kwargs: Mapping[str, t.ContainerValue]
+    ) -> r[_HttpClientRequestOptions]:
+        """Build typed request options from arbitrary kwargs."""
+        try:
+            options = _HttpClientRequestOptions.model_validate(kwargs)
+        except ValidationError as exc:
+            details = (
+                exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
+            )
+            return r[_HttpClientRequestOptions].fail(str(details))
+        return r[_HttpClientRequestOptions].ok(options)
 
     def _create_response_from_httpx(
-        self,
-        httpx_response: httpx.Response,
-    ) -> FlextApiModels.HttpResponse:
+        self, httpx_response: httpx.Response
+    ) -> m.HttpResponse:
         """Convert httpx response to FlextApiModels.HttpResponse."""
-        return FlextApiModels.HttpResponse(
+        return m.HttpResponse(
             status_code=httpx_response.status_code,
             headers=dict(httpx_response.headers),
             body=httpx_response.content,
+            request_id="",
         )
 
-    def _response_to_dict(
+    def _execute_httpx_request(
         self,
-        response: FlextApiModels.HttpResponse,
-    ) -> t.Api.HttpResponseDict:
+        method: str,
+        full_url: str,
+        headers: Mapping[str, str],
+        options: _HttpClientRequestOptions,
+    ) -> r[t.Api.HttpResponseDict]:
+        """Execute request using typed options."""
+        try:
+            httpx_response = self._client.request(
+                method=method,
+                url=full_url,
+                headers=headers,
+                params=options.params,
+                json=options.json_data,
+                content=options.content,
+                data=options.data,
+                timeout=options.timeout,
+            )
+            response = self._create_response_from_httpx(httpx_response)
+            return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
+        except httpx.HTTPStatusError as exc:
+            error_msg = f"HTTP error {exc.response.status_code}: {exc.response.text}"
+            self.logger.warning(error_msg)
+            response = self._create_response_from_httpx(exc.response)
+            return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
+        except httpx.TimeoutException as exc:
+            error_msg = f"HTTP request timeout: {exc}"
+            self.logger.warning(error_msg)
+            return r[t.Api.HttpResponseDict].fail(error_msg)
+        except httpx.NetworkError as exc:
+            error_msg = f"HTTP network error: {exc}"
+            self.logger.warning(error_msg)
+            return r[t.Api.HttpResponseDict].fail(error_msg)
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            httpx.HTTPError,
+            ConnectionError,
+        ) as exc:
+            error_msg = f"HTTP protocol request failed: {exc}"
+            self.logger.exception(error_msg)
+            return r[t.Api.HttpResponseDict].fail(error_msg)
+
+    def _prepare_request_headers(
+        self,
+        options: _HttpClientRequestOptions,
+    ) -> Mapping[str, str]:
+        """Prepare merged headers from config and request."""
+        headers = dict(self._config.headers)
+        headers.update(options.headers)
+        return headers
+
+    def _response_to_dict(self, response: m.HttpResponse) -> t.Api.HttpResponseDict:
         """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
         return {
             "status_code": response.status_code,
@@ -129,235 +233,3 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             "body": response.body,
             "request_id": response.request_id,
         }
-
-    def _handle_http_error(
-        self,
-        e: httpx.HTTPStatusError,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Handle HTTP status errors."""
-        error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
-        self.logger.warning(error_msg)
-        response = self._create_response_from_httpx(e.response)
-        return r[t.Api.HttpResponseDict].ok(self._response_to_dict(response))
-
-    def _handle_request_exception(
-        self,
-        e: Exception,
-        error_prefix: str,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Handle general request exceptions."""
-        error_msg = f"{error_prefix}: {e}"
-        if isinstance(e, (httpx.TimeoutException, httpx.NetworkError)):
-            self.logger.warning(error_msg)
-        else:
-            self.logger.error(error_msg)
-        return r[t.Api.HttpResponseDict].fail(error_msg)
-
-    def _build_httpx_kwargs(
-        self,
-        method: str,
-        full_url: str,
-        headers: dict[str, str],
-        request_data: dict[str, t.GeneralValueType],
-    ) -> dict[str, t.GeneralValueType]:
-        """Build kwargs for httpx.request call."""
-        kwargs: dict[str, t.GeneralValueType] = {
-            "method": method,
-            "url": full_url,
-            "headers": headers,
-        }
-
-        # Add optional parameters with type validation
-        if (params := request_data.get("params")) is not None and isinstance(
-            params,
-            dict,
-        ):
-            kwargs["params"] = params
-            if (json_value := request_data.get("json")) is not None:
-                kwargs["json"] = json_value
-            elif (content := request_data.get("content")) is not None and isinstance(
-                content,
-                (str, bytes),
-            ):
-                kwargs["content"] = content
-            elif (data := request_data.get("data")) is not None and isinstance(
-                data,
-                dict,
-            ):
-                kwargs["data"] = data
-        elif (json_value := request_data.get("json")) is not None:
-            kwargs["json"] = json_value
-        elif (content := request_data.get("content")) is not None and isinstance(
-            content,
-            (str, bytes),
-        ):
-            kwargs["content"] = content
-        elif (data := request_data.get("data")) is not None and isinstance(data, dict):
-            kwargs["data"] = data
-        elif (files := request_data.get("files")) is not None and isinstance(
-            files,
-            dict,
-        ):
-            kwargs["files"] = files
-
-        return kwargs
-
-    def request(
-        self,
-        method: str,
-        url: str,
-        **kwargs: object,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute an HTTP request conforming to protocol."""
-        try:
-            full_url_result = self._build_full_url(url)
-            if full_url_result.is_failure:
-                return r[t.Api.HttpResponseDict].fail(
-                    full_url_result.error or "URL building failed",
-                )
-            full_url = full_url_result.value
-
-            # Convert kwargs to dict[str, GeneralValueType]
-            kwargs_typed: dict[str, t.GeneralValueType] = {}
-            for k, v in kwargs.items():
-                if isinstance(v, (str, int, float, bool, type(None), list, dict)):
-                    kwargs_typed[k] = v
-                else:
-                    kwargs_typed[k] = str(v)
-            headers = self._prepare_request_headers(kwargs_typed)
-            request_data = self._extract_request_data(kwargs_typed)
-
-            httpx_kwargs = self._build_httpx_kwargs(
-                method,
-                full_url,
-                headers,
-                request_data,
-            )
-            # Type narrowing: extract specific parameters for httpx.request
-            method_raw = httpx_kwargs.get("method", "GET")
-            method_str: str = method_raw if isinstance(method_raw, str) else "GET"
-            url_raw = httpx_kwargs.get("url", "")
-            url_str: str = url_raw if isinstance(url_raw, str) else ""
-            if not url_str:
-                return r[t.Api.HttpResponseDict].fail("Invalid URL type")
-            headers_raw = httpx_kwargs.get("headers", {})
-            headers_dict: dict[str, str] = (
-                headers_raw if isinstance(headers_raw, dict) else {}
-            )
-            # Extract optional parameters with type narrowing
-            params_raw = httpx_kwargs.get("params")
-            params_typed: dict[str, str] | None = (
-                params_raw if isinstance(params_raw, dict) else None
-            )
-            json_data = httpx_kwargs.get("json")
-            content_raw = httpx_kwargs.get("content")
-            content_typed: str | bytes | None = (
-                content_raw
-                if isinstance(content_raw, (str, bytes, type(None)))
-                else None
-            )
-            timeout_raw = httpx_kwargs.get("timeout")
-            timeout_typed: float | None = (
-                timeout_raw
-                if isinstance(timeout_raw, (float, int, type(None)))
-                else None
-            )
-            if isinstance(timeout_typed, int):
-                timeout_typed = float(timeout_typed)
-            # Call httpx.request with explicit typed parameters
-            httpx_response = self._client.request(
-                method=method_str,
-                url=url_str,
-                headers=headers_dict,
-                params=params_typed,
-                json=json_data,
-                content=content_typed,
-                timeout=timeout_typed,
-            )
-
-            response = self._create_response_from_httpx(httpx_response)
-            return r[t.Api.HttpResponseDict].ok(
-                self._response_to_dict(response),
-            )
-
-        except httpx.HTTPStatusError as e:
-            return self._handle_http_error(e)
-        except (httpx.TimeoutException, httpx.NetworkError, Exception) as e:
-            error_prefix = (
-                "HTTP request timeout"
-                if isinstance(e, httpx.TimeoutException)
-                else "HTTP network error"
-                if isinstance(e, httpx.NetworkError)
-                else "HTTP protocol request failed"
-            )
-            return self._handle_request_exception(e, error_prefix)
-
-    def _build_full_url(self, url: str) -> r[str]:
-        """Build full URL from configuration base_url and provided path.
-
-        Args:
-        url: The URL path or full URL
-
-        Returns:
-        FlextResult with full URL string or error
-
-        """
-        if url.startswith(("http://", "https://")):
-            return r[str].ok(url)
-
-        if not self._config.base_url:
-            return r[str].fail("base_url is required when URL is not absolute")
-
-        base_url_value = self._config.base_url
-        if not isinstance(base_url_value, str) or not base_url_value:
-            return r[str].fail("base_url must be a non-empty string")
-
-        base_url = str(base_url_value).rstrip("/")
-        path = str(url).lstrip("/")
-        full_url = f"{base_url}/{path}" if path else base_url
-        return r[str].ok(full_url)
-
-    def close(self) -> None:
-        """Close the HTTP client and cleanup resources."""
-        if hasattr(self, "_client"):
-            self._client.close()
-
-    def __enter__(self) -> Self:
-        """Enter context manager."""
-        return self
-
-    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
-        """Exit context manager and close client."""
-        self.close()
-
-    def get(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP GET request."""
-        return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
-
-    def post(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP POST request."""
-        return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
-
-    def put(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP PUT request."""
-        return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
-
-    def delete(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> r[t.Api.HttpResponseDict]:
-        """Execute HTTP DELETE request."""
-        return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)

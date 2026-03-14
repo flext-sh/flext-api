@@ -4,50 +4,60 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations  # @vulture_ignore
+from __future__ import annotations
 
-from flext_core import FlextLogger, t  # @vulture_ignore
+from collections.abc import Mapping, Sequence
+from datetime import datetime
+from pathlib import Path
+from typing import override
 
-from flext_api.protocols import FlextApiProtocols as api_protocols
+from flext_core import FlextLogger
+
+from flext_api import FlextApiProtocols as api_protocols, t
 
 
-class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
-    """Logger implementation conforming to LoggerProtocol."""
+class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
+    """Logger implementation conforming to Logger."""
 
     def __init__(self) -> None:
         """Initialize logger protocol implementation."""
         self.logger = FlextLogger(__name__)
 
-    def _convert_kwargs_to_context(
-        self,
-        kwargs: dict[str, object],
-    ) -> dict[str, t.GeneralValueType]:
-        """Convert kwargs to context dict for logger compatibility."""
-        context: dict[str, t.GeneralValueType] = {}
-        for key, value in kwargs.items():
-            # t.GeneralValueType from flext-core accepts primitive types
-            if isinstance(value, (str, int, float, bool, type(None), list, dict)):
-                context[key] = value
-            else:
-                context[key] = str(value)
-        return context
-
-    def info(self, message: str, **kwargs: object) -> None:
-        """Log info message."""
-        context = self._convert_kwargs_to_context(kwargs)
-        self.logger.info(message, return_result=False, **context)
-
-    def error(self, message: str, **kwargs: object) -> None:
-        """Log error message."""
-        context = self._convert_kwargs_to_context(kwargs)
-        self.logger.error(message, return_result=False, **context)
-
-    def debug(self, message: str, **kwargs: object) -> None:
+    @override
+    def debug(self, message: str, **kwargs: t.Scalar) -> None:
         """Log debug message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.debug(message, return_result=False, **context)
 
-    def warning(self, message: str, **kwargs: object) -> None:
+    @override
+    def error(self, message: str, **kwargs: t.Scalar) -> None:
+        """Log error message."""
+        context = self._convert_kwargs_to_context(kwargs)
+        self.logger.error(message, return_result=False, **context)
+
+    @override
+    def info(self, message: str, **kwargs: t.Scalar) -> None:
+        """Log info message."""
+        context = self._convert_kwargs_to_context(kwargs)
+        self.logger.info(message, return_result=False, **context)
+
+    @override
+    def warning(self, message: str, **kwargs: t.Scalar) -> None:
         """Log warning message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.warning(message, return_result=False, **context)
+
+    def _convert_kwargs_to_context(
+        self, kwargs: Mapping[str, t.ApiJsonValue]
+    ) -> Mapping[str, t.Container]:
+        """Convert kwargs to context dict for logger compatibility."""
+        context: dict[str, t.Container] = {}
+        for key, value in kwargs.items():
+            if isinstance(value, (str, int, float, bool, datetime, Path)):
+                context[key] = value
+                continue
+            if isinstance(value, (Mapping, Sequence)):
+                context[key] = "<structured>"
+                continue
+            context[key] = "<unstructured>"
+        return context

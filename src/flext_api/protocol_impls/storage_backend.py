@@ -7,95 +7,98 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, r
+from typing import override
 
-from flext_api.protocols import p
-from flext_api.typings import t
+from flext_core import FlextLogger, FlextRuntime, r, u
+
+from flext_api import p, t
 
 
-class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
-    """Storage backend implementation conforming to StorageBackendProtocol."""
+class StorageBackendImplementation(p.Api.Storage.StorageBackend):
+    """Storage backend implementation conforming to StorageBackend."""
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: dict[str, t.GeneralValueType] = {}
+        self._storage: dict[str, t.ApiJsonValue] = {}
         self.logger = FlextLogger(__name__)
 
-    def get(self, key: str) -> r[object]:
-        """Retrieve value by key."""
-        try:
-            if not key:
-                return r[object].fail("Storage key cannot be empty")
+    @override
+    def clear(self) -> r[bool]:
+        """Clear all stored values."""
 
-            if key in self._storage:
-                value = self._storage[key]
-                self.logger.debug("Retrieved data with key: %s", key)
-                return r[object].ok(value)
-            return r[object].fail(f"Key not found: {key}")
+        def _clear() -> bool:
+            self._storage = {}
+            self.logger.debug("Cleared all storage data")
+            return True
 
-        except Exception as e:
-            return r[object].fail(f"Retrieval operation failed: {e}")
+        return u.try_(
+            _clear,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Clear operation failed: {e}")
 
-    def set(
-        self,
-        key: str,
-        value: object,
-        timeout: int | None = None,
-    ) -> r[bool]:
-        """Store value with optional timeout."""
-        try:
-            if not key:
-                return r[bool].fail("Storage key cannot be empty")
-
-            # Acknowledge timeout parameter (not implemented in this simple backend)
-            _ = timeout
-            # Ensure value is compatible with t.GeneralValueType before storage
-            if isinstance(value, (str, int, float, bool, type(None), list, dict)):
-                self._storage[str(key)] = value
-            else:
-                self._storage[str(key)] = str(value)
-            self.logger.debug("Stored data with key: %s", key)
-            return r[bool].ok(value=True)
-
-        except Exception as e:
-            return r[bool].fail(f"Storage operation failed: {e}")
-
+    @override
     def delete(self, key: str) -> r[bool]:
         """Delete value by key."""
         try:
             if not key:
                 return r[bool].fail("Storage key cannot be empty")
-
             if key in self._storage:
-                del self._storage[key]
+                storage_data = dict(self._storage)
+                del storage_data[key]
+                self._storage = storage_data
                 self.logger.debug("Deleted data with key: %s", key)
                 return r[bool].ok(value=True)
             return r[bool].fail(f"Key not found: {key}")
-
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(f"Delete operation failed: {e}")
 
+    @override
     def exists(self, key: str) -> r[bool]:
         """Check if key exists."""
-        try:
-            exists = str(key) in self._storage
-            return r[bool].ok(exists)
-        except Exception as e:
-            return r[bool].fail(f"Exists check failed: {e}")
+        return u.try_(
+            lambda: str(key) in self._storage,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Exists check failed: {e}")
 
-    def clear(self) -> r[bool]:
-        """Clear all stored values."""
+    @override
+    def get(self, key: str) -> r[t.ApiJsonValue]:
+        """Retrieve value by key."""
         try:
-            self._storage.clear()
-            self.logger.debug("Cleared all storage data")
-            return r[bool].ok(value=True)
-        except Exception as e:
-            return r[bool].fail(f"Clear operation failed: {e}")
+            if not key:
+                return r[t.ApiJsonValue].fail("Storage key cannot be empty")
+            if key in self._storage:
+                value = self._storage[key]
+                self.logger.debug("Retrieved data with key: %s", key)
+                return r[t.ApiJsonValue].ok(value)
+            return r[t.ApiJsonValue].fail(f"Key not found: {key}")
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
+    @override
     def keys(self) -> r[list[str]]:
         """Get all keys."""
-        try:
-            storage_keys: list[str] = list(self._storage)
-            return r[list[str]].ok(storage_keys)
-        except Exception as e:
-            return r[list[str]].fail(f"Keys operation failed: {e}")
+        return u.try_(
+            lambda: list(self._storage),
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Keys operation failed: {e}")
+
+    @override
+    def set(
+        self, key: str, value: t.ApiJsonValue, timeout: int | None = None
+    ) -> r[bool]:
+        """Store value with optional timeout."""
+        if not key:
+            return r[bool].fail("Storage key cannot be empty")
+
+        def _set() -> bool:
+            _ = timeout
+            storage_data = dict(self._storage)
+            storage_data[str(key)] = FlextRuntime.normalize_to_general_value(value)
+            self._storage = storage_data
+            self.logger.debug("Stored data with key: %s", key)
+            return True
+
+        return u.try_(
+            _set,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
+        ).map_error(lambda e: f"Storage operation failed: {e}")

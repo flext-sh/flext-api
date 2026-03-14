@@ -14,10 +14,10 @@
   - [Option 2: Inheritance Hierarchy](#option-2-inheritance-hierarchy)
   - [Option 3: Facade Pattern Only](#option-3-facade-pattern-only)
 - [Implementation Architecture](#implementation-architecture)
-  - [Protocol Interface](#protocol-interface)
-  - [Protocol Registry](#protocol-registry)
+  - [Interface](#protocol-interface)
+  - [Registry](#protocol-registry)
   - [Unified Client Interface](#unified-client-interface)
-- [Protocol Implementations](#protocol-implementations)
+- [Implementations](#protocol-implementations)
   - [HTTP Protocol](#http-protocol)
   - [GraphQL Protocol](#graphql-protocol)
 - [Usage Examples](#usage-examples)
@@ -25,7 +25,7 @@
   - [GraphQL Usage](#graphql-usage)
   - [WebSocket Usage](#websocket-usage)
 - [Testing Strategy](#testing-strategy)
-  - [Protocol Isolation Testing](#protocol-isolation-testing)
+  - [Isolation Testing](#protocol-isolation-testing)
   - [Integration Testing](#integration-testing)
 - [Performance Considerations](#performance-considerations)
   - [Connection Pooling](#connection-pooling)
@@ -34,7 +34,7 @@
 - [Extension Points](#extension-points)
   - [Adding New Protocols](#adding-new-protocols)
 - [Monitoring and Observability](#monitoring-and-observability)
-  - [Protocol Metrics](#protocol-metrics)
+  - [Metrics](#protocol-metrics)
   - [Health Checks](#health-checks)
 - [Migration Strategy](#migration-strategy)
   - [Phase 1: Core Architecture](#phase-1-core-architecture)
@@ -129,7 +129,7 @@ FLEXT-API will implement a **Protocol Plugin Architecture** with:
 ### Protocol Interface
 
 ```python
-class BaseProtocol(ABC):
+class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
@@ -138,7 +138,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> FlextResult[object]:
+    async def execute_request(self, request: object) -> r[object]:
         """Execute request using protocol-specific logic."""
         pass
 
@@ -148,7 +148,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def health_check(self) -> FlextResult[bool]:
+    async def health_check(self) -> r[bool]:
         """Check protocol connectivity and health."""
         pass
 ```
@@ -160,16 +160,16 @@ class ProtocolRegistry:
     """Registry for protocol implementations with discovery."""
 
     def __init__(self):
-        self._protocols: Dict[str, Type[BaseProtocol]] = {}
+        self._protocols: Dict[str, Type[Base]] = {}
         self._capabilities: Dict[str, ProtocolCapabilities] = {}
 
-    def register(self, name: str, protocol_class: Type[BaseProtocol]):
+    def register(self, name: str, protocol_class: Type[Base]):
         """Register a protocol implementation."""
         self._protocols[name] = protocol_class
         # Cache capabilities for performance
         self._capabilities[name] = protocol_class().get_capabilities()
 
-    def get_protocol(self, name: str) -> BaseProtocol:
+    def get_protocol(self, name: str) -> Base:
         """Get protocol instance by name."""
         if name not in self._protocols:
             raise ValueError(f"Protocol '{name}' not registered")
@@ -192,18 +192,9 @@ class FlextApiClient(FlextService[None]):
 
     def __init__(self, protocol: str = "http", **config):
         super().__init__()
-        self._protocol_name = protocol
         self._config = config
-        self._protocol_instance = None
 
-    async def _get_protocol_instance(self) -> BaseProtocol:
-        """Lazy initialization of protocol instance."""
-        if self._protocol_instance is None:
-            registry = ProtocolRegistry()
-            self._protocol_instance = registry.get_protocol(self._protocol_name)
-        return self._protocol_instance
-
-    async def request(self, method: str, url: str, **kwargs) -> FlextResult[object]:
+    async def request(self, method: str, url: str, **kwargs) -> r[object]:
         """Unified request method that delegates to protocol."""
         protocol = await self._get_protocol_instance()
 
@@ -215,19 +206,6 @@ class FlextApiClient(FlextService[None]):
 
         # Convert back to unified response format
         return self._convert_from_protocol_response(result)
-
-    def _convert_to_protocol_request(self, method: str, url: str, kwargs) -> object:
-        """Convert unified request to protocol-specific format."""
-        if self._protocol_name == "http":
-            return FlextApiModels.HttpRequest(method=method, url=url, **kwargs)
-        elif self._protocol_name == "graphql":
-            return GraphQLRequest(query=kwargs.get("query"), variables=kwargs.get("variables"))
-        # ... other protocol conversions
-
-    def _convert_from_protocol_response(self, result: FlextResult[object]) -> FlextResult[object]:
-        """Convert protocol-specific response to unified format."""
-        # Standardize response format across protocols
-        return result
 ```
 
 ## Protocol Implementations
@@ -235,13 +213,15 @@ class FlextApiClient(FlextService[None]):
 ### HTTP Protocol
 
 ```python
-class FlextWebProtocol(BaseProtocol):
+class FlextWeb(Base):
     """HTTP/REST protocol implementation."""
 
     def create_client(self, config: Dict[str, object]) -> httpx.AsyncClient:
         return httpx.AsyncClient(**config)
 
-    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
+    async def execute_request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> r[FlextApiModels.HttpResponse]:
         client = self.create_client(request.config)
 
         try:
@@ -250,17 +230,19 @@ class FlextWebProtocol(BaseProtocol):
                 url=request.url,
                 headers=request.headers,
                 content=request.body,
-                timeout=request.timeout
+                timeout=request.timeout,
             )
 
-            return FlextResult.ok(FlextApiModels.HttpResponse(
-                status_code=response.status_code,
-                headers=dict(response.headers),
-                body=response.text,
-                response_time=response.elapsed.total_seconds()
-            ))
+            return r.ok(
+                FlextApiModels.HttpResponse(
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                    body=response.text,
+                    response_time=response.elapsed.total_seconds(),
+                )
+            )
         except Exception as e:
-            return FlextResult.fail(f"HTTP request failed: {e}")
+            return r.fail(f"HTTP request failed: {e}")
         finally:
             await client.aclose()
 
@@ -270,32 +252,33 @@ class FlextWebProtocol(BaseProtocol):
             supports_binary=True,
             supports_compression=True,
             max_request_size=100 * 1024 * 1024,  # 100MB
-            timeout_range=(1, 300)  # 1 second to 5 minutes
+            timeout_range=(1, 300),  # 1 second to 5 minutes
         )
 ```
 
 ### GraphQL Protocol
 
 ```python
-class GraphQLProtocol(BaseProtocol):
+class GraphQL(Base):
     """GraphQL protocol implementation."""
 
     def create_client(self, config: Dict[str, object]) -> gql.Client:
         transport = AIOHTTPTransport(url=config["url"])
-        return gql.Client(transport=transport, execute_timeout=config.get("timeout", 30))
+        return gql.Client(
+            transport=transport, execute_timeout=config.get("timeout", 30)
+        )
 
-    async def execute_request(self, request: GraphQLRequest) -> FlextResult[GraphQLResponse]:
+    async def execute_request(self, request: GraphQLRequest) -> r[GraphQLResponse]:
         client = self.create_client(request.config)
 
         try:
             result = await client.execute_async(
-                gql.gql(request.query),
-                variable_values=request.variables
+                gql.gql(request.query), variable_values=request.variables
             )
 
-            return FlextResult.ok(GraphQLResponse(data=result))
+            return r.ok(GraphQLResponse(data=result))
         except Exception as e:
-            return FlextResult.fail(f"GraphQL request failed: {e}")
+            return r.fail(f"GraphQL request failed: {e}")
 
     def get_capabilities(self) -> ProtocolCapabilities:
         return ProtocolCapabilities(
@@ -303,7 +286,7 @@ class GraphQLProtocol(BaseProtocol):
             supports_binary=False,
             supports_compression=True,
             supports_introspection=True,
-            query_complexity_limit=1000
+            query_complexity_limit=1000,
         )
 ```
 
@@ -353,12 +336,13 @@ await client.send({"type": "subscribe", "channel": "updates"})
 ```python
 @pytest.fixture
 def http_protocol():
-    return FlextWebProtocol()
+    return FlextWeb()
+
 
 @pytest.mark.asyncio
 async def test_http_request_success(http_protocol):
     # Mock httpx client
-    with patch('httpx.AsyncClient') as mock_client:
+    with patch("httpx.AsyncClient") as mock_client:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.headers = {}
@@ -367,7 +351,9 @@ async def test_http_request_success(http_protocol):
 
         mock_client.return_value.request.return_value = mock_response
 
-        request = FlextApiModels.HttpRequest(method="GET", url="https://api.example.com/test")
+        request = FlextApiModels.HttpRequest(
+            method="GET", url="https://api.example.com/test"
+        )
         result = await http_protocol.execute_request(request)
 
         assert result.is_success
@@ -383,12 +369,12 @@ async def test_protocol_registry_integration():
     registry = ProtocolRegistry()
 
     # Test protocol registration
-    registry.register("test", TestProtocol)
+    registry.register("test", Test)
     assert "test" in registry.list_protocols()
 
     # Test protocol instantiation
     protocol = registry.get_protocol("test")
-    assert isinstance(protocol, TestProtocol)
+    assert isinstance(protocol, Test)
 
     # Test capabilities caching
     capabilities = registry.get_capabilities("test")
@@ -422,7 +408,7 @@ async def test_protocol_registry_integration():
 1. **Implement Protocol Class**:
 
 ```python
-class CustomProtocol(BaseProtocol):
+class Custom(Base):
     def create_client(self, config: Dict[str, object]):
         return CustomClient(**config)
 
@@ -434,14 +420,14 @@ class CustomProtocol(BaseProtocol):
         return ProtocolCapabilities(...)
 ```
 
-2. **Register Protocol**:
+1. **Register Protocol**:
 
 ```python
 registry = ProtocolRegistry()
-registry.register("custom", CustomProtocol)
+registry.register("custom", Custom)
 ```
 
-3. **Use in Client**:
+1. **Use in Client**:
 
 ```python
 client = FlextApiClient(protocol="custom", **config)
@@ -486,7 +472,7 @@ client = FlextApiClient(protocol="custom", **config)
 
 ## References
 
-- [Protocol Abstraction Pattern](https://martinfowler.com/eaaCatalog/plugin.html)
+- [Abstraction Pattern](https://martinfowler.com/eaaCatalog/plugin.html)
 - [Strategy Pattern](https://refactoring.guru/design-patterns/strategy)
 - [Dependency Injection in Python](https://github.com/google/guice)
 - GitHub Issue: #234 - Protocol Plugin Architecture

@@ -12,14 +12,13 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextResult as r
-from flext_core.protocols import FlextProtocols
+from flext_core import r
+from flext_web import FlextWebProtocols
 
-from flext_api.constants import FlextApiConstants
-from flext_api.typings import t
+from flext_api import FlextApiConstants, t
 
 
-class FlextApiProtocols(FlextProtocols):
+class FlextApiProtocols(FlextWebProtocols):
     """Single unified HTTP protocols class extending flext-core FlextProtocols.
 
     Contains all protocol definitions for HTTP operations organized under the .Api namespace.
@@ -32,12 +31,12 @@ class FlextApiProtocols(FlextProtocols):
 
     **Usage:**
     ```python
-    from flext_api.protocols import p
+    from flext_api import p
 
     # Access API protocols via .Api namespace
-    client: p.Api.Client.HttpClientProtocol
-    storage: p.Api.Storage.StorageBackendProtocol
-    logger: p.Api.Logger.LoggerProtocol
+    client: p.Api.Client.HttpClient
+    storage: p.Api.Storage.StorageBackend
+    logger: p.Api.Logger.Logger
     ```
     """
 
@@ -53,68 +52,51 @@ class FlextApiProtocols(FlextProtocols):
             """HTTP client protocols."""
 
             @runtime_checkable
-            class HttpClientProtocol(Protocol):
+            class HttpClient(Protocol):
                 """Protocol for generic HTTP client implementations."""
 
-                def request(
-                    self,
-                    method: FlextApiConstants.Api.Method | str,
-                    url: str,
-                    **kwargs: object,
+                def delete(
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> r[t.Api.HttpResponseDict]:
-                    """Execute an HTTP request."""
+                    """Execute HTTP DELETE request."""
                     ...
 
                 def get(
-                    self,
-                    url: str,
-                    **kwargs: object,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
                 def post(
-                    self,
-                    url: str,
-                    **kwargs: object,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
                 def put(
-                    self,
-                    url: str,
-                    **kwargs: object,
+                    self, url: str, **kwargs: t.ApiJsonValue
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
 
-                def delete(
+                def request(
                     self,
+                    method: FlextApiConstants.Api.Method | str,
                     url: str,
-                    **kwargs: object,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
-                    """Execute HTTP DELETE request."""
+                    """Execute an HTTP request."""
                     ...
 
         class Storage:
             """Storage backend protocols."""
 
             @runtime_checkable
-            class StorageBackendProtocol(Protocol):
+            class StorageBackend(Protocol):
                 """Protocol for generic storage backend implementations."""
 
-                def get(self, key: str) -> r[object]:
-                    """Retrieve value by key. Returns error if key not found (no fallback)."""
-                    ...
-
-                def set(
-                    self,
-                    key: str,
-                    value: object,
-                    timeout: int | None = None,
-                ) -> r[bool]:
-                    """Store value with optional timeout."""
+                def clear(self) -> r[bool]:
+                    """Clear all stored values."""
                     ...
 
                 def delete(self, key: str) -> r[bool]:
@@ -125,57 +107,56 @@ class FlextApiProtocols(FlextProtocols):
                     """Check if key exists."""
                     ...
 
-                def clear(self) -> r[bool]:
-                    """Clear all stored values."""
+                def get(self, key: str) -> r[t.ApiJsonValue]:
+                    """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
                 def keys(self) -> r[list[str]]:
                     """Get all keys."""
                     ...
 
+                def set(
+                    self, key: str, value: t.ApiJsonValue, timeout: int | None = None
+                ) -> r[bool]:
+                    """Store value with optional timeout."""
+                    ...
+
         class Logger:
             """Logger protocols for API operations."""
 
             @runtime_checkable
-            class LoggerProtocol(Protocol):
+            class Logger(Protocol):
                 """Protocol for generic logger implementations."""
 
-                def info(self, message: str, **kwargs: object) -> None:
-                    """Log info message."""
-
-                def error(self, message: str, **kwargs: object) -> None:
-                    """Log error message."""
-
-                def debug(self, message: str, **kwargs: object) -> None:
+                def debug(self, message: str, **kwargs: t.ApiJsonValue) -> None:
                     """Log debug message."""
 
-                def warning(self, message: str, **kwargs: object) -> None:
+                def error(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+                    """Log error message."""
+
+                def info(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+                    """Log info message."""
+
+                def warning(self, message: str, **kwargs: t.ApiJsonValue) -> None:
                     """Log warning message."""
 
         class Serialization:
             """Serialization protocols."""
 
             @runtime_checkable
-            class SerializerProtocol(Protocol):
+            class Serializer(Protocol):
                 """Protocol for custom serializers.
 
                 Defines the interface for serialization implementations
                 including JSON, MessagePack, CBOR, etc.
                 """
 
-                def serialize(self, data: object) -> bytes:
-                    """Serialize data to bytes.
-
-                    Args:
-                        data: Data to serialize
-
-                    Returns:
-                        Serialized bytes
-
-                    """
+                @property
+                def content_type(self) -> str:
+                    """Get content type for this serializer."""
                     ...
 
-                def deserialize(self, data: bytes) -> object:
+                def deserialize(self, data: bytes) -> t.ApiJsonValue:
                     """Deserialize bytes to data.
 
                     Args:
@@ -187,24 +168,31 @@ class FlextApiProtocols(FlextProtocols):
                     """
                     ...
 
-                @property
-                def content_type(self) -> str:
-                    """Get content type for this serializer."""
+                def serialize(self, data: t.ApiJsonValue) -> bytes:
+                    """Serialize data to bytes.
+
+                    Args:
+                        data: Data to serialize
+
+                    Returns:
+                        Serialized bytes
+
+                    """
                     ...
 
         class Lifecycle:
             """HTTP resource lifecycle protocols."""
 
             @runtime_checkable
-            class HttpResourceProtocol(Protocol):
+            class HttpResource(Protocol):
                 """Protocol for HTTP resources that can be managed."""
+
+                async def aclose(self) -> None:
+                    """Close the resource asynchronously."""
 
                 def close(self) -> None:
                     """Close the resource synchronously."""
                     ...
-
-                async def aclose(self) -> None:
-                    """Close the resource asynchronously."""
 
         class Transport:
             """Transport layer protocols."""
@@ -217,15 +205,17 @@ class FlextApiProtocols(FlextProtocols):
                 including HTTP, WebSocket, SSE, GraphQL, and gRPC.
                 """
 
-                def connect(self, url: str, **options: object) -> r[object]:
+                def connect(self, url: str, **options: t.ApiJsonValue) -> r[str]:
                     """Connect to endpoint."""
                     ...
 
-                def disconnect(self, connection: object) -> r[bool]:
+                def disconnect(self, connection: str) -> r[bool]:
                     """Disconnect from endpoint."""
                     ...
 
-                def send(self, connection: object, data: object) -> r[object]:
+                def send(
+                    self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
+                ) -> r[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...
 
@@ -244,14 +234,26 @@ class FlextApiProtocols(FlextProtocols):
             """gRPC-related protocols (stubs until flext-grpc integration)."""
 
             @runtime_checkable
-            class GrpcServiceProtocol(Protocol):
+            class GrpcService(Protocol):
                 """Protocol for gRPC service implementations.
 
                 This protocol defines the interface that gRPC services should
                 implement when flext-grpc is integrated.
                 """
 
-                def register_methods(self) -> list[t.GeneralValueType]:
+                def handle_request(self, request: t.ApiJsonValue) -> r[t.ApiJsonValue]:
+                    """Handle gRPC request.
+
+                    Args:
+                        request: gRPC request
+
+                    Returns:
+                        r containing response or error
+
+                    """
+                    ...
+
+                def register_methods(self) -> list[t.ApiJsonValue]:
                     """Register service methods.
 
                     Returns:
@@ -260,61 +262,41 @@ class FlextApiProtocols(FlextProtocols):
                     """
                     ...
 
-                def handle_request(
-                    self,
-                    request: object,
-                ) -> r[object]:
-                    """Handle gRPC request.
-
-                    Args:
-                        request: gRPC request
-
-                    Returns:
-                        FlextResult containing response or error
-
-                    """
-                    ...
-
         class Protobuf:
             """Protobuf-related protocols (stubs until flext-grpc integration)."""
 
             @runtime_checkable
-            class ProtobufServiceProtocol(Protocol):
+            class ProtobufService(Protocol):
                 """Protocol for Protobuf service definitions.
 
                 This protocol defines the interface for Protobuf-based services
                 when flext-grpc is integrated.
                 """
 
-                def get_request_schema(self, method: str) -> r[object]:
+                def get_request_schema(self, method: str) -> r[t.Api.JsonObject]:
                     """Get request schema for method.
 
                     Args:
                         method: Method name
 
                     Returns:
-                        FlextResult containing schema or error
+                        r containing schema or error
 
                     """
                     ...
 
-                def get_response_schema(self, method: str) -> r[object]:
+                def get_response_schema(self, method: str) -> r[t.Api.JsonObject]:
                     """Get response schema for method.
 
                     Args:
                         method: Method name
 
                     Returns:
-                        FlextResult containing schema or error
+                        r containing schema or error
 
                     """
                     ...
 
 
-# Alias for simplified usage - exported for domain usage
 p = FlextApiProtocols
-
-__all__ = [
-    "FlextApiProtocols",
-    "p",
-]
+__all__ = ["FlextApiProtocols", "p"]

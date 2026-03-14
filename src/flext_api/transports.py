@@ -11,302 +11,166 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 import httpx
 from flext_core import r
 
-from flext_api.constants import c
-from flext_api.protocols import p
-from flext_api.typings import t
-
-# Protocol reference for backward compatibility
-TransportPlugin = p.Api.Transport.TransportPlugin
+from flext_api import c, m, p, t
 
 
 class FlextApiTransports:
     """FLEXT API transport implementations."""
 
-    class FlextWebTransport(TransportPlugin):
+    class FlextWebTransport(p.Api.Transport.TransportPlugin):
         """HTTP transport implementation using httpx."""
 
         def __init__(self) -> None:
             """Initialize HTTP transport."""
             self._client: httpx.Client | None = None
 
-        def connect(self, url: str, **options: object) -> r[object]:
+        @property
+        def client(self) -> httpx.Client | None:
+            """Expose the active HTTP client instance."""
+            return self._client
+
+        @override
+        def connect(self, url: str, **options: t.Scalar) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
-                # Validate URL parameter
                 if not url:
-                    return r[object].fail("URL is required for HTTP connection")
-
-                # Create a basic httpx client - options can be used by subclasses
-                # The url parameter is validated but not directly used in client creation
-                # as httpx.Client doesn't take a base URL in connect()
-                # Options parameter is reserved for future extensibility
-                _ = options  # Reserved for future use
+                    return r[str].fail("URL is required for HTTP connection")
+                _ = options
                 self._client = httpx.Client()
-                return r[object].ok(self._client)
-            except Exception as e:
-                return r[object].fail(f"HTTP connect failed: {e}")
+                return r[str].ok(url)
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
+                return r[str].fail(f"HTTP connect failed: {e}")
 
-        def disconnect(self, connection: object) -> r[bool]:
+        @override
+        def disconnect(self, connection: str) -> r[bool]:
             """Disconnect HTTP connection."""
             try:
-                if isinstance(connection, httpx.Client):
-                    connection.close()
+                _ = connection
+                if self._client is not None:
+                    self._client.close()
                 self._client = None
                 return r[bool].ok(value=True)
-            except Exception as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
                 return r[bool].fail(f"HTTP disconnect failed: {e}")
 
-        def _extract_request_params(
-            self,
-            data: dict[str, t.GeneralValueType],
-        ) -> r[tuple[str, str, dict[str, str], object, object, object]]:
-            """Extract and validate request parameters from data."""
-            method_str: str = c.Api.Method.GET
-            if "method" in data:
-                method_value = data["method"]
-                if isinstance(method_value, str):
-                    method_str = method_value
-
-            if "url" not in data:
-                return r[tuple[str, str, dict[str, str], object, object, object]].fail(
-                    "URL is required for HTTP request",
-                )
-
-            url_value = data["url"]
-            if not isinstance(url_value, str) or not url_value:
-                return r[tuple[str, str, dict[str, str], object, object, object]].fail(
-                    "URL must be a non-empty string",
-                )
-
-            url: str = url_value
-
-            headers: dict[str, str] = {}
-            if "headers" in data:
-                headers_value = data["headers"]
-                if isinstance(headers_value, dict):
-                    headers = headers_value
-
-            params = None
-            if "params" in data:
-                params = data["params"]
-
-            json_data = None
-            if "json" in data:
-                json_data = data["json"]
-
-            content = None
-            if "content" in data:
-                content = data["content"]
-
-            return r[tuple[str, str, dict[str, str], object, object, object]].ok((
-                method_str,
-                url,
-                headers,
-                params,
-                json_data,
-                content,
-            ))
-
-        def send(self, connection: object, data: object) -> r[object]:
+        @override
+        def send(
+            self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
+        ) -> r[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             try:
-                if not isinstance(connection, httpx.Client):
-                    return r[object].fail("Connection must be an httpx.Client")
-
-                if not isinstance(data, dict):
-                    return r[object].fail("HTTP send data must be a dict")
-
-                params_result = self._extract_request_params(data)
-                if params_result.is_failure:
-                    return r[object].fail(
-                        params_result.error or "Parameter extraction failed",
+                _ = connection
+                client = self._client
+                if client is None:
+                    return r[t.Api.HttpResponseDict | str].fail(
+                        "HTTP client is not connected"
                     )
-
-                method_str, url, headers, params, json_data, content = (
-                    params_result.value
+                params_result = self._extract_request_params(
+                    data, connection_url=connection
                 )
-
-                # Make the request with explicit parameter passing
-                # httpx.request requires specific types, so we pass parameters directly
-                if params is not None and isinstance(params, dict):
-                    if json_data is not None:
-                        response = connection.request(
-                            method=method_str,
-                            url=url,
-                            headers=headers,
-                            params=params,
-                            json=json_data,
-                        )
-                    elif content is not None and isinstance(content, (str, bytes)):
-                        response = connection.request(
-                            method=method_str,
-                            url=url,
-                            headers=headers,
-                            params=params,
-                            content=content,
-                        )
-                    else:
-                        response = connection.request(
-                            method=method_str,
-                            url=url,
-                            headers=headers,
-                            params=params,
-                        )
-                elif json_data is not None:
-                    response = connection.request(
-                        method=method_str,
-                        url=url,
-                        headers=headers,
-                        json=json_data,
+                if params_result.is_failure:
+                    return r[t.Api.HttpResponseDict | str].fail(
+                        params_result.error or "Parameter extraction failed"
                     )
-                elif content is not None and isinstance(content, (str, bytes)):
-                    response = connection.request(
-                        method=method_str,
-                        url=url,
-                        headers=headers,
-                        content=content,
-                    )
-                else:
-                    response = connection.request(
-                        method=method_str,
-                        url=url,
-                        headers=headers,
-                    )
-
-                # Return response data
-                return r[object].ok({
+                request_model = params_result.value
+                match request_model.body:
+                    case dict() as body_json:
+                        response = client.request(
+                            method=str(request_model.method),
+                            url=request_model.url,
+                            headers=request_model.headers,
+                            json=body_json,
+                        )
+                    case str() as body_text:
+                        response = client.request(
+                            method=str(request_model.method),
+                            url=request_model.url,
+                            headers=request_model.headers,
+                            content=body_text,
+                        )
+                    case bytes() as body_bytes:
+                        response = client.request(
+                            method=str(request_model.method),
+                            url=request_model.url,
+                            headers=request_model.headers,
+                            content=body_bytes,
+                        )
+                    case _:
+                        return r[t.Api.HttpResponseDict | str].fail(
+                            "Unsupported HTTP request body type"
+                        )
+                return r[t.Api.HttpResponseDict | str].ok({
                     "status_code": response.status_code,
                     "headers": dict(response.headers),
                     "content": response.content,
                     "text": response.text,
                     "url": str(response.url),
                 })
-            except Exception as e:
-                return r[object].fail(f"HTTP send failed: {e}")
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
+                return r[t.Api.HttpResponseDict | str].fail(f"HTTP send failed: {e}")
 
-    class WebSocketTransport(TransportPlugin):
-        """WebSocket transport implementation."""
-
-        def connect(self, url: str, **options: object) -> r[object]:
-            """Connect to WebSocket endpoint."""
-            # Parameter validation for future implementation
-            if not url:
-                return r[object].fail("WebSocket URL is required")
-            # options parameter is reserved for future WebSocket connection options (e.g., headers, protocols)
-            if options:
-                # Log that options were provided but not yet supported
-                pass  # Future implementation will use these options
-            return r[object].fail("WebSocket transport not implemented (Phase 3)")
-
-        def disconnect(self, connection: object) -> r[bool]:
-            """Disconnect WebSocket."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[bool].fail("Connection object is required")
-            return r[bool].fail("WebSocket transport not implemented (Phase 3)")
-
-        def send(self, connection: object, data: object) -> r[object]:
-            """Send WebSocket message."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[object].fail("Connection object is required")
-            if data is None:
-                return r[object].fail("Data is required")
-            return r[object].fail("WebSocket transport not implemented (Phase 3)")
-
-    class SseTransport(TransportPlugin):
-        """Server-Sent Events transport implementation."""
-
-        def connect(self, url: str, **options: object) -> r[object]:
-            """Connect to SSE endpoint."""
-            # Parameter validation for future implementation
-            if not url:
-                return r[object].fail("SSE URL is required")
-            # options parameter is reserved for future SSE connection options (e.g., headers, reconnect settings)
-            if options:
-                # Future implementation will use these options
-                pass
-            return r[object].fail("SSE transport not implemented (Phase 3)")
-
-        def disconnect(self, connection: object) -> r[bool]:
-            """Disconnect SSE."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[bool].fail("Connection object is required")
-            return r[bool].fail("SSE transport not implemented (Phase 3)")
-
-        def send(self, connection: object, data: object) -> r[object]:
-            """Send SSE data."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[object].fail("Connection object is required")
-            if data is None:
-                return r[object].fail("Data is required")
-            return r[object].fail("SSE transport not implemented (Phase 3)")
-
-    class GraphQLTransport(TransportPlugin):
-        """GraphQL transport implementation."""
-
-        def connect(self, url: str, **options: object) -> r[object]:
-            """Connect to GraphQL endpoint."""
-            # Parameter validation for future implementation
-            if not url:
-                return r[object].fail("GraphQL URL is required")
-            # options parameter is reserved for future GraphQL connection options (e.g., headers, schema)
-            if options:
-                # Future implementation will use these options
-                pass
-            return r[object].fail("GraphQL transport not implemented (Phase 3)")
-
-        def disconnect(self, connection: object) -> r[bool]:
-            """Disconnect GraphQL."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[bool].fail("Connection object is required")
-            return r[bool].fail("GraphQL transport not implemented (Phase 3)")
-
-        def send(self, connection: object, data: object) -> r[object]:
-            """Send GraphQL query."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[object].fail("Connection object is required")
-            if data is None:
-                return r[object].fail("Query data is required")
-            return r[object].fail("GraphQL transport not implemented (Phase 3)")
-
-    class GrpcTransport(TransportPlugin):
-        """gRPC transport implementation."""
-
-        def connect(self, url: str, **options: object) -> r[object]:
-            """Connect to gRPC service."""
-            # Parameter validation for future implementation
-            if not url:
-                return r[object].fail("gRPC URL is required")
-            if options:
-                pass  # Acknowledge options parameter for future use
-            return r[object].fail("gRPC transport not implemented (Phase 3)")
-
-        def disconnect(self, connection: object) -> r[bool]:
-            """Disconnect gRPC."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[bool].fail("Connection object is required")
-            return r[bool].fail("gRPC transport not implemented (Phase 3)")
-
-        def send(self, connection: object, data: object) -> r[object]:
-            """Send gRPC request."""
-            # Parameter validation for future implementation
-            if connection is None:
-                return r[object].fail("Connection object is required")
-            if data is None:
-                return r[object].fail("Request data is required")
-            return r[object].fail("gRPC transport not implemented (Phase 3)")
+        def _extract_request_params(
+            self, data: t.Api.RequestConfig | t.Api.RequestBody, *, connection_url: str
+        ) -> r[m.HttpRequest]:
+            """Extract and validate request parameters from data."""
+            try:
+                match data:
+                    case dict() as payload:
+                        request_model = m.HttpRequest.model_validate(payload)
+                    case str() as body_text:
+                        request_model = m.HttpRequest(
+                            method=c.Api.Method.GET,
+                            url=connection_url,
+                            body=body_text,
+                            headers={},
+                            query_params={},
+                            timeout=float(c.Api.DEFAULT_TIMEOUT),
+                        )
+                    case bytes() as body_bytes:
+                        request_model = m.HttpRequest(
+                            method=c.Api.Method.GET,
+                            url=connection_url,
+                            body=body_bytes,
+                            headers={},
+                            query_params={},
+                            timeout=float(c.Api.DEFAULT_TIMEOUT),
+                        )
+                    case _:
+                        return r[m.HttpRequest].fail(
+                            "Unsupported HTTP request payload type"
+                        )
+                return r[m.HttpRequest].ok(request_model)
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
+                return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
 
-__all__ = [
-    "FlextApiTransports",
-    "TransportPlugin",
-]
+__all__ = ["FlextApiTransports"]

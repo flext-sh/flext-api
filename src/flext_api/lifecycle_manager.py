@@ -11,10 +11,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from flext_api.protocols import p
-
-# Protocol reference for backward compatibility
-HttpResourceProtocol = p.Api.Lifecycle.HttpResourceProtocol
+from flext_api import p
 
 
 class FlextApiLifecycleManager:
@@ -27,36 +24,23 @@ class FlextApiLifecycleManager:
     @staticmethod
     @asynccontextmanager
     async def manage_http_resource(
-        resource: HttpResourceProtocol,
-    ) -> AsyncIterator[HttpResourceProtocol]:
+        resource: p.Api.Lifecycle.HttpResource,
+    ) -> AsyncIterator[p.Api.Lifecycle.HttpResource]:
         """Manage HTTP resource lifecycle with proper cleanup."""
         try:
             yield resource
         finally:
-            if hasattr(resource, "aclose") and callable(
-                getattr(resource, "aclose", None),
-            ):
-                await resource.aclose()
-            elif hasattr(resource, "close") and callable(
-                getattr(resource, "close", None),
-            ):
-                resource.close()
+            await resource.aclose()
 
     @staticmethod
     def manage_sync_http_resource(
-        resource: HttpResourceProtocol,
-    ) -> HttpResourceProtocol:
+        resource: p.Api.Lifecycle.HttpResource,
+    ) -> p.Api.Lifecycle.HttpResource:
         """Manage synchronous HTTP resource lifecycle."""
         try:
             return resource
         finally:
-            if hasattr(resource, "close") and callable(
-                getattr(resource, "close", None),
-            ):
-                resource.close()
+            resource.close()
 
 
-__all__ = [
-    "FlextApiLifecycleManager",
-    "HttpResourceProtocol",
-]
+__all__ = ["FlextApiLifecycleManager"]

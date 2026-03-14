@@ -26,7 +26,7 @@ This section covers the core HTTP client and server classes that form the founda
 
 ### FlextApiClient - Main HTTP Client
 
-The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with FlextResult patterns.
+The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with r patterns.
 
 ```python
 from flext_api import FlextApiClient
@@ -45,7 +45,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -56,7 +56,7 @@ client = FlextApiClient(
     base_url="https://api.example.com",
     timeout=30.0,
     max_retries=3,
-    headers={"User-Agent": "FLEXT-API/0.9.9"}
+    headers={"User-Agent": "FLEXT-API/0.9.9"},
 )
 
 # HTTP methods with automatic error handling
@@ -105,7 +105,9 @@ result = client.get("/users", params={"limit": 10, "offset": 0})
 result = client.get("/users", headers={"Accept": "application/json"})
 
 # Conditional requests
-result = client.get("/users", headers={"If-Modified-Since": "Wed, 21 Oct 2025 07:28:00 GMT"})
+result = client.get(
+    "/users", headers={"If-Modified-Since": "Wed, 21 Oct 2025 07:28:00 GMT"}
+)
 ```
 
 **POST/PUT Requests:**
@@ -149,11 +151,12 @@ config = FlextApiSettings(
     version="2.0.0",
     description="Enterprise-grade REST API",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Create application
 app = create_fastapi_app(config=config)
+
 
 # Application is now ready for route registration
 @app.get("/health")
@@ -177,8 +180,10 @@ Pydantic model for API configuration with validation.
 ```python
 from flext_api import FlextApiSettings
 
+
 class MyApiConfig(FlextApiSettings):
     """Custom API configuration."""
+
     custom_setting: str = "default_value"
     feature_flags: dict[str, object] = {}
 ```
@@ -190,23 +195,28 @@ class MyApiConfig(FlextApiSettings):
 Type-safe models for HTTP requests and responses using Pydantic v2.
 
 ```python
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiModels
 from typing import Optional
 from pydantic import Field
 
+
 class UserCreateRequest(FlextApiModels.BaseRequest):
     """Request model for user creation."""
+
     name: str = Field(..., min_length=1, max_length=100)
     email: str = Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
     age: Optional[int] = Field(None, ge=0, le=150)
 
+
 class UserResponse(FlextApiModels.BaseResponse):
     """Response model for user data."""
+
     id: str
     name: str
     email: str
     created_at: str
     is_active: bool = True
+
 
 # Usage in routes
 @app.post("/users", response_model=UserResponse)
@@ -218,7 +228,7 @@ async def create_user(request: UserCreateRequest):
         name=user.name,
         email=user.email,
         created_at=user.created_at.isoformat(),
-        is_active=True
+        is_active=True,
     )
 ```
 
@@ -227,15 +237,20 @@ async def create_user(request: UserCreateRequest):
 Standardized error responses across the API.
 
 ```python
-from flext_api.models import ErrorResponse
+from flext_api import ErrorResponse
+
 
 class ValidationErrorResponse(ErrorResponse):
     """Validation error response."""
+
     field_errors: dict[str, t.StringList]
+
 
 class AuthenticationErrorResponse(ErrorResponse):
     """Authentication error response."""
+
     login_url: Optional[str] = None
+
 
 # Usage in exception handlers
 @app.exception_handler(ValidationException)
@@ -245,8 +260,8 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
         content=ValidationErrorResponse(
             error_code="VALIDATION_ERROR",
             message="Request validation failed",
-            field_errors=exc.field_errors
-        ).dict()
+            field_errors=exc.field_errors,
+        ).dict(),
     )
 ```
 
@@ -257,7 +272,7 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
 Collection of HTTP-related utility functions.
 
 ```python
-from flext_api.utilities import FlextApiUtilities
+from flext_api import FlextApiUtilities
 
 # URL manipulation
 base_url = "https://api.example.com/v1"
@@ -265,8 +280,7 @@ full_url = FlextApiUtilities.build_url(base_url, "/users", {"limit": 10})
 
 # Header manipulation
 headers = FlextApiUtilities.merge_headers(
-    {"Content-Type": "application/json"},
-    {"Authorization": "Bearer token123"}
+    {"Content-Type": "application/json"}, {"Authorization": "Bearer token123"}
 )
 
 # Request/response transformation
@@ -313,11 +327,12 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+
 
 class UserApiClient(FlextApiClient):
     """HTTP client for user management API."""
@@ -326,28 +341,29 @@ class UserApiClient(FlextApiClient):
         super().__init__(
             base_url="https://jsonplaceholder.typicode.com",
             timeout=10.0,
-            headers={"User-Agent": "FLEXT-API-Example/0.9.9"}
+            headers={"User-Agent": "FLEXT-API-Example/0.9.9"},
         )
 
-    def get_users(self, limit: int = 10) -> FlextResult[list]:
+    def get_users(self, limit: int = 10) -> r[list]:
         """Get list of users with pagination."""
         return self.get("/users", params={"_limit": limit})
 
-    def get_user(self, user_id: int) -> FlextResult[dict]:
+    def get_user(self, user_id: int) -> r[dict]:
         """Get single user by ID."""
         return self.get(f"/users/{user_id}")
 
-    def create_user(self, user_data: dict) -> FlextResult[dict]:
+    def create_user(self, user_data: dict) -> r[dict]:
         """Create new user."""
         return self.post("/users", json=user_data)
 
-    def update_user(self, user_id: int, user_data: dict) -> FlextResult[dict]:
+    def update_user(self, user_id: int, user_data: dict) -> r[dict]:
         """Update existing user."""
         return self.put(f"/users/{user_id}", json=user_data)
 
-    def delete_user(self, user_id: int) -> FlextResult[bool]:
+    def delete_user(self, user_id: int) -> r[bool]:
         """Delete user."""
         return self.delete(f"/users/{user_id}")
+
 
 # Usage example
 client = UserApiClient()
@@ -390,7 +406,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -403,32 +419,36 @@ config = FlextApiSettings(
     version="1.0.0",
     description="API for managing users in the system",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Create application
 app = create_fastapi_app(config=config)
+
 
 # Models
 class UserCreate(BaseModel):
     name: str
     email: str
 
+
 class UserResponse(BaseModel):
     id: int
     name: str
     email: str
 
+
 # Dependency injection
 def get_user_service():
     return UserService()
+
 
 # Routes
 @app.get("/users", response_model=list[UserResponse])
 async def list_users(
     limit: int = 10,
     offset: int = 0,
-    user_service: UserService = Depends(get_user_service)
+    user_service: UserService = Depends(get_user_service),
 ) -> list[UserResponse]:
     """List users with pagination."""
     result = user_service.get_users(limit=limit, offset=offset)
@@ -438,14 +458,13 @@ async def list_users(
 
     users = result.unwrap()
     return [
-        UserResponse(id=user.id, name=user.name, email=user.email)
-        for user in users
+        UserResponse(id=user.id, name=user.name, email=user.email) for user in users
     ]
+
 
 @app.post("/users", response_model=UserResponse, status_code=201)
 async def create_user(
-    user_data: UserCreate,
-    user_service: UserService = Depends(get_user_service)
+    user_data: UserCreate, user_service: UserService = Depends(get_user_service)
 ) -> UserResponse:
     """Create new user."""
     result = user_service.create_user(user_data.name, user_data.email)
@@ -456,10 +475,10 @@ async def create_user(
     user = result.unwrap()
     return UserResponse(id=user.id, name=user.name, email=user.email)
 
+
 @app.get("/users/{user_id}", response_model=UserResponse)
 async def get_user(
-    user_id: int,
-    user_service: UserService = Depends(get_user_service)
+    user_id: int, user_service: UserService = Depends(get_user_service)
 ) -> UserResponse:
     """Get user by ID."""
     result = user_service.get_user(user_id)
@@ -470,6 +489,7 @@ async def get_user(
     user = result.unwrap()
     return UserResponse(id=user.id, name=user.name, email=user.email)
 
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
@@ -477,12 +497,14 @@ async def health_check():
     return {
         "status": "healthy",
         "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
     }
+
 
 # Run application
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
 ```
 

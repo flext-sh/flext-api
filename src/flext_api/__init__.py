@@ -38,8 +38,8 @@ Correct - Always use root imports:
     )
 
 Forbidden - Never use internal imports:
-    from flext_api.api import FlextApi  # Wrong - use root import
-    from flext_api.models import FlextApiModels  # Wrong - use root import
+    from flext_api import FlextApi  # Wrong - use root import
+    from flext_api import FlextApiModels  # Wrong - use root import
 
 Why: 33+ ecosystem projects rely on root imports. Internal imports break
 the entire ecosystem by creating circular dependencies and import order issues.
@@ -121,48 +121,112 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.__version__ import __version__, __version_info__
-from flext_api.adapters import FlextApiAdapters
-from flext_api.api import FlextApi
-from flext_api.app import FlextApiApp
-from flext_api.client import FlextApiClient
-from flext_api.constants import FlextApiConstants, c
-from flext_api.exceptions import HttpError
-from flext_api.lifecycle_manager import FlextApiLifecycleManager
-from flext_api.models import FlextApiModels, FlextApiModels as m
-from flext_api.protocol_impls import (
-    BaseProtocolImplementation,
-    FlextWebClientImplementation,
-    FlextWebProtocolPlugin,
-    GraphQLProtocolPlugin,
-    LoggerProtocolImplementation,
-    RFCProtocolImplementation,
-    SSEProtocolPlugin,
-    StorageBackendImplementation,
-    WebSocketProtocolPlugin,
-)
-from flext_api.protocol_stubs import (
-    GrpcChannel,
-    GrpcMethod,
-    GrpcRequest,
-    GrpcResponse,
-    GrpcServer,
-    GrpcStub,
-    ProtobufMessage,
-    ProtobufSerializer,
-)
-from flext_api.protocols import FlextApiProtocols, p
-from flext_api.schemas import (
-    AsyncAPISchemaValidator,
-    JSONSchemaValidator,
-    OpenAPISchemaValidator,
-)
-from flext_api.server_factory import FlextApiServerFactory
-from flext_api.settings import FlextApiSettings
-from flext_api.settings_manager import FlextApiSettingsManager
-from flext_api.storage import FlextApiStorage
-from flext_api.typings import FlextApiTypes, t
-from flext_api.utilities import FlextApiUtilities, u
+from typing import TYPE_CHECKING, Any
+
+from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+
+if TYPE_CHECKING:
+    from flext_core import (
+        FlextDecorators as d,
+        FlextExceptions as e,
+        FlextHandlers as h,
+        FlextMixins as x,
+        FlextService as s,
+        r as r,
+    )
+
+    from flext_api.__version__ import __version__, __version_info__
+    from flext_api.adapters import FlextApiAdapters
+    from flext_api.api import FlextApi
+    from flext_api.app import FlextApiApp
+    from flext_api.client import FlextApiClient
+    from flext_api.constants import FlextApiConstants, FlextApiConstants as c
+    from flext_api.exceptions import HttpError
+    from flext_api.lifecycle_manager import FlextApiLifecycleManager
+    from flext_api.models import FlextApiModels, FlextApiModels as m
+    from flext_api.plugins import FlextApiPlugins
+    from flext_api.protocol_impls import (
+        BaseProtocolImplementation,
+        FlextWebClientImplementation,
+        FlextWebProtocolPlugin,
+        RFCProtocolImplementation,
+        SSEProtocolPlugin,
+        StorageBackendImplementation,
+        WebSocketProtocolPlugin,
+    )
+    from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
+    from flext_api.schemas import (
+        AsyncAPISchemaValidator,
+        JSONSchemaValidator,
+        OpenAPISchemaValidator,
+    )
+    from flext_api.server_factory import FlextApiServerFactory
+    from flext_api.settings import FlextApiSettings
+    from flext_api.settings_manager import FlextApiSettingsManager
+    from flext_api.storage import FlextApiStorage
+    from flext_api.typings import FlextApiTypes, FlextApiTypes as t
+    from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
+
+# Lazy import mapping: export_name -> (module_path, attr_name)
+_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
+    "AsyncAPISchemaValidator": ("flext_api.schemas", "AsyncAPISchemaValidator"),
+    "BaseProtocolImplementation": (
+        "flext_api.protocol_impls",
+        "BaseProtocolImplementation",
+    ),
+    "FlextApi": ("flext_api.api", "FlextApi"),
+    "FlextApiAdapters": ("flext_api.adapters", "FlextApiAdapters"),
+    "FlextApiApp": ("flext_api.app", "FlextApiApp"),
+    "FlextApiClient": ("flext_api.client", "FlextApiClient"),
+    "FlextApiConstants": ("flext_api.constants", "FlextApiConstants"),
+    "FlextApiLifecycleManager": (
+        "flext_api.lifecycle_manager",
+        "FlextApiLifecycleManager",
+    ),
+    "FlextApiModels": ("flext_api.models", "FlextApiModels"),
+    "FlextApiPlugins": ("flext_api.plugins", "FlextApiPlugins"),
+    "FlextApiProtocols": ("flext_api.protocols", "FlextApiProtocols"),
+    "FlextApiServerFactory": ("flext_api.server_factory", "FlextApiServerFactory"),
+    "FlextApiSettings": ("flext_api.settings", "FlextApiSettings"),
+    "FlextApiSettingsManager": (
+        "flext_api.settings_manager",
+        "FlextApiSettingsManager",
+    ),
+    "FlextApiStorage": ("flext_api.storage", "FlextApiStorage"),
+    "FlextApiTypes": ("flext_api.typings", "FlextApiTypes"),
+    "FlextApiUtilities": ("flext_api.utilities", "FlextApiUtilities"),
+    "FlextWebClientImplementation": (
+        "flext_api.protocol_impls",
+        "FlextWebClientImplementation",
+    ),
+    "FlextWebProtocolPlugin": ("flext_api.protocol_impls", "FlextWebProtocolPlugin"),
+    "HttpError": ("flext_api.exceptions", "HttpError"),
+    "JSONSchemaValidator": ("flext_api.schemas", "JSONSchemaValidator"),
+    "OpenAPISchemaValidator": ("flext_api.schemas", "OpenAPISchemaValidator"),
+    "RFCProtocolImplementation": (
+        "flext_api.protocol_impls",
+        "RFCProtocolImplementation",
+    ),
+    "SSEProtocolPlugin": ("flext_api.protocol_impls", "SSEProtocolPlugin"),
+    "StorageBackendImplementation": (
+        "flext_api.protocol_impls",
+        "StorageBackendImplementation",
+    ),
+    "WebSocketProtocolPlugin": ("flext_api.protocol_impls", "WebSocketProtocolPlugin"),
+    "__version__": ("flext_api.__version__", "__version__"),
+    "__version_info__": ("flext_api.__version__", "__version_info__"),
+    "c": ("flext_api.constants", "FlextApiConstants"),
+    "d": ("flext_core", "FlextDecorators"),
+    "e": ("flext_core", "FlextExceptions"),
+    "h": ("flext_core", "FlextHandlers"),
+    "m": ("flext_api.models", "FlextApiModels"),
+    "p": ("flext_api.protocols", "FlextApiProtocols"),
+    "r": ("flext_core", "r"),
+    "s": ("flext_core", "FlextService"),
+    "t": ("flext_api.typings", "FlextApiTypes"),
+    "u": ("flext_api.utilities", "FlextApiUtilities"),
+    "x": ("flext_core", "FlextMixins"),
+}
 
 __all__ = [
     "AsyncAPISchemaValidator",
@@ -174,6 +238,7 @@ __all__ = [
     "FlextApiConstants",
     "FlextApiLifecycleManager",
     "FlextApiModels",
+    "FlextApiPlugins",
     "FlextApiProtocols",
     "FlextApiServerFactory",
     "FlextApiSettings",
@@ -183,19 +248,9 @@ __all__ = [
     "FlextApiUtilities",
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
-    "GraphQLProtocolPlugin",
-    "GrpcChannel",
-    "GrpcMethod",
-    "GrpcRequest",
-    "GrpcResponse",
-    "GrpcServer",
-    "GrpcStub",
     "HttpError",
     "JSONSchemaValidator",
-    "LoggerProtocolImplementation",
     "OpenAPISchemaValidator",
-    "ProtobufMessage",
-    "ProtobufSerializer",
     "RFCProtocolImplementation",
     "SSEProtocolPlugin",
     "StorageBackendImplementation",
@@ -203,8 +258,29 @@ __all__ = [
     "__version__",
     "__version_info__",
     "c",
+    "d",
+    "e",
+    "h",
     "m",
     "p",
+    "r",
+    "s",
     "t",
     "u",
+    "x",
 ]
+
+
+def __getattr__(
+    name: str,
+) -> Any:  # JUSTIFIED: Ruff (any-type) with PEP 562 dynamic module exports — https://docs.astral.sh/ruff/rules/any-type/
+    """Lazy-load module attributes on first access (PEP 562)."""
+    return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
+
+
+def __dir__() -> list[str]:
+    """Return list of available attributes for dir() and autocomplete."""
+    return sorted(__all__)
+
+
+cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)

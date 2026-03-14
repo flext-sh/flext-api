@@ -21,10 +21,7 @@ function initializeNavigation() {
       const sectionHeight = section.offsetHeight;
       const sectionId = section.getAttribute("id");
 
-      if (
-        scrollPosition >= sectionTop &&
-        scrollPosition < sectionTop + sectionHeight
-      ) {
+      if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
         navLinks.forEach((link) => {
           link.classList.remove("active");
           if (link.getAttribute("href") === `#${sectionId}`) {
@@ -132,9 +129,7 @@ async function loadQualityMetrics() {
 
     let html = '<div class="metrics-grid">';
     Object.entries(metrics).forEach(([key, value]) => {
-      const displayName = key
-        .replace(/_/g, " ")
-        .replace(/\w/g, (l) => l.toUpperCase());
+      const displayName = key.replace(/_/g, " ").replace(/\w/g, (l) => l.toUpperCase());
       const color = value >= 80 ? "high" : value >= 60 ? "medium" : "low";
 
       html += `

@@ -2,26 +2,26 @@
 
 <!-- TOC START -->
 
-- [Protocol Architecture](#protocol-architecture)
+- [Architecture](#protocol-architecture)
 - [HTTP Protocol Implementation](#http-protocol-implementation)
-  - [FlextWebProtocol - HTTP/REST Implementation](#flextwebprotocol-httprest-implementation)
+  - [FlextWebREST Implementation](#flextwebprotocol-httprest-implementation)
   - [HTTP Request/Response Models](#http-requestresponse-models)
 - [GraphQL Protocol Implementation](#graphql-protocol-implementation)
-  - [GraphQLProtocol - GraphQL Support](#graphqlprotocol-graphql-support)
+  - [GraphQLQL Support](#graphqlprotocol-graphql-support)
   - [GraphQL Operations](#graphql-operations)
 - [WebSocket Protocol Implementation](#websocket-protocol-implementation)
-  - [WebSocketProtocol - Real-time Communication](#websocketprotocol-real-time-communication)
+  - [WebSockettime Communication](#websocketprotocol-real-time-communication)
 - [Server-Sent Events Protocol](#server-sent-events-protocol)
-  - [ServerSentEventProtocol - One-way Streaming](#serversenteventprotocol-one-way-streaming)
+  - [ServerSentEventay Streaming](#serversenteventprotocol-one-way-streaming)
 - [Storage Backend Protocol](#storage-backend-protocol)
-  - [StorageBackendProtocol - File/Object Storage](#storagebackendprotocol-fileobject-storage)
-- [Protocol Stubs](#protocol-stubs)
+  - [StorageBackendObject Storage](#storagebackendprotocol-fileobject-storage)
+- [#protocol-stubs)
   - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub-grpc-protocol-buffers)
   - [Protobuf Stub - Binary Serialization](#protobuf-stub-binary-serialization)
 - [Quality Metrics](#quality-metrics)
 - [Usage Examples](#usage-examples)
   - [Multi-Protocol API Client](#multi-protocol-api-client)
-  - [Protocol Plugin System](#protocol-plugin-system)
+  - [System](#protocol-plugin-system)
 
 <!-- TOC END -->
 
@@ -46,12 +46,12 @@ Protocol Layer
 
 ## HTTP Protocol Implementation
 
-### FlextWebProtocol - HTTP/REST Implementation
+### FlextWebREST Implementation
 
 Primary protocol implementation for REST APIs and HTTP-based communication.
 
 ```python
-from flext_api.protocol_impls.http import FlextWebProtocol
+from flext_api.protocol_impls.http import FlextWeb
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -67,24 +67,22 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
 # Create HTTP protocol instance
-http_protocol = FlextWebProtocol(
+http_protocol = FlextWeb
     base_url="https://api.example.com",
     timeout=30.0,
-    headers={"User-Agent": "FLEXT-API/0.9.9"}
+    headers={"User-Agent": "FLEXT-API/0.9.9"},
 )
 
 # Execute HTTP operations
 result = http_protocol.execute_request(
-    method="GET",
-    path="/users",
-    params={"limit": 10}
+    method="GET", path="/users", params={"limit": 10}
 )
 
 if result.is_success:
@@ -131,17 +129,17 @@ if response.is_success:
 
 ## GraphQL Protocol Implementation
 
-### GraphQLProtocol - GraphQL Support
+### GraphQLQL Support
 
 Protocol implementation for GraphQL APIs with query and mutation support.
 
 ```python
-from flext_api.protocol_impls.graphql import GraphQLProtocol
+from flext_api.protocol_impls.graphql import GraphQL
 
 # Create GraphQL protocol
-graphql_protocol = GraphQLProtocol(
+graphql_protocol = GraphQL
     endpoint="https://api.example.com/graphql",
-    headers={"Authorization": "Bearer token123"}
+    headers={"Authorization": "Bearer token123"},
 )
 
 # Execute GraphQL query
@@ -205,29 +203,23 @@ mutation = """
     }
 """
 
-mutation_variables = {
-    "input": {
-        "name": "Bob",
-        "email": "bob@example.com"
-    }
-}
+mutation_variables = {"input": {"name": "Bob", "email": "bob@example.com"}}
 
 result = graphql_protocol.execute_mutation(mutation, mutation_variables)
 ```
 
 ## WebSocket Protocol Implementation
 
-### WebSocketProtocol - Real-time Communication
+### WebSockettime Communication
 
 Protocol implementation for WebSocket connections and real-time messaging.
 
 ```python
-from flext_api.protocol_impls.websocket import WebSocketProtocol
+from flext_api.protocol_impls.websocket import WebSocket
 
 # Create WebSocket protocol
-websocket_protocol = WebSocketProtocol(
-    url="wss://api.example.com/ws",
-    headers={"Authorization": "Bearer token123"}
+websocket_protocol = WebSocket
+    url="wss://api.example.com/ws", headers={"Authorization": "Bearer token123"}
 )
 
 # Connect to WebSocket
@@ -261,17 +253,16 @@ if connection_result.is_success:
 
 ## Server-Sent Events Protocol
 
-### ServerSentEventProtocol - One-way Streaming
+### ServerSentEventay Streaming
 
 Protocol implementation for Server-Sent Events (SSE) for real-time data streaming.
 
 ```python
-from flext_api.protocol_impls.sse import ServerSentEventProtocol
+from flext_api.protocol_impls.sse import ServerSentEvent
 
 # Create SSE protocol
-sse_protocol = ServerSentEventProtocol(
-    url="https://api.example.com/events",
-    headers={"Authorization": "Bearer token123"}
+sse_protocol = ServerSentEvent
+    url="https://api.example.com/events", headers={"Authorization": "Bearer token123"}
 )
 
 # Connect to event stream
@@ -301,28 +292,27 @@ if stream_result.is_success:
 
 ## Storage Backend Protocol
 
-### StorageBackendProtocol - File/Object Storage
+### StorageBackendObject Storage
 
 Protocol implementation for various storage backends (local filesystem, cloud storage, etc.).
 
 ```python
-from flext_api.protocol_impls.storage_backend import StorageBackendProtocol
+from flext_api.protocol_impls.storage_backend import StorageBackend
 
 # Create storage protocol
-storage_protocol = StorageBackendProtocol(
+storage_protocol = StorageBackend
     backend_type="s3",  # or "local", "gcs", "azure"
     config={
         "bucket": "my-bucket",
         "region": "us-east-1",
         "access_key": "...",
-        "secret_key": "..."
-    }
+        "secret_key": "...",
+    },
 )
 
 # File operations
 upload_result = storage_protocol.upload_file(
-    local_path="/path/to/file.txt",
-    remote_path="uploads/file.txt"
+    local_path="/path/to/file.txt", remote_path="uploads/file.txt"
 )
 
 if upload_result.is_success:
@@ -331,8 +321,7 @@ if upload_result.is_success:
 
 # Download file
 download_result = storage_protocol.download_file(
-    remote_path="uploads/file.txt",
-    local_path="/tmp/downloaded_file.txt"
+    remote_path="uploads/file.txt", local_path="/tmp/downloaded_file.txt"
 )
 
 # List files
@@ -364,7 +353,7 @@ from flext_api.protocol_stubs.grpc_stub import GrpcStub
 grpc_stub = GrpcStub(
     target="localhost:50051",
     credentials=None,  # or ssl_channel_credentials()
-    options=[("grpc.max_receive_message_size", 1024*1024*100)]
+    options=[("grpc.max_receive_message_size", 1024 * 1024 * 100)],
 )
 
 # Call gRPC methods
@@ -373,7 +362,7 @@ response = grpc_stub.call_unary(
     service="UserService",
     method="GetUser",
     request=request,
-    response_type=user_pb2.UserResponse
+    response_type=user_pb2.UserResponse,
 )
 
 if response.is_success:
@@ -417,17 +406,18 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ```python
 from flext_api import FlextApiClient
-from flext_api.protocol_impls.http import FlextWebProtocol
-from flext_api.protocol_impls.graphql import GraphQLProtocol
-from flext_api.protocol_impls.websocket import WebSocketProtocol
+from flext_api.protocol_impls.http import FlextWeb
+from flext_api.protocol_impls.graphql import GraphQL
+from flext_api.protocol_impls.websocket import WebSocket
+
 
 class MultiProtocolClient:
     """Client supporting multiple protocols."""
 
     def __init__(self):
-        self.http = FlextWebProtocol(base_url="https://api.example.com")
-        self.graphql = GraphQLProtocol(endpoint="https://api.example.com/graphql")
-        self.websocket = WebSocketProtocol(url="wss://api.example.com/ws")
+        self.http = FlextWebl="https://api.example.com")
+        self.graphql = GraphQLt="https://api.example.com/graphql")
+        self.websocket = WebSockets://api.example.com/ws")
 
     def get_user_http(self, user_id: str) -> dict[str, object]:
         """Get user via REST API."""
@@ -464,6 +454,7 @@ class MultiProtocolClient:
             message = connection.receive().unwrap()
             callback(message)
 
+
 # Usage
 client = MultiProtocolClient()
 
@@ -478,18 +469,19 @@ print(f"GraphQL user: {user_graphql['name']}")
 ### Protocol Plugin System
 
 ```python
-from flext_api.protocols import ProtocolRegistry
-from flext_api.protocol_impls.http import FlextWebProtocol
-from flext_api.protocol_impls.graphql import GraphQLProtocol
+from flext_api import ProtocolRegistry
+from flext_api.protocol_impls.http import FlextWeb
+from flext_api.protocol_impls.graphql import GraphQL
 
 # Register protocols
 registry = ProtocolRegistry()
-registry.register("http", FlextWebProtocol)
-registry.register("graphql", GraphQLProtocol)
+registry.register("http", FlextWeb
+registry.register("graphql", GraphQL
 
 # Use protocols dynamically
 http_protocol = registry.get_protocol("http")
 graphql_protocol = registry.get_protocol("graphql")
+
 
 # Configure based on requirements
 def create_api_client(protocol_name: str, config: dict):
@@ -497,9 +489,12 @@ def create_api_client(protocol_name: str, config: dict):
     protocol_class = registry.get_protocol(protocol_name)
     return protocol_class(**config)
 
+
 # Create clients for different services
 user_api = create_api_client("http", {"base_url": "https://user-api.com"})
-content_api = create_api_client("graphql", {"endpoint": "https://content-api.com/graphql"})
+content_api = create_api_client(
+    "graphql", {"endpoint": "https://content-api.com/graphql"}
+)
 ```
 
 This protocol-based architecture provides a flexible foundation for supporting multiple communication patterns while maintaining consistent error handling and type safety across all protocols.

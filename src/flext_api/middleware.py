@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
-from flext_api.models import FlextApiModels
+from flext_api import m
 
 
 class FlextApiMiddleware:
@@ -25,30 +25,25 @@ class FlextApiMiddleware:
 
     @staticmethod
     def apply_pipeline(
-        request: FlextApiModels.HttpRequest,
-        middleware_list: list[
-            Callable[[FlextApiModels.HttpRequest], FlextApiModels.HttpRequest]
-        ],
-    ) -> FlextApiModels.HttpRequest:
+        request: m.HttpRequest,
+        middleware_list: list[Callable[[m.HttpRequest], m.HttpRequest]],
+    ) -> m.HttpRequest:
         """Apply middleware pipeline to request."""
         for middleware in middleware_list:
             try:
                 request = middleware(request)
-            except Exception as e:
-                # Log exception and continue with other middleware
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 logging.getLogger(__name__).warning("Middleware failed: %s", e)
                 continue
         return request
 
     @staticmethod
-    def log_request(request: FlextApiModels.HttpRequest) -> FlextApiModels.HttpRequest:
+    def log_request(request: m.HttpRequest) -> m.HttpRequest:
         """Log HTTP request."""
         return request
 
     @staticmethod
-    def validate_request(
-        request: FlextApiModels.HttpRequest,
-    ) -> FlextApiModels.HttpRequest:
+    def validate_request(request: m.HttpRequest) -> m.HttpRequest:
         """Validate HTTP request."""
         return request
 

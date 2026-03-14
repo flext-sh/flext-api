@@ -7,9 +7,9 @@
 - [Code Structure Analysis](#code-structure-analysis)
   - [Core Module Relationships](#core-module-relationships)
   - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-- [Protocol Implementation Details](#protocol-implementation-details)
-  - [Protocol Architecture](#protocol-architecture)
-  - [Protocol Registry Pattern](#protocol-registry-pattern)
+- [Implementation Details](#protocol-implementation-details)
+  - [cture](#protocol-architecture)
+  - [y Pattern](#protocol-registry-pattern)
 - [Dependency Injection Pattern](#dependency-injection-pattern)
   - [FlextContainer Integration](#flextcontainer-integration)
 - [Error Handling Architecture](#error-handling-architecture)
@@ -105,28 +105,28 @@ package "flext_api" as flext_api {
     package "protocols/" as protocols {
         package "__init__.py" {
             class FlextApiProtocols
-            class BaseProtocol
+            class Base
             interface ProtocolInterface
         }
 
         package "http.py" {
-            class FlextWebProtocol
+            class FlextWeb
             class FlextWebClientImplementation
         }
 
         package "graphql.py" {
-            class GraphQLProtocol
+            class GraphQL
             class GraphQLClient
         }
 
         package "websocket.py" {
-            class WebSocketProtocol
+            class WebSocket
             class WebSocketClient
         }
 
-        BaseProtocol <|-- FlextWebProtocol
-        BaseProtocol <|-- GraphQLProtocol
-        BaseProtocol <|-- WebSocketProtocol
+        BaseextWebFlextWeb
+        BaseaphQLGraphQL
+        BasebSockeWebSocket
     }
 
     package "storage.py" as storage {
@@ -150,7 +150,7 @@ package "flext_api" as flext_api {
 }
 
 package "flext_core" as flext_core {
-    class FlextResult
+    class r
     class FlextContainer
     class FlextModels
     class FlextLogger
@@ -178,20 +178,20 @@ package "External Libraries" as external {
     }
 
     package "websockets" {
-        class WebSocketClientProtocol
+        class WebSocketClient
     }
 }
 
 ' Relationships
-FlextApiClient --> FlextResult : uses
+FlextApiClient --> r : uses
 FlextApiClient --> AsyncClient : uses
 FlextApiModels --> BaseModel : extends
 FlextApiSettings --> BaseModel : extends
 FlextApi --> FlextService : extends
 FlextApiClient --> FlextService : extends
 
-FlextWebProtocol --> AsyncClient : uses
-WebSocketProtocol --> WebSocketClientProtocol : uses
+FlextWebncClient : uses
+WebSocketSockeWebSocketClient
 
 create_fastapi_app --> FastAPI : creates
 create_fastapi_app --> FlextApiClient : integrates
@@ -252,23 +252,27 @@ class FlextApiClient(FlextService[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
     # Core HTTP methods
-    def get(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+    def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP GET request."""
 
-    def post(self, url: str, data=None, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+    def post(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP POST request."""
 
-    def put(self, url: str, data=None, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+    def put(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP PUT request."""
 
-    def delete(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+    def delete(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP DELETE request."""
 
     # Advanced features
-    def request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
+    def request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> r[FlextApiModels.HttpResponse]:
         """Generic HTTP request."""
 
-    async def arequest(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
+    async def arequest(
+        self, request: FlextApiModels.HttpRequest
+    ) -> r[FlextApiModels.HttpResponse]:
         """Async HTTP request."""
 ```
 
@@ -316,7 +320,7 @@ class FlextApiModels(FlextModels):
 
 ```python
 # Protocol base interface
-class BaseProtocol(ABC):
+class Base
     """Abstract base class for all protocols."""
 
     @abstractmethod
@@ -325,19 +329,22 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> FlextResult[object]:
+    async def execute_request(self, request: object) -> r[object]:
         """Execute protocol-specific request."""
         pass
 
+
 # HTTP Protocol Implementation
-class FlextWebProtocol(BaseProtocol):
+class FlextWebBase
     """HTTP/REST protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
         """Create HTTP client instance."""
         return FlextApiClient(**config)
 
-    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
+    async def execute_request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request with error handling."""
         try:
             # HTTP-specific implementation
@@ -347,18 +354,20 @@ class FlextWebProtocol(BaseProtocol):
                     url=request.full_url,
                     headers=request.headers,
                     content=request.body,
-                    timeout=request.timeout
+                    timeout=request.timeout,
                 )
 
-                return FlextResult.ok(FlextApiModels.HttpResponse(
-                    status_code=response.status_code,
-                    headers=dict(response.headers),
-                    body=response.text,
-                    response_time=response.elapsed.total_seconds()
-                ))
+                return r.ok(
+                    FlextApiModels.HttpResponse(
+                        status_code=response.status_code,
+                        headers=dict(response.headers),
+                        body=response.text,
+                        response_time=response.elapsed.total_seconds(),
+                    )
+                )
 
         except Exception as e:
-            return FlextResult.fail(f"HTTP request failed: {e}")
+            return r.fail(f"HTTP request failed: {e}")
 ```
 
 ### Protocol Registry Pattern
@@ -368,13 +377,13 @@ class ProtocolRegistry:
     """Registry for protocol implementations."""
 
     def __init__(self):
-        self._protocols: Dict[str, Type[BaseProtocol]] = {}
+        self._protocols: Dict[str, Type[Base
 
-    def register(self, name: str, protocol_class: Type[BaseProtocol]):
+    def register(self, name: str, protocol_class: Type[Base
         """Register a protocol implementation."""
         self._protocols[name] = protocol_class
 
-    def get_protocol(self, name: str) -> BaseProtocol:
+    def get_protocol(self, name: str) -> Base
         """Get protocol instance by name."""
         if name not in self._protocols:
             raise ValueError(f"Protocol '{name}' not registered")
@@ -423,37 +432,39 @@ store = storage.unwrap()
 ### Railway Pattern Implementation
 
 ```python
-# All public methods return FlextResult[T]
-def get(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
+# All public methods return r[T]
+def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
 
     # Input validation
     validation_result = self._validate_url(url)
     if validation_result.is_failure:
-        return FlextResult.fail(validation_result.error)
+        return r.fail(validation_result.error)
 
     # Request building
     request_result = self._build_request("GET", url, **kwargs)
     if request_result.is_failure:
-        return FlextResult.fail(f"Request building failed: {request_result.error}")
+        return r.fail(f"Request building failed: {request_result.error}")
 
     # HTTP execution
     response_result = await self._execute_request(request_result.unwrap())
     if response_result.is_failure:
-        return FlextResult.fail(f"HTTP execution failed: {response_result.error}")
+        return r.fail(f"HTTP execution failed: {response_result.error}")
 
     # Response processing
     processed_result = self._process_response(response_result.unwrap())
     if processed_result.is_failure:
-        return FlextResult.fail(f"Response processing failed: {processed_result.error}")
+        return r.fail(f"Response processing failed: {processed_result.error}")
 
     return processed_result
+
 
 # Usage with railway pattern
 result = client.get("/api/users")
 
 # Chained operations
-user_data = (result
+user_data = (
+    result
     .flat_map(lambda resp: parse_json(resp.body))
     .map(lambda data: extract_users(data))
     .map_error(lambda err: log_error(f"User fetch failed: {err}"))
@@ -472,10 +483,7 @@ if user_data.is_success:
 class FlextApiSettings(BaseModel):
     """Configuration model with validation."""
 
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="forbid"
-    )
+    model_config = ConfigDict(validate_assignment=True, extra="forbid")
 
     # HTTP client settings
     base_url: Optional[str] = None
@@ -503,7 +511,7 @@ class FlextApiSettings(BaseModel):
     @classmethod
     def validate_base_url(cls, v):
         """Validate base URL format."""
-        if v and not v.startswith(('http://', 'https://')):
+        if v and not v.startswith(("http://", "https://")):
             raise ValueError("Base URL must start with http:// or https://")
         return v
 
@@ -516,7 +524,9 @@ class FlextApiSettings(BaseModel):
         if self.auth_type == AuthType.JWT and not self.jwt_token:
             raise ValueError("JWT token required when auth_type is JWT")
 
-        if self.auth_type == AuthType.BASIC and (not self.username or not self.password):
+        if self.auth_type == AuthType.BASIC and (
+            not self.username or not self.password
+        ):
             raise ValueError("Username and password required for basic auth")
 
         return self
@@ -532,33 +542,31 @@ class StorageBackend(ABC):
 
     @abstractmethod
     async def upload_file(
-        self,
-        file: BinaryIO,
-        path: str,
-        metadata: Optional[Dict[str, str]] = None
-    ) -> FlextResult[str]:
+        self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
+    ) -> r[str]:
         """Upload file to storage."""
         pass
 
     @abstractmethod
-    async def download_file(self, path: str) -> FlextResult[bytes]:
+    async def download_file(self, path: str) -> r[bytes]:
         """Download file from storage."""
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> FlextResult[bool]:
+    async def delete_file(self, path: str) -> r[bool]:
         """Delete file from storage."""
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> FlextResult[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> r[List[FileInfo]]:
         """List files in storage."""
         pass
 
     @abstractmethod
-    async def get_file_info(self, path: str) -> FlextResult[FileInfo]:
+    async def get_file_info(self, path: str) -> r[FileInfo]:
         """Get file information."""
         pass
+
 
 # S3 Implementation
 class S3Backend(StorageBackend):
@@ -570,29 +578,23 @@ class S3Backend(StorageBackend):
             "s3",
             aws_access_key_id=config.get("access_key"),
             aws_secret_access_key=config.get("secret_key"),
-            region_name=config.get("region", "us-east-1")
+            region_name=config.get("region", "us-east-1"),
         )
 
     async def upload_file(
-        self,
-        file: BinaryIO,
-        path: str,
-        metadata: Optional[Dict[str, str]] = None
-    ) -> FlextResult[str]:
+        self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
+    ) -> r[str]:
         """Upload file to S3."""
         try:
             self.client.upload_fileobj(
                 file,
                 self.bucket,
                 path,
-                ExtraArgs={
-                    "Metadata": metadata or {},
-                    "ACL": "private"
-                }
+                ExtraArgs={"Metadata": metadata or {}, "ACL": "private"},
             )
-            return FlextResult.ok(f"s3://{self.bucket}/{path}")
+            return r.ok(f"s3://{self.bucket}/{path}")
         except Exception as e:
-            return FlextResult.fail(f"S3 upload failed: {e}")
+            return r.fail(f"S3 upload failed: {e}")
 ```
 
 ## Testing Architecture
@@ -622,17 +624,15 @@ tests/
 def mock_http_client():
     """Mock HTTP client for testing."""
     client = Mock(spec=FlextApiClient)
-    client.get.return_value = FlextResult.ok(MockHttpResponse())
+    client.get.return_value = r.ok(MockHttpResponse())
     return client
+
 
 @pytest.fixture
 def test_config():
     """Test configuration fixture."""
-    return FlextApiSettings(
-        base_url="https://httpbin.org",
-        timeout=10.0,
-        max_retries=1
-    )
+    return FlextApiSettings(base_url="https://httpbin.org", timeout=10.0, max_retries=1)
+
 
 @pytest.fixture
 async def async_client(test_config):
@@ -662,9 +662,9 @@ class ConnectionPoolManager:
                 base_url=base_url,
                 limits=httpx.Limits(
                     max_connections=self.max_connections,
-                    max_keepalive_connections=self.max_keepalive
+                    max_keepalive_connections=self.max_keepalive,
                 ),
-                timeout=httpx.Timeout(30.0)
+                timeout=httpx.Timeout(30.0),
             )
 
         return self._pools[base_url]
@@ -691,7 +691,9 @@ class ResponseCache:
         async with self._lock:
             return self.cache.get(key)
 
-    async def set(self, key: str, response: FlextApiModels.HttpResponse, ttl: Optional[int] = None):
+    async def set(
+        self, key: str, response: FlextApiModels.HttpResponse, ttl: Optional[int] = None
+    ):
         """Cache response with optional TTL."""
         async with self._lock:
             cached = CachedResponse(
@@ -699,7 +701,7 @@ class ResponseCache:
                 headers=response.headers,
                 body=response.body,
                 cached_at=datetime.now(UTC),
-                ttl=ttl or self.default_ttl
+                ttl=ttl or self.default_ttl,
             )
             self.cache[key] = cached
 
@@ -722,7 +724,7 @@ class AuthenticationManager:
             "jwt": JwtAuthHandler(),
             "api_key": ApiKeyAuthHandler(),
             "basic": BasicAuthHandler(),
-            "oauth": OAuthAuthHandler()
+            "oauth": OAuthAuthHandler(),
         }
 
     def get_handler(self, scheme: str) -> AuthHandler:
@@ -732,19 +734,17 @@ class AuthenticationManager:
         return self._handlers[scheme]
 
     async def authenticate_request(
-        self,
-        request: FlextApiModels.HttpRequest,
-        credentials: AuthCredentials
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        self, request: FlextApiModels.HttpRequest, credentials: AuthCredentials
+    ) -> r[FlextApiModels.HttpRequest]:
         """Add authentication to request."""
         handler = self.get_handler(credentials.scheme)
 
         auth_result = await handler.authenticate(request, credentials)
         if auth_result.is_failure:
-            return FlextResult.fail(f"Authentication failed: {auth_result.error}")
+            return r.fail(f"Authentication failed: {auth_result.error}")
 
         authenticated_request = auth_result.unwrap()
-        return FlextResult.ok(authenticated_request)
+        return r.ok(authenticated_request)
 ```
 
 ______________________________________________________________________

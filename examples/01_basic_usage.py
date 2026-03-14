@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """FLEXT API - Basic usage example.
 
 This example demonstrates basic FLEXT API usage using ONLY the refactored classes
@@ -10,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextConstants
+
 from flext_api import (
     FlextApi,
     FlextApiModels,
@@ -17,14 +18,11 @@ from flext_api import (
     FlextApiStorage,
     FlextApiUtilities,
 )
-from flext_core import FlextConstants, FlextTypes as t
 
 
 def example_api_creation() -> None:
     """Demonstrate basic API instance creation using refactored classes."""
     print("=== API Creation Example ===")
-
-    # Create API instance using ONLY the refactored FlextApi class
     api = FlextApi()
     print(f"✅ API created: flext-api v0.9.0 - {api.__class__.__name__}")
 
@@ -32,16 +30,10 @@ def example_api_creation() -> None:
 def example_client_creation() -> None:
     """Demonstrate HTTP client creation using enhanced singleton pattern."""
     print("\n=== Client Creation Example ===")
-
-    # Create API instance
     FlextApi()
-
-    # Create client config using direct instantiation
     client_config = FlextApiSettings(
-        base_url="https://httpbin.org",
-        timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
+        base_url="https://httpbin.org", timeout=FlextConstants.Network.DEFAULT_TIMEOUT
     )
-
     print(f"✅ Client config created: {client_config.base_url}")
     print(f"   Timeout: {client_config.timeout}s")
     print(f"   Max retries: {client_config.max_retries}")
@@ -50,13 +42,9 @@ def example_client_creation() -> None:
 def example_direct_client() -> None:
     """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
     print("\n=== Direct Client Example ===")
-
-    # Create client configuration using direct instantiation
     config = FlextApiSettings(
-        base_url="https://httpbin.org",
-        timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
+        base_url="https://httpbin.org", timeout=FlextConstants.Network.DEFAULT_TIMEOUT
     )
-
     print(f"✅ Client config: {config.base_url}")
     print(f"   Timeout: {config.timeout}")
     print(f"   Default headers: {config.headers}")
@@ -65,23 +53,15 @@ def example_direct_client() -> None:
 def example_storage_usage() -> None:
     """Demonstrate storage usage with refactored FlextApiStorage."""
     print("\n=== Storage Example ===")
-
-    # Create storage using the refactored FlextApiStorage class
     storage = FlextApiStorage()
-
-    # Set data using FlextResult pattern
-    # CacheValue as dict[str, t.GeneralValueType] for JSON compatibility
-    cache_value: dict[str, t.GeneralValueType] = {
+    cache_value: dict[str, object] = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,
     }
     set_result = storage.set("example_key", cache_value, timeout=300)
-
     if set_result.is_success:
         print("✅ Data stored successfully")
-
-        # Get data using FlextResult pattern
         get_result = storage.get("example_key")
         if get_result.is_success:
             print(f"✅ Data retrieved: {get_result.value}")
@@ -94,23 +74,17 @@ def example_storage_usage() -> None:
 def example_utilities_usage() -> None:
     """Demonstrate utilities usage with refactored FlextApiUtilities."""
     print("\n=== Utilities Example ===")
-
-    # URL validation using the refactored nested class
     url_result = FlextApiUtilities.FlextWebValidator.validate_url(
-        "https://example.com/api/v1",
+        "https://example.com/api/v1"
     )
-
     if url_result.is_success:
         print(f"✅ URL validation successful: {url_result.value}")
     else:
         print(f"❌ URL validation failed: {url_result.error}")
-
-    # Response building using the refactored nested class
     response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
         data={"users": [{"id": 1, "name": "John"}]},
         message="Users retrieved successfully",
     )
-
     if response_result.is_success:
         print("✅ Response built successfully")
         print(f"   Status: {response_result.value['status']}")
@@ -121,88 +95,37 @@ def example_utilities_usage() -> None:
 
 def example_app_creation() -> None:
     """Demonstrate FastAPI app creation using refactored classes."""
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    # App creation example - method not implemented yet
-    # client = FlextApi()
-    # app = client.create_flext_api_app()
-    # print(f"✅ App created: {type(app).__name__}")
     print("✅ App creation example - not implemented")
-    """Demonstrate models usage with refactored FlextApiModels."""
+    "Demonstrate models usage with refactored FlextApiModels."
     print("\n=== Models Example ===")
-
     try:
-        # Create HTTP request model using the refactored nested class
         request = FlextApiModels.HttpRequest(
             method="GET",
             url="https://httpbin.org/get",
             headers={"Accept": "application/json"},
             timeout=int(FlextConstants.Network.DEFAULT_TIMEOUT),
         )
-
         print(f"✅ Request model created: {request.method} {request.url}")
         print(f"   Timeout: {request.timeout}s")
-
-        # Create HTTP response model using the refactored nested class
         response = FlextApiModels.HttpResponse(
             status_code=200,
             headers={"Content-Type": "application/json"},
             body=b'{"message": "Success"}',
             content_type="application/json",
         )
-
         print(f"✅ Response model created: {response.status_code}")
         print(f"   Status: {response.status_code}")
         print(f"   Content-Type: {response.headers.get('content-type', 'unknown')}")
-
     except Exception as e:
         print(f"❌ Model creation failed: {e}")
 
@@ -210,33 +133,23 @@ def example_app_creation() -> None:
 def example_batch_operations() -> None:
     """Demonstrate batch operations with refactored classes."""
     print("\n=== Batch Operations Example ===")
-
-    # Create storage for batch operations
     storage = FlextApiStorage()
-
     try:
-        # Example batch operations
         print("✅ Storage ready for batch operations")
-
-        # Set multiple values
         keys = ["key1", "key2", "key3"]
         for i, key in enumerate(keys):
             result = storage.set(
-                key,
-                {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200},
+                key, {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200}
             )
             if result.is_success:
                 print(f"✅ Set {key} successfully")
             else:
                 print(f"❌ Failed to set {key}: {result.error}")
-
-        # Get cache size
         size_result = storage.size()
         if size_result.is_success:
             print(f"✅ Cache size: {size_result.value} items")
         else:
             print(f"❌ Failed to get cache size: {size_result.error}")
-
     except Exception as e:
         print(f"❌ Batch operations failed: {e}")
 
@@ -245,8 +158,6 @@ def main() -> None:
     """Run all examples using ONLY refactored classes."""
     print("FLEXT API - Basic Usage Examples (Refactored Classes Only)")
     print("=========================================================")
-
-    # Synchronous examples using refactored classes
     example_api_creation()
     example_client_creation()
     example_direct_client()
@@ -254,9 +165,8 @@ def main() -> None:
     example_utilities_usage()
     example_app_creation()
     example_batch_operations()
-
     print("\n🎉 All examples completed successfully using refactored classes!")
-    print("✅ FlextResult pattern used throughout")
+    print("✅ r pattern used throughout")
     print("✅ flext-core compliance maintained")
     print("✅ No legacy APIs or helpers used")
     print("✅ Synchronous architecture - no /await needed")

@@ -57,14 +57,14 @@
 ### Primary Goals
 
 1. **HTTP Abstraction Layer**: Complete HTTP client abstraction preventing direct httpx usage
-1. **FlextResult Integration**: Railway-oriented error handling throughout HTTP operations
+1. **r Integration**: Railway-oriented error handling throughout HTTP operations
 1. **Clean Architecture**: Proper Domain-Driven Design with layer separation
 1. **Type Safety**: MyPy strict mode compliance for src/ directory
 1. **Basic Test Coverage**: 75%+ test coverage with real HTTP functionality
 
 ### Success Criteria
 
-- ✅ **HTTP Client**: Core GET/POST/PUT/DELETE operations with FlextResult[T]
+- ✅ **HTTP Client**: Core GET/POST/PUT/DELETE operations with r[T]
 - ✅ **Domain Models**: Pydantic v2 validation for HTTP entities
 - ✅ **FastAPI Integration**: Application factory with health endpoints
 - ✅ **Zero Direct HTTP Imports**: httpx contained within flext-api boundaries
@@ -82,7 +82,7 @@
 
 - ✅ Core HTTP operations (GET, POST, PUT, DELETE)
 - ✅ httpx-based infrastructure layer
-- ✅ Synchronous operations with FlextResult patterns
+- ✅ Synchronous operations with r patterns
 - ✅ Basic timeout and retry configuration
 - ✅ Protocol plugin architecture foundation
 
@@ -102,7 +102,7 @@
 - ✅ FlextApiModels.HttpRequest and FlextApiModels.HttpResponse Pydantic models
 - ✅ HTTP-specific exception hierarchy
 - ✅ Status code constants and validation
-- ✅ Basic model validation with FlextResult
+- ✅ Basic model validation with r
 
 **Remaining**:
 
@@ -251,7 +251,7 @@
 
 1. **Error Handling Gaps**
 
-   - Some operations don't return FlextResult consistently
+   - Some operations don't return r consistently
    - Exception leakage in infrastructure layer
 
 1. **Documentation Synchronization**
@@ -322,7 +322,7 @@
 #### Functional Requirements
 
 - ✅ HTTP client supports GET/POST/PUT/DELETE operations
-- ✅ All HTTP operations return FlextResult[T]
+- ✅ All HTTP operations return r[T]
 - ✅ FastAPI application factory works
 - ✅ Basic middleware system functional
 - ✅ Configuration management operational
@@ -383,7 +383,7 @@
 
 ### Internal Dependencies
 
-- **flext-core v0.9.9 RC**: FlextResult, FlextService, FlextModels
+- **flext-core v0.9.9 RC**: r, FlextService, FlextModels
 - **Python 3.13+**: Type safety and performance features
 - **httpx**: HTTP protocol implementation (internal only)
 
@@ -405,7 +405,7 @@
 ### Architectural Decisions
 
 1. **Synchronous HTTP**: Simpler error handling and debugging
-1. **FlextResult Throughout**: Railway patterns for composable error handling
+1. **r Throughout**: Railway patterns for composable error handling
 1. **Plugin Architecture**: Extensible middleware and protocol systems
 1. **Clean Architecture**: Clear separation of concerns and testability
 

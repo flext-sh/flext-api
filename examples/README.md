@@ -10,7 +10,7 @@
   - [No Aliases or Helpers](#no-aliases-or-helpers)
 - [Running Examples](#running-examples)
 - [Example Patterns](#example-patterns)
-  - [FlextResult Usage (REAL Pattern)](#flextresult-usage-real-pattern)
+  - [r Usage (REAL Pattern)](#flextresult-usage-real-pattern)
   - [REAL Classes Import Pattern](#real-classes-import-pattern)
   - [Error Handling with REAL Classes](#error-handling-with-real-classes)
   - [Model Validation using REAL Classes](#model-validation-using-real-classes)
@@ -28,7 +28,7 @@
   - FlextApiClient creation and configuration
   - HTTP client creation and setup
   - Model instantiation and validation
-  - Error handling with FlextResult
+  - Error handling with r
 
 ### Advanced Features
 
@@ -78,10 +78,10 @@ PYTHONPATH=src python examples/02_advanced.py
 
 ## Example Patterns
 
-### FlextResult Usage (REAL Pattern)
+### r Usage (REAL Pattern)
 
 ```python
-# Always check success/failure using REAL FlextResult methods
+# Always check success/failure using REAL r methods
 result = api_operation()
 if result.success:
     data = result.data
@@ -107,7 +107,7 @@ from flext_api import FlextApiClient, FlextApiClient, FlextApiModels
 # Create API using REAL class
 api = FlextApiClient()
 
-# Create client using REAL method that returns FlextResult
+# Create client using REAL method that returns r
 client_result = api.create_client({"base_url": "https://api.example.com"})
 
 if client_result.success:
@@ -122,8 +122,7 @@ else:
 ```python
 # Use REAL nested model classes
 request = FlextApiModels.ApiRequest(
-    method=FlextApiModels.FlextWebMethod.GET,
-    url="https://api.example.com/data"
+    method=FlextApiModels.FlextWebMethod.GET, url="https://api.example.com/data"
 )
 
 # Use REAL nested storage classes
@@ -135,7 +134,7 @@ result = storage.set("key", {"data": "value"})
 
 - **Use ONLY REAL classes** - No helpers, no aliases, no compatibility layers
 - **Import from root level** - Always `from flext_api import ClassName`
-- **Check FlextResult patterns** - Always handle `.success` and `.error`
+- **Check r patterns** - Always handle `.success` and `.error`
 - **Use REAL nested classes** - Access via `ParentClass.NestedClass`
 - **Test examples regularly** - Ensure they work with actual implementation
 - **No placeholder code** - All examples must use working functionality
