@@ -30,7 +30,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter = TypeAdapter(object)
 
 
 def _is_object_mapping(
@@ -145,7 +145,7 @@ class FlextWebhookHandler(FlextService[bool]):
         For webhook handler, this is a no-op as webhook processing is event-driven.
 
         Returns:
-        r[object]: Success result
+        r: Success result
 
         """
         return r[bool].ok(True)

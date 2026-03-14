@@ -39,7 +39,7 @@ class FlextApiSerializers:
         @staticmethod
         def packb(
             obj: Mapping[
-                str, t.Scalar | Sequence[object] | Mapping[str, t.ContainerValue] | None
+                str, t.Scalar | Sequence | Mapping[str, t.ContainerValue] | None
             ]
             | t.ApiJsonValue,
         ) -> bytes:

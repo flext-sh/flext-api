@@ -302,7 +302,7 @@ class FlextApiModels(FlextModels):
         """HTTP response model with validation."""
         status_code: int
         headers: Dict[str, str]
-        body: object
+        body
         response_time: float
 
         @computed_field
@@ -324,12 +324,12 @@ class Base
     """Abstract base class for all protocols."""
 
     @abstractmethod
-    def create_client(self, config: dict) -> object:
+    def create_client(self, config: dict):
         """Create protocol-specific client."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> r[object]:
+    async def execute_request(self, request) -> r[object]:
         """Execute protocol-specific request."""
         pass
 

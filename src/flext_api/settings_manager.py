@@ -19,7 +19,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter = TypeAdapter(object)
 
 
 def _is_object_mapping(
@@ -209,7 +209,7 @@ class FlextApiSettingsManager:
             return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
         return r[float].ok(timeout_value)
 
-    def _normalize_value(self, key: str, *, value: str | float | bool) -> r[object]:
+    def _normalize_value(self, key: str, *, value: str | float | bool) -> r:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
             timeout_result = u.try_(
@@ -217,10 +217,10 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid timeout value: {value}")
             return timeout_result.fold(
-                on_failure=lambda e: r[object].fail(
+                on_failure=lambda e: r.fail(
                     e or f"Invalid timeout value: {value}"
                 ),
-                on_success=lambda v: r[object].ok(v),
+                on_success=lambda v: r.ok(v),
             )
         if key == "max_retries" and isinstance(value, str):
             retries_result = u.try_(
@@ -228,14 +228,14 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid max_retries value: {value}")
             return retries_result.fold(
-                on_failure=lambda e: r[object].fail(
+                on_failure=lambda e: r.fail(
                     e or f"Invalid max_retries value: {value}"
                 ),
-                on_success=lambda v: r[object].ok(v),
+                on_success=lambda v: r.ok(v),
             )
         if key in {"log_requests", "log_responses"}:
-            return r[object].ok(bool(value))
-        return r[object].ok(value)
+            return r.ok(bool(value))
+        return r.ok(value)
 
     def _process_config(
         self, config: Mapping[str, str | float | bool]

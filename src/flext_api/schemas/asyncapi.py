@@ -26,10 +26,10 @@ from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter = TypeAdapter(object)
 
 
-def _is_container_value(value: t.ContainerValue) -> TypeGuard[object]:
+def _is_container_value(value: t.ContainerValue) -> TypeGuard:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
@@ -116,7 +116,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return ["asyncapi", "async-api", "asyncapi2", "asyncapi3"]
 
     @override
-    def load_schema(self, schema_source: str) -> r[object]:
+    def load_schema(self, schema_source: str) -> r:
         """Load AsyncAPI schema from source.
 
         Args:
@@ -128,18 +128,18 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """
         schema_result = self._load_schema_document(schema_source)
         if schema_result.is_failure:
-            return r[object].fail(
+            return r.fail(
                 schema_result.error or "Failed to load AsyncAPI schema"
             )
         loaded_schema = schema_result.value
         if not _is_object_mapping(loaded_schema):
-            return r[object].fail("AsyncAPI schema must be a JSON/YAML object")
+            return r.fail("AsyncAPI schema must be a JSON/YAML object")
         normalized_schema = self._normalize_json_object(loaded_schema)
         validation_result = self.validate_schema(normalized_schema)
         if validation_result.is_failure:
-            return r[object].fail(f"Invalid AsyncAPI schema: {validation_result.error}")
+            return r.fail(f"Invalid AsyncAPI schema: {validation_result.error}")
         normalized_result: t.ContainerValue = normalized_schema
-        return r[object].ok(normalized_result)
+        return r.ok(normalized_result)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.
@@ -284,10 +284,10 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             "channels": list(channels.keys()),
         })
 
-    def _load_schema_document(self, schema_source: str) -> r[object]:
+    def _load_schema_document(self, schema_source: str) -> r:
         schema_path = Path(schema_source)
         if not schema_path.exists() or not schema_path.is_file():
-            return r[object].fail(f"Schema file not found: {schema_source}")
+            return r.fail(f"Schema file not found: {schema_source}")
         suffix = schema_path.suffix.lower()
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
@@ -300,7 +300,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                     catch=ValidationError,
                 ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
         except OSError as e:
-            return r[object].fail(f"Failed to read schema file: {e}")
+            return r.fail(f"Failed to read schema file: {e}")
 
     def _normalize_json_object(
         self, value: Mapping[str, t.ContainerValue]

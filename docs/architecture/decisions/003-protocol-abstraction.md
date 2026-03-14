@@ -133,12 +133,12 @@ class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
-    def create_client(self, config: Dict[str, object]) -> object:
+    def create_client(self, config: Dict[str, object]):
         """Create protocol-specific client instance."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> r[object]:
+    async def execute_request(self, request) -> r[object]:
         """Execute request using protocol-specific logic."""
         pass
 

@@ -232,12 +232,12 @@ class Base
     """Base protocol interface."""
 
     @abstractmethod
-    def create_client(self, config: dict) -> object:
+    def create_client(self, config: dict):
         """Create protocol-specific client."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request: object) -> r[object]:
+    async def execute_request(self, request) -> r[object]:
         """Execute protocol-specific request."""
         pass
 
@@ -423,7 +423,7 @@ class StorageBackend(ABC):
 
     @abstractmethod
     async def upload_file(
-        self, file: object, path: str, metadata: dict[str, object] = None
+        self, file, path: str, metadata: dict[str, object] = None
     ) -> r[str]:
         """Upload file to storage."""
         pass
@@ -451,7 +451,7 @@ class S3StorageBackend(StorageBackend):
         self.client = boto3.client("s3", **config)
 
     async def upload_file(
-        self, file: object, path: str, metadata: dict[str, object] = None
+        self, file, path: str, metadata: dict[str, object] = None
     ) -> r[str]:
         """Upload file to S3."""
         try:
@@ -833,11 +833,11 @@ from flext_api import Base
 class CustomBase
     """Custom protocol implementation."""
 
-    def create_client(self, config: dict) -> object:
+    def create_client(self, config: dict):
         """Create protocol-specific client."""
         return CustomClient(**config)
 
-    async def execute_request(self, request: object) -> r[object]:
+    async def execute_request(self, request) -> r[object]:
         """Execute protocol-specific request."""
         # Custom protocol implementation
         pass

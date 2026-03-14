@@ -206,7 +206,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def stream_request(
         self, request: m.HttpRequest, chunk_size: int = 8192
-    ) -> r[object]:
+    ) -> r:
         """Send streaming HTTP request."""
         self.logger.info(
             "Streaming request",
@@ -215,10 +215,10 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             chunk_size=chunk_size,
         )
         if chunk_size <= 0:
-            return r[object].fail("chunk_size must be greater than 0")
+            return r.fail("chunk_size must be greater than 0")
         headers_result = self._extract_headers_from_model(request)
         if headers_result.is_failure:
-            return r[object].fail(headers_result.error or "Headers extraction failed")
+            return r.fail(headers_result.error or "Headers extraction failed")
         method = request.method.upper()
         url = str(request.url)
         request_kwargs = self._build_request_kwargs(
@@ -227,7 +227,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         try:
             call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
         except ValidationError as e:
-            return r[object].fail(f"Invalid streaming request arguments: {e}")
+            return r.fail(f"Invalid streaming request arguments: {e}")
 
         def _iter_stream_chunks() -> Iterator[bytes]:
             timeout_config = (
@@ -257,7 +257,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     if chunk:
                         yield chunk
 
-        return r[object].ok(_iter_stream_chunks())
+        return r.ok(_iter_stream_chunks())
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
