@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from tests.unit.test_serializers import TestMessagePackUnpackb
     from tests.unit.test_smoke import test_package_imports_main_facade
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
     "test_package_imports_main_facade": (

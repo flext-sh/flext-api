@@ -174,7 +174,6 @@ if TYPE_CHECKING:
     from flext_api.utilities import FlextApiUtilities, u
     from flext_api.webhook import FlextWebhookHandler
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "AsyncAPISchemaValidator": (
         "flext_api.schemas.asyncapi",

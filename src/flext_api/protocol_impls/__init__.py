@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
     from flext_api.protocol_impls.websocket import WebSocketProtocolPlugin
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "BaseProtocolImplementation": (
         "flext_api.protocol_impls.base",
