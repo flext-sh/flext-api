@@ -2,7 +2,7 @@
 
 <!-- TOC START -->
 
-- [ Architecture](#protocol-architecture)
+- [Architecture](#protocol-architecture)
 - [HTTP Protocol Implementation](#http-protocol-implementation)
   - [FlextWebREST Implementation](#flextwebprotocol-httprest-implementation)
   - [HTTP Request/Response Models](#http-requestresponse-models)

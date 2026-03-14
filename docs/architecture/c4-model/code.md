@@ -7,7 +7,7 @@
 - [Code Structure Analysis](#code-structure-analysis)
   - [Core Module Relationships](#core-module-relationships)
   - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-- [ Implementation Details](#protocol-implementation-details)
+- [Implementation Details](#protocol-implementation-details)
   - [cture](#protocol-architecture)
   - [y Pattern](#protocol-registry-pattern)
 - [Dependency Injection Pattern](#dependency-injection-pattern)

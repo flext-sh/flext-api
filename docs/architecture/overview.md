@@ -7,7 +7,7 @@
   - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
   - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
   - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
-- [ Plugin System](#protocol-plugin-system)
+- [Plugin System](#protocol-plugin-system)
   - [y](#protocol-registry)
   - [ce](#protocol-interface)
 - [HTTP Client Architecture](#http-client-architecture)
