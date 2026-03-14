@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from types import TracebackType
 from typing import Annotated, Self, override
 
 import httpx
@@ -35,7 +36,8 @@ class _HttpClientRequestOptions(BaseModel):
         bytes | None, Field(default=None, description="Raw content body")
     ]
     data: Annotated[
-        Mapping[str, object] | None, Field(default=None, description="Form data")
+        Mapping[str, t.ContainerValue] | None,
+        Field(default=None, description="Form data"),
     ]
     timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
     headers: Annotated[
@@ -79,7 +81,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: TracebackType | None,
     ) -> None:
         """Exit context manager and close client."""
         self.close()
@@ -146,7 +148,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         return r[str].ok(full_url)
 
     def _build_request_options(
-        self, kwargs: Mapping[str, object]
+        self, kwargs: Mapping[str, t.ContainerValue]
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:

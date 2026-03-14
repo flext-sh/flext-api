@@ -33,15 +33,17 @@ from flext_api import t
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+def _is_object_mapping(
+    value: t.ContainerValue,
+) -> TypeGuard[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
-def _is_object_list(value: object) -> TypeGuard[list[object]]:
+def _is_object_list(value: t.ContainerValue) -> TypeGuard[list[t.ContainerValue]]:
     return isinstance(value, list)
 
 
-def _to_container_value(value: object) -> object:
+def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
     if value is None:
         return None
     if isinstance(value, (str, int, float, bool)):
@@ -49,7 +51,7 @@ def _to_container_value(value: object) -> object:
     if _is_object_list(value):
         return [_to_container_value(item) for item in value]
     if _is_object_mapping(value):
-        normalized: dict[str, object] = {}
+        normalized: dict[str, t.ContainerValue] = {}
         for key, item in value.items():
             normalized[str(key)] = _to_container_value(item)
         return normalized
@@ -389,7 +391,9 @@ class FlextWebhookHandler(FlextService[bool]):
                 payload_str = payload.decode("utf-8")
             else:
                 payload_str = payload
-            event_data: object = _JSON_OBJECT_ADAPTER.validate_json(payload_str)
+            event_data: t.ContainerValue = _JSON_OBJECT_ADAPTER.validate_json(
+                payload_str
+            )
             if not _is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON object")
             json_object: t.JsonObject = {}

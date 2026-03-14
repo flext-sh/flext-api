@@ -20,7 +20,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import contextlib
 import time
 from collections.abc import Mapping
 from typing import Self
@@ -549,13 +548,11 @@ class FlextApiStorage:
         config_obj = getattr(self, "_flext_storage_config", None)
         if config_obj is None:
             config_obj = config
-        with contextlib.suppress(AttributeError):
-            delattr(self, "_flext_storage_config")
+        setattr(self, "_flext_storage_config", None)
         storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
         if storage_kwargs is None:
             storage_kwargs = kwargs
-        with contextlib.suppress(AttributeError):
-            delattr(self, "_flext_storage_kwargs")
+        setattr(self, "_flext_storage_kwargs", None)
         return (config_obj, storage_kwargs)
 
     def _extract_max_size(
@@ -605,7 +602,7 @@ class FlextApiStorage:
 
     def _extract_optional_config_field(
         self, config_obj: BaseModel, field_name: str
-    ) -> object | None:
+    ) -> t.ContainerValue | None:
         """Extract optional field from config object."""
         field_value = config_obj.model_dump().get(field_name)
         if field_value is not None:

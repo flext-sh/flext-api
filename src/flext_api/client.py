@@ -25,7 +25,9 @@ from flext_api.typings import t
 _RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
     t.Api.ResponseBody
 )
-_DICT_BODY_ADAPTER: TypeAdapter[dict[str, object]] = TypeAdapter(dict[str, object])
+_DICT_BODY_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
+    dict[str, t.ContainerValue]
+)
 
 
 class FlextApiClient(s[FlextApiSettings]):

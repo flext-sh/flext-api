@@ -139,22 +139,22 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, object], **kwargs: t.Scalar
-    ) -> r[Mapping[str, object]]:
+        self, request: Mapping[str, t.ContainerValue], **kwargs: t.Scalar
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[Mapping[str, object]].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 validation_result.error or "Request validation failed"
             )
         try:
             options = _SendRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
-            return r[Mapping[str, object]].fail(str(details))
+            return r[Mapping[str, t.ContainerValue]].fail(str(details))
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[Mapping[str, object]].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 url_result.error or "URL extraction failed"
             )
         headers = dict(self._extract_headers(request))
@@ -180,7 +180,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             if options.retry_timeout is not None
             else self._retry_timeout
         )
-        events: list[dict[str, object]] = []
+        events: list[dict[str, t.ContainerValue]] = []
         retry_timeout_ms = base_retry_timeout
         attempts = 0
         while len(events) < max_events:
@@ -212,10 +212,12 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             ) as exc:
                 self._notify_error_handlers(exc)
                 if not auto_reconnect or attempts >= max_attempts:
-                    return r[Mapping[str, object]].fail(f"SSE stream failed: {exc}")
+                    return r[Mapping[str, t.ContainerValue]].fail(
+                        f"SSE stream failed: {exc}"
+                    )
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
-        response: dict[str, object] = {
+        response: dict[str, t.ContainerValue] = {
             "status_code": 200,
             "url": url_result.value,
             "method": "SSE",
@@ -228,7 +230,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 "reconnect_attempts": attempts,
             },
         }
-        return r[Mapping[str, object]].ok(response)
+        return r[Mapping[str, t.ContainerValue]].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -242,9 +244,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     def _consume_stream_once(
         self, *, url: str, method: str, headers: Mapping[str, str], remaining: int
-    ) -> tuple[list[dict[str, object]], int | None]:
+    ) -> tuple[list[dict[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
-        events: list[dict[str, object]] = []
+        events: list[dict[str, t.ContainerValue]] = []
         retry_timeout: int | None = None
         self._set_connected_state(connected=True)
         self._notify_connect_handlers()
@@ -271,7 +273,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             self._notify_disconnect_handlers()
         return (events, retry_timeout)
 
-    def _extract_retry_timeout(self, event: Mapping[str, object]) -> int | None:
+    def _extract_retry_timeout(
+        self, event: Mapping[str, t.ContainerValue]
+    ) -> int | None:
         retry_value = event.get("retry")
         if isinstance(retry_value, int) and retry_value >= 0:
             return retry_value
@@ -279,13 +283,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     def _iter_fallback_events(
         self, lines: Iterator[str]
-    ) -> Iterator[dict[str, object]]:
+    ) -> Iterator[dict[str, t.ContainerValue]]:
         event_id = ""
         event_type = ""
         data_lines: list[str] = []
         retry: int | None = None
 
-        def flush_event() -> dict[str, object] | None:
+        def flush_event() -> dict[str, t.ContainerValue] | None:
             if (
                 not event_id
                 and (not event_type)
@@ -353,7 +357,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE error handler error")
 
-    def _notify_event_handlers(self, event: Mapping[str, object]) -> None:
+    def _notify_event_handlers(self, event: Mapping[str, t.ContainerValue]) -> None:
         event_type_raw = event.get("event")
         event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
         handlers = [*self._on_event_handlers.get(event_type, [])]
@@ -367,11 +371,11 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     def _parse_sse_event(
         self,
         *,
-        event_id: object,
-        event_type: object,
-        data: object,
-        retry: object,
-    ) -> dict[str, object]:
+        event_id: t.ContainerValue,
+        event_type: t.ContainerValue,
+        data: t.ContainerValue,
+        retry: t.ContainerValue,
+    ) -> dict[str, t.ContainerValue]:
         parsed_id = str(event_id) if event_id is not None else ""
         parsed_type = str(event_type) if event_type else "message"
         parsed_data = "" if data is None else str(data)
@@ -381,7 +385,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 parsed_retry = int(retry)
             except (TypeError, ValueError):
                 parsed_retry = None
-        event_payload: dict[str, object] = {
+        event_payload: dict[str, t.ContainerValue] = {
             "id": parsed_id,
             "event": parsed_type,
             "data": parsed_data,
@@ -390,7 +394,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             event_payload["retry"] = parsed_retry
         return event_payload
 
-    def _record_event_id(self, event: Mapping[str, object]) -> None:
+    def _record_event_id(self, event: Mapping[str, t.ContainerValue]) -> None:
         event_id = event.get("id")
         if isinstance(event_id, str) and event_id:
             self.last_event_id = event_id

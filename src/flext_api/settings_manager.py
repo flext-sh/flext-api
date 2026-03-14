@@ -22,7 +22,9 @@ from flext_api import m, t
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+def _is_object_mapping(
+    value: t.ContainerValue,
+) -> TypeGuard[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
@@ -114,7 +116,7 @@ class FlextApiSettingsManager:
             return r[Mapping[str, str]].ok(config_headers_dict)
         if isinstance(headers_value, str):
             try:
-                parsed_headers: object = _JSON_OBJECT_ADAPTER.validate_json(
+                parsed_headers: t.ContainerValue = _JSON_OBJECT_ADAPTER.validate_json(
                     headers_value
                 )
                 if _is_object_mapping(parsed_headers):

@@ -29,11 +29,13 @@ from flext_api import FlextApiPlugins, t as t_api
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_api_json_value(value: object) -> TypeGuard[t_api.ApiJsonValue]:
+def _is_api_json_value(value: t_api.ContainerValue) -> TypeGuard[t_api.ApiJsonValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
-def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+def _is_object_mapping(
+    value: t_api.ContainerValue,
+) -> TypeGuard[Mapping[str, t_api.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
@@ -150,7 +152,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         validation_result = self.validate_schema(schema_definition)
         if validation_result.is_failure:
             return r[object].fail(f"Invalid JSON schema: {validation_result.error}")
-        schema_result: object = schema_definition
+        schema_result: t_api.ContainerValue = schema_definition
         return r[object].ok(schema_result)
 
     def supports_schema(self, schema_type: str) -> bool:

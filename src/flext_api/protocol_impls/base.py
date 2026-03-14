@@ -119,8 +119,8 @@ class BaseProtocolImplementation:
         return r[bool].ok(value=True)
 
     def send_request(
-        self, request: Mapping[str, object], **kwargs: t.Scalar
-    ) -> r[Mapping[str, object]]:
+        self, request: Mapping[str, t.ContainerValue], **kwargs: t.Scalar
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -136,7 +136,7 @@ class BaseProtocolImplementation:
         """
         _ = request
         _ = kwargs
-        return r[Mapping[str, object]].fail(
+        return r[Mapping[str, t.ContainerValue]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}"
         )
 
@@ -205,8 +205,8 @@ class BaseProtocolImplementation:
         return response
 
     def _validate_request(
-        self, request: Mapping[str, object]
-    ) -> r[Mapping[str, object]]:
+        self, request: Mapping[str, t.ContainerValue]
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate request dictionary.
 
         Args:
@@ -217,8 +217,8 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[Mapping[str, object]].fail("Request cannot be empty")
-        return r[Mapping[str, object]].ok(request)
+            return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
+        return r[Mapping[str, t.ContainerValue]].ok(request)
 
 
 __all__ = ["BaseProtocolImplementation"]

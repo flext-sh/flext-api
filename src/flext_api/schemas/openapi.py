@@ -29,16 +29,18 @@ from flext_api import FlextApiPlugins, t
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_container_value(value: object) -> TypeGuard[object]:
+def _is_container_value(value: t.ContainerValue) -> TypeGuard[object]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
-def _is_object_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+def _is_object_mapping(
+    value: t.ContainerValue,
+) -> TypeGuard[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
 class _DictField(BaseModel):
-    value: Annotated[Mapping[str, object], Field(default_factory=dict)]
+    value: Annotated[Mapping[str, t.ContainerValue], Field(default_factory=dict)]
 
 
 class _StringField(BaseModel):
@@ -87,7 +89,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self._strict_mode = strict_mode
         self._validate_examples = validate_examples
         self._validate_responses = validate_responses
-        self._cached_schemas: Mapping[str, Mapping[str, object]] = {}
+        self._cached_schemas: Mapping[str, Mapping[str, t.ContainerValue]] = {}
 
     def get_supported_schemas(self) -> list[str]:
         """Get list of supported schema types.
@@ -121,7 +123,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         validation_result = self.validate_schema(normalized_schema)
         if validation_result.is_failure:
             return r[object].fail(f"Invalid OpenAPI schema: {validation_result.error}")
-        normalized_result: object = normalized_schema
+        normalized_result: t.ContainerValue = normalized_schema
         return r[object].ok(normalized_result)
 
     def supports_schema(self, schema_type: str) -> bool:
@@ -261,7 +263,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         except OSError as e:
             return r[object].fail(f"Failed to read schema file: {e}")
 
-    def _normalize_json_object(self, value: Mapping[object, object]) -> t.JsonObject:
+    def _normalize_json_object(
+        self, value: Mapping[str, t.ContainerValue]
+    ) -> t.JsonObject:
         normalized: t.JsonObject = {}
         for key, item in value.items():
             if _is_container_value(item):
@@ -273,18 +277,18 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _parse_dict_field(
         self, value: t.ApiJsonValue, field_name: str
-    ) -> r[Mapping[str, object]]:
+    ) -> r[Mapping[str, t.ContainerValue]]:
         try:
             if not isinstance(value, Mapping):
-                return r[Mapping[str, object]].fail(
+                return r[Mapping[str, t.ContainerValue]].fail(
                     f"'{field_name}' field must be a dictionary"
                 )
             parsed = _DictField(value=value)
         except ValidationError:
-            return r[Mapping[str, object]].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(
                 f"'{field_name}' field must be a dictionary"
             )
-        return r[Mapping[str, object]].ok(parsed.value)
+        return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
 
     def _parse_string_field(self, value: t.ApiJsonValue, field_name: str) -> r[str]:
         try:
@@ -295,16 +299,16 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)
 
-    def _to_general_value(self, value: object) -> object:
+    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
         if value is None:
             return None
         if isinstance(value, list):
-            normalized_values: list[object] = [
+            normalized_values: list[t.ContainerValue] = [
                 self._to_general_value(item) for item in value
             ]
             return normalized_values
         if isinstance(value, Mapping):
-            normalized_mapping: dict[str, object] = {}
+            normalized_mapping: dict[str, t.ContainerValue] = {}
             for key, item in value.items():
                 normalized_mapping[str(key)] = self._to_general_value(item)
             return normalized_mapping
@@ -312,7 +316,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return value
         return str(value)
 
-    def _validate_components(self, components: Mapping[str, object]) -> r[bool]:
+    def _validate_components(
+        self, components: Mapping[str, t.ContainerValue]
+    ) -> r[bool]:
         """Validate OpenAPI components object.
 
         Args:
@@ -380,7 +386,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[str].ok(openapi_version)
 
     def _validate_operation(
-        self, operation: Mapping[str, object], path: str, method: str
+        self, operation: Mapping[str, t.ContainerValue], path: str, method: str
     ) -> r[bool]:
         """Validate OpenAPI operation object.
 
@@ -488,7 +494,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         )
 
     def _validate_scheme_type_requirements(
-        self, scheme_name: str, scheme: Mapping[str, object], scheme_type: str
+        self, scheme_name: str, scheme: Mapping[str, t.ContainerValue], scheme_type: str
     ) -> r[bool]:
         """Validate type-specific requirements for security schemes."""
         if scheme_type == "apiKey":
@@ -509,7 +515,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _validate_security_schemes(
-        self, security_schemes: Mapping[str, object]
+        self, security_schemes: Mapping[str, t.ContainerValue]
     ) -> r[bool]:
         """Validate OpenAPI security schemes.
 
@@ -535,19 +541,19 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _validate_security_schemes_structure(
-        self, security_schemes: object
-    ) -> r[Mapping[str, object]]:
+        self, security_schemes: t.ContainerValue
+    ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic structure of security schemes."""
         schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
         return schemes_result.fold(
-            on_failure=lambda _: r[Mapping[str, object]].fail(
+            on_failure=lambda _: r[Mapping[str, t.ContainerValue]].fail(
                 "Security schemes must be a dictionary"
             ),
-            on_success=lambda v: r[Mapping[str, object]].ok(v),
+            on_success=lambda v: r[Mapping[str, t.ContainerValue]].ok(v),
         )
 
     def _validate_single_security_scheme(
-        self, scheme_name: str, scheme: object
+        self, scheme_name: str, scheme: t.ContainerValue
     ) -> r[bool]:
         """Validate a single security scheme."""
         scheme_result = self._parse_dict_field(scheme, "scheme")

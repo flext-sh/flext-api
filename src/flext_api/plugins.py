@@ -107,7 +107,7 @@ class FlextApiPlugins:
             ...
 
         @abstractmethod
-        def disconnect(self, connection: object) -> r[bool]:
+        def disconnect(self, connection: t.ContainerValue) -> r[bool]:
             """Close connection."""
             ...
 
@@ -117,7 +117,7 @@ class FlextApiPlugins:
 
         @abstractmethod
         def receive(
-            self, connection: object, **options: t.Scalar
+            self, connection: t.ContainerValue, **options: t.Scalar
         ) -> r[t.JsonObject | str | bytes]:
             """Receive data from connection."""
             ...
@@ -125,7 +125,7 @@ class FlextApiPlugins:
         @abstractmethod
         def send(
             self,
-            connection: object,
+            connection: t.ContainerValue,
             data: t.JsonObject | str | bytes,
             **options: t.Scalar,
         ) -> r[bool]:

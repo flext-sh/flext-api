@@ -480,7 +480,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
     def restart(self) -> r[bool]:
         """Restart server (orchestrate stop/start)."""
 
-        def _log_restart(_: object) -> None:
+        def _log_restart(_: t.ContainerValue) -> None:
             FlextLogger(__name__).info("Server restarted")
 
         return (
