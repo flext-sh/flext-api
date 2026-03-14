@@ -113,9 +113,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         """
         schema_result = self._load_schema_document(schema_source)
         if schema_result.is_failure:
-            return r.fail(
-                schema_result.error or "Failed to load OpenAPI schema"
-            )
+            return r.fail(schema_result.error or "Failed to load OpenAPI schema")
         loaded_schema = schema_result.value
         if not _is_object_mapping(loaded_schema):
             return r.fail("OpenAPI schema must be a JSON/YAML object")

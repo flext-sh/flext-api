@@ -128,9 +128,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """
         schema_result = self._load_schema_document(schema_source)
         if schema_result.is_failure:
-            return r.fail(
-                schema_result.error or "Failed to load AsyncAPI schema"
-            )
+            return r.fail(schema_result.error or "Failed to load AsyncAPI schema")
         loaded_schema = schema_result.value
         if not _is_object_mapping(loaded_schema):
             return r.fail("AsyncAPI schema must be a JSON/YAML object")

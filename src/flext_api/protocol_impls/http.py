@@ -204,9 +204,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             }),
         )
 
-    def stream_request(
-        self, request: m.HttpRequest, chunk_size: int = 8192
-    ) -> r:
+    def stream_request(self, request: m.HttpRequest, chunk_size: int = 8192) -> r:
         """Send streaming HTTP request."""
         self.logger.info(
             "Streaming request",

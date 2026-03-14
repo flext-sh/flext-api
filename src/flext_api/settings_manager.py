@@ -217,9 +217,7 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid timeout value: {value}")
             return timeout_result.fold(
-                on_failure=lambda e: r.fail(
-                    e or f"Invalid timeout value: {value}"
-                ),
+                on_failure=lambda e: r.fail(e or f"Invalid timeout value: {value}"),
                 on_success=lambda v: r.ok(v),
             )
         if key == "max_retries" and isinstance(value, str):
@@ -228,9 +226,7 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid max_retries value: {value}")
             return retries_result.fold(
-                on_failure=lambda e: r.fail(
-                    e or f"Invalid max_retries value: {value}"
-                ),
+                on_failure=lambda e: r.fail(e or f"Invalid max_retries value: {value}"),
                 on_success=lambda v: r.ok(v),
             )
         if key in {"log_requests", "log_responses"}:
