@@ -12,6 +12,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
+    from tests import unit
     from tests.constants import TestsFlextApiConstants, TestsFlextApiConstants as c
     from tests.models import TestsFlextApiModels, TestsFlextApiModels as m
     from tests.protocols import TestsFlextApiProtocols, TestsFlextApiProtocols as p
@@ -36,6 +37,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "test_package_imports_main_facade",
     ),
     "u": ("tests.utilities", "TestsFlextApiUtilities"),
+    "unit": ("tests.unit", ""),
 }
 
 __all__ = [
@@ -51,6 +53,7 @@ __all__ = [
     "t",
     "test_package_imports_main_facade",
     "u",
+    "unit",
 ]
 
 
