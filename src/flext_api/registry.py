@@ -39,7 +39,7 @@ class FlextApiRegistry(FlextRegistry):
     _transport_cache: dict[str, FlextApiPlugins.Transport]
     _auth_cache: dict[str, FlextApiPlugins.Authentication]
 
-    def __init__(self, dispatcher: p.CommandBus | None = None) -> None:
+    def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
         self._protocol_cache: dict[str, FlextApiPlugins.Protocol] = {}

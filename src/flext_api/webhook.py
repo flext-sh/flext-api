@@ -82,7 +82,7 @@ class FlextWebhookHandler(FlextService[bool]):
     """
 
     _flext_context: p.Context
-    _dispatcher: p.CommandBus
+    _dispatcher: p.Dispatcher
     _secret: str | None
     _signature_header: str
     _algorithm: str
@@ -122,7 +122,7 @@ class FlextWebhookHandler(FlextService[bool]):
             msg = f"Failed to get command_bus: {dispatcher_result.error}"
             raise RuntimeError(msg)
         dispatcher = dispatcher_result.unwrap()
-        if not isinstance(dispatcher, p.CommandBus):
+        if not isinstance(dispatcher, p.Dispatcher):
             msg = f"command_bus is not a CommandBus: {type(dispatcher)}"
             raise TypeError(msg)
         self._dispatcher = dispatcher

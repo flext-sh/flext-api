@@ -22,7 +22,7 @@ class _FlextApiPluginBase:
     name: str
     version: str
     description: str
-    logger: p.StructlogLogger
+    logger: p.Logger
 
     def __init__(
         self,

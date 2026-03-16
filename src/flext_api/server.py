@@ -49,7 +49,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         Supports HTTP, WebSocket, SSE, and GraphQL endpoints.
         """
 
-        def __init__(self, logger: p.StructlogLogger) -> None:
+        def __init__(self, logger: p.Logger) -> None:
             """Initialize route registry.
 
             Args:
@@ -123,7 +123,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
     class ConnectionManager:
         """Manage WebSocket and SSE connection lifecycle."""
 
-        def __init__(self, logger: p.StructlogLogger) -> None:
+        def __init__(self, logger: p.Logger) -> None:
             """Initialize connection manager.
 
             Args:
@@ -167,7 +167,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             port: int,
             title: str,
             version: str,
-            logger: p.StructlogLogger,
+            logger: p.Logger,
         ) -> None:
             """Initialize lifecycle manager.
 
@@ -203,7 +203,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             return self._is_running
 
         @property
-        def logger(self) -> FlextLogger:
+        def logger(self) -> p.Logger:
             """Get the logger instance."""
             return self._logger
 
