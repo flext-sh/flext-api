@@ -26,10 +26,10 @@ from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_container_value(value: t.ContainerValue) -> TypeGuard:
+def _is_container_value(value: t.ContainerValue) -> TypeGuard[t.ContainerValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
@@ -116,7 +116,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return ["asyncapi", "async-api", "asyncapi2", "asyncapi3"]
 
     @override
-    def load_schema(self, schema_source: str) -> r:
+    def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
         """Load AsyncAPI schema from source.
 
         Args:
@@ -282,7 +282,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             "channels": list(channels.keys()),
         })
 
-    def _load_schema_document(self, schema_source: str) -> r:
+    def _load_schema_document(self, schema_source: str) -> r[t.ContainerValue]:
         schema_path = Path(schema_source)
         if not schema_path.exists() or not schema_path.is_file():
             return r.fail(f"Schema file not found: {schema_source}")

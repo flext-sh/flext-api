@@ -19,7 +19,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 def _is_object_mapping(
@@ -209,7 +209,7 @@ class FlextApiSettingsManager:
             return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
         return r[float].ok(timeout_value)
 
-    def _normalize_value(self, key: str, *, value: str | float | bool) -> r:
+    def _normalize_value(self, key: str, *, value: str | float | bool) -> r[t.Scalar]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
             timeout_result = u.try_(

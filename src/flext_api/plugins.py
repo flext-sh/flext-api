@@ -77,7 +77,7 @@ class FlextApiPlugins:
             return "unknown"
 
         @abstractmethod
-        def load_schema(self, schema_source: str) -> r:
+        def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
             """Load schema from source."""
             ...
 

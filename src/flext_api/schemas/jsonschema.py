@@ -26,7 +26,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t as t_api
 
-_JSON_OBJECT_ADAPTER: TypeAdapter = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
 def _is_api_json_value(value: t_api.ContainerValue) -> TypeGuard[t_api.ApiJsonValue]:
@@ -111,7 +111,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         return ["json-schema", "jsonschema", "json"]
 
     @override
-    def load_schema(self, schema_source: str) -> r:
+    def load_schema(self, schema_source: str) -> r[t_api.ContainerValue]:
         """Load JSON Schema from source.
 
         Args:
