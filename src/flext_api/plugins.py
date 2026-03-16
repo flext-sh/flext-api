@@ -15,13 +15,14 @@ from abc import abstractmethod
 from flext_core import FlextLogger, r
 
 from flext_api import t
+from flext_api.protocols import p
 
 
 class _FlextApiPluginBase:
     name: str
     version: str
     description: str
-    logger: FlextLogger
+    logger: p.StructlogLogger
 
     def __init__(
         self,

@@ -81,7 +81,7 @@ class FlextWebhookHandler(FlextService[bool]):
     - ual utility functions
     """
 
-    _flext_context: FlextContext
+    _flext_context: p.Context
     _dispatcher: p.CommandBus
     _secret: str | None
     _signature_header: str
