@@ -1,0 +1,38 @@
+src/flext_api/webhook.py
+  e37b9cc2e6661151 84
+src/flext_api/server.py
+  d35bb5e63cc779bf 52,126,170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "907d83b338995be2ddbca7d679566d1b94dc955d",
+  "prompts": {
+    "d35bb5e63cc779bf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_308778b78ffeJvszdVgr4agyHf",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 8,
+      "total_deletions": 3,
+      "accepted_lines": 3,
+      "overriden_lines": 0
+    },
+    "e37b9cc2e6661151": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_307f7ccd5ffeUIir5gzEHFNt54",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
