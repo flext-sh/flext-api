@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TypeGuard
+from typing import TypeIs
 
 from flext_core import r, u
 from pydantic import TypeAdapter, ValidationError
@@ -24,7 +24,7 @@ _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 def _is_object_mapping(
     value: t.ContainerValue,
-) -> TypeGuard[Mapping[str, t.ContainerValue]]:
+) -> TypeIs[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 

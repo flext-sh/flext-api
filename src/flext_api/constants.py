@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from enum import StrEnum
+from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final, Literal
 
@@ -66,6 +66,7 @@ class FlextApiConstants(FlextWebConstants):
         organization and to enable composition with other domain constants.
         """
 
+        @unique
         class Method(StrEnum):
             """HTTP method enumeration - automatic Pydantic validation.
 
@@ -93,6 +94,7 @@ class FlextApiConstants(FlextWebConstants):
             CONNECT = "CONNECT"
             TRACE = "TRACE"
 
+        @unique
         class Status(StrEnum):
             """HTTP status enumeration for operations.
 
@@ -109,6 +111,7 @@ class FlextApiConstants(FlextWebConstants):
             ERROR = "error"
             SUCCESS = "success"
 
+        @unique
         class ContentType(StrEnum):
             """Content type enumeration.
 
@@ -125,6 +128,7 @@ class FlextApiConstants(FlextWebConstants):
             MULTIPART = "multipart/form-data"
             OCTET_STREAM = "application/octet-stream"
 
+        @unique
         class HttpSerializationFormat(StrEnum):
             """HTTP-specific serialization formats (extends parent SerializationFormat).
 
@@ -293,6 +297,7 @@ class FlextApiConstants(FlextWebConstants):
         class HTTP:
             """HTTP protocol-specific constants."""
 
+            @unique
             class Protocol(StrEnum):
                 """HTTP protocol enumeration.
 
@@ -342,6 +347,7 @@ class FlextApiConstants(FlextWebConstants):
             COMPRESSION_DEFLATE: Final[str] = "deflate"
             STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
 
+            @unique
             class MessageType(StrEnum):
                 """WebSocket message type enumeration.
 
@@ -353,6 +359,7 @@ class FlextApiConstants(FlextWebConstants):
                 TEXT = "text"
                 BINARY = "binary"
 
+            @unique
             class Protocol(StrEnum):
                 """WebSocket protocol enumeration.
 
@@ -374,6 +381,7 @@ class FlextApiConstants(FlextWebConstants):
             DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 10
             DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
 
+            @unique
             class Protocol(StrEnum):
                 """SSE protocol enumeration.
 
@@ -389,6 +397,7 @@ class FlextApiConstants(FlextWebConstants):
         class GraphQL:
             """GraphQL protocol constants."""
 
+            @unique
             class Protocol(StrEnum):
                 """GraphQL protocol enumeration.
 

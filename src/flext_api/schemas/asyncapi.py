@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Annotated, TypeGuard, override
+from typing import Annotated, TypeIs, override
 
 import yaml
 from flext_core import r, u
@@ -29,13 +29,13 @@ from flext_api import FlextApiPlugins, t
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_container_value(value: t.ContainerValue) -> TypeGuard[t.ContainerValue]:
+def _is_container_value(value: t.ContainerValue) -> TypeIs[t.ContainerValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
 def _is_object_mapping(
     value: t.ContainerValue,
-) -> TypeGuard[Mapping[str, t.ContainerValue]]:
+) -> TypeIs[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 

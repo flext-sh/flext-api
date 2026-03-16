@@ -23,7 +23,7 @@ import time
 import uuid
 from collections import deque
 from collections.abc import Callable, Mapping
-from typing import TypeGuard, override
+from typing import TypeIs, override
 
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, p, r
 from pydantic import TypeAdapter, ValidationError
@@ -35,11 +35,11 @@ _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 def _is_object_mapping(
     value: t.ContainerValue,
-) -> TypeGuard[Mapping[str, t.ContainerValue]]:
+) -> TypeIs[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
-def _is_object_list(value: t.ContainerValue) -> TypeGuard[list[t.ContainerValue]]:
+def _is_object_list(value: t.ContainerValue) -> TypeIs[list[t.ContainerValue]]:
     return isinstance(value, list)
 
 
