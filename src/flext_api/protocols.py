@@ -298,5 +298,6 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
 
-p = FlextApiProtocols
 __all__ = ["FlextApiProtocols", "p"]
+
+p = FlextApiProtocols

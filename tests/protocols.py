@@ -13,3 +13,6 @@ from flext_tests import FlextTestsProtocols
 
 class TestsFlextApiProtocols(FlextTestsProtocols):
     """Test protocols for flextapi."""
+
+
+p = TestsFlextApiProtocols

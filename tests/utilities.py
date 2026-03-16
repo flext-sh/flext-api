@@ -13,3 +13,6 @@ from flext_tests import FlextTestsUtilities
 
 class TestsFlextApiUtilities(FlextTestsUtilities):
     """Test utilities for flextapi."""
+
+
+u = TestsFlextApiUtilities

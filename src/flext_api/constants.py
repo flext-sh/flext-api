@@ -426,5 +426,6 @@ class FlextApiConstants(FlextWebConstants):
             DEFAULT_MAX_PAGE_SIZE_FALLBACK: Final[int] = 1000
 
 
-c = FlextApiConstants
 __all__ = ["FlextApiConstants", "c"]
+
+c = FlextApiConstants

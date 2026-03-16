@@ -423,5 +423,6 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[str].fail(f"Invalid URL: {e}")
 
 
-u = FlextApiUtilities
 __all__ = ["FlextApiUtilities", "u"]
+
+u = FlextApiUtilities

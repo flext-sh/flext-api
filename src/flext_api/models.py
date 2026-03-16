@@ -700,6 +700,6 @@ class FlextApiModels(FlextWebModels):
     create_response = Api.create_response
 
 
-m = FlextApiModels
-
 __all__ = ["FlextApiModels", "m"]
+
+m = FlextApiModels

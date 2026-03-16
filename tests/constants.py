@@ -13,3 +13,6 @@ from flext_tests import FlextTestsConstants
 
 class TestsFlextApiConstants(FlextTestsConstants):
     """Test constants for flextapi."""
+
+
+c = TestsFlextApiConstants
