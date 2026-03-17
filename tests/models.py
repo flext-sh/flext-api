@@ -16,3 +16,5 @@ class TestsFlextApiModels(FlextTestsModels):
 
 
 m = TestsFlextApiModels
+
+__all__ = ["TestsFlextApiModels", "m"]
