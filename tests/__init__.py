@@ -12,14 +12,14 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from tests import unit
-    from tests.constants import TestsFlextApiConstants, c
-    from tests.models import TestsFlextApiModels, m
-    from tests.protocols import TestsFlextApiProtocols, p
-    from tests.typings import TestsFlextApiTypes, TestsFlextApiTypes as t
-    from tests.unit.test_serializers import TestMessagePackUnpackb
-    from tests.unit.test_smoke import test_package_imports_main_facade
-    from tests.utilities import TestsFlextApiUtilities, u
+    from . import unit as unit
+    from .constants import TestsFlextApiConstants, c
+    from .models import TestsFlextApiModels, m
+    from .protocols import TestsFlextApiProtocols, p
+    from .typings import TestsFlextApiTypes, TestsFlextApiTypes as t
+    from .unit.test_serializers import TestMessagePackUnpackb
+    from .unit.test_smoke import test_package_imports_main_facade
+    from .utilities import TestsFlextApiUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),

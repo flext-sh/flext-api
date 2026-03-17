@@ -12,8 +12,8 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from tests.unit.test_serializers import TestMessagePackUnpackb
-    from tests.unit.test_smoke import test_package_imports_main_facade
+    from .test_serializers import TestMessagePackUnpackb
+    from .test_smoke import test_package_imports_main_facade
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
