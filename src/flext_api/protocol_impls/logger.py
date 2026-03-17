@@ -7,13 +7,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from datetime import datetime
-from pathlib import Path
 from typing import override
 
 from flext_core import FlextLogger
 
-from flext_api import FlextApiProtocols as api_protocols, t
+from flext_api import FlextApiProtocols as api_protocols, t, u
 
 
 class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
@@ -53,7 +51,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.Container] = {}
         for key, value in kwargs.items():
-            if isinstance(value, (str, int, float, bool, datetime, Path)):
+            if u.is_container(value):
                 context[key] = value
                 continue
             if isinstance(value, (Mapping, Sequence)):

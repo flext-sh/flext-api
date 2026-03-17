@@ -24,7 +24,7 @@ import yaml
 from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import FlextApiPlugins, t as t_api
+from flext_api import FlextApiPlugins, t as t_api, u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
@@ -333,7 +333,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                 else:
                     normalized_map[str(key)] = str(item)
             return normalized_map
-        if isinstance(value, (str, int, float, bool)):
+        if u.is_primitive(value):
             return value
         return str(value)
 

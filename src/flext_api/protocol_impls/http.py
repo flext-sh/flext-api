@@ -448,7 +448,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         if isinstance(value, Mapping):
             empty_mapping: dict[str, t.ContainerValue] = {}
             return empty_mapping
-        if isinstance(value, (str, int, float, bool)):
+        if u.is_primitive(value):
             return value
         return str(value)
 

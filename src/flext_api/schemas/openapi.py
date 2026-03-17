@@ -21,10 +21,10 @@ from pathlib import Path
 from typing import Annotated, TypeIs, override
 
 import yaml
-from flext_core import r, u
+from flext_core import r
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
-from flext_api import FlextApiPlugins, t
+from flext_api import FlextApiPlugins, t, u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
@@ -310,7 +310,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             for key, item in value.items():
                 normalized_mapping[str(key)] = self._to_general_value(item)
             return normalized_mapping
-        if isinstance(value, (str, int, float, bool)):
+        if u.is_primitive(value):
             return value
         return str(value)
 

@@ -28,7 +28,7 @@ from typing import TypeIs, override
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, p, r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import t
+from flext_api import t, u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
@@ -46,7 +46,7 @@ def _is_object_list(value: t.ContainerValue) -> TypeIs[list[t.ContainerValue]]:
 def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
     if value is None:
         return None
-    if isinstance(value, (str, int, float, bool)):
+    if u.is_primitive(value):
         return value
     if _is_object_list(value):
         return [_to_container_value(item) for item in value]
