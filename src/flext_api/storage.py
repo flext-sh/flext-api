@@ -83,8 +83,7 @@ class FlextApiStorage:
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
         storage_kwargs_typed: dict[str, t.ApiJsonValue] = {
-            k: FlextRuntime.normalize_to_general_value(v)
-            for k, v in storage_kwargs.items()
+            k: FlextRuntime.normalize_to_container(v) for k, v in storage_kwargs.items()
         }
         super().__init__(**storage_kwargs_typed)
         config_dict = self._normalize_config(config_obj)
@@ -606,7 +605,7 @@ class FlextApiStorage:
         """Extract optional field from config object."""
         field_value = config_obj.model_dump().get(field_name)
         if field_value is not None:
-            return FlextRuntime.normalize_to_general_value(field_value)
+            return FlextRuntime.normalize_to_container(field_value)
         return None
 
     def _extract_storage_kwargs(

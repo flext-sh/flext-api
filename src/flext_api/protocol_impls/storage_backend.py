@@ -93,7 +93,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
         def _set() -> bool:
             _ = timeout
             storage_data = dict(self._storage)
-            storage_data[str(key)] = FlextRuntime.normalize_to_general_value(value)
+            storage_data[str(key)] = FlextRuntime.normalize_to_container(value)
             self._storage = storage_data
             self.logger.debug("Stored data with key: %s", key)
             return True

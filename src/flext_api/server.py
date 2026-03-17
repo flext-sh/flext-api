@@ -108,7 +108,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
                         normalized_schema_input = schema_str
                     case _:
                         normalized_schema_input = str(schema)
-                schema_normalized = FlextRuntime.normalize_to_general_value(
+                schema_normalized = FlextRuntime.normalize_to_container(
                     normalized_schema_input
                 )
                 route_data["schema"] = u.Api.RequestUtils.to_json_value(
