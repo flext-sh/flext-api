@@ -28,7 +28,7 @@ from typing import TypeIs, override
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, p, r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import t, u
+from flext_api import c, t, u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
@@ -372,7 +372,7 @@ class FlextWebhookHandler(FlextService[bool]):
         """Handle successful retry delivery."""
         event_id = event.get("id")
         if isinstance(event_id, str):
-            event_type = "unknown"
+            event_type = c.Mixins.IDENTIFIER_UNKNOWN
             type_value = event.get("type")
             if isinstance(type_value, str):
                 event_type = type_value
