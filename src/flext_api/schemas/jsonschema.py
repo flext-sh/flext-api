@@ -308,9 +308,9 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             has_properties="properties" in schema_dict,
             has_required="required" in schema_dict,
         )
-        properties_list: list[t_api.ContainerValue] = []
-        for property_name in self._schema_properties_list(schema_dict):
-            properties_list.append(property_name)
+        properties_list: list[t_api.ContainerValue] = list(
+            self._schema_properties_list(schema_dict),
+        )
         validated_schema: t_api.Api.SchemaDefinition = {
             "valid": True,
             "draft": self._draft_version,
