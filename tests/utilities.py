@@ -16,3 +16,4 @@ class TestsFlextApiUtilities(FlextTestsUtilities):
 
 
 u = TestsFlextApiUtilities
+__all__ = ["TestsFlextApiUtilities", "u"]

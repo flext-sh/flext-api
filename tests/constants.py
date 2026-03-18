@@ -16,3 +16,4 @@ class TestsFlextApiConstants(FlextTestsConstants):
 
 
 c = TestsFlextApiConstants
+__all__ = ["TestsFlextApiConstants", "c"]
