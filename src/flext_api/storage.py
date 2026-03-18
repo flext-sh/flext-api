@@ -62,6 +62,7 @@ class FlextApiStorage:
     _max_size: int | None
     _default_ttl: float | None
     _backend: str
+    _flext_storage_config: t.ApiJsonValue | None
     _flext_storage_kwargs: dict[str, t.ApiJsonValue]
 
     def __new__(
@@ -606,7 +607,7 @@ class FlextApiStorage:
         storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
         if storage_kwargs is None:
             storage_kwargs = kwargs
-        self._flext_storage_kwargs = None
+        self._flext_storage_kwargs = {}
         return (config_obj, storage_kwargs)
 
     def _extract_max_size(

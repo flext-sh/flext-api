@@ -78,7 +78,7 @@ class TestMessagePackUnpackb:
 
             # Assert
             tm.that(result.is_failure, eq=True)
-            tm.that(result.error is not None, eq=True)
+            assert result.error is not None
             tm.that("msgpack module not available" in result.error, eq=True)
 
     def test_unpackb_failure_unpackb_function_not_found(self) -> None:
@@ -95,7 +95,7 @@ class TestMessagePackUnpackb:
 
             # Assert
             tm.that(result.is_failure, eq=True)
-            tm.that(result.error is not None, eq=True)
+            assert result.error is not None
             tm.that("msgpack.unpackb function not found" in result.error, eq=True)
 
     def test_unpackb_failure_invalid_data(self) -> None:
@@ -108,7 +108,7 @@ class TestMessagePackUnpackb:
 
         # Assert
         tm.that(result.is_failure, eq=True)
-        tm.that(result.error is not None, eq=True)
+        assert result.error is not None
         tm.that("msgpack deserialization failed" in result.error, eq=True)
 
     def test_unpackb_failure_validation_error(self) -> None:
@@ -126,7 +126,7 @@ class TestMessagePackUnpackb:
 
             # Assert
             tm.that(result.is_failure, eq=True)
-            tm.that(result.error is not None, eq=True)
+            assert result.error is not None
             tm.that("validation" in result.error.lower(), eq=True)
 
     def test_unpackb_returns_result_type(self) -> None:
