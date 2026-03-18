@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from flext_tests import tm
+
 from flext_api import FlextApi
 
 
 def test_package_imports_main_facade() -> None:
-    assert FlextApi is not None
+    tm.that(FlextApi is not None, eq=True)

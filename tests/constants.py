@@ -11,7 +11,7 @@ from __future__ import annotations
 from flext_tests import c
 
 
-class TestsFlextApiConstants(FlextTestsConstants):
+class TestsFlextApiConstants(c):
     """Test constants for flextapi."""
 
 

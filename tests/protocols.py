@@ -11,7 +11,7 @@ from __future__ import annotations
 from flext_tests import p
 
 
-class TestsFlextApiProtocols(FlextTestsProtocols):
+class TestsFlextApiProtocols(p):
     """Test protocols for flextapi."""
 
 

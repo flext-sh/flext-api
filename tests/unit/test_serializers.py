@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+from flext_tests import tm
+
 from flext_api.serializers import FlextApiSerializers
 
 
@@ -26,8 +28,8 @@ class TestMessagePackUnpackb:
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        assert result.is_success
-        assert result.value == {"key": "value"}
+        tm.that(result.is_success, eq=True)
+        tm.that(result.value == {"key": "value"}, eq=True)
 
     def test_unpackb_success_with_list(self) -> None:
         """Test successful unpacking of msgpack bytes to list."""
@@ -38,8 +40,8 @@ class TestMessagePackUnpackb:
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        assert result.is_success
-        assert result.value == [1, 2, 3]
+        tm.that(result.is_success, eq=True)
+        tm.that(result.value == [1, 2, 3], eq=True)
 
     def test_unpackb_success_with_scalar(self) -> None:
         """Test successful unpacking of msgpack bytes to scalar."""
@@ -50,8 +52,8 @@ class TestMessagePackUnpackb:
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        assert result.is_success
-        assert result.value == "hello"
+        tm.that(result.is_success, eq=True)
+        tm.that(result.value == "hello", eq=True)
 
     def test_unpackb_success_with_int(self) -> None:
         """Test successful unpacking of msgpack bytes to integer."""
@@ -62,8 +64,8 @@ class TestMessagePackUnpackb:
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        assert result.is_success
-        assert result.value == 42
+        tm.that(result.is_success, eq=True)
+        tm.that(result.value == 42, eq=True)
 
     def test_unpackb_failure_msgpack_not_available(self) -> None:
         """Test failure when msgpack module is not available."""
@@ -75,9 +77,9 @@ class TestMessagePackUnpackb:
             result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
             # Assert
-            assert result.is_failure
-            assert result.error is not None
-            assert "msgpack module not available" in result.error
+            tm.that(result.is_failure, eq=True)
+            tm.that(result.error is not None, eq=True)
+            tm.that("msgpack module not available" in result.error, eq=True)
 
     def test_unpackb_failure_unpackb_function_not_found(self) -> None:
         """Test failure when msgpack.unpackb function is not found."""
@@ -92,9 +94,9 @@ class TestMessagePackUnpackb:
             result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
             # Assert
-            assert result.is_failure
-            assert result.error is not None
-            assert "msgpack.unpackb function not found" in result.error
+            tm.that(result.is_failure, eq=True)
+            tm.that(result.error is not None, eq=True)
+            tm.that("msgpack.unpackb function not found" in result.error, eq=True)
 
     def test_unpackb_failure_invalid_data(self) -> None:
         """Test failure when data is invalid/unparseable."""
@@ -105,9 +107,9 @@ class TestMessagePackUnpackb:
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        assert result.is_failure
-        assert result.error is not None
-        assert "msgpack deserialization failed" in result.error
+        tm.that(result.is_failure, eq=True)
+        tm.that(result.error is not None, eq=True)
+        tm.that("msgpack deserialization failed" in result.error, eq=True)
 
     def test_unpackb_failure_validation_error(self) -> None:
         """Test failure when validation fails on unpacked data."""
@@ -123,9 +125,9 @@ class TestMessagePackUnpackb:
             result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
             # Assert
-            assert result.is_failure
-            assert result.error is not None
-            assert "validation" in result.error.lower()
+            tm.that(result.is_failure, eq=True)
+            tm.that(result.error is not None, eq=True)
+            tm.that("validation" in result.error.lower(), eq=True)
 
     def test_unpackb_returns_result_type(self) -> None:
         """Test that unpackb returns r[T] type."""
@@ -136,7 +138,7 @@ class TestMessagePackUnpackb:
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
         # Assert: verify it's a FlextResult instance
-        assert hasattr(result, "is_success")
-        assert hasattr(result, "is_failure")
-        assert hasattr(result, "value")
-        assert hasattr(result, "error")
+        tm.that(hasattr(result, "is_success"), eq=True)
+        tm.that(hasattr(result, "is_failure"), eq=True)
+        tm.that(hasattr(result, "value"), eq=True)
+        tm.that(hasattr(result, "error"), eq=True)
