@@ -56,25 +56,33 @@ class FlextApiProtocols(FlextWebProtocols):
                 """Protocol for generic HTTP client implementations."""
 
                 def delete(
-                    self, url: str, **kwargs: t.ApiJsonValue
+                    self,
+                    url: str,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
 
                 def get(
-                    self, url: str, **kwargs: t.ApiJsonValue
+                    self,
+                    url: str,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
                 def post(
-                    self, url: str, **kwargs: t.ApiJsonValue
+                    self,
+                    url: str,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
                 def put(
-                    self, url: str, **kwargs: t.ApiJsonValue
+                    self,
+                    url: str,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
@@ -116,7 +124,10 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
                 def set(
-                    self, key: str, value: t.ApiJsonValue, timeout: int | None = None
+                    self,
+                    key: str,
+                    value: t.ApiJsonValue,
+                    timeout: int | None = None,
                 ) -> r[bool]:
                     """Store value with optional timeout."""
                     ...
@@ -214,7 +225,9 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
                 def send(
-                    self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
+                    self,
+                    connection: str,
+                    data: t.Api.RequestConfig | t.Api.RequestBody,
                 ) -> r[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...

@@ -19,7 +19,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_api import m, t
 
 _JSON_HEADERS_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
-    dict[str, t.ContainerValue]
+    dict[str, t.ContainerValue],
 )
 
 
@@ -40,7 +40,8 @@ class FlextApiSettingsManager:
         return self._config
 
     def configure(
-        self, config: Mapping[str, str | float | bool] | None = None
+        self,
+        config: Mapping[str, str | float | bool] | None = None,
     ) -> r[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
@@ -50,7 +51,7 @@ class FlextApiSettingsManager:
                 process_result = self._process_config(config)
                 if process_result.is_failure:
                     return r[bool].fail(
-                        process_result.error or "Configuration processing failed"
+                        process_result.error or "Configuration processing failed",
                     )
                 self._config = process_result.value
             return self._validate_configuration()
@@ -65,12 +66,12 @@ class FlextApiSettingsManager:
         headers_result = self._extract_headers()
         if headers_result.is_failure:
             return r[m.ClientConfig].fail(
-                headers_result.error or "Headers extraction failed"
+                headers_result.error or "Headers extraction failed",
             )
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
             return r[m.ClientConfig].fail(
-                base_url_result.error or "Base URL extraction failed"
+                base_url_result.error or "Base URL extraction failed",
             )
         timeout_result = self._extract_positive_float_setting(
             key="timeout",
@@ -78,14 +79,14 @@ class FlextApiSettingsManager:
         )
         return timeout_result.fold(
             on_failure=lambda e: r[m.ClientConfig].fail(
-                e or "Timeout extraction failed"
+                e or "Timeout extraction failed",
             ),
             on_success=lambda timeout: r[m.ClientConfig].ok(
                 m.create_config(
                     base_url=base_url_result.value,
                     timeout=timeout,
                     headers=headers_result.value,
-                )
+                ),
             ),
         )
 
@@ -124,7 +125,7 @@ class FlextApiSettingsManager:
                 return r[Mapping[str, str]].fail(f"Failed to parse headers JSON: {e}")
         else:
             return r[Mapping[str, str]].fail(
-                f"Invalid headers type: {type(headers_value)}"
+                f"Invalid headers type: {type(headers_value)}",
             )
 
     def _extract_max_retries(self) -> r[int]:
@@ -141,7 +142,7 @@ class FlextApiSettingsManager:
                 lambda: int(max_retries_raw),
                 catch=(ValueError, TypeError),
             ).map_error(
-                lambda _e: f"Max retries must be a valid integer: {max_retries_raw}"
+                lambda _e: f"Max retries must be a valid integer: {max_retries_raw}",
             )
             if retries_result.is_failure:
                 return retries_result
@@ -150,7 +151,7 @@ class FlextApiSettingsManager:
             return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
         if max_retries_value < 0:
             return r[int].fail(
-                f"Max retries cannot be negative, got: {max_retries_value}"
+                f"Max retries cannot be negative, got: {max_retries_value}",
             )
         return r[int].ok(max_retries_value)
 
@@ -185,7 +186,7 @@ class FlextApiSettingsManager:
             ).map_error(lambda _e: f"Invalid timeout value: {value}")
             return timeout_result.fold(
                 on_failure=lambda e: r[t.Scalar].fail(
-                    e or f"Invalid timeout value: {value}"
+                    e or f"Invalid timeout value: {value}",
                 ),
                 on_success=lambda v: r[t.Scalar].ok(v),
             )
@@ -196,7 +197,7 @@ class FlextApiSettingsManager:
             ).map_error(lambda _e: f"Invalid max_retries value: {value}")
             return retries_result.fold(
                 on_failure=lambda e: r[t.Scalar].fail(
-                    e or f"Invalid max_retries value: {value}"
+                    e or f"Invalid max_retries value: {value}",
                 ),
                 on_success=lambda v: r[t.Scalar].ok(v),
             )
@@ -205,7 +206,8 @@ class FlextApiSettingsManager:
         return r.ok(value)
 
     def _process_config(
-        self, config: Mapping[str, str | float | bool]
+        self,
+        config: Mapping[str, str | float | bool],
     ) -> r[t.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
         processed: t.JsonObject = {}
@@ -213,7 +215,7 @@ class FlextApiSettingsManager:
             normalize_result = self._normalize_value(key, value=value)
             if normalize_result.is_failure:
                 return r[t.JsonObject].fail(
-                    normalize_result.error or "Value normalization failed"
+                    normalize_result.error or "Value normalization failed",
                 )
             processed[key] = normalize_result.value
         return r[t.JsonObject].ok(processed)

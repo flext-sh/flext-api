@@ -50,7 +50,8 @@ class FlextApiServerFactory:
 
     @staticmethod
     def create_webhook_handler(
-        secret: str | None = None, max_retries: int = 3
+        secret: str | None = None,
+        max_retries: int = 3,
     ) -> r[FlextWebhookHandler]:
         """Create FlextWebhookHandler instance.
 

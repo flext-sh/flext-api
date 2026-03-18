@@ -23,10 +23,10 @@ from flext_api.settings import FlextApiSettings
 from flext_api.typings import t
 
 _RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
-    t.Api.ResponseBody
+    t.Api.ResponseBody,
 )
 _DICT_BODY_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
-    dict[str, t.ContainerValue]
+    dict[str, t.ContainerValue],
 )
 
 
@@ -41,7 +41,9 @@ class FlextApiClient(s[FlextApiSettings]):
     """
 
     def __new__(
-        cls, config: FlextApiSettings | None = None, **_kwargs: t.Scalar
+        cls,
+        config: FlextApiSettings | None = None,
+        **_kwargs: t.Scalar,
     ) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
@@ -55,7 +57,9 @@ class FlextApiClient(s[FlextApiSettings]):
         return instance
 
     def __init__(
-        self, config: FlextApiSettings | None = None, **kwargs: t.Scalar
+        self,
+        config: FlextApiSettings | None = None,
+        **kwargs: t.Scalar,
     ) -> None:
         """Initialize with optional configuration model.
 
@@ -124,7 +128,7 @@ class FlextApiClient(s[FlextApiSettings]):
         if bytes_result.is_success:
             return bytes_result.map(lambda v: v)
         return r[t.Api.ResponseBody].fail(
-            "Failed to deserialize response body: no valid format found"
+            "Failed to deserialize response body: no valid format found",
         )
 
     @staticmethod
@@ -139,7 +143,7 @@ class FlextApiClient(s[FlextApiSettings]):
             json_data = response.json()
             try:
                 return r[t.Api.ResponseBody].ok(
-                    _RESPONSE_BODY_ADAPTER.validate_python(json_data)
+                    _RESPONSE_BODY_ADAPTER.validate_python(json_data),
                 )
             except ValidationError:
                 return r[t.Api.ResponseBody].ok({"value": str(json_data)})
@@ -196,10 +200,12 @@ class FlextApiClient(s[FlextApiSettings]):
         body_result = self._serialize_body(request.body)
         if body_result.is_failure:
             return r[m.HttpResponse].fail(
-                body_result.error or "Body serialization failed"
+                body_result.error or "Body serialization failed",
             )
         return self._execute_http_request(
-            request=request, url=url_result.value, serialized_body=body_result.value
+            request=request,
+            url=url_result.value,
+            serialized_body=body_result.value,
         )
 
     def _build_url(self, path: str) -> r[str]:
@@ -218,7 +224,10 @@ class FlextApiClient(s[FlextApiSettings]):
         return r[str].ok(f"{base}/{path_stripped}")
 
     def _execute_http_request(
-        self, request: m.HttpRequest, url: str, serialized_body: bytes
+        self,
+        request: m.HttpRequest,
+        url: str,
+        serialized_body: bytes,
     ) -> r[m.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
@@ -246,7 +255,7 @@ class FlextApiClient(s[FlextApiSettings]):
                     )
             if response.status_code >= FlextApiConstants.Api.HTTP_ERROR_MIN:
                 return r[m.HttpResponse].fail(
-                    f"HTTP {response.status_code}: {response.reason_phrase}"
+                    f"HTTP {response.status_code}: {response.reason_phrase}",
                 )
             return self._deserialize_body(response).map(
                 lambda body: m.HttpResponse(
@@ -254,7 +263,7 @@ class FlextApiClient(s[FlextApiSettings]):
                     headers=dict(response.headers),
                     body=body,
                     request_id="",
-                )
+                ),
             )
         except (
             ValueError,

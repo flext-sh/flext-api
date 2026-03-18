@@ -80,10 +80,12 @@ class FlextApiTypes(FlextWebTypes):
         type SecurityConfig = Mapping[str, FlextTypes.ContainerValue]
         type ClientConfig = Mapping[str, FlextTypes.ContainerValue]
         type ConnectionPool = Mapping[
-            str, FlextTypes.Primitives | Mapping[str, FlextTypes.Primitives]
+            str,
+            FlextTypes.Primitives | Mapping[str, FlextTypes.Primitives],
         ]
         type TimeoutConfig = Mapping[
-            str, FlextTypes.Scalar | Mapping[str, FlextTypes.Scalar]
+            str,
+            FlextTypes.Scalar | Mapping[str, FlextTypes.Scalar],
         ]
         type RequestKwargs = Mapping[
             str,

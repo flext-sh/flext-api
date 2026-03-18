@@ -21,7 +21,7 @@ from flext_api.serializers import FlextApiSerializers
 
 _HEADERS_ADAPTER: TypeAdapter[dict[str, str]] = TypeAdapter(dict[str, str])
 _HTTP_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
-    t.Api.ResponseBody
+    t.Api.ResponseBody,
 )
 
 
@@ -60,7 +60,7 @@ class FlextApiAdapters:
                 return r[t.JsonObject | m.HttpRequest].ok(message)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[t.JsonObject | m.HttpRequest].fail(
-                    f"HTTP to WebSocket adaptation failed: {e}"
+                    f"HTTP to WebSocket adaptation failed: {e}",
                 )
 
         @staticmethod
@@ -97,7 +97,7 @@ class FlextApiAdapters:
                 return r[m.HttpResponse].ok(response)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[m.HttpResponse].fail(
-                    f"WebSocket to HTTP adaptation failed: {e}"
+                    f"WebSocket to HTTP adaptation failed: {e}",
                 )
 
     class Schema:
@@ -121,7 +121,7 @@ class FlextApiAdapters:
                 return r[t.JsonObject].ok(graphql_schema)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[t.JsonObject].fail(
-                    f"OpenAPI to GraphQL conversion failed: {e}"
+                    f"OpenAPI to GraphQL conversion failed: {e}",
                 )
 
     class FormatConverter:
@@ -146,7 +146,8 @@ class FlextApiAdapters:
             try:
                 packed_data = FlextApiSerializers.MessagePack.packb(data)
                 return u.try_(
-                    lambda: bytes(packed_data), catch=(TypeError, ValueError)
+                    lambda: bytes(packed_data),
+                    catch=(TypeError, ValueError),
                 ).map_error(lambda _: "MessagePack.packb did not return bytes")
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
@@ -160,28 +161,30 @@ class FlextApiAdapters:
 
         @staticmethod
         def transform_request_for_protocol(
-            request: m.HttpRequest, target_protocol: str
+            request: m.HttpRequest,
+            target_protocol: str,
         ) -> r[t.JsonObject | m.HttpRequest]:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
                     result = FlextApiAdapters.Http.adapt_http_request_to_websocket(
-                        request
+                        request,
                     )
                     if result.is_success:
                         return result
                     return r[t.JsonObject | m.HttpRequest].fail(
-                        result.error or "Adaptation failed"
+                        result.error or "Adaptation failed",
                     )
                 return r[t.JsonObject | m.HttpRequest].ok(request)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[t.JsonObject | m.HttpRequest].fail(
-                    f"Request transformation failed: {e}"
+                    f"Request transformation failed: {e}",
                 )
 
         @staticmethod
         def transform_response_for_protocol(
-            response: t.JsonObject | m.HttpResponse, source_protocol: str
+            response: t.JsonObject | m.HttpResponse,
+            source_protocol: str,
         ) -> r[m.HttpResponse]:
             """Transform response for specific protocol.
 
@@ -191,11 +194,11 @@ class FlextApiAdapters:
                 if source_protocol == "websocket":
                     if not isinstance(response, Mapping):
                         return r[m.HttpResponse].fail(
-                            "Invalid WebSocket response payload"
+                            "Invalid WebSocket response payload",
                         )
                     return (
                         FlextApiAdapters.Http.adapt_websocket_message_to_http_response(
-                            dict(response)
+                            dict(response),
                         )
                     )
                 return r[m.HttpResponse].ok(m.HttpResponse.model_validate(response))

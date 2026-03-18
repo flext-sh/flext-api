@@ -72,7 +72,9 @@ class FlextApiTransports:
 
         @override
         def send(
-            self, connection: str, data: t.Api.RequestConfig | t.Api.RequestBody
+            self,
+            connection: str,
+            data: t.Api.RequestConfig | t.Api.RequestBody,
         ) -> r[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             try:
@@ -80,14 +82,15 @@ class FlextApiTransports:
                 client = self._client
                 if client is None:
                     return r[t.Api.HttpResponseDict | str].fail(
-                        "HTTP client is not connected"
+                        "HTTP client is not connected",
                     )
                 params_result = self._extract_request_params(
-                    data, connection_url=connection
+                    data,
+                    connection_url=connection,
                 )
                 if params_result.is_failure:
                     return r[t.Api.HttpResponseDict | str].fail(
-                        params_result.error or "Parameter extraction failed"
+                        params_result.error or "Parameter extraction failed",
                     )
                 request_model = params_result.value
                 match request_model.body:
@@ -114,7 +117,7 @@ class FlextApiTransports:
                         )
                     case _:
                         return r[t.Api.HttpResponseDict | str].fail(
-                            "Unsupported HTTP request body type"
+                            "Unsupported HTTP request body type",
                         )
                 return r[t.Api.HttpResponseDict | str].ok({
                     "status_code": response.status_code,
@@ -133,7 +136,10 @@ class FlextApiTransports:
                 return r[t.Api.HttpResponseDict | str].fail(f"HTTP send failed: {e}")
 
         def _extract_request_params(
-            self, data: t.Api.RequestConfig | t.Api.RequestBody, *, connection_url: str
+            self,
+            data: t.Api.RequestConfig | t.Api.RequestBody,
+            *,
+            connection_url: str,
         ) -> r[m.HttpRequest]:
             """Extract and validate request parameters from data."""
             try:
@@ -160,7 +166,7 @@ class FlextApiTransports:
                         )
                     case _:
                         return r[m.HttpRequest].fail(
-                            "Unsupported HTTP request payload type"
+                            "Unsupported HTTP request payload type",
                         )
                 return r[m.HttpRequest].ok(request_model)
             except (

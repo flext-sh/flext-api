@@ -134,7 +134,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     @override
     def validate_response(
-        self, response: t.JsonObject, schema: t.JsonObject
+        self,
+        response: t.JsonObject,
+        schema: t.JsonObject,
     ) -> r[bool]:
         """Validate response against OpenAPI schema.
 
@@ -165,15 +167,16 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         version_result = self._validate_openapi_version(schema)
         if version_result.is_failure:
             return r[t.JsonObject].fail(
-                version_result.error or "Version validation failed"
+                version_result.error or "Version validation failed",
             )
         required_fields = ["info", "paths"]
         missing_fields = u.filter(
-            list(required_fields), lambda field: field not in schema
+            list(required_fields),
+            lambda field: field not in schema,
         )
         if missing_fields:
             return r[t.JsonObject].fail(
-                f"Missing required fields: {', '.join(missing_fields)}"
+                f"Missing required fields: {', '.join(missing_fields)}",
             )
         info_result = self._validate_info_field(schema)
         if info_result.is_failure:
@@ -184,7 +187,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         components_result = self._validate_optional_components(schema)
         if components_result.is_failure:
             return r[t.JsonObject].fail(
-                components_result.error or "Components validation failed"
+                components_result.error or "Components validation failed",
             )
         info_value = schema["info"]
         paths_value = schema["paths"]
@@ -222,7 +225,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return str(info["title"])
 
     def _validate_components(
-        self, components: Mapping[str, t.ContainerValue]
+        self,
+        components: Mapping[str, t.ContainerValue],
     ) -> r[bool]:
         """Validate OpenAPI components object.
 
@@ -250,7 +254,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             section_result = _shared.parse_dict_field(section_value, section_name)
             if section_result.is_failure:
                 return r[bool].fail(
-                    f"Component section must be a dictionary: {section_name}"
+                    f"Component section must be a dictionary: {section_name}",
                 )
         return r[bool].ok(value=True)
 
@@ -269,11 +273,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         info_value = info_result.value
         info_required = ["title", "version"]
         info_missing = u.filter(
-            list(info_required), lambda field: field not in info_value
+            list(info_required),
+            lambda field: field not in info_value,
         )
         if info_missing:
             return r[bool].fail(
-                f"Missing required info fields: {', '.join(info_missing)}"
+                f"Missing required info fields: {', '.join(info_missing)}",
             )
         return r[bool].ok(value=True)
 
@@ -291,7 +296,10 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[str].ok(openapi_version)
 
     def _validate_operation(
-        self, operation: Mapping[str, t.ContainerValue], path: str, method: str
+        self,
+        operation: Mapping[str, t.ContainerValue],
+        path: str,
+        method: str,
     ) -> r[bool]:
         """Validate OpenAPI operation object.
 
@@ -331,7 +339,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if "securitySchemes" in components_map:
             security_schemes_value = components_map["securitySchemes"]
             schemes_result = _shared.parse_dict_field(
-                security_schemes_value, "securitySchemes"
+                security_schemes_value,
+                "securitySchemes",
             )
             if schemes_result.is_failure:
                 return r[bool].fail(schemes_result.error)
@@ -374,10 +383,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                     method_result = _shared.parse_dict_field(method_value, method)
                     if method_result.is_failure:
                         return r[bool].fail(
-                            f"Operation must be a dictionary: {method} {path}"
+                            f"Operation must be a dictionary: {method} {path}",
                         )
                     operation_result = self._validate_operation(
-                        method_result.value, path, method
+                        method_result.value,
+                        path,
+                        method,
                     )
                     if operation_result.is_failure:
                         return operation_result
@@ -399,13 +410,16 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         )
 
     def _validate_scheme_type_requirements(
-        self, scheme_name: str, scheme: Mapping[str, t.ContainerValue], scheme_type: str
+        self,
+        scheme_name: str,
+        scheme: Mapping[str, t.ContainerValue],
+        scheme_type: str,
     ) -> r[bool]:
         """Validate type-specific requirements for security schemes."""
         if scheme_type == "apiKey":
             if "name" not in scheme or "in" not in scheme:
                 return r[bool].fail(
-                    f"apiKey scheme missing 'name' or 'in': {scheme_name}"
+                    f"apiKey scheme missing 'name' or 'in': {scheme_name}",
                 )
         elif scheme_type == "http":
             if "scheme" not in scheme:
@@ -415,12 +429,13 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 return r[bool].fail(f"oauth2 scheme missing 'flows': {scheme_name}")
         elif scheme_type == "openIdConnect" and "openIdConnectUrl" not in scheme:
             return r[bool].fail(
-                f"openIdConnect scheme missing 'openIdConnectUrl': {scheme_name}"
+                f"openIdConnect scheme missing 'openIdConnectUrl': {scheme_name}",
             )
         return r[bool].ok(value=True)
 
     def _validate_security_schemes(
-        self, security_schemes: Mapping[str, t.ContainerValue]
+        self,
+        security_schemes: Mapping[str, t.ContainerValue],
     ) -> r[bool]:
         """Validate OpenAPI security schemes.
 
@@ -432,11 +447,11 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         """
         schemes_dict_result = self._validate_security_schemes_structure(
-            security_schemes
+            security_schemes,
         )
         if schemes_dict_result.is_failure:
             return r[bool].fail(
-                schemes_dict_result.error or "Schemes validation failed"
+                schemes_dict_result.error or "Schemes validation failed",
             )
         schemes_dict = schemes_dict_result.value
         for scheme_name, scheme in schemes_dict.items():
@@ -446,19 +461,22 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _validate_security_schemes_structure(
-        self, security_schemes: t.ContainerValue
+        self,
+        security_schemes: t.ContainerValue,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic structure of security schemes."""
         schemes_result = _shared.parse_dict_field(security_schemes, "security_schemes")
         return schemes_result.fold(
             on_failure=lambda _: r[Mapping[str, t.ContainerValue]].fail(
-                "Security schemes must be a dictionary"
+                "Security schemes must be a dictionary",
             ),
             on_success=lambda v: r[Mapping[str, t.ContainerValue]].ok(v),
         )
 
     def _validate_single_security_scheme(
-        self, scheme_name: str, scheme: t.ContainerValue
+        self,
+        scheme_name: str,
+        scheme: t.ContainerValue,
     ) -> r[bool]:
         """Validate a single security scheme."""
         scheme_result = _shared.parse_dict_field(scheme, "scheme")
@@ -467,19 +485,19 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         scheme = scheme_result.value
         if "type" not in scheme:
             return r[bool].fail(
-                f"Missing 'type' field in security scheme: {scheme_name}"
+                f"Missing 'type' field in security scheme: {scheme_name}",
             )
         scheme_type_value = scheme["type"]
         type_result = _shared.parse_string_field(scheme_type_value, "type")
         if type_result.is_failure:
             return r[bool].fail(
-                f"'type' field must be a string in security scheme: {scheme_name}"
+                f"'type' field must be a string in security scheme: {scheme_name}",
             )
         scheme_type = type_result.value
         valid_types = ["apiKey", "http", "oauth2", "openIdConnect"]
         if scheme_type not in valid_types:
             return r[bool].fail(
-                f"Invalid security scheme type '{scheme_type}': {scheme_name}"
+                f"Invalid security scheme type '{scheme_type}': {scheme_name}",
             )
         return self._validate_scheme_type_requirements(scheme_name, scheme, scheme_type)
 

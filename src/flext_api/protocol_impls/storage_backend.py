@@ -84,7 +84,10 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
 
     @override
     def set(
-        self, key: str, value: t.ApiJsonValue, timeout: int | None = None
+        self,
+        key: str,
+        value: t.ApiJsonValue,
+        timeout: int | None = None,
     ) -> r[bool]:
         """Store value with optional timeout."""
         if not key:

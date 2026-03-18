@@ -182,7 +182,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         object.__setattr__(self, "_on_error_handlers", [])
 
         def _log_initialize_error(error: str) -> None:
-            self.logger.error(f"Failed to initialize WebSocket protocol: {error}")
+            self.logger.error("Failed to initialize WebSocket protocol: %s", error)
 
         self.initialize().tap_error(_log_initialize_error)
 
@@ -296,7 +296,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **kwargs: t.Scalar
+        self,
+        request: Mapping[str, t.ContainerValue],
+        **kwargs: t.Scalar,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send WebSocket request (connect and send message).
 
@@ -318,23 +320,23 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                message_result.error or "Message extraction failed"
+                message_result.error or "Message extraction failed",
             )
         message_type = self._extract_message_type(options)
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"WebSocket connection failed: {connect_result.error}"
+                f"WebSocket connection failed: {connect_result.error}",
             )
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"WebSocket send failed: {send_result.error}"
+                f"WebSocket send failed: {send_result.error}",
             )
         url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"Failed to extract URL: {url_result.error}"
+                f"Failed to extract URL: {url_result.error}",
             )
         response: dict[str, t.ContainerValue] = {
             "status_code": FlextApiConstants.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
@@ -375,7 +377,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         if websockets is None:
             return r[bool].fail(
-                "websockets library not installed. Install with: pip install websockets"
+                "websockets library not installed. Install with: pip install websockets",
             )
         try:
             self._url = url
@@ -497,7 +499,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 self.logger.info("WebSocket reconnected successfully")
                 return connect_result
         return r[bool].fail(
-            f"Failed to reconnect after {self._reconnect_max_attempts} attempts"
+            f"Failed to reconnect after {self._reconnect_max_attempts} attempts",
         )
 
     def _send_message(self, message: str | bytes, message_type: str) -> r[bool]:
@@ -525,7 +527,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
             self.logger.debug(
-                "WebSocket message sent", message_type=message_type, size=len(message)
+                "WebSocket message sent",
+                message_type=message_type,
+                size=len(message),
             )
             return r[bool].ok(value=True)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:

@@ -278,7 +278,13 @@ class FlextApiConstants(FlextWebConstants):
         ]
         "HTTP method literal - string values matching Method StrEnum."
         type StatusLiteral = Literal[
-            "idle", "pending", "running", "completed", "failed", "error", "success"
+            "idle",
+            "pending",
+            "running",
+            "completed",
+            "failed",
+            "error",
+            "success",
         ]
         "Status literal - string values matching Status StrEnum."
         type ContentTypeLiteral = Literal[

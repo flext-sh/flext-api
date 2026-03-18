@@ -27,13 +27,16 @@ class _HttpClientRequestOptions(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     params: Annotated[
-        Mapping[str, str] | None, Field(default=None, description="Query parameters")
+        Mapping[str, str] | None,
+        Field(default=None, description="Query parameters"),
     ]
     json_data: Annotated[
-        t.Container | None, Field(default=None, description="JSON body")
+        t.Container | None,
+        Field(default=None, description="JSON body"),
     ]
     content: Annotated[
-        bytes | None, Field(default=None, description="Raw content body")
+        bytes | None,
+        Field(default=None, description="Raw content body"),
     ]
     data: Annotated[
         Mapping[str, t.ContainerValue] | None,
@@ -41,7 +44,8 @@ class _HttpClientRequestOptions(BaseModel):
     ]
     timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
     headers: Annotated[
-        Mapping[str, str], Field(default_factory=dict, description="Request headers")
+        Mapping[str, str],
+        Field(default_factory=dict, description="Request headers"),
     ]
 
 
@@ -112,23 +116,29 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
 
     @override
     def request(
-        self, method: str, url: str, **kwargs: t.Scalar
+        self,
+        method: str,
+        url: str,
+        **kwargs: t.Scalar,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
         if full_url_result.is_failure:
             return r[t.Api.HttpResponseDict].fail(
-                full_url_result.error or "URL building failed"
+                full_url_result.error or "URL building failed",
             )
         options_result = self._build_request_options(kwargs)
         if options_result.is_failure:
             return r[t.Api.HttpResponseDict].fail(
-                options_result.error or "Invalid request options"
+                options_result.error or "Invalid request options",
             )
         options = options_result.value
         headers = self._prepare_request_headers(options)
         return self._execute_httpx_request(
-            method, full_url_result.value, headers, options
+            method,
+            full_url_result.value,
+            headers,
+            options,
         )
 
     def _build_full_url(self, url: str) -> r[str]:
@@ -148,7 +158,8 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         return r[str].ok(full_url)
 
     def _build_request_options(
-        self, kwargs: Mapping[str, t.ContainerValue]
+        self,
+        kwargs: Mapping[str, t.ContainerValue],
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
@@ -161,7 +172,8 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         return r[_HttpClientRequestOptions].ok(options)
 
     def _create_response_from_httpx(
-        self, httpx_response: httpx.Response
+        self,
+        httpx_response: httpx.Response,
     ) -> m.HttpResponse:
         """Convert httpx response to FlextApiModels.HttpResponse."""
         return m.HttpResponse(

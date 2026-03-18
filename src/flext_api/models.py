@@ -400,7 +400,8 @@ class FlextApiModels(FlextWebModels):
             """HTTP error response model (immutable value object)."""
 
             message: Annotated[
-                str, Field(..., description="Human-readable error message")
+                str,
+                Field(..., description="Human-readable error message"),
             ]
             error_code: Annotated[
                 str,

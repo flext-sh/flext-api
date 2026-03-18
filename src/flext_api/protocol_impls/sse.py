@@ -106,7 +106,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         )
 
         def _log_initialize_error(error: str) -> None:
-            self.logger.error(f"Failed to initialize SSE protocol: {error}")
+            self.logger.error("Failed to initialize SSE protocol: %s", error)
 
         self.initialize().tap_error(_log_initialize_error)
 
@@ -139,13 +139,15 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **kwargs: t.Scalar
+        self,
+        request: Mapping[str, t.ContainerValue],
+        **kwargs: t.Scalar,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                validation_result.error or "Request validation failed"
+                validation_result.error or "Request validation failed",
             )
         try:
             options = _SendRequestOptions.model_validate(kwargs)
@@ -155,7 +157,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                url_result.error or "URL extraction failed"
+                url_result.error or "URL extraction failed",
             )
         headers = dict(self._extract_headers(request))
         method = options.method.upper()
@@ -213,7 +215,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 self._notify_error_handlers(exc)
                 if not auto_reconnect or attempts >= max_attempts:
                     return r[Mapping[str, t.ContainerValue]].fail(
-                        f"SSE stream failed: {exc}"
+                        f"SSE stream failed: {exc}",
                     )
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
@@ -243,7 +245,12 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         }
 
     def _consume_stream_once(
-        self, *, url: str, method: str, headers: Mapping[str, str], remaining: int
+        self,
+        *,
+        url: str,
+        method: str,
+        headers: Mapping[str, str],
+        remaining: int,
     ) -> tuple[list[dict[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
         events: list[dict[str, t.ContainerValue]] = []
@@ -274,7 +281,8 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         return (events, retry_timeout)
 
     def _extract_retry_timeout(
-        self, event: Mapping[str, t.ContainerValue]
+        self,
+        event: Mapping[str, t.ContainerValue],
     ) -> int | None:
         retry_value = event.get("retry")
         if isinstance(retry_value, int) and retry_value >= 0:
@@ -282,7 +290,8 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         return None
 
     def _iter_fallback_events(
-        self, lines: Iterator[str]
+        self,
+        lines: Iterator[str],
     ) -> Iterator[dict[str, t.ContainerValue]]:
         event_id = ""
         event_type = ""
@@ -404,7 +413,10 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         self.is_connected = connected
 
     def _sleep_before_reconnect(
-        self, retry_timeout_ms: int, attempt: int, backoff_factor: float
+        self,
+        retry_timeout_ms: int,
+        attempt: int,
+        backoff_factor: float,
     ) -> None:
         delay_seconds = (
             max(retry_timeout_ms, 0) / 1000.0 * backoff_factor ** (attempt - 1)

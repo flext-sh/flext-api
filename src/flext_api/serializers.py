@@ -17,7 +17,7 @@ from flext_api import t
 _MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
     t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue] | None
 ] = TypeAdapter(
-    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue] | None
+    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue] | None,
 )
 
 

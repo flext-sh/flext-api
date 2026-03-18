@@ -129,7 +129,10 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         super().__init__(name=name, version=version, description=description, **kwargs)
 
     def _build_rfc_error_response(
-        self, error: str, status_code: int = 500, error_code: str | None = None
+        self,
+        error: str,
+        status_code: int = 500,
+        error_code: str | None = None,
     ) -> Mapping[str, t.ContainerValue]:
         """Build RFC-compliant error response (RFC 7231).
 
@@ -183,7 +186,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return r.ok(success_response)
 
     def _extract_body(
-        self, request: Mapping[str, t.ContainerValue]
+        self,
+        request: Mapping[str, t.ContainerValue],
     ) -> t.ContainerValue | None:
         """Extract body from request (RFC 7231 compliant).
 
@@ -199,7 +203,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return request["body"]
 
     def _extract_headers(
-        self, request: Mapping[str, t.ContainerValue]
+        self,
+        request: Mapping[str, t.ContainerValue],
     ) -> Mapping[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
@@ -378,7 +383,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             parsed = _StatusCodeValue(status_code=status_code)
         except ValidationError:
             return r[int].fail(
-                f"Status code must be between 100 and 599 (RFC 7231): {status_code}"
+                f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
             )
         return r[int].ok(parsed.status_code)
 

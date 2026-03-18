@@ -82,7 +82,7 @@ class FlextApiRegistry(FlextRegistry):
         if result.is_failure:
             return r[FlextApiPlugins.Authentication].fail(result.error)
         return r[FlextApiPlugins.Authentication].fail(
-            "Plugin is not an Authentication type"
+            "Plugin is not an Authentication type",
         )
 
     def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
@@ -147,7 +147,9 @@ class FlextApiRegistry(FlextRegistry):
         return self.list_plugins(self.TRANSPORTS)
 
     def register_auth_provider(
-        self, name: str, plugin: FlextApiPlugins.Authentication
+        self,
+        name: str,
+        plugin: FlextApiPlugins.Authentication,
     ) -> r[bool]:
         """Register an authentication provider plugin."""
         self._auth_cache[name] = plugin
@@ -164,7 +166,9 @@ class FlextApiRegistry(FlextRegistry):
         return self.register_plugin(self.SCHEMAS, name, plugin.name)
 
     def register_transport(
-        self, name: str, plugin: FlextApiPlugins.Transport
+        self,
+        name: str,
+        plugin: FlextApiPlugins.Transport,
     ) -> r[bool]:
         """Register a transport plugin."""
         self._transport_cache[name] = plugin

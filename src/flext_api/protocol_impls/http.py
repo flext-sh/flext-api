@@ -39,10 +39,12 @@ class _HttpRequestCallArgs(BaseModel):
     method: Annotated[str, Field(..., description="HTTP method")]
     url: Annotated[str, Field(..., description="Request URL")]
     headers: Annotated[
-        Mapping[str, str], Field(default_factory=dict, description="HTTP headers")
+        Mapping[str, str],
+        Field(default_factory=dict, description="HTTP headers"),
     ]
     params: Annotated[
-        Mapping[str, str], Field(default_factory=dict, description="Query parameters")
+        Mapping[str, str],
+        Field(default_factory=dict, description="Query parameters"),
     ]
     json_body: Annotated[
         t.Container | None,
@@ -52,7 +54,8 @@ class _HttpRequestCallArgs(BaseModel):
         ),
     ]
     content: Annotated[
-        bytes | None, Field(default=None, description="Raw content body")
+        bytes | None,
+        Field(default=None, description="Raw content body"),
     ]
     timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
 
@@ -66,7 +69,8 @@ class _MappingBodyModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     body: Annotated[
-        dict[str, t.ContainerValue], Field(..., description="Request body as mapping")
+        dict[str, t.ContainerValue],
+        Field(..., description="Request body as mapping"),
     ]
 
 
@@ -125,7 +129,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self._transport = FlextApiTransports.FlextWebTransport()
 
         def _log_initialize_error(error: str) -> None:
-            self.logger.error(f"Failed to initialize HTTP protocol: {error}")
+            self.logger.error("Failed to initialize HTTP protocol: %s", error)
 
         self.initialize().tap_error(_log_initialize_error)
         self.logger.info(
@@ -160,7 +164,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     @override
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **_kwargs: t.Scalar
+        self,
+        request: Mapping[str, t.ContainerValue],
+        **_kwargs: t.Scalar,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send HTTP request with retry logic and error handling."""
         request_general: dict[str, t.ContainerValue] = {}
@@ -169,7 +175,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                request_result.error or "Request building failed"
+                request_result.error or "Request building failed",
             )
         http_request = request_result.value
         method = http_request.method.upper()
@@ -177,25 +183,32 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                headers_result.error or "Headers extraction failed"
+                headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
         timeout = http_request.timeout
         body = http_request.body
         conn_result = self._transport.connect(
-            url=url, follow_redirects=self._follow_redirects
+            url=url,
+            follow_redirects=self._follow_redirects,
         )
         if conn_result.is_failure:
             return r[Mapping[str, t.ApiJsonValue]].fail(
-                f"Failed to establish connection: {conn_result.error}"
+                f"Failed to establish connection: {conn_result.error}",
             )
         connection = conn_result.value
         result = self._execute_with_retry(
-            connection, method, url, headers_dict, {}, timeout, body
+            connection,
+            method,
+            url,
+            headers_dict,
+            {},
+            timeout,
+            body,
         )
         return result.fold(
             on_failure=lambda e: r[Mapping[str, t.ApiJsonValue]].fail(
-                e or "Request execution failed"
+                e or "Request execution failed",
             ),
             on_success=lambda response: r[Mapping[str, t.ApiJsonValue]].ok({
                 "status_code": response.status_code,
@@ -205,7 +218,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         )
 
     def stream_request(
-        self, request: m.HttpRequest, chunk_size: int = 8192
+        self,
+        request: m.HttpRequest,
+        chunk_size: int = 8192,
     ) -> r[Iterator[bytes]]:
         """Send streaming HTTP request."""
         self.logger.info(
@@ -222,7 +237,12 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         method = request.method.upper()
         url = str(request.url)
         request_kwargs = self._build_request_kwargs(
-            method, url, headers_result.value, {}, request.timeout, request.body
+            method,
+            url,
+            headers_result.value,
+            {},
+            request.timeout,
+            request.body,
         )
         try:
             call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
@@ -269,18 +289,19 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         return protocol.lower() in supported
 
     def _build_http_request_from_dict(
-        self, request: Mapping[str, t.ContainerValue]
+        self,
+        request: Mapping[str, t.ContainerValue],
     ) -> r[m.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
             return r[m.HttpRequest].fail(
-                validation_result.error or "Request validation failed"
+                validation_result.error or "Request validation failed",
             )
         method_result = self._extract_method(request)
         if method_result.is_failure:
             return r[m.HttpRequest].fail(
-                method_result.error or "Method extraction failed"
+                method_result.error or "Method extraction failed",
             )
         url_result = self._extract_url(request)
         if url_result.is_failure:
@@ -335,7 +356,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         return kwargs
 
     def _build_response(
-        self, httpx_response: httpx.Response, _method: str
+        self,
+        httpx_response: httpx.Response,
+        _method: str,
     ) -> r[m.HttpResponse]:
         """Build FlextApiModels.HttpResponse from httpx.Response."""
         try:
@@ -365,7 +388,12 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         for attempt in range(self._max_retries + 1):
             try:
                 request_kwargs = self._build_request_kwargs(
-                    method, url, headers, params, timeout, body
+                    method,
+                    url,
+                    headers,
+                    params,
+                    timeout,
+                    body,
                 )
                 call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
                 client = self._transport.client
@@ -383,10 +411,12 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 if self._is_success_status(response.status_code):
                     return self._build_response(response, method)
                 if not self._should_retry(
-                    response.status_code, attempt, self._max_retries
+                    response.status_code,
+                    attempt,
+                    self._max_retries,
                 ):
                     return r[m.HttpResponse].fail(
-                        f"HTTP {response.status_code}: {response.text}"
+                        f"HTTP {response.status_code}: {response.text}",
                     )
             except httpx.TimeoutException as e:
                 last_error = f"Request timeout: {e}"
@@ -416,23 +446,33 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 last_error = f"Invalid request argument type: {e}"
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 last_error = self._handle_request_exception(
-                    e, url, method, attempt, self._max_retries
+                    e,
+                    url,
+                    method,
+                    attempt,
+                    self._max_retries,
                 )
             if attempt < self._max_retries:
                 backoff_time = self._retry_backoff_factor * 2**attempt
                 time.sleep(backoff_time)
         return r[m.HttpResponse].fail(
-            f"Request failed after {self._max_retries + 1} attempts: {last_error}"
+            f"Request failed after {self._max_retries + 1} attempts: {last_error}",
         )
 
     def _extract_headers_from_model(
-        self, request: m.HttpRequest
+        self,
+        request: m.HttpRequest,
     ) -> r[Mapping[str, str]]:
         """Extract headers from HttpRequest model without fallback."""
         return r[Mapping[str, str]].ok(dict(request.headers))
 
     def _handle_request_exception(
-        self, e: Exception, url: str, method: str, _attempt: int, _max_retries: int
+        self,
+        e: Exception,
+        url: str,
+        method: str,
+        _attempt: int,
+        _max_retries: int,
     ) -> str:
         """Handle request exceptions and return error message."""
         error_msg = f"Unexpected error: {e}"

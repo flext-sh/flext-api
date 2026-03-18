@@ -78,12 +78,12 @@ class FlextApiUtilities(FlextWebUtilities):
                 if kwargs is not None and "data" in kwargs:
                     raw_data = kwargs["data"]
                     return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data)
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data),
                     )
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
                     return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json)
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json),
                     )
                 return r[t.Api.RequestBody].ok({})
 
@@ -140,7 +140,8 @@ class FlextApiUtilities(FlextWebUtilities):
 
             @staticmethod
             def validate_and_extract_timeout(
-                timeout: float | str | None, kwargs: Mapping[str, t.ApiJsonValue] | None
+                timeout: float | str | None,
+                kwargs: Mapping[str, t.ApiJsonValue] | None,
             ) -> r[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
@@ -174,7 +175,9 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def build_error_response(
-            message: str, status_code: int = 400, error_code: str | None = None
+            message: str,
+            status_code: int = 400,
+            error_code: str | None = None,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Build error response - returns plain dict."""
             return {
@@ -260,7 +263,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
                 return r[Mapping[str, t.ApiJsonValue]].fail(
-                    "pagination_data must contain 'data' key"
+                    "pagination_data must contain 'data' key",
                 )
             return r[Mapping[str, t.ApiJsonValue]].ok({
                 "success": True,
@@ -309,13 +312,16 @@ class FlextApiUtilities(FlextWebUtilities):
                 FlextApiUtilities.Api.RequestUtils.to_json_value(default_page_size)
             )
             result["max_page_size"] = FlextApiUtilities.Api.RequestUtils.to_json_value(
-                max_page_size
+                max_page_size,
             )
             return result
 
         @staticmethod
         def prepare_pagination_data(
-            data: list[t.ApiJsonValue], total: int, page: int, page_size: int
+            data: list[t.ApiJsonValue],
+            total: int,
+            page: int,
+            page_size: int,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Prepare pagination metadata for response.
 
@@ -323,7 +329,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """
             if page < 1 or page_size < 1:
                 return r[Mapping[str, t.ApiJsonValue]].fail(
-                    "Page and page_size must be >= 1"
+                    "Page and page_size must be >= 1",
                 )
             total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
             has_next = page < total_pages
@@ -344,7 +350,9 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def validate_pagination_params(
-            page: int, page_size: int, max_page_size: int = 1000
+            page: int,
+            page_size: int,
+            max_page_size: int = 1000,
         ) -> r[tuple[int, int]]:
             """Validate pagination parameters.
 
@@ -356,7 +364,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[tuple[int, int]].fail("Page size must be >= 1")
             if page_size > max_page_size:
                 return r[tuple[int, int]].fail(
-                    f"Page size cannot exceed {max_page_size}"
+                    f"Page size cannot exceed {max_page_size}",
                 )
             return r[tuple[int, int]].ok((page, page_size))
 

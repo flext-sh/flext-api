@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Annotated, TypeIs
 
@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 from flext_api import t, u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_CONTAINER_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
 
 def is_container_value(value: t.ContainerValue) -> TypeIs[t.ContainerValue]:
@@ -37,7 +38,7 @@ def is_container_value(value: t.ContainerValue) -> TypeIs[t.ContainerValue]:
 
 def is_object_mapping(
     value: t.ContainerValue,
-) -> TypeIs[Mapping[str, t.ContainerValue]]:
+) -> TypeIs[dict[str, t.ContainerValue]]:
     """Type guard to check if value is a mapping of container values.
 
     Args:
@@ -82,20 +83,23 @@ def load_schema_document(schema_source: str) -> r[t.ContainerValue]:
     """
     schema_path = Path(schema_source)
     if not schema_path.exists() or not schema_path.is_file():
-        return r.fail(f"Schema file not found: {schema_source}")
+        return r[t.ContainerValue].fail(f"Schema file not found: {schema_source}")
     suffix = schema_path.suffix.lower()
     try:
         with schema_path.open("r", encoding="utf-8") as schema_file:
             if suffix in {".yaml", ".yml"}:
-                return u.try_(lambda: yaml.safe_load(schema_file)).map_error(
-                    lambda e: f"Failed to parse YAML schema: {e}"
+                parsed_yaml = u.try_(lambda: yaml.safe_load(schema_file)).map_error(
+                    lambda e: f"Failed to parse YAML schema: {e}",
+                )
+                return parsed_yaml.map(
+                    lambda value: _CONTAINER_VALUE_ADAPTER.validate_python(value),
                 )
             return u.try_(
-                lambda: _JSON_OBJECT_ADAPTER.validate_json(schema_file.read()),
+                lambda: _CONTAINER_VALUE_ADAPTER.validate_json(schema_file.read()),
                 catch=ValidationError,
             ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
     except OSError as e:
-        return r.fail(f"Failed to read schema file: {e}")
+        return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
 
 
 def normalize_json_object(
@@ -152,7 +156,8 @@ def to_general_value(value: t.ContainerValue) -> t.ContainerValue:
 
 
 def parse_dict_field(
-    value: t.ApiJsonValue, field_name: str
+    value: t.ApiJsonValue,
+    field_name: str,
 ) -> r[Mapping[str, t.ContainerValue]]:
     """Parse and validate a dictionary field.
 
@@ -167,12 +172,12 @@ def parse_dict_field(
     try:
         if not isinstance(value, Mapping):
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"'{field_name}' field must be a dictionary"
+                f"'{field_name}' field must be a dictionary",
             )
         parsed = DictField(value=value)
     except ValidationError:
         return r[Mapping[str, t.ContainerValue]].fail(
-            f"'{field_name}' field must be a dictionary"
+            f"'{field_name}' field must be a dictionary",
         )
     return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
 
@@ -217,12 +222,39 @@ def parse_int_field(value: t.ApiJsonValue, field_name: str) -> r[int]:
     return r[int].ok(parsed.value)
 
 
+def load_and_validate_schema_document[TValidation](
+    schema_source: str,
+    *,
+    schema_label: str,
+    validate_schema: Callable[[t.JsonObject], r[TValidation]],
+) -> r[t.ContainerValue]:
+    schema_result = load_schema_document(schema_source)
+    if schema_result.is_failure:
+        return r[t.ContainerValue].fail(
+            schema_result.error or f"Failed to load {schema_label} schema",
+        )
+    loaded_schema = schema_result.value
+    if not is_object_mapping(loaded_schema):
+        return r[t.ContainerValue].fail(
+            f"{schema_label} schema must be a JSON/YAML object",
+        )
+    normalized_schema = normalize_json_object(loaded_schema)
+    validation_result = validate_schema(normalized_schema)
+    if validation_result.is_failure:
+        return r[t.ContainerValue].fail(
+            f"Invalid {schema_label} schema: {validation_result.error}",
+        )
+    normalized_result: t.ContainerValue = normalized_schema
+    return r[t.ContainerValue].ok(normalized_result)
+
+
 __all__ = [
     "DictField",
     "IntField",
     "StringField",
     "is_container_value",
     "is_object_mapping",
+    "load_and_validate_schema_document",
     "load_schema_document",
     "normalize_json_object",
     "parse_dict_field",

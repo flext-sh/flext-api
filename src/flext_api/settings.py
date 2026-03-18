@@ -45,7 +45,8 @@ class FlextApiSettings(FlextModels.Value):
         ),
     ]
     verify_ssl: Annotated[
-        bool, Field(default=True, description="Enable TLS certificate check")
+        bool,
+        Field(default=True, description="Enable TLS certificate check"),
     ]
     default_headers: Annotated[
         dict[str, str],
@@ -62,10 +63,12 @@ class FlextApiSettings(FlextModels.Value):
         ),
     ]
     log_requests: Annotated[
-        bool, Field(default=False, description="Log outbound requests")
+        bool,
+        Field(default=False, description="Log outbound requests"),
     ]
     log_responses: Annotated[
-        bool, Field(default=False, description="Log inbound responses")
+        bool,
+        Field(default=False, description="Log inbound responses"),
     ]
 
 

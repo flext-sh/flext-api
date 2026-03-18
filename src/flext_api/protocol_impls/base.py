@@ -82,7 +82,7 @@ class BaseProtocolImplementation:
             return r[bool].fail("Protocol not initialized")
         if kwargs:
             self.logger.debug(
-                f"Protocol.execute received kwargs: {list(kwargs.keys())}"
+                f"Protocol.execute received kwargs: {list(kwargs.keys())}",
             )
         return r[bool].ok(value=True)
 
@@ -119,7 +119,9 @@ class BaseProtocolImplementation:
         return r[bool].ok(value=True)
 
     def send_request(
-        self, request: Mapping[str, t.ContainerValue], **kwargs: t.Scalar
+        self,
+        request: Mapping[str, t.ContainerValue],
+        **kwargs: t.Scalar,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send request using this protocol.
 
@@ -137,7 +139,7 @@ class BaseProtocolImplementation:
         _ = request
         _ = kwargs
         return r[Mapping[str, t.ContainerValue]].fail(
-            f"send_request() must be implemented by {self.__class__.__name__}"
+            f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
     def shutdown(self) -> r[bool]:
@@ -164,7 +166,9 @@ class BaseProtocolImplementation:
         return False
 
     def _build_error_response(
-        self, error: str, status_code: int = 500
+        self,
+        error: str,
+        status_code: int = 500,
     ) -> Mapping[str, t.ApiJsonValue]:
         """Build error response dictionary.
 
@@ -184,7 +188,9 @@ class BaseProtocolImplementation:
         }
 
     def _build_success_response(
-        self, data: Mapping[str, t.ApiJsonValue] | None = None, status_code: int = 200
+        self,
+        data: Mapping[str, t.ApiJsonValue] | None = None,
+        status_code: int = 200,
     ) -> Mapping[str, t.ApiJsonValue]:
         """Build success response dictionary.
 
@@ -205,7 +211,8 @@ class BaseProtocolImplementation:
         return response
 
     def _validate_request(
-        self, request: Mapping[str, t.ContainerValue]
+        self,
+        request: Mapping[str, t.ContainerValue],
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate request dictionary.
 

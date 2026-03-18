@@ -206,7 +206,9 @@ class FlextWebhookHandler(FlextService[bool]):
         return r[t.JsonObject].ok({"processed": processed, "failed": failed})
 
     def receive_webhook(
-        self, payload: bytes | str, headers: Mapping[str, str]
+        self,
+        payload: bytes | str,
+        headers: Mapping[str, str],
     ) -> r[t.JsonObject]:
         """Receive and process webhook request.
 
@@ -222,7 +224,7 @@ class FlextWebhookHandler(FlextService[bool]):
             signature_result = self._verify_signature(payload, headers)
             if signature_result.is_failure:
                 return r[t.JsonObject].fail(
-                    f"Signature verification failed: {signature_result.error}"
+                    f"Signature verification failed: {signature_result.error}",
                 )
         parse_result = self._parse_payload(payload)
         if parse_result.is_failure:
@@ -231,7 +233,7 @@ class FlextWebhookHandler(FlextService[bool]):
         event_type_result = self._extract_event_type(event_data)
         if event_type_result.is_failure:
             return r[t.JsonObject].fail(
-                event_type_result.error or "Event type extraction failed"
+                event_type_result.error or "Event type extraction failed",
             )
         event_type = event_type_result.value
         event_id = self._extract_event_id(event_data)
@@ -246,13 +248,18 @@ class FlextWebhookHandler(FlextService[bool]):
         process_result = self._process_event(event)
         return process_result.fold(
             on_failure=lambda _: self._handle_processing_failure(
-                event, event_id, event_type, process_result
+                event,
+                event_id,
+                event_type,
+                process_result,
             ),
             on_success=lambda _: self._handle_processing_success(event_id, event_type),
         )
 
     def register_event_handler(
-        self, event_type: str, handler: Callable[..., None]
+        self,
+        event_type: str,
+        handler: Callable[..., None],
     ) -> r[bool]:
         """Register event handler for webhook events.
 
@@ -354,7 +361,9 @@ class FlextWebhookHandler(FlextService[bool]):
         return r[t.JsonObject].fail(f"Processing failed: {process_result.error}")
 
     def _handle_processing_success(
-        self, event_id: str, event_type: str
+        self,
+        event_id: str,
+        event_type: str,
     ) -> r[t.JsonObject]:
         """Handle successful event processing."""
         confirmation: t.JsonObject = {
@@ -364,7 +373,9 @@ class FlextWebhookHandler(FlextService[bool]):
         }
         self._delivery_confirmations[event_id] = confirmation
         FlextLogger(__name__).info(
-            "Webhook processed successfully", event_id=event_id, event_type=event_type
+            "Webhook processed successfully",
+            event_id=event_id,
+            event_type=event_type,
         )
         return r[t.JsonObject].ok({"event_id": event_id, "status": "processed"})
 
@@ -392,7 +403,7 @@ class FlextWebhookHandler(FlextService[bool]):
             else:
                 payload_str = payload
             event_data: t.ContainerValue = _JSON_OBJECT_ADAPTER.validate_json(
-                payload_str
+                payload_str,
             )
             if not _is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON object")
@@ -423,7 +434,8 @@ class FlextWebhookHandler(FlextService[bool]):
             handlers = self._event_handlers[event_type]
         if not handlers:
             FlextLogger(__name__).warning(
-                "No handlers registered for event type", event_type=event_type
+                "No handlers registered for event type",
+                event_type=event_type,
             )
             return r[bool].ok(value=True)
         for handler in handlers:
@@ -462,7 +474,9 @@ class FlextWebhookHandler(FlextService[bool]):
         return self._get_attempts_count(event) < self._max_retries
 
     def _verify_signature(
-        self, payload: bytes | str, headers: Mapping[str, str]
+        self,
+        payload: bytes | str,
+        headers: Mapping[str, str],
     ) -> r[bool]:
         """Verify webhook signature.
 
@@ -479,7 +493,7 @@ class FlextWebhookHandler(FlextService[bool]):
         signature_value = headers[self._signature_header]
         if not signature_value:
             return r[bool].fail(
-                f"Invalid signature header value: {self._signature_header}"
+                f"Invalid signature header value: {self._signature_header}",
             )
         signature: str = signature_value
         payload_bytes = (
@@ -491,11 +505,15 @@ class FlextWebhookHandler(FlextService[bool]):
             secret_bytes = self._secret.encode("utf-8")
             if self._algorithm == "sha256":
                 expected = hmac.new(
-                    secret_bytes, payload_bytes, hashlib.sha256
+                    secret_bytes,
+                    payload_bytes,
+                    hashlib.sha256,
                 ).hexdigest()
             elif self._algorithm == "sha512":
                 expected = hmac.new(
-                    secret_bytes, payload_bytes, hashlib.sha512
+                    secret_bytes,
+                    payload_bytes,
+                    hashlib.sha512,
                 ).hexdigest()
             else:
                 return r[bool].fail(f"Unsupported algorithm: {self._algorithm}")

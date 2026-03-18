@@ -31,7 +31,7 @@ from flext_api import m, t
 
 _JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 _STORAGE_ENTRY_ADAPTER: TypeAdapter[dict[str, t.ApiJsonValue]] = TypeAdapter(
-    dict[str, t.ApiJsonValue]
+    dict[str, t.ApiJsonValue],
 )
 
 
@@ -65,7 +65,9 @@ class FlextApiStorage:
     _flext_storage_kwargs: dict[str, t.ApiJsonValue]
 
     def __new__(
-        cls, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue
+        cls,
+        config: t.ApiJsonValue | None = None,
+        **kwargs: t.ApiJsonValue,
     ) -> Self:
         """Intercept config argument and convert to kwargs for FlextService V2."""
         instance = super().__new__(cls)
@@ -76,7 +78,9 @@ class FlextApiStorage:
         return instance
 
     def __init__(
-        self, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue
+        self,
+        config: t.ApiJsonValue | None = None,
+        **kwargs: t.ApiJsonValue,
     ) -> None:
         """Initialize storage with config using Pydantic."""
         self.logger = FlextLogger(__name__)
@@ -132,7 +136,9 @@ class FlextApiStorage:
             return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
 
     def batch_set(
-        self, data: Mapping[str, t.ApiJsonValue], ttl: int | None = None
+        self,
+        data: Mapping[str, t.ApiJsonValue],
+        ttl: int | None = None,
     ) -> r[bool]:
         """Set multiple keys efficiently using Pydantic validation."""
         try:
@@ -153,7 +159,8 @@ class FlextApiStorage:
             return initial_size - len(self._storage)
 
         return u.try_(
-            _cleanup, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _cleanup,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Cleanup failed: {e}")
 
     def clear(self) -> r[bool]:
@@ -245,7 +252,8 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_stats, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _get_stats,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def get_storage_metrics(self) -> r[t.Api.MetricsDict]:
@@ -259,7 +267,8 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_metrics, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _get_metrics,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def get_storage_statistics(self) -> r[Mapping[str, float]]:
@@ -281,7 +290,8 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_statistics, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _get_statistics,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
@@ -297,7 +307,8 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _check_health, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _check_health,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
@@ -315,7 +326,8 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_info, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _get_info,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def items(self) -> r[list[tuple[str, t.ApiJsonValue]]]:
@@ -361,7 +373,8 @@ class FlextApiStorage:
             return stats_dict
 
         return u.try_(
-            _get_metrics, catch=(ValueError, TypeError, KeyError, ConnectionError)
+            _get_metrics,
+            catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
@@ -500,7 +513,10 @@ class FlextApiStorage:
         return r[str].ok("memory")
 
     def _extract_config_field(
-        self, config_obj: BaseModel, field_name: str, default_value: str
+        self,
+        config_obj: BaseModel,
+        field_name: str,
+        default_value: str,
     ) -> str:
         """Extract string field from config object."""
         field_value = config_obj.model_dump().get(field_name)
@@ -532,7 +548,8 @@ class FlextApiStorage:
         """
         if param_val is not None:
             int_result = u.try_(
-                lambda: int(str(param_val)), catch=(ValueError, TypeError)
+                lambda: int(str(param_val)),
+                catch=(ValueError, TypeError),
             ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
             if int_result.is_failure:
                 return int_result
@@ -540,13 +557,14 @@ class FlextApiStorage:
             if int_value > 0:
                 return r[int].ok(int_value)
             return r[int].fail(
-                f"{param_display_name} must be positive, got: {int_value}"
+                f"{param_display_name} must be positive, got: {int_value}",
             )
         if config_key in config_dict:
             config_val = config_dict[config_key]
             if config_val is not None:
                 int_result = u.try_(
-                    lambda: int(str(config_val)), catch=(ValueError, TypeError)
+                    lambda: int(str(config_val)),
+                    catch=(ValueError, TypeError),
                 ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
                 if int_result.is_failure:
                     return int_result
@@ -554,12 +572,14 @@ class FlextApiStorage:
                 if int_value > 0:
                     return r[int].ok(int_value)
                 return r[int].fail(
-                    f"{param_display_name} must be positive, got: {int_value}"
+                    f"{param_display_name} must be positive, got: {int_value}",
                 )
         return r[int].ok(-1)
 
     def _extract_default_ttl(
-        self, config_dict: t.Api.StorageDict, default_ttl_val: t.ApiJsonValue | None
+        self,
+        config_dict: t.Api.StorageDict,
+        default_ttl_val: t.ApiJsonValue | None,
     ) -> r[int]:
         """Extract default_ttl preferring parameter over config - no fallbacks.
 
@@ -567,25 +587,32 @@ class FlextApiStorage:
         The caller should check for -1 to determine if default_ttl was not set.
         """
         return self._extract_positive_int_parameter(
-            default_ttl_val, "default_ttl", config_dict, "Default TTL"
+            default_ttl_val,
+            "default_ttl",
+            config_dict,
+            "Default TTL",
         )
 
     def _extract_init_params(
-        self, config: t.ApiJsonValue | None, kwargs: Mapping[str, t.ApiJsonValue]
+        self,
+        config: t.ApiJsonValue | None,
+        kwargs: Mapping[str, t.ApiJsonValue],
     ) -> tuple[t.ApiJsonValue | None, Mapping[str, t.ApiJsonValue]]:
         """Extract config and kwargs from __new__ or parameters."""
         config_obj = getattr(self, "_flext_storage_config", None)
         if config_obj is None:
             config_obj = config
-        setattr(self, "_flext_storage_config", None)
+        self._flext_storage_config = None
         storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
         if storage_kwargs is None:
             storage_kwargs = kwargs
-        setattr(self, "_flext_storage_kwargs", None)
+        self._flext_storage_kwargs = None
         return (config_obj, storage_kwargs)
 
     def _extract_max_size(
-        self, config_dict: t.Api.StorageDict, max_size_val: t.ApiJsonValue | None
+        self,
+        config_dict: t.Api.StorageDict,
+        max_size_val: t.ApiJsonValue | None,
     ) -> r[int]:
         """Extract max_size preferring parameter over config - no fallbacks.
 
@@ -593,7 +620,10 @@ class FlextApiStorage:
         The caller should check for -1 to determine if max_size was not set.
         """
         return self._extract_positive_int_parameter(
-            max_size_val, "max_size", config_dict, "Max size"
+            max_size_val,
+            "max_size",
+            config_dict,
+            "Max size",
         )
 
     def _extract_namespace(self, config_dict: t.Api.StorageDict) -> r[str]:
@@ -610,7 +640,9 @@ class FlextApiStorage:
         return r[str].ok("flext_api")
 
     def _extract_optional_config_field(
-        self, config_obj: BaseModel, field_name: str
+        self,
+        config_obj: BaseModel,
+        field_name: str,
     ) -> t.ContainerValue | None:
         """Extract optional field from config object."""
         field_value = config_obj.model_dump().get(field_name)
@@ -619,7 +651,8 @@ class FlextApiStorage:
         return None
 
     def _extract_storage_kwargs(
-        self, storage_kwargs: Mapping[str, t.ApiJsonValue]
+        self,
+        storage_kwargs: Mapping[str, t.ApiJsonValue],
     ) -> tuple[t.ApiJsonValue | None, t.ApiJsonValue | None]:
         """Extract storage-specific kwargs before passing to super."""
         storage_kwargs_dict = dict(storage_kwargs)
@@ -643,7 +676,8 @@ class FlextApiStorage:
             backend_str = self._extract_config_field(config_obj, "backend", "memory")
             max_size_val = self._extract_optional_config_field(config_obj, "max_size")
             default_ttl_val = self._extract_optional_config_field(
-                config_obj, "default_ttl"
+                config_obj,
+                "default_ttl",
             )
             return {
                 "namespace": namespace_str,
@@ -654,7 +688,9 @@ class FlextApiStorage:
         return {}
 
     def _process_namespaced_entry(
-        self, namespaced_key: str, key: str
+        self,
+        namespaced_key: str,
+        key: str,
     ) -> r[t.ApiJsonValue]:
         """Process a namespaced storage entry with metadata validation."""
         data = self._storage[namespaced_key]
@@ -707,7 +743,7 @@ class FlextApiStorage:
                 key=key,
             )
             return r[t.ApiJsonValue].fail(
-                f"ValidationError processing key '{key}': {e}"
+                f"ValidationError processing key '{key}': {e}",
             )
         except (KeyError, TypeError, AttributeError) as e:
             FlextLogger(__name__).error(
@@ -717,7 +753,7 @@ class FlextApiStorage:
                 key=key,
             )
             return r[t.ApiJsonValue].fail(
-                f"{type(e).__name__} processing key '{key}': {e}"
+                f"{type(e).__name__} processing key '{key}': {e}",
             )
 
 

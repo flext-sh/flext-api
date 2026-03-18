@@ -38,7 +38,9 @@ class FlextApi(s[FlextApiSettings]):
     Models: ClassVar = m
 
     def __new__(
-        cls, config: FlextApiSettings | None = None, **_kwargs: t.Scalar
+        cls,
+        config: FlextApiSettings | None = None,
+        **_kwargs: t.Scalar,
     ) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
@@ -52,7 +54,9 @@ class FlextApi(s[FlextApiSettings]):
         return instance
 
     def __init__(
-        self, config: FlextApiSettings | None = None, **kwargs: t.Scalar
+        self,
+        config: FlextApiSettings | None = None,
+        **kwargs: t.Scalar,
     ) -> None:
         """Initialize with optional config.
 
@@ -182,7 +186,8 @@ class FlextApi(s[FlextApiSettings]):
         return self._client.request(request)
 
     def _extract_query_params(
-        self, request_kwargs: t.Api.RequestKwargs | None
+        self,
+        request_kwargs: t.Api.RequestKwargs | None,
     ) -> r[t.Api.WebParams]:
         """Extract and validate query parameters from request_kwargs.
 
@@ -245,30 +250,33 @@ class FlextApi(s[FlextApiSettings]):
             dict(request_kwargs.items()) if request_kwargs is not None else None
         )
         body_result = FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
-            data, request_kwargs_dict
+            data,
+            request_kwargs_dict,
         )
         if body_result.is_failure:
             return r[m.HttpResponse].fail(body_result.error or "Body extraction failed")
         headers_result = FlextApiUtilities.Api.RequestUtils.merge_headers(
-            headers, request_kwargs_dict
+            headers,
+            request_kwargs_dict,
         )
         if headers_result.is_failure:
             return r[m.HttpResponse].fail(
-                headers_result.error or "Header extraction failed"
+                headers_result.error or "Header extraction failed",
             )
         timeout_result = (
             FlextApiUtilities.Api.RequestUtils.validate_and_extract_timeout(
-                timeout, request_kwargs_dict
+                timeout,
+                request_kwargs_dict,
             )
         )
         if timeout_result.is_failure:
             return r[m.HttpResponse].fail(
-                timeout_result.error or "Timeout extraction failed"
+                timeout_result.error or "Timeout extraction failed",
             )
         query_params_result = self._extract_query_params(request_kwargs)
         if query_params_result.is_failure:
             return r[m.HttpResponse].fail(
-                query_params_result.error or "Query params extraction failed"
+                query_params_result.error or "Query params extraction failed",
             )
         body_final = body_result.value
         http_request = m.HttpRequest(
