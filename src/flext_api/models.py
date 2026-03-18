@@ -597,58 +597,6 @@ class FlextApiModels(FlextWebModels):
                 request_id=response_id,
             )
 
-        class HttpPagination(FlextModels.Value):
-            """HTTP pagination value object for list responses.
-
-            Immutable pagination metadata for paginated API responses.
-            """
-
-            page: Annotated[
-                int, Field(default=1, ge=1, description="Current page number")
-            ]
-            page_size: Annotated[
-                int,
-                Field(
-                    default=c.Pagination.DEFAULT_PAGE_SIZE,
-                    ge=c.Pagination.MIN_PAGE_SIZE,
-                    le=c.Pagination.MAX_PAGE_SIZE,
-                    description="Items per page",
-                ),
-            ]
-            total_items: Annotated[
-                int,
-                Field(
-                    default=0,
-                    ge=0,
-                    description="Total number of items",
-                ),
-            ]
-            total_pages: Annotated[
-                int,
-                Field(
-                    default=0,
-                    ge=0,
-                    description="Total number of pages",
-                ),
-            ]
-
-            @computed_field
-            def has_next(self) -> bool:
-                """Check if next page exists."""
-                if self.total_pages == 0:
-                    return False
-                return self.page < self.total_pages
-
-            @computed_field
-            def has_previous(self) -> bool:
-                """Check if previous page exists."""
-                return self.page > 1
-
-            @computed_field
-            def offset(self) -> int:
-                """Calculate offset from page and page_size."""
-                return (self.page - 1) * self.page_size
-
         # =========================================================================
         # STORAGE MODELS
         # =========================================================================
@@ -694,7 +642,7 @@ class FlextApiModels(FlextWebModels):
     Error: TypeAlias = Api.Error
     QueryParams: TypeAlias = Api.QueryParams
     Headers: TypeAlias = Api.Headers
-    HttpPagination: TypeAlias = Api.HttpPagination
+    HttpPagination: TypeAlias = Api.PaginationInfo  # Alias for backward compatibility
     Storage: TypeAlias = Api.Storage
     create_config = Api.create_config
     create_response = Api.create_response

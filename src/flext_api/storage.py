@@ -508,6 +508,56 @@ class FlextApiStorage:
             return field_value
         return default_value
 
+    def _extract_positive_int_parameter(
+        self,
+        param_val: t.ApiJsonValue | None,
+        config_key: str,
+        config_dict: t.Api.StorageDict,
+        param_display_name: str,
+    ) -> r[int]:
+        """Extract positive integer parameter preferring param_val over config.
+
+        Single Responsibility: Handles the common pattern for extracting and validating
+        positive integers from either a parameter or config dictionary.
+
+        Args:
+            param_val: Parameter value (checked first, takes precedence)
+            config_key: Key to check in config_dict if param_val is None
+            config_dict: Configuration dictionary
+            param_display_name: Display name for error messages (e.g., "Default TTL")
+
+        Returns:
+            r[int] with positive integer value, or sentinel (-1) if not specified
+
+        """
+        if param_val is not None:
+            int_result = u.try_(
+                lambda: int(str(param_val)), catch=(ValueError, TypeError)
+            ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
+            if int_result.is_failure:
+                return int_result
+            int_value = int_result.value
+            if int_value > 0:
+                return r[int].ok(int_value)
+            return r[int].fail(
+                f"{param_display_name} must be positive, got: {int_value}"
+            )
+        if config_key in config_dict:
+            config_val = config_dict[config_key]
+            if config_val is not None:
+                int_result = u.try_(
+                    lambda: int(str(config_val)), catch=(ValueError, TypeError)
+                ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
+                if int_result.is_failure:
+                    return int_result
+                int_value = int_result.value
+                if int_value > 0:
+                    return r[int].ok(int_value)
+                return r[int].fail(
+                    f"{param_display_name} must be positive, got: {int_value}"
+                )
+        return r[int].ok(-1)
+
     def _extract_default_ttl(
         self, config_dict: t.Api.StorageDict, default_ttl_val: t.ApiJsonValue | None
     ) -> r[int]:
@@ -516,29 +566,9 @@ class FlextApiStorage:
         Returns r[int] with a sentinel value (-1) when default_ttl is not specified.
         The caller should check for -1 to determine if default_ttl was not set.
         """
-        if default_ttl_val is not None:
-            ttl_result = u.try_(
-                lambda: int(str(default_ttl_val)), catch=(ValueError, TypeError)
-            ).map_error(lambda e: f"Invalid default_ttl value: {e}")
-            if ttl_result.is_failure:
-                return ttl_result
-            ttl_int = ttl_result.value
-            if ttl_int > 0:
-                return r[int].ok(ttl_int)
-            return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
-        if "default_ttl" in config_dict:
-            default_ttl_config = config_dict["default_ttl"]
-            if default_ttl_config is not None:
-                ttl_result = u.try_(
-                    lambda: int(str(default_ttl_config)), catch=(ValueError, TypeError)
-                ).map_error(lambda e: f"Invalid default_ttl value: {e}")
-                if ttl_result.is_failure:
-                    return ttl_result
-                ttl_int = ttl_result.value
-                if ttl_int > 0:
-                    return r[int].ok(ttl_int)
-                return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
-        return r[int].ok(-1)
+        return self._extract_positive_int_parameter(
+            default_ttl_val, "default_ttl", config_dict, "Default TTL"
+        )
 
     def _extract_init_params(
         self, config: t.ApiJsonValue | None, kwargs: Mapping[str, t.ApiJsonValue]
@@ -562,29 +592,9 @@ class FlextApiStorage:
         Returns r[int] with a sentinel value (-1) when max_size is not specified.
         The caller should check for -1 to determine if max_size was not set.
         """
-        if max_size_val is not None:
-            max_size_result = u.try_(
-                lambda: int(str(max_size_val)), catch=(ValueError, TypeError)
-            ).map_error(lambda e: f"Invalid max_size value: {e}")
-            if max_size_result.is_failure:
-                return max_size_result
-            max_size_int = max_size_result.value
-            if max_size_int > 0:
-                return r[int].ok(max_size_int)
-            return r[int].fail(f"Max size must be positive, got: {max_size_int}")
-        if "max_size" in config_dict:
-            max_size_config = config_dict["max_size"]
-            if max_size_config is not None:
-                max_size_result = u.try_(
-                    lambda: int(str(max_size_config)), catch=(ValueError, TypeError)
-                ).map_error(lambda e: f"Invalid max_size value: {e}")
-                if max_size_result.is_failure:
-                    return max_size_result
-                max_size_int = max_size_result.value
-                if max_size_int > 0:
-                    return r[int].ok(max_size_int)
-                return r[int].fail(f"Max size must be positive, got: {max_size_int}")
-        return r[int].ok(-1)
+        return self._extract_positive_int_parameter(
+            max_size_val, "max_size", config_dict, "Max size"
+        )
 
     def _extract_namespace(self, config_dict: t.Api.StorageDict) -> r[str]:
         """Extract namespace from config with validation - uses default if not specified."""
