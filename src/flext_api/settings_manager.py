@@ -12,20 +12,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TypeIs
 
 from flext_core import r, u
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
-
-
-def _is_object_mapping(
-    value: t.ContainerValue,
-) -> TypeIs[Mapping[str, t.ContainerValue]]:
-    return isinstance(value, Mapping)
+_JSON_HEADERS_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
+    dict[str, t.ContainerValue]
+)
 
 
 class FlextApiSettingsManager:
@@ -77,7 +72,10 @@ class FlextApiSettingsManager:
             return r[m.ClientConfig].fail(
                 base_url_result.error or "Base URL extraction failed"
             )
-        timeout_result = self._extract_timeout_for_config()
+        timeout_result = self._extract_positive_float_setting(
+            key="timeout",
+            label="Timeout",
+        )
         return timeout_result.fold(
             on_failure=lambda e: r[m.ClientConfig].fail(
                 e or "Timeout extraction failed"
@@ -116,17 +114,12 @@ class FlextApiSettingsManager:
             return r[Mapping[str, str]].ok(config_headers_dict)
         if isinstance(headers_value, str):
             try:
-                parsed_headers: t.ContainerValue = _JSON_OBJECT_ADAPTER.validate_json(
-                    headers_value
-                )
-                if _is_object_mapping(parsed_headers):
-                    parsed_headers_dict: dict[str, str] = {}
-                    for key_obj, value_obj in parsed_headers.items():
-                        parsed_headers_dict[str(key_obj)] = str(value_obj)
-                    return r[Mapping[str, str]].ok(parsed_headers_dict)
-                return r[Mapping[str, str]].fail(
-                    f"Parsed headers must be dict, got: {type(parsed_headers)}"
-                )
+                parsed_headers = _JSON_HEADERS_ADAPTER.validate_json(headers_value)
+                parsed_headers_dict: dict[str, str] = {
+                    str(key_obj): str(value_obj)
+                    for key_obj, value_obj in parsed_headers.items()
+                }
+                return r[Mapping[str, str]].ok(parsed_headers_dict)
             except (ValidationError, TypeError) as e:
                 return r[Mapping[str, str]].fail(f"Failed to parse headers JSON: {e}")
         else:
@@ -161,53 +154,27 @@ class FlextApiSettingsManager:
             )
         return r[int].ok(max_retries_value)
 
-    def _extract_timeout(self) -> r[float]:
-        """Extract and validate timeout from config - no fallbacks."""
+    def _extract_positive_float_setting(self, *, key: str, label: str) -> r[float]:
         if self._config is None:
             return r[float].fail("No configuration set")
-        if "timeout" not in self._config:
-            return r[float].fail("Timeout not specified in configuration")
-        timeout_value_raw = self._config["timeout"]
-        if isinstance(timeout_value_raw, int | float):
-            timeout_value = float(timeout_value_raw)
-        elif isinstance(timeout_value_raw, str):
+        if key not in self._config:
+            return r[float].fail(f"{label} not specified in configuration")
+        raw_value = self._config[key]
+        if isinstance(raw_value, int | float):
+            float_value = float(raw_value)
+        elif isinstance(raw_value, str):
             timeout_result = u.try_(
-                lambda: float(timeout_value_raw),
+                lambda: float(raw_value),
                 catch=ValueError,
-            ).map_error(
-                lambda _e: f"Timeout must be a valid number: {timeout_value_raw}"
-            )
+            ).map_error(lambda _e: f"{label} must be a valid number: {raw_value}")
             if timeout_result.is_failure:
                 return timeout_result
-            timeout_value = timeout_result.value
+            float_value = timeout_result.value
         else:
-            return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
-        if timeout_value <= 0:
-            return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
-        return r[float].ok(timeout_value)
-
-    def _extract_timeout_for_config(self) -> r[float]:
-        """Extract timeout for config creation - no fallbacks."""
-        if self._config is None:
-            return r[float].fail("No configuration set")
-        if "timeout" not in self._config:
-            return r[float].fail("Timeout not specified in configuration")
-        timeout_raw = self._config["timeout"]
-        if isinstance(timeout_raw, int | float):
-            timeout_value = float(timeout_raw)
-        elif isinstance(timeout_raw, str):
-            timeout_result = u.try_(
-                lambda: float(timeout_raw),
-                catch=ValueError,
-            ).map_error(lambda _e: f"Timeout must be a valid number: {timeout_raw}")
-            if timeout_result.is_failure:
-                return timeout_result
-            timeout_value = timeout_result.value
-        else:
-            return r[float].fail(f"Invalid timeout type: {type(timeout_raw)}")
-        if timeout_value <= 0:
-            return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
-        return r[float].ok(timeout_value)
+            return r[float].fail(f"Invalid {key} type: {type(raw_value)}")
+        if float_value <= 0:
+            return r[float].fail(f"{label} must be positive, got: {float_value}")
+        return r[float].ok(float_value)
 
     def _normalize_value(self, key: str, *, value: str | float | bool) -> r[t.Scalar]:
         """Normalize configuration value based on key type - no fallbacks."""
@@ -217,8 +184,10 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid timeout value: {value}")
             return timeout_result.fold(
-                on_failure=lambda e: r.fail(e or f"Invalid timeout value: {value}"),
-                on_success=lambda v: r.ok(v),
+                on_failure=lambda e: r[t.Scalar].fail(
+                    e or f"Invalid timeout value: {value}"
+                ),
+                on_success=lambda v: r[t.Scalar].ok(v),
             )
         if key == "max_retries" and isinstance(value, str):
             retries_result = u.try_(
@@ -226,8 +195,10 @@ class FlextApiSettingsManager:
                 catch=ValueError,
             ).map_error(lambda _e: f"Invalid max_retries value: {value}")
             return retries_result.fold(
-                on_failure=lambda e: r.fail(e or f"Invalid max_retries value: {value}"),
-                on_success=lambda v: r.ok(v),
+                on_failure=lambda e: r[t.Scalar].fail(
+                    e or f"Invalid max_retries value: {value}"
+                ),
+                on_success=lambda v: r[t.Scalar].ok(v),
             )
         if key in {"log_requests", "log_responses"}:
             return r.ok(bool(value))
@@ -251,7 +222,10 @@ class FlextApiSettingsManager:
         """Validate current configuration with complete checks."""
         if self._config is None:
             return r[bool].fail("No configuration set")
-        timeout_result = self._extract_timeout()
+        timeout_result = self._extract_positive_float_setting(
+            key="timeout",
+            label="Timeout",
+        )
         if timeout_result.is_failure:
             return r[bool].fail(timeout_result.error or "Timeout extraction failed")
         max_retries_result = self._extract_max_retries()

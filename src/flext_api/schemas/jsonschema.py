@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import Path
-from typing import TypeIs, override
+from typing import TypeGuard, override
 
 import yaml
 from flext_core import r
@@ -29,13 +29,13 @@ from flext_api import FlextApiPlugins, t as t_api, u
 _JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
 
 
-def _is_api_json_value(value: t_api.ContainerValue) -> TypeIs[t_api.ApiJsonValue]:
+def _is_api_json_value(value: object) -> TypeGuard[t_api.ApiJsonValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
 def _is_object_mapping(
-    value: t_api.ContainerValue,
-) -> TypeIs[Mapping[str, t_api.ContainerValue]]:
+    value: object,
+) -> TypeGuard[Mapping[str, t_api.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
@@ -123,37 +123,47 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         """
         schema_path = Path(schema_source)
         if not schema_path.exists() or not schema_path.is_file():
-            return r.fail(f"Schema file not found: {schema_source}")
+            return r[t_api.ContainerValue].fail(
+                f"Schema file not found: {schema_source}"
+            )
         suffix = schema_path.suffix.lower()
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
                     try:
-                        loaded_schema = yaml.safe_load(schema_file)
+                        loaded_schema: object = yaml.safe_load(schema_file)
                     except Exception as e:
-                        return r.fail(f"Failed to parse YAML schema: {e}")
+                        return r[t_api.ContainerValue].fail(
+                            f"Failed to parse YAML schema: {e}"
+                        )
                 else:
                     try:
                         loaded_schema = _JSON_OBJECT_ADAPTER.validate_json(
                             schema_file.read()
                         )
                     except ValidationError as e:
-                        return r.fail(f"Failed to parse JSON schema: {e}")
+                        return r[t_api.ContainerValue].fail(
+                            f"Failed to parse JSON schema: {e}"
+                        )
         except OSError as e:
-            return r.fail(f"Failed to read schema file: {e}")
+            return r[t_api.ContainerValue].fail(f"Failed to read schema file: {e}")
         if not _is_object_mapping(loaded_schema):
-            return r.fail("JSON schema file must contain a JSON/YAML object")
+            return r[t_api.ContainerValue].fail(
+                "JSON schema file must contain a JSON/YAML object"
+            )
         schema_definition: t_api.Api.SchemaDefinition = {}
         for key, value in loaded_schema.items():
             if _is_api_json_value(value):
-                schema_definition[str(key)] = self._to_general_value(value)
+                schema_definition[str(key)] = self._to_container_value(value)
             else:
                 schema_definition[str(key)] = str(value)
         validation_result = self.validate_schema(schema_definition)
         if validation_result.is_failure:
-            return r.fail(f"Invalid JSON schema: {validation_result.error}")
+            return r[t_api.ContainerValue].fail(
+                f"Invalid JSON schema: {validation_result.error}"
+            )
         schema_result: t_api.ContainerValue = schema_definition
-        return r.ok(schema_result)
+        return r[t_api.ContainerValue].ok(schema_result)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.
@@ -215,20 +225,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         r containing validation result or error
 
         """
-        schema_def: t_api.Api.SchemaDefinition = {}
-        for k, v in schema.items():
-            schema_def[k] = self._to_general_value(v)
-        schema_result = self.validate_schema(schema_def)
-        if schema_result.is_failure:
-            return r[bool].fail(f"Invalid schema: {schema_result.error}")
-        request_typed: t_api.JsonObject = {}
-        for k, v in request.items():
-            request_typed[k] = self._to_general_value(v)
-        instance_result = self.validate_instance(request_typed, schema_def)
-        return instance_result.fold(
-            on_failure=lambda e: r[bool].fail(e or "Schema validation failed"),
-            on_success=lambda _: r[bool].ok(value=True),
-        )
+        return self._validate_payload_against_schema(payload=request, schema=schema)
 
     @override
     def validate_response(
@@ -244,16 +241,24 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         r containing validation result or error
 
         """
+        return self._validate_payload_against_schema(payload=response, schema=schema)
+
+    def _validate_payload_against_schema(
+        self,
+        *,
+        payload: t_api.JsonObject,
+        schema: t_api.JsonObject,
+    ) -> r[bool]:
         schema_def: t_api.Api.SchemaDefinition = {}
-        for k, v in schema.items():
-            schema_def[k] = self._to_general_value(v)
+        for key, value in schema.items():
+            schema_def[key] = self._to_container_value(value)
         schema_result = self.validate_schema(schema_def)
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
-        response_typed: t_api.JsonObject = {}
-        for k, v in response.items():
-            response_typed[k] = self._to_general_value(v)
-        instance_result = self.validate_instance(response_typed, schema_def)
+        payload_typed: t_api.JsonObject = {}
+        for key, value in payload.items():
+            payload_typed[key] = self._to_container_value(value)
+        instance_result = self.validate_instance(payload_typed, schema_def)
         return instance_result.fold(
             on_failure=lambda e: r[bool].fail(e or "Schema validation failed"),
             on_success=lambda _: r[bool].ok(value=True),
@@ -296,11 +301,15 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             has_properties="properties" in schema_dict,
             has_required="required" in schema_dict,
         )
-        return r[t_api.Api.SchemaDefinition].ok({
+        properties_list: list[t_api.ContainerValue] = []
+        for property_name in self._schema_properties_list(schema_dict):
+            properties_list.append(property_name)
+        validated_schema: t_api.Api.SchemaDefinition = {
             "valid": True,
             "draft": self._draft_version,
-            "properties": self._schema_properties_list(schema_dict),
-        })
+            "properties": properties_list,
+        }
+        return r[t_api.Api.SchemaDefinition].ok(validated_schema)
 
     def _schema_properties_list(self, schema: t_api.Api.SchemaDefinition) -> list[str]:
         """Extract properties list from schema."""
@@ -313,12 +322,12 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             case _:
                 return []
 
-    def _to_general_value(self, value: t_api.ApiJsonValue) -> t_api.ApiJsonValue:
+    def _to_general_value(self, value: t_api.ApiJsonValue) -> t_api.ContainerValue:
         """Coerce JSON-like values recursively."""
         if value is None:
-            return None
+            return "null"
         if isinstance(value, list):
-            normalized_items: list[t_api.ApiJsonValue] = []
+            normalized_items: list[t_api.ContainerValue] = []
             for item in value:
                 if _is_api_json_value(item):
                     normalized_items.append(self._to_general_value(item))
@@ -326,7 +335,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     normalized_items.append(str(item))
             return normalized_items
         if isinstance(value, Mapping):
-            normalized_map: dict[str, t_api.ApiJsonValue] = {}
+            normalized_map: dict[str, t_api.ContainerValue] = {}
             for key, item in value.items():
                 if _is_api_json_value(item):
                     normalized_map[str(key)] = self._to_general_value(item)
@@ -336,6 +345,9 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if u.is_primitive(value):
             return value
         return str(value)
+
+    def _to_container_value(self, value: t_api.ApiJsonValue) -> t_api.ContainerValue:
+        return self._to_general_value(value)
 
     def _validate_array_items(
         self, instance: t_api.ApiJsonValue, schema: t_api.Api.SchemaDefinition
