@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .constants import TestsFlextApiConstants, c
     from .models import TestsFlextApiModels, m
     from .protocols import TestsFlextApiProtocols, p
-    from .typings import TestsFlextApiTypes, TestsFlextApiTypes as t
+    from .typings import TestsFlextApiTypes, t
     from .unit.test_serializers import TestMessagePackUnpackb
     from .unit.test_smoke import test_package_imports_main_facade
     from .utilities import TestsFlextApiUtilities, u
@@ -31,7 +31,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "c": ("tests.constants", "c"),
     "m": ("tests.models", "m"),
     "p": ("tests.protocols", "p"),
-    "t": ("tests.typings", "TestsFlextApiTypes"),
+    "t": ("tests.typings", "t"),
     "test_package_imports_main_facade": (
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
