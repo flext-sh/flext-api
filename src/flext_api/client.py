@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_api import c
 
 from typing import Self, override
 
@@ -18,7 +19,6 @@ from flext_core import r, s
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
-from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels as m
 from flext_api.settings import FlextApiSettings
 
@@ -253,7 +253,7 @@ class FlextApiClient(s[FlextApiSettings]):
                         headers=request_headers,
                         params=request_params,
                     )
-            if response.status_code >= FlextApiConstants.Api.HTTP_ERROR_MIN:
+            if response.status_code >= c.Api.HTTP_ERROR_MIN:
                 return r[m.HttpResponse].fail(
                     f"HTTP {response.status_code}: {response.reason_phrase}",
                 )

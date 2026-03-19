@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_api import c
 
 from collections.abc import Mapping
 from typing import ClassVar, Self, override
@@ -18,7 +19,6 @@ from pydantic import ConfigDict
 
 from flext_api import t
 from flext_api.client import FlextApiClient
-from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels as m
 from flext_api.settings import FlextApiSettings
 from flext_api.utilities import FlextApiUtilities
@@ -97,7 +97,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[m.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Api.Method.DELETE,
+            method=c.Api.Method.DELETE,
             url=url,
             headers=headers,
             request_kwargs=request_kwargs,
@@ -119,7 +119,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[m.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Api.Method.GET,
+            method=c.Api.Method.GET,
             url=url,
             headers=headers,
             request_kwargs=request_kwargs,
@@ -134,7 +134,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[m.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Api.Method.PATCH,
+            method=c.Api.Method.PATCH,
             url=url,
             data=data,
             headers=headers,
@@ -150,7 +150,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[m.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Api.Method.POST,
+            method=c.Api.Method.POST,
             url=url,
             data=data,
             headers=headers,
@@ -166,7 +166,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[m.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Api.Method.PUT,
+            method=c.Api.Method.PUT,
             url=url,
             data=data,
             headers=headers,

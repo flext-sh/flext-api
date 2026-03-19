@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_api import c
 
 from collections.abc import Mapping
 from typing import Annotated
@@ -17,7 +18,7 @@ from typing import Annotated
 from flext_core import r
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from flext_api import FlextApiConstants, t
+from flext_api import t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
 
 
@@ -260,8 +261,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                 parsed = _TimeoutRequest.model_validate(request)
                 return parsed.timeout
             except ValidationError:
-                return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
-        return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
+                return float(c.Api.DEFAULT_TIMEOUT)
+        return float(c.Api.DEFAULT_TIMEOUT)
 
     def _extract_url(self, request: Mapping[str, t.ContainerValue]) -> r[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
@@ -297,7 +298,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         content_type_key = "content-type"
         if content_type_key in headers:
             return headers[content_type_key]
-        return FlextApiConstants.Api.ContentType.JSON
+        return c.Api.ContentType.JSON
 
     def _is_client_error(self, status_code: int) -> bool:
         """Check if status code indicates client error (RFC 7231).
@@ -310,8 +311,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         return (
-            status_code >= FlextApiConstants.Api.HTTP_CLIENT_ERROR_MIN
-            and status_code < FlextApiConstants.Api.HTTP_CLIENT_ERROR_MAX
+            status_code >= c.Api.HTTP_CLIENT_ERROR_MIN
+            and status_code < c.Api.HTTP_CLIENT_ERROR_MAX
         )
 
     def _is_server_error(self, status_code: int) -> bool:
@@ -324,7 +325,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         True if status code indicates server error (5xx range)
 
         """
-        return status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
+        return status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
     def _is_success_status(self, status_code: int) -> bool:
         """Check if status code indicates success (RFC 7231).
@@ -337,8 +338,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         return (
-            status_code >= FlextApiConstants.Api.HTTP_SUCCESS_MIN
-            and status_code < FlextApiConstants.Api.HTTP_SUCCESS_MAX
+            status_code >= c.Api.HTTP_SUCCESS_MIN
+            and status_code < c.Api.HTTP_SUCCESS_MAX
         )
 
     def _normalize_header_name(self, header_name: str) -> str:
@@ -367,7 +368,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if attempt >= max_retries:
             return False
-        return status_code in FlextApiConstants.Api.HTTPRetry.RETRYABLE_STATUS_CODES
+        return status_code in c.Api.HTTPRetry.RETRYABLE_STATUS_CODES
 
     def _validate_status_code(self, status_code: int) -> r[int]:
         """Validate HTTP status code (RFC 7231).

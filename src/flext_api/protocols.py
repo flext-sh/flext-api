@@ -9,13 +9,14 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_api import c
 
 from typing import Protocol, runtime_checkable
 
 from flext_core import r
 from flext_web import FlextWebProtocols
 
-from flext_api import FlextApiConstants, t
+from flext_api import t
 
 
 class FlextApiProtocols(FlextWebProtocols):
@@ -89,7 +90,7 @@ class FlextApiProtocols(FlextWebProtocols):
 
                 def request(
                     self,
-                    method: FlextApiConstants.Api.Method | str,
+                    method: c.Api.Method | str,
                     url: str,
                     **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:

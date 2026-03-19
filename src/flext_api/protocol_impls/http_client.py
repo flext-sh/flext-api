@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_api import c
 
 from collections.abc import Mapping
 from types import TracebackType
@@ -15,7 +16,7 @@ import httpx
 from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api import FlextApiConstants, m, p, t
+from flext_api import m, p, t
 
 
 class _HttpClientRequestOptions(BaseModel):
@@ -70,8 +71,8 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
                 pool=client_config.timeout,
             ),
             limits=httpx.Limits(
-                max_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_CONNECTIONS,
-                max_keepalive_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS,
+                max_connections=c.Api.HTTPClient.DEFAULT_MAX_CONNECTIONS,
+                max_keepalive_connections=c.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS,
             ),
             follow_redirects=True,
             verify=client_config.verify_ssl,
@@ -97,22 +98,22 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     @override
     def delete(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP DELETE request."""
-        return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)
+        return self.request(c.Api.Method.DELETE, url, **kwargs)
 
     @override
     def get(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP GET request."""
-        return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
+        return self.request(c.Api.Method.GET, url, **kwargs)
 
     @override
     def post(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP POST request."""
-        return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
+        return self.request(c.Api.Method.POST, url, **kwargs)
 
     @override
     def put(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP PUT request."""
-        return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
+        return self.request(c.Api.Method.PUT, url, **kwargs)
 
     @override
     def request(

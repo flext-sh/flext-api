@@ -150,31 +150,13 @@ class FlextApiConstants(FlextWebConstants):
         "Terminal operation statuses."
         type SuccessStatuses = Literal["success", "completed"]
         "Success operation statuses."
-        VALID_METHODS: Final[frozenset[str]] = frozenset(
-            member.value for member in Method.__members__.values()
-        )
         "Immutable set of all valid HTTP methods for O(1) validation."
         VALID_STATUSES: Final[frozenset[str]] = frozenset(
             member.value for member in Status.__members__.values()
         )
         "Immutable set of all valid operation statuses."
-        VALID_CONTENT_TYPES: Final[frozenset[str]] = frozenset(
-            member.value for member in ContentType.__members__.values()
-        )
         "Immutable set of all valid content types."
-        ACTIVE_METHODS_SET: Final[frozenset[str]] = frozenset({
-            Method.GET.value,
-            Method.POST.value,
-            Method.PUT.value,
-            Method.DELETE.value,
-        })
         "Active HTTP methods for validation - references Method enum members."
-        SAFE_METHODS_SET: Final[frozenset[str]] = frozenset({
-            Method.GET.value,
-            Method.HEAD.value,
-            Method.OPTIONS.value,
-            Method.TRACE.value,
-        })
         "Safe HTTP methods for validation - references Method enum members."
         DEFAULT_TIMEOUT: Final[float] = float(FlextConstants.Network.DEFAULT_TIMEOUT)
         "Default request timeout in seconds."
@@ -184,11 +166,9 @@ class FlextApiConstants(FlextWebConstants):
             f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
         )
         "Default base URL for API operations."
-        API_VERSION: Final[str] = "v1"
         "API version string."
         MAX_URL_LENGTH: Final[int] = 2048
         "Maximum URL length."
-        MIN_URL_LENGTH: Final[int] = 8
         "Minimum URL length."
         MIN_PORT: Final[int] = 1
         "Minimum port number."
@@ -216,35 +196,19 @@ class FlextApiConstants(FlextWebConstants):
         "Minimum HTTP server error status code."
         HTTP_ERROR_MIN: Final[int] = 400
         "Minimum HTTP error status code."
-        SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
-            "status": "success",
-            "data": None,
-            "error": None,
-            "message": None,
-        })
         "Template for successful API responses."
-        ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
-            "status": "error",
-            "data": None,
-            "error": None,
-            "message": None,
-        })
         "Template for error API responses."
         HEADER_CONTENT_TYPE: Final[str] = "Content-Type"
         "Content-Type header name."
         HEADER_AUTHORIZATION: Final[str] = "Authorization"
         "Authorization header name."
-        HEADER_USER_AGENT: Final[str] = "User-Agent"
         "User-Agent header name."
         HEADER_ACCEPT: Final[str] = "Accept"
         "Accept header name."
-        DEFAULT_USER_AGENT: Final[str] = f"FlextAPI/{API_VERSION}"
         "Default User-Agent string."
         DEFAULT_RETRIES: Final[int] = FlextConstants.DEFAULT_MAX_RETRY_ATTEMPTS
         "Default retry count."
-        RATE_LIMIT_REQUESTS: Final[int] = 1000
         "Rate limit requests per window."
-        RATE_LIMIT_WINDOW: Final[int] = 3600
         "Rate limit window in seconds."
         VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
             "MAX_URL_LENGTH": MAX_URL_LENGTH,
@@ -254,16 +218,7 @@ class FlextApiConstants(FlextWebConstants):
             "MAX_RETRIES": 10,
         })
         "Validation limits mapping."
-        CORS_CONFIG: Final[Mapping[str, list[str]]] = MappingProxyType({
-            "origins": ["*"],
-            "methods": ["GET", "POST", "PUT", "DELETE"],
-            "headers": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
-        })
         "CORS configuration."
-        URL_CONFIG: Final[Mapping[str, str]] = MappingProxyType({
-            "EXAMPLE_BASE_URL": "https://api.example.com",
-            "LOCALHOST_BASE_URL": "https://localhost:8000",
-        })
         "URL configuration mapping."
         type MethodLiteral = Literal[
             "GET",
@@ -343,16 +298,6 @@ class FlextApiConstants(FlextWebConstants):
         class WebSocket:
             """WebSocket protocol constants."""
 
-            DEFAULT_PING_INTERVAL: Final[float] = 20.0
-            DEFAULT_PING_TIMEOUT: Final[float] = 20.0
-            DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
-            DEFAULT_MAX_SIZE: Final[int] = 10 * 1024 * 1024
-            DEFAULT_MAX_QUEUE: Final[int] = 32
-            DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
-            DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
-            COMPRESSION_DEFLATE: Final[str] = "deflate"
-            STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
-
             @unique
             class MessageType(StrEnum):
                 """WebSocket message type enumeration.
@@ -380,12 +325,6 @@ class FlextApiConstants(FlextWebConstants):
 
         class SSE:
             """Server-Sent Events protocol constants."""
-
-            DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
-            DEFAULT_CONNECT_TIMEOUT: Final[float] = 30.0
-            DEFAULT_READ_TIMEOUT: Final[float] = 300.0
-            DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 10
-            DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
 
             @unique
             class Protocol(StrEnum):
@@ -418,27 +357,11 @@ class FlextApiConstants(FlextWebConstants):
         class HTTPRetry:
             """HTTP retry status codes."""
 
-            RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
-                408,
-                429,
-                500,
-                502,
-                503,
-                504,
-            })
-
         class HTTPClient:
             """HTTP client connection constants."""
 
-            DEFAULT_MAX_CONNECTIONS: Final[int] = 100
-            DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
-
         class PaginationDefaults:
             """Pagination default values."""
-
-            DEFAULT_PAGE: Final[int] = 1
-            DEFAULT_PAGE_SIZE_STRING: Final[str] = "20"
-            DEFAULT_MAX_PAGE_SIZE_FALLBACK: Final[int] = 1000
 
 
 __all__ = ["FlextApiConstants", "c"]
