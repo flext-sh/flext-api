@@ -13,10 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import cbor2
-from flext_core import r, u
+from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import m, t
+from flext_api import m, t, u
 from flext_api.serializers import FlextApiSerializers
 
 _HEADERS_ADAPTER: TypeAdapter[dict[str, str]] = TypeAdapter(dict[str, str])

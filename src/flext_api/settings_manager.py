@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_core import r, u
+from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import m, t
+from flext_api import m, t, u
 
 _JSON_HEADERS_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
     dict[str, t.ContainerValue],

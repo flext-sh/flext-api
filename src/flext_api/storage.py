@@ -24,10 +24,10 @@ import time
 from collections.abc import Mapping
 from typing import Self
 
-from flext_core import FlextLogger, FlextRuntime, r, u
+from flext_core import FlextLogger, FlextRuntime, r
 from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
-from flext_api import m, t
+from flext_api import m, t, u
 
 _JSON_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 _STORAGE_ENTRY_ADAPTER: TypeAdapter[dict[str, t.ApiJsonValue]] = TypeAdapter(

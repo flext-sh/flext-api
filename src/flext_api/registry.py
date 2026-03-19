@@ -12,9 +12,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import ClassVar
 
-from flext_core import FlextRegistry, p, r
+from flext_core import FlextRegistry, r
 
-from flext_api import FlextApiPlugins
+from flext_api import FlextApiPlugins, p
 
 
 class FlextApiRegistry(FlextRegistry):

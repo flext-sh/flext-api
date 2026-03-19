@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextLogger, FlextRuntime, r, u
+from flext_core import FlextLogger, FlextRuntime, r
 
-from flext_api import p, t
+from flext_api import p, t, u
 
 
 class StorageBackendImplementation(p.Api.Storage.StorageBackend):

@@ -25,10 +25,10 @@ from collections import deque
 from collections.abc import Callable, Mapping
 from typing import TypeIs, override
 
-from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, p, r
+from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import c, t, u
+from flext_api import c, p, t, u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
