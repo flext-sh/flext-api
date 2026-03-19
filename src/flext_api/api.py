@@ -16,11 +16,11 @@ from typing import ClassVar, Self, override
 from flext_core import FlextLogger, r, s
 from pydantic import ConfigDict
 
+from flext_api import t
 from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels as m
 from flext_api.settings import FlextApiSettings
-from flext_api.typings import t
 from flext_api.utilities import FlextApiUtilities
 
 

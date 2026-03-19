@@ -176,9 +176,9 @@ class FlextApiConstants(FlextWebConstants):
             Method.TRACE.value,
         })
         "Safe HTTP methods for validation - references Method enum members."
-        DEFAULT_TIMEOUT: Final[float] = 30.0
+        DEFAULT_TIMEOUT: Final[float] = float(FlextConstants.Network.DEFAULT_TIMEOUT)
         "Default request timeout in seconds."
-        DEFAULT_MAX_RETRIES: Final[int] = 3
+        DEFAULT_MAX_RETRIES: Final[int] = FlextConstants.DEFAULT_MAX_RETRY_ATTEMPTS
         "Default maximum retry attempts."
         DEFAULT_BASE_URL: Final[str] = (
             f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
@@ -240,7 +240,7 @@ class FlextApiConstants(FlextWebConstants):
         "Accept header name."
         DEFAULT_USER_AGENT: Final[str] = f"FlextAPI/{API_VERSION}"
         "Default User-Agent string."
-        DEFAULT_RETRIES: Final[int] = 3
+        DEFAULT_RETRIES: Final[int] = FlextConstants.DEFAULT_MAX_RETRY_ATTEMPTS
         "Default retry count."
         RATE_LIMIT_REQUESTS: Final[int] = 1000
         "Rate limit requests per window."

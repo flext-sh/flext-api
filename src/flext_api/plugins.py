@@ -14,8 +14,7 @@ from abc import abstractmethod
 
 from flext_core import FlextLogger, r
 
-from flext_api import t
-from flext_api.protocols import p
+from flext_api import p, t
 
 
 class _FlextApiPluginBase:

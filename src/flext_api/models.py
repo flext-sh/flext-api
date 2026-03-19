@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from typing import Annotated, Self, TypeAlias
+from typing import Annotated, Self
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
@@ -635,16 +635,16 @@ class FlextApiModels(FlextWebModels):
     # CLASS-LEVEL ALIASES FOR FLAT NAMESPACE ACCESS
     # =========================================================================
     # Expose nested Api models at root level for convenient access
-    HttpRequest: TypeAlias = Api.HttpRequest
-    HttpResponse: TypeAlias = Api.HttpResponse
-    ClientConfig: TypeAlias = Api.ClientConfig
-    Url: TypeAlias = Api.Url
-    PaginationInfo: TypeAlias = Api.PaginationInfo
-    Error: TypeAlias = Api.Error
-    QueryParams: TypeAlias = Api.QueryParams
-    Headers: TypeAlias = Api.Headers
-    HttpPagination: TypeAlias = Api.PaginationInfo  # Alias for backward compatibility
-    Storage: TypeAlias = Api.Storage
+    HttpRequest = Api.HttpRequest
+    HttpResponse = Api.HttpResponse
+    ClientConfig = Api.ClientConfig
+    Url = Api.Url
+    PaginationInfo = Api.PaginationInfo
+    Error = Api.Error
+    QueryParams = Api.QueryParams
+    Headers = Api.Headers
+    HttpPagination = Api.PaginationInfo  # Alias for backward compatibility
+    Storage = Api.Storage
     create_config = Api.create_config
     create_response = Api.create_response
 
