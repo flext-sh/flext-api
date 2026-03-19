@@ -131,7 +131,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
                     try:
-                        loaded_schema: object = yaml.safe_load(schema_file)
+                        loaded_schema: t_api.ApiJsonValue = yaml.safe_load(schema_file)
                     except Exception as e:
                         return r[t_api.ContainerValue].fail(
                             f"Failed to parse YAML schema: {e}",
