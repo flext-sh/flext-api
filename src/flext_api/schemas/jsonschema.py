@@ -26,15 +26,17 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t as t_api, u
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[t_api.ContainerValue] = TypeAdapter(
+    t_api.ContainerValue,
+)
 
 
-def _is_api_json_value(value: object) -> TypeGuard[t_api.ApiJsonValue]:
+def _is_api_json_value(value: t_api.ContainerValue) -> TypeGuard[t_api.ApiJsonValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
 def _is_object_mapping(
-    value: object,
+    value: t_api.ApiJsonValue,
 ) -> TypeGuard[Mapping[str, t_api.ContainerValue]]:
     return isinstance(value, Mapping)
 
@@ -138,9 +140,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                         )
                 else:
                     try:
-                        loaded_schema = _JSON_OBJECT_ADAPTER.validate_json(
+                        loaded_schema_raw = _JSON_OBJECT_ADAPTER.validate_json(
                             schema_file.read(),
                         )
+                        if not _is_api_json_value(loaded_schema_raw):
+                            return r[t_api.ContainerValue].fail(
+                                "JSON schema file must contain JSON-compatible values",
+                            )
+                        loaded_schema = loaded_schema_raw
                     except ValidationError as e:
                         return r[t_api.ContainerValue].fail(
                             f"Failed to parse JSON schema: {e}",

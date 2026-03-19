@@ -29,7 +29,7 @@ from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from flext_api import m, t
 
-_JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 _STORAGE_ENTRY_ADAPTER: TypeAdapter[dict[str, t.ApiJsonValue]] = TypeAdapter(
     dict[str, t.ApiJsonValue],
 )
