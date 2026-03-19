@@ -16,7 +16,6 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-from flext_api import c
 
 import time
 from collections.abc import Callable, Mapping
@@ -27,7 +26,7 @@ from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import t
+from flext_api import c, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 

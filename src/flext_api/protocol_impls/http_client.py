@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-from flext_api import c
 
 from collections.abc import Mapping
 from types import TracebackType
@@ -16,7 +15,7 @@ import httpx
 from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from flext_api import m, p, t
+from flext_api import c, m, p, t
 
 
 class _HttpClientRequestOptions(BaseModel):

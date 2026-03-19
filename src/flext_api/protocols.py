@@ -9,14 +9,13 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-from flext_api import c
 
 from typing import Protocol, runtime_checkable
 
 from flext_core import r
 from flext_web import FlextWebProtocols
 
-from flext_api import t
+from flext_api import c, t
 
 
 class FlextApiProtocols(FlextWebProtocols):

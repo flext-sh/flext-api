@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-from flext_api import c
 
 from collections.abc import Mapping
 from typing import Annotated
@@ -18,7 +17,7 @@ from typing import Annotated
 from flext_core import r
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from flext_api import t
+from flext_api import c, t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
 
 
