@@ -23,12 +23,16 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
+
     from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
     from flext_api.schemas.jsonschema import JSONSchemaValidator
     from flext_api.schemas.openapi import OpenAPISchemaValidator
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "AsyncAPISchemaValidator": ("flext_api.schemas.asyncapi", "AsyncAPISchemaValidator"),
+    "AsyncAPISchemaValidator": (
+        "flext_api.schemas.asyncapi",
+        "AsyncAPISchemaValidator",
+    ),
     "JSONSchemaValidator": ("flext_api.schemas.jsonschema", "JSONSchemaValidator"),
     "OpenAPISchemaValidator": ("flext_api.schemas.openapi", "OpenAPISchemaValidator"),
 }
