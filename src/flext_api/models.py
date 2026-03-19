@@ -306,7 +306,7 @@ class FlextApiModels(FlextWebModels):
             max_retries: Annotated[
                 int,
                 Field(
-                    default=c.Api.DEFAULT_MAX_RETRIES,
+                    default=c.DEFAULT_MAX_RETRY_ATTEMPTS,
                     ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
                     le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
                     description="Maximum retry attempts",
@@ -544,7 +544,7 @@ class FlextApiModels(FlextWebModels):
                 float(timeout) if timeout is not None else float(c.Api.DEFAULT_TIMEOUT)
             )
             config_max_retries = (
-                max_retries if max_retries is not None else c.Api.DEFAULT_MAX_RETRIES
+                max_retries if max_retries is not None else c.DEFAULT_MAX_RETRY_ATTEMPTS
             )
             if headers is None:
                 config_headers: dict[str, str] = {}

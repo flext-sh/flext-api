@@ -39,7 +39,7 @@ class FlextApiSettings(FlextModels.Value):
     max_retries: Annotated[
         int,
         Field(
-            default=c.Api.DEFAULT_MAX_RETRIES,
+            default=c.DEFAULT_MAX_RETRY_ATTEMPTS,
             ge=0,
             description="Maximum retry attempts",
         ),
