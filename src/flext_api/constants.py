@@ -158,7 +158,7 @@ class FlextApiConstants(FlextWebConstants):
         "Immutable set of all valid content types."
         "Active HTTP methods for validation - references Method enum members."
         "Safe HTTP methods for validation - references Method enum members."
-        DEFAULT_TIMEOUT: Final[float] = float(FlextConstants.Network.DEFAULT_TIMEOUT)
+        DEFAULT_TIMEOUT: Final[float] = float(FlextConstants.DEFAULT_TIMEOUT_SECONDS)
         "Default request timeout in seconds."
         "Default maximum retry attempts."
         DEFAULT_BASE_URL: Final[str] = (

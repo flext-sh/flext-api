@@ -32,7 +32,7 @@ def example_client_creation() -> None:
     print("\n=== Client Creation Example ===")
     FlextApi()
     client_config = FlextApiSettings(
-        base_url="https://httpbin.org", timeout=FlextConstants.Network.DEFAULT_TIMEOUT
+        base_url="https://httpbin.org", timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS
     )
     print(f"✅ Client config created: {client_config.base_url}")
     print(f"   Timeout: {client_config.timeout}s")
@@ -43,7 +43,7 @@ def example_direct_client() -> None:
     """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
     print("\n=== Direct Client Example ===")
     config = FlextApiSettings(
-        base_url="https://httpbin.org", timeout=FlextConstants.Network.DEFAULT_TIMEOUT
+        base_url="https://httpbin.org", timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS
     )
     print(f"✅ Client config: {config.base_url}")
     print(f"   Timeout: {config.timeout}")
@@ -113,7 +113,7 @@ def example_app_creation() -> None:
             method="GET",
             url="https://httpbin.org/get",
             headers={"Accept": "application/json"},
-            timeout=int(FlextConstants.Network.DEFAULT_TIMEOUT),
+            timeout=int(FlextConstants.DEFAULT_TIMEOUT_SECONDS),
         )
         print(f"✅ Request model created: {request.method} {request.url}")
         print(f"   Timeout: {request.timeout}s")
