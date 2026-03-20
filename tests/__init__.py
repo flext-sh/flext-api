@@ -13,13 +13,13 @@ if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
     from . import unit as unit
-    from .constants import TestsFlextApiConstants, c
-    from .models import TestsFlextApiModels, m
-    from .protocols import TestsFlextApiProtocols, p
-    from .typings import TestsFlextApiTypes, t
+    from .constants import TestsFlextApiConstants, TestsFlextApiConstants as c
+    from .models import TestsFlextApiModels, TestsFlextApiModels as m
+    from .protocols import TestsFlextApiProtocols, TestsFlextApiProtocols as p
+    from .typings import TestsFlextApiTypes, TestsFlextApiTypes as t
     from .unit.test_serializers import TestMessagePackUnpackb
     from .unit.test_smoke import test_package_imports_main_facade
-    from .utilities import TestsFlextApiUtilities, u
+    from .utilities import TestsFlextApiUtilities, TestsFlextApiUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
@@ -28,15 +28,15 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestsFlextApiProtocols": ("tests.protocols", "TestsFlextApiProtocols"),
     "TestsFlextApiTypes": ("tests.typings", "TestsFlextApiTypes"),
     "TestsFlextApiUtilities": ("tests.utilities", "TestsFlextApiUtilities"),
-    "c": ("tests.constants", "c"),
-    "m": ("tests.models", "m"),
-    "p": ("tests.protocols", "p"),
-    "t": ("tests.typings", "t"),
+    "c": ("tests.constants", "TestsFlextApiConstants"),
+    "m": ("tests.models", "TestsFlextApiModels"),
+    "p": ("tests.protocols", "TestsFlextApiProtocols"),
+    "t": ("tests.typings", "TestsFlextApiTypes"),
     "test_package_imports_main_facade": (
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
     ),
-    "u": ("tests.utilities", "u"),
+    "u": ("tests.utilities", "TestsFlextApiUtilities"),
     "unit": ("tests.unit", ""),
 }
 
