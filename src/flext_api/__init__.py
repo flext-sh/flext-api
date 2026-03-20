@@ -27,11 +27,11 @@ if TYPE_CHECKING:
     from flext_api.api import FlextApi
     from flext_api.app import FlextApiApp
     from flext_api.client import FlextApiClient
-    from flext_api.constants import FlextApiConstants, c
+    from flext_api.constants import FlextApiConstants, FlextApiConstants as c
     from flext_api.exceptions import HttpError
     from flext_api.lifecycle_manager import FlextApiLifecycleManager
     from flext_api.middleware import FlextApiMiddleware
-    from flext_api.models import FlextApiModels, m
+    from flext_api.models import FlextApiModels, FlextApiModels as m
     from flext_api.plugins import FlextApiPlugins
     from flext_api.protocol_impls.base import BaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from flext_api.protocol_impls.sse import SSEProtocolPlugin
     from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
     from flext_api.protocol_impls.websocket import WebSocketProtocolPlugin
-    from flext_api.protocols import FlextApiProtocols, p
+    from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
     from flext_api.registry import FlextApiRegistry
     from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
     from flext_api.schemas.jsonschema import JSONSchemaValidator
@@ -53,8 +53,8 @@ if TYPE_CHECKING:
     from flext_api.settings_manager import FlextApiSettingsManager
     from flext_api.storage import FlextApiStorage
     from flext_api.transports import FlextApiTransports
-    from flext_api.typings import FlextApiTypes, t
-    from flext_api.utilities import FlextApiUtilities, u
+    from flext_api.typings import FlextApiTypes, FlextApiTypes as t
+    from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
     from flext_api.webhook import FlextWebhookHandler
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
@@ -128,18 +128,18 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "__license__": ("flext_api.__version__", "__license__"),
     "__title__": ("flext_api.__version__", "__title__"),
     "__url__": ("flext_api.__version__", "__url__"),
-    "c": ("flext_api.constants", "c"),
+    "c": ("flext_api.constants", "FlextApiConstants"),
     "d": ("flext_core", "d"),
     "e": ("flext_core", "e"),
     "h": ("flext_core", "h"),
-    "m": ("flext_api.models", "m"),
-    "p": ("flext_api.protocols", "p"),
+    "m": ("flext_api.models", "FlextApiModels"),
+    "p": ("flext_api.protocols", "FlextApiProtocols"),
     "protocol_impls": ("flext_api.protocol_impls", ""),
     "r": ("flext_core", "r"),
     "s": ("flext_core", "s"),
     "schemas": ("flext_api.schemas", ""),
-    "t": ("flext_api.typings", "t"),
-    "u": ("flext_api.utilities", "u"),
+    "t": ("flext_api.typings", "FlextApiTypes"),
+    "u": ("flext_api.utilities", "FlextApiUtilities"),
     "x": ("flext_core", "x"),
 }
 
