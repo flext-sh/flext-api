@@ -17,7 +17,8 @@ import yaml
 from flext_core import r
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
-from flext_api import t, u
+from flext_api import t
+from flext_api.utilities import u
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 _CONTAINER_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
