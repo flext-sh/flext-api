@@ -17,8 +17,6 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-
-if TYPE_CHECKING:
     from flext_api.protocol_impls.base import BaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
