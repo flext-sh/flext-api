@@ -582,6 +582,28 @@ class FlextApiModels(FlextWebModels):
             )
 
         # =========================================================================
+        # SCHEMA FIELD MODELS - Moved from schemas/_shared.py
+        # =========================================================================
+
+        class DictField(FlextModels.Value):
+            """Pydantic model for validating dictionary fields (immutable value object)."""
+
+            value: Annotated[
+                dict[str, t.ContainerValue],
+                Field(default_factory=dict, description="Dictionary value"),
+            ]
+
+        class StringField(FlextModels.Value):
+            """Pydantic model for validating string fields (immutable value object)."""
+
+            value: Annotated[str, Field(..., description="String value")]
+
+        class IntField(FlextModels.Value):
+            """Pydantic model for validating integer fields (immutable value object)."""
+
+            value: Annotated[int, Field(..., description="Integer value")]
+
+        # =========================================================================
         # STORAGE MODELS
         # =========================================================================
 
@@ -627,6 +649,9 @@ class FlextApiModels(FlextWebModels):
     QueryParams = Api.QueryParams
     Headers = Api.Headers
     HttpPagination = Api.PaginationInfo  # Alias for backward compatibility
+    DictField = Api.DictField
+    StringField = Api.StringField
+    IntField = Api.IntField
     Storage = Api.Storage
     create_config = Api.create_config
     create_response = Api.create_response
