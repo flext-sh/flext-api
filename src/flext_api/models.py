@@ -352,9 +352,9 @@ class FlextApiModels(FlextWebModels):
             page_size: Annotated[
                 int,
                 Field(
-                    default=c.Pagination.DEFAULT_PAGE_SIZE,
-                    ge=c.Pagination.MIN_PAGE_SIZE,
-                    le=c.Pagination.MAX_PAGE_SIZE,
+                    default=c.DEFAULT_PAGE_SIZE,
+                    ge=c.MIN_PAGE_SIZE,
+                    le=c.MAX_PAGE_SIZE,
                     description="Items per page",
                 ),
             ]

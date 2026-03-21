@@ -162,7 +162,7 @@ class FlextApiConstants(FlextWebConstants):
         "Default request timeout in seconds."
         "Default maximum retry attempts."
         DEFAULT_BASE_URL: Final[str] = (
-            f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+            f"http://{FlextConstants.DEFAULT_HOST}:{FlextConstants.FLEXT_API_PORT}"
         )
         "Default base URL for API operations."
         "API version string."

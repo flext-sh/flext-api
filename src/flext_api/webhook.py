@@ -383,7 +383,7 @@ class FlextWebhookHandler(FlextService[bool]):
         """Handle successful retry delivery."""
         event_id = event.get("id")
         if isinstance(event_id, str):
-            event_type = c.Mixins.IDENTIFIER_UNKNOWN
+            event_type = c.IDENTIFIER_UNKNOWN
             type_value = event.get("type")
             if isinstance(type_value, str):
                 event_type = type_value
