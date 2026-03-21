@@ -65,17 +65,14 @@ class FlextApiModels(FlextWebModels):
                 c.Api.Method | str,
                 Field(
                     default="GET",
-                    min_length=3,
-                    max_length=8,
                     description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
                     pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
                 ),
             ]
             url: Annotated[
-                str,
+                t.NonEmptyStr,
                 Field(
                     ...,
-                    min_length=1,
                     max_length=c.Api.MAX_URL_LENGTH,
                     description="Request URL",
                 ),
@@ -106,11 +103,9 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             timeout: Annotated[
-                float,
+                t.PositiveTimeout,
                 Field(
                     default=float(c.Api.DEFAULT_TIMEOUT),
-                    ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-                    le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
                     description="Request timeout in seconds",
                 ),
             ]
@@ -136,11 +131,9 @@ class FlextApiModels(FlextWebModels):
             """
 
             status_code: Annotated[
-                int,
+                t.HttpStatusCode,
                 Field(
                     ...,
-                    ge=c.Api.HTTP_STATUS_MIN,
-                    le=c.Api.HTTP_STATUS_MAX,
                     description=f"HTTP status code ({c.Api.HTTP_STATUS_MIN}-{c.Api.HTTP_STATUS_MAX})",
                 ),
             ]
@@ -213,10 +206,9 @@ class FlextApiModels(FlextWebModels):
             """URL parsing and validation model (immutable value object)."""
 
             url: Annotated[
-                str,
+                t.NonEmptyStr,
                 Field(
                     ...,
-                    min_length=1,
                     max_length=c.Api.MAX_URL_LENGTH,
                     description="Full URL string",
                 ),
@@ -295,20 +287,16 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             timeout: Annotated[
-                float,
+                t.PositiveTimeout,
                 Field(
                     default=float(c.Api.DEFAULT_TIMEOUT),
-                    ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-                    le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
                     description="Request timeout in seconds",
                 ),
             ]
             max_retries: Annotated[
-                int,
+                t.RetryCount,
                 Field(
                     default=c.DEFAULT_MAX_RETRY_ATTEMPTS,
-                    ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
-                    le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
                     description="Maximum retry attempts",
                 ),
             ]
@@ -342,10 +330,9 @@ class FlextApiModels(FlextWebModels):
             """Pagination information model for HTTP operations (immutable value object)."""
 
             page: Annotated[
-                int,
+                t.PositiveInt,
                 Field(
                     default=1,
-                    ge=1,
                     description="Current page number (1-based)",
                 ),
             ]
@@ -359,18 +346,16 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             total_items: Annotated[
-                int,
+                t.NonNegativeInt,
                 Field(
                     default=0,
-                    ge=0,
                     description="Total number of items",
                 ),
             ]
             total_pages: Annotated[
-                int,
+                t.NonNegativeInt,
                 Field(
                     default=0,
-                    ge=0,
                     description="Total number of pages",
                 ),
             ]
@@ -411,11 +396,9 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             status_code: Annotated[
-                int,
+                t.HttpStatusCode,
                 Field(
                     default=c.Api.HTTP_SERVER_ERROR_MIN,
-                    ge=c.Api.HTTP_STATUS_MIN,
-                    le=c.Api.HTTP_STATUS_MAX,
                     description="HTTP status code",
                 ),
             ]
