@@ -53,10 +53,14 @@ def _validate_rfc_method(value: str) -> str:
 
 
 class _HeadersRequest(BaseModel):
+    """Encapsulates RFC header constraint for requests."""
+
     headers: Annotated[dict[str, str], Field(default_factory=dict)]
 
 
 class _MethodRequest(BaseModel):
+    """Encapsulates RFC method constraint for requests."""
+
     method: Annotated[str, Field(min_length=1)]
 
     @field_validator("method")
@@ -66,10 +70,14 @@ class _MethodRequest(BaseModel):
 
 
 class _TimeoutRequest(BaseModel):
+    """Encapsulates timeout constraints for RFC request URLs."""
+
     timeout: Annotated[float, Field(gt=0)]
 
 
 class _UrlRequest(BaseModel):
+    """Encapsulates URL validation constraints for RFC requests."""
+
     url: Annotated[str, Field(min_length=1)]
 
     @field_validator("url")
@@ -79,6 +87,8 @@ class _UrlRequest(BaseModel):
 
 
 class _StatusCodeValue(BaseModel):
+    """Validates status code values according to RFC conventions."""
+
     status_code: Annotated[int, Field(ge=100, le=599)]
 
 

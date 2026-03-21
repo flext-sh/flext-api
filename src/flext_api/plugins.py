@@ -18,6 +18,8 @@ from flext_api import p, t
 
 
 class _FlextApiPluginBase:
+    """Base class for flext-api plugin implementations."""
+
     name: str
     version: str
     description: str

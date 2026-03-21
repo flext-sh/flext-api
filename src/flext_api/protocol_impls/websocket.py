@@ -31,6 +31,8 @@ from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
 class _SendRequestOptions(BaseModel):
+    """Options for sending a WebSocket message request."""
+
     message: Annotated[str | bytes | None, Field(default=None)]
     message_type: Annotated[
         str,
@@ -42,6 +44,8 @@ class _SendRequestOptions(BaseModel):
 
 
 class _InboundMessage(BaseModel):
+    """Model for inbound WebSocket messages."""
+
     message: str | bytes
 
 

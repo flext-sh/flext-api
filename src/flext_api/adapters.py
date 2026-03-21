@@ -39,7 +39,15 @@ class FlextApiAdapters:
         def adapt_http_request_to_websocket(
             request: m.HttpRequest,
         ) -> r[t.JsonObject | m.HttpRequest]:
-            """Convert HTTP request to WebSocket message format."""
+            """Convert HTTP request to WebSocket message format.
+
+            Args:
+                request: HTTP request model to adapt.
+
+            Returns:
+                r object containing WebSocket-compatible payload or failure.
+
+            """
             try:
                 body_value: str | t.JsonObject | None = None
                 if request.body:
@@ -69,8 +77,16 @@ class FlextApiAdapters:
         ) -> r[m.HttpResponse]:
             """Adapt WebSocket message to HTTP response.
 
-            Uses Pydantic 2 model_validate() for dict-to-Model conversion.
-            Model validators handle type coercion automatically.
+            Args:
+                message: WebSocket message payload with response fields.
+
+            Returns:
+                r containing validated HttpResponse or failure.
+
+            Notes:
+                Uses Pydantic 2 model_validate() for dict-to-model conversion.
+                Model validators handle type coercion automatically.
+
             """
             try:
                 headers_raw = message.get("headers")
@@ -111,7 +127,15 @@ class FlextApiAdapters:
         def adapt_openapi_to_graphql_schema(
             _openapi_spec: t.JsonObject,
         ) -> r[t.JsonObject]:
-            """Convert OpenAPI specification to GraphQL schema."""
+            """Convert OpenAPI specification to GraphQL schema.
+
+            Args:
+                _openapi_spec: OpenAPI JSON object to translate.
+
+            Returns:
+                r containing GraphQL schema object or failure.
+
+            """
             try:
                 graphql_schema: t.JsonObject = {
                     "type": "schema",
@@ -133,7 +157,15 @@ class FlextApiAdapters:
 
         @staticmethod
         def convert_json_to_cbor(data: t.JsonObject) -> r[bytes]:
-            """Convert JSON data to CBOR format."""
+            """Convert JSON data to CBOR format.
+
+            Args:
+                data: JSON object for serialization.
+
+            Returns:
+                r containing CBOR bytes or failure.
+
+            """
             try:
                 packed: bytes = cbor2.dumps(data)
                 return r[bytes].ok(packed)

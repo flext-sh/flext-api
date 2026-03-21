@@ -20,6 +20,8 @@ from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
 class _SendRequestOptions(BaseModel):
+    """Options for SSE request sending behavior."""
+
     method: Annotated[str, Field(default="GET", min_length=1)]
     max_events: Annotated[int, Field(default=1, ge=1)]
     auto_reconnect: Annotated[bool | None, Field(default=None)]
