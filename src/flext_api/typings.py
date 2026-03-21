@@ -15,10 +15,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from flext_core import FlextTypes
-from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(FlextWebTypes):
+class FlextApiTypes(FlextTypes):
     """Unified API type definitions extending t with composition.
 
     Single namespace containing ALL API types.
