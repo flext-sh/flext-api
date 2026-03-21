@@ -556,11 +556,11 @@ class FlextApiServer(FlextService[bool], x.Validation):
     ) -> r[bool]:
         """Validate server configuration using utilities directly."""
         try:
-            TypeAdapter(t.Validation.HostnameStr).validate_python(host)
+            TypeAdapter(t.HostnameStr).validate_python(host)
         except ValidationError as error:
             return r[bool].fail(f"Host validation failed: {error}")
         try:
-            TypeAdapter(t.Validation.PortNumber).validate_python(port)
+            TypeAdapter(t.PortNumber).validate_python(port)
         except ValidationError as error:
             return r[bool].fail(f"Port validation failed: {error}")
         title_result: r[str]
