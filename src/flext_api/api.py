@@ -110,6 +110,7 @@ class FlextApi(s[FlextApiSettings]):
         config = self._get_config()
         return r[FlextApiSettings].ok(config)
 
+    @override
     def get(
         self,
         url: str,

@@ -296,6 +296,25 @@ class FlextApiConstants(FlextWebConstants):
         class WebSocket:
             """WebSocket protocol constants."""
 
+            DEFAULT_PING_INTERVAL: Final[float] = 20.0
+            "Default ping interval in seconds."
+            DEFAULT_PING_TIMEOUT: Final[float] = 20.0
+            "Default ping timeout in seconds."
+            DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
+            "Default close timeout in seconds."
+            DEFAULT_MAX_SIZE: Final[int] = 2**20
+            "Default maximum message size in bytes (1 MiB)."
+            DEFAULT_MAX_QUEUE: Final[int] = 16
+            "Default maximum queue size for outgoing messages."
+            COMPRESSION_DEFLATE: Final[str] = "deflate"
+            "Deflate compression method identifier."
+            DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
+            "Default maximum reconnection attempts."
+            DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+            "Default reconnection backoff multiplier."
+            STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
+            "HTTP 101 Switching Protocols status code for WebSocket upgrade."
+
             @unique
             class MessageType(StrEnum):
                 """WebSocket message type enumeration.
@@ -323,6 +342,17 @@ class FlextApiConstants(FlextWebConstants):
 
         class SSE:
             """Server-Sent Events protocol constants."""
+
+            DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
+            "Default retry timeout in milliseconds."
+            DEFAULT_CONNECT_TIMEOUT: Final[float] = 10.0
+            "Default connect timeout in seconds."
+            DEFAULT_READ_TIMEOUT: Final[float] = 60.0
+            "Default read timeout in seconds."
+            DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
+            "Default maximum reconnection attempts."
+            DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+            "Default reconnection backoff multiplier."
 
             @unique
             class Protocol(StrEnum):
@@ -355,8 +385,23 @@ class FlextApiConstants(FlextWebConstants):
         class HTTPRetry:
             """HTTP retry status codes."""
 
+            RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
+                408,
+                429,
+                500,
+                502,
+                503,
+                504,
+            })
+            "HTTP status codes eligible for automatic retry."
+
         class HTTPClient:
             """HTTP client connection constants."""
+
+            DEFAULT_MAX_CONNECTIONS: Final[int] = 100
+            "Default maximum number of connections in the pool."
+            DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
+            "Default maximum number of keepalive connections."
 
         class PaginationDefaults:
             """Pagination default values."""
