@@ -64,7 +64,7 @@ System_Ext(websockets_lib, "websockets Library", "Python WebSocket library")
 System_Ext(ldap_server, "LDAP Directory", "User authentication")
 System_Ext(database, "Database", "Data persistence")
 System_Ext(message_queue, "Message Queue", "Async communication")
-System_Ext(storage_backend, "Storage Backend", "File/object storage")
+System_Ext(storage_backend, "Storage Backend", "File/t.NormalizedValue storage")
 System_Ext(external_api, "External API", "Third-party services")
 
 Rel(developer, api_client, "Configures and uses", "Python imports")

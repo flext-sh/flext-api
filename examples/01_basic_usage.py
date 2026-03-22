@@ -17,6 +17,7 @@ from flext_api import (
     FlextApiSettings,
     FlextApiStorage,
     FlextApiUtilities,
+    t,
 )
 
 
@@ -54,7 +55,7 @@ def example_storage_usage() -> None:
     """Demonstrate storage usage with refactored FlextApiStorage."""
     print("\n=== Storage Example ===")
     storage = FlextApiStorage()
-    cache_value: dict[str, object] = {
+    cache_value: dict[str, t.NormalizedValue] = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,

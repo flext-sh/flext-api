@@ -94,7 +94,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r.fail(schema_result.error or "Failed to load OpenAPI schema")
         loaded_schema = schema_result.value
         if not _shared.is_object_mapping(loaded_schema):
-            return r.fail("OpenAPI schema must be a JSON/YAML object")
+            return r.fail("OpenAPI schema must be a JSON/YAML t.NormalizedValue")
         normalized_schema = _shared.normalize_json_object(loaded_schema)
         validation_result = self.validate_schema(normalized_schema)
         if validation_result.is_failure:
@@ -207,7 +207,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         })
 
     def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> list[str]:
-        """Extract path keys from validated paths object."""
+        """Extract path keys from validated paths t.NormalizedValue."""
         paths_result = _shared.parse_dict_field(paths_value, "paths")
         return paths_result.fold(
             on_failure=lambda _: [],
@@ -215,7 +215,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         )
 
     def _extract_title(self, info_value: t.ApiJsonValue) -> str:
-        """Extract title from validated info object."""
+        """Extract title from validated info t.NormalizedValue."""
         info_result = _shared.parse_dict_field(info_value, "info")
         if info_result.is_failure:
             return ""
@@ -228,7 +228,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self,
         components: Mapping[str, t.ContainerValue],
     ) -> r[bool]:
-        """Validate OpenAPI components object.
+        """Validate OpenAPI components t.NormalizedValue.
 
         Args:
         components: Components dictionary from OpenAPI schema
@@ -301,7 +301,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         path: str,
         method: str,
     ) -> r[bool]:
-        """Validate OpenAPI operation object.
+        """Validate OpenAPI operation t.NormalizedValue.
 
         Args:
         operation: Operation dictionary
@@ -350,7 +350,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _validate_paths(self, paths: Mapping[str, t.ApiJsonValue]) -> r[bool]:
-        """Validate OpenAPI paths object.
+        """Validate OpenAPI paths t.NormalizedValue.
 
         Args:
         paths: Paths dictionary from OpenAPI schema

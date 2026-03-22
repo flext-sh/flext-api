@@ -47,7 +47,7 @@ class FlextApiSerializers:
             """Type-safe wrapper for msgpack.packb().
 
             Args:
-                obj: Object to pack (JsonObject or object).
+                obj: Object to pack (JsonObject or t.NormalizedValue).
 
             Returns:
                 bytes: Packed binary data.
@@ -74,7 +74,7 @@ class FlextApiSerializers:
                 data: Binary data to unpack.
 
             Returns:
-                Result containing unpacked object (dict, list, or scalar).
+                Result containing unpacked t.NormalizedValue (dict, list, or scalar).
 
             """
             module = _load_msgpack()

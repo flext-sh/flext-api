@@ -71,7 +71,7 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[object references to external documents, issues, or discussions]
+[t.NormalizedValue references to external documents, issues, or discussions]
 ```
 
 ## Current ADRs

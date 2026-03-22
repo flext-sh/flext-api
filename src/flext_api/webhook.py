@@ -406,7 +406,7 @@ class FlextWebhookHandler(FlextService[bool]):
                 payload_str,
             )
             if not _is_object_mapping(event_data):
-                return r[t.JsonObject].fail("Payload must be a JSON object")
+                return r[t.JsonObject].fail("Payload must be a JSON t.NormalizedValue")
             json_object: t.JsonObject = {}
             for key, value in event_data.items():
                 json_object[str(key)] = _to_container_value(value)

@@ -32,7 +32,7 @@ class FlextApi(s[FlextApiSettings]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(use_enum_values=True)
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar = m
 

@@ -241,7 +241,7 @@ uvloop = ["uvloop (>=0.15.2) ; sys_platform != \"win32\"", "winloop (>=0.5.0) ; 
 [[package]]
 name = "blinker"
 version = "1.9.0"
-description = "Fast, simple object-to-object and broadcast signaling"
+description = "Fast, simple t.NormalizedValue-to-t.NormalizedValue and broadcast signaling"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
@@ -934,7 +934,7 @@ xml-validation = ["lxml (>=4,<7)"]
 [[package]]
 name = "deepdiff"
 version = "8.6.2"
-description = "Deep Difference and Search of any Python object/data. Recreate objects by adding adding deltas to each other."
+description = "Deep Difference and Search of any Python t.NormalizedValue/data. Recreate objects by adding adding deltas to each other."
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]

@@ -95,7 +95,7 @@ def load_schema_document(schema_source: str) -> r[t.ContainerValue]:
 def normalize_json_object(
     value: Mapping[str, t.ContainerValue],
 ) -> t.JsonObject:
-    """Normalize a mapping to a JSON object.
+    """Normalize a mapping to a JSON t.NormalizedValue.
 
     Recursively converts values to valid JSON types.
 
@@ -103,7 +103,7 @@ def normalize_json_object(
         value: Mapping to normalize
 
     Returns:
-        Normalized JSON object
+        Normalized JSON t.NormalizedValue
 
     """
     normalized: t.JsonObject = {}
@@ -226,7 +226,7 @@ def load_and_validate_schema_document[TValidation](
     loaded_schema = schema_result.value
     if not is_object_mapping(loaded_schema):
         return r[t.ContainerValue].fail(
-            f"{schema_label} schema must be a JSON/YAML object",
+            f"{schema_label} schema must be a JSON/YAML t.NormalizedValue",
         )
     normalized_schema = normalize_json_object(loaded_schema)
     validation_result = validate_schema(normalized_schema)

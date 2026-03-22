@@ -61,7 +61,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class HttpRequest(FlextModels.Value):
-            """Immutable HTTP request value object.
+            """Immutable HTTP request value t.NormalizedValue.
 
             Represents a complete HTTP request with all necessary parameters.
             Follows Value Object pattern: immutable, compared by value, no identity.
@@ -130,7 +130,7 @@ class FlextApiModels(FlextWebModels):
                 return c.Api.ContentType.JSON
 
         class HttpResponse(FlextModels.Value):
-            """Immutable HTTP response value object.
+            """Immutable HTTP response value t.NormalizedValue.
 
             Represents a complete HTTP response with all returned data.
             Follows Value Object pattern: immutable, compared by value, no identity.
@@ -209,7 +209,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class Url(FlextModels.Value):
-            """URL parsing and validation model (immutable value object)."""
+            """URL parsing and validation model (immutable value t.NormalizedValue)."""
 
             url: Annotated[
                 t.NonEmptyStr,
@@ -282,7 +282,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class ClientConfig(FlextModels.Value):
-            """HTTP client configuration model (immutable value object)."""
+            """HTTP client configuration model (immutable value t.NormalizedValue)."""
 
             base_url: Annotated[
                 str,
@@ -333,7 +333,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class PaginationInfo(FlextModels.Value):
-            """Pagination information model for HTTP operations (immutable value object)."""
+            """Pagination information model for HTTP operations (immutable value t.NormalizedValue)."""
 
             page: Annotated[
                 t.PositiveInt,
@@ -388,7 +388,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class Error(FlextModels.Value):
-            """HTTP error response model (immutable value object)."""
+            """HTTP error response model (immutable value t.NormalizedValue)."""
 
             message: Annotated[
                 str,
@@ -442,7 +442,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class QueryParams(FlextModels.Value):
-            """Query parameters model (immutable value object)."""
+            """Query parameters model (immutable value t.NormalizedValue)."""
 
             params: Annotated[
                 t.Api.WebParams,
@@ -464,7 +464,7 @@ class FlextApiModels(FlextWebModels):
                 return self.model_copy(update={"params": updated_params})
 
         class Headers(FlextModels.Value):
-            """HTTP headers model (immutable value object)."""
+            """HTTP headers model (immutable value t.NormalizedValue)."""
 
             headers: Annotated[
                 dict[str, str],
@@ -592,7 +592,7 @@ class FlextApiModels(FlextWebModels):
         # =========================================================================
 
         class DictField(FlextModels.Value):
-            """Pydantic model for validating dictionary fields (immutable value object)."""
+            """Pydantic model for validating dictionary fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[
                 dict[str, t.ContainerValue],
@@ -600,12 +600,12 @@ class FlextApiModels(FlextWebModels):
             ]
 
         class StringField(FlextModels.Value):
-            """Pydantic model for validating string fields (immutable value object)."""
+            """Pydantic model for validating string fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[str, Field(..., description="String value")]
 
         class IntField(FlextModels.Value):
-            """Pydantic model for validating integer fields (immutable value object)."""
+            """Pydantic model for validating integer fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[int, Field(..., description="Integer value")]
 
@@ -616,7 +616,7 @@ class FlextApiModels(FlextWebModels):
         class _HttpRequestCallArgs(FlextModels.Value):
             """Internal model for validating HTTP request call arguments."""
 
-            model_config = ConfigDict(arbitrary_types_allowed=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
 
             method: Annotated[str, Field(..., description="HTTP method")]
             url: Annotated[str, Field(..., description="Request URL")]
@@ -644,7 +644,7 @@ class FlextApiModels(FlextWebModels):
         class _MappingBodyModel(FlextModels.Value):
             """Internal model for wrapping mapping body data."""
 
-            model_config = ConfigDict(arbitrary_types_allowed=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
 
             body: Annotated[
                 dict[str, t.ContainerValue],
@@ -654,7 +654,7 @@ class FlextApiModels(FlextWebModels):
         class _HttpClientRequestOptions(FlextModels.Value):
             """Internal model for HTTP client request options."""
 
-            model_config = ConfigDict(arbitrary_types_allowed=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
 
             params: Annotated[
                 Mapping[str, str] | None,

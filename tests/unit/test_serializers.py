@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 from flext_tests import tm
 
 from flext_api.serializers import FlextApiSerializers
+from tests import t
 
 
 class TestMessagePackUnpackb:
@@ -115,7 +116,9 @@ class TestMessagePackUnpackb:
         """Test failure when validation fails on unpacked data."""
         # Arrange: mock unpackb to return data that fails validation
         mock_module = MagicMock()
-        mock_unpackb = MagicMock(return_value=object())  # object() fails validation
+        mock_unpackb = MagicMock(
+            return_value=t.NormalizedValue()
+        )  # t.NormalizedValue() fails validation
         mock_module.unpackb = mock_unpackb
 
         with patch("flext_api.serializers._load_msgpack", return_value=mock_module):

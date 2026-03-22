@@ -71,7 +71,7 @@ class FlextApiConstants(FlextWebConstants):
             """HTTP method enumeration - automatic Pydantic validation.
 
             PYDANTIC MODELS:
-            model_config = ConfigDict(use_enum_values=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(use_enum_values=True)
             method: FlextApiConstants.Api.Method
 
             Result:

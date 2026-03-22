@@ -104,7 +104,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
             @staticmethod
             def to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
-                """Normalize arbitrary value to object."""
+                """Normalize arbitrary value to t.NormalizedValue."""
                 if value is None or isinstance(value, t.PRIMITIVES_TYPES):
                     return value
                 if isinstance(value, Mapping):
@@ -300,7 +300,7 @@ class FlextApiUtilities(FlextWebUtilities):
         def extract_pagination_config(
             config: t.ContainerValue,
         ) -> Mapping[str, t.ApiJsonValue]:
-            """Extract pagination configuration from config object.
+            """Extract pagination configuration from config t.NormalizedValue.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.

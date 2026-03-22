@@ -45,7 +45,7 @@ class FlextApiAdapters:
                 request: HTTP request model to adapt.
 
             Returns:
-                r object containing WebSocket-compatible payload or failure.
+                r t.NormalizedValue containing WebSocket-compatible payload or failure.
 
             """
             try:
@@ -130,10 +130,10 @@ class FlextApiAdapters:
             """Convert OpenAPI specification to GraphQL schema.
 
             Args:
-                _openapi_spec: OpenAPI JSON object to translate.
+                _openapi_spec: OpenAPI JSON t.NormalizedValue to translate.
 
             Returns:
-                r containing GraphQL schema object or failure.
+                r containing GraphQL schema t.NormalizedValue or failure.
 
             """
             try:
@@ -160,7 +160,7 @@ class FlextApiAdapters:
             """Convert JSON data to CBOR format.
 
             Args:
-                data: JSON object for serialization.
+                data: JSON t.NormalizedValue for serialization.
 
             Returns:
                 r containing CBOR bytes or failure.

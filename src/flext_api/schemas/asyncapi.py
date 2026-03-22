@@ -207,7 +207,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         info_result = self._validate_info_object(schema)
         if info_result.is_failure:
             return r[Mapping[str, t.ContainerValue]].fail(
-                info_result.error or "Info object validation failed",
+                info_result.error or "Info t.NormalizedValue validation failed",
             )
         info = info_result.value
         if "channels" not in schema:
@@ -425,7 +425,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         self,
         schema: Mapping[str, t.ContainerValue],
     ) -> r[Mapping[str, t.ContainerValue]]:
-        """Validate info object and return it."""
+        """Validate info t.NormalizedValue and return it."""
         if "info" not in schema:
             return r[Mapping[str, t.ContainerValue]].fail(
                 "Missing 'info' field in schema",
@@ -474,7 +474,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         messages: Mapping[str, t.ContainerValue],
         channel_name: str,
     ) -> r[bool]:
-        """Validate AsyncAPI messages object.
+        """Validate AsyncAPI messages t.NormalizedValue.
 
         Args:
         messages: Messages dictionary

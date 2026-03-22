@@ -52,7 +52,7 @@ class FlextApiStorage:
     - Event tracking
     """
 
-    model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=False, arbitrary_types_allowed=True)
     _storage: dict[str, t.ApiJsonValue]
     _expiry_times: dict[str, float]
     _stats: m.Api.Storage.Stats
@@ -519,7 +519,7 @@ class FlextApiStorage:
         field_name: str,
         default_value: str,
     ) -> str:
-        """Extract string field from config object."""
+        """Extract string field from config t.NormalizedValue."""
         field_value = config_obj.model_dump().get(field_name)
         if isinstance(field_value, str):
             return field_value
@@ -645,7 +645,7 @@ class FlextApiStorage:
         config_obj: BaseModel,
         field_name: str,
     ) -> t.ContainerValue | None:
-        """Extract optional field from config object."""
+        """Extract optional field from config t.NormalizedValue."""
         field_value = config_obj.model_dump().get(field_name)
         if field_value is not None:
             return FlextRuntime.normalize_to_container(field_value)
@@ -667,7 +667,7 @@ class FlextApiStorage:
         return f"{self._namespace}:{key}"
 
     def _normalize_config(self, config_obj: t.ApiJsonValue | None) -> t.Api.StorageDict:
-        """Normalize config object to dictionary."""
+        """Normalize config t.NormalizedValue to dictionary."""
         if config_obj is None:
             return {}
         if isinstance(config_obj, dict):

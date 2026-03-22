@@ -156,7 +156,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return r[t_api.ContainerValue].fail(f"Failed to read schema file: {e}")
         if not _is_object_mapping(loaded_schema):
             return r[t_api.ContainerValue].fail(
-                "JSON schema file must contain a JSON/YAML object",
+                "JSON schema file must contain a JSON/YAML t.NormalizedValue",
             )
         schema_definition: t_api.Api.SchemaDefinition = {}
         for key, value in loaded_schema.items():
@@ -431,7 +431,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     return True
                 case ["boolean", bool()]:
                     return True
-                case ["object", dict()]:
+                case ["t.NormalizedValue", dict()]:
                     return True
                 case ["array", list()]:
                     return True

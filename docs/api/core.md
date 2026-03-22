@@ -185,7 +185,7 @@ class MyApiConfig(FlextApiSettings):
     """Custom API configuration."""
 
     custom_setting: str = "default_value"
-    feature_flags: dict[str, object] = {}
+    feature_flags: dict[str, t.NormalizedValue] = {}
 ```
 
 ## HTTP Models and Schemas

@@ -49,7 +49,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     - Event callbacks for message handling
     """
 
-    model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=False, arbitrary_types_allowed=True)
     _ping_interval: float
     _ping_timeout: float
     _close_timeout: float
