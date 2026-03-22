@@ -1,6 +1,4 @@
-"""Module skeleton for TestsFlextApiModels.
-
-Test models for flextapi.
+"""Test models for flext-api.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -8,13 +6,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import m
+from flext_tests import FlextTestsModels
+
+from flext_api import FlextApiModels
 
 
-class TestsFlextApiModels(m):
-    """Test models for flextapi."""
+class FlextApiTestModels(FlextTestsModels, FlextApiModels):
+    """Test models for flext-api."""
+
+    class Api(FlextApiModels.Api):
+        """Api domain test models."""
+
+        class Tests:
+            """Test-specific models."""
 
 
-m = TestsFlextApiModels
-
-__all__ = ["TestsFlextApiModels", "m"]
+m = FlextApiTestModels
+__all__ = ["FlextApiTestModels", "m"]

@@ -11,49 +11,62 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
+    from flext_tests import d, e, h, r, s, x
 
     from . import unit as unit
-    from .constants import TestsFlextApiConstants, TestsFlextApiConstants as c
-    from .models import TestsFlextApiModels, TestsFlextApiModels as m
-    from .protocols import TestsFlextApiProtocols, TestsFlextApiProtocols as p
-    from .typings import TestsFlextApiTypes, TestsFlextApiTypes as t
+    from .constants import FlextApiTestConstants, FlextApiTestConstants as c
+    from .models import FlextApiTestModels, FlextApiTestModels as m
+    from .protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
+    from .typings import FlextApiTestTypes, FlextApiTestTypes as t
     from .unit.test_serializers import TestMessagePackUnpackb
     from .unit.test_smoke import test_package_imports_main_facade
-    from .utilities import TestsFlextApiUtilities, TestsFlextApiUtilities as u
+    from .utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
+    "FlextApiTestConstants": ("tests.constants", "FlextApiTestConstants"),
+    "FlextApiTestModels": ("tests.models", "FlextApiTestModels"),
+    "FlextApiTestProtocols": ("tests.protocols", "FlextApiTestProtocols"),
+    "FlextApiTestTypes": ("tests.typings", "FlextApiTestTypes"),
+    "FlextApiTestUtilities": ("tests.utilities", "FlextApiTestUtilities"),
     "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
-    "TestsFlextApiConstants": ("tests.constants", "TestsFlextApiConstants"),
-    "TestsFlextApiModels": ("tests.models", "TestsFlextApiModels"),
-    "TestsFlextApiProtocols": ("tests.protocols", "TestsFlextApiProtocols"),
-    "TestsFlextApiTypes": ("tests.typings", "TestsFlextApiTypes"),
-    "TestsFlextApiUtilities": ("tests.utilities", "TestsFlextApiUtilities"),
-    "c": ("tests.constants", "TestsFlextApiConstants"),
-    "m": ("tests.models", "TestsFlextApiModels"),
-    "p": ("tests.protocols", "TestsFlextApiProtocols"),
-    "t": ("tests.typings", "TestsFlextApiTypes"),
+    "c": ("tests.constants", "FlextApiTestConstants"),
+    "d": ("flext_tests", "d"),
+    "e": ("flext_tests", "e"),
+    "h": ("flext_tests", "h"),
+    "m": ("tests.models", "FlextApiTestModels"),
+    "p": ("tests.protocols", "FlextApiTestProtocols"),
+    "r": ("flext_tests", "r"),
+    "s": ("flext_tests", "s"),
+    "t": ("tests.typings", "FlextApiTestTypes"),
     "test_package_imports_main_facade": (
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
     ),
-    "u": ("tests.utilities", "TestsFlextApiUtilities"),
+    "u": ("tests.utilities", "FlextApiTestUtilities"),
     "unit": ("tests.unit", ""),
+    "x": ("flext_tests", "x"),
 }
 
 __all__ = [
+    "FlextApiTestConstants",
+    "FlextApiTestModels",
+    "FlextApiTestProtocols",
+    "FlextApiTestTypes",
+    "FlextApiTestUtilities",
     "TestMessagePackUnpackb",
-    "TestsFlextApiConstants",
-    "TestsFlextApiModels",
-    "TestsFlextApiProtocols",
-    "TestsFlextApiTypes",
-    "TestsFlextApiUtilities",
     "c",
+    "d",
+    "e",
+    "h",
     "m",
     "p",
+    "r",
+    "s",
     "t",
     "test_package_imports_main_facade",
     "u",
     "unit",
+    "x",
 ]
 
 
