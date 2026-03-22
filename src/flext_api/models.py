@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from typing import Annotated, Self
+from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
@@ -616,7 +616,9 @@ class FlextApiModels(FlextWebModels):
         class _HttpRequestCallArgs(FlextModels.Value):
             """Internal model for validating HTTP request call arguments."""
 
-            model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(
+                arbitrary_types_allowed=True
+            )
 
             method: Annotated[str, Field(..., description="HTTP method")]
             url: Annotated[str, Field(..., description="Request URL")]
@@ -644,7 +646,9 @@ class FlextApiModels(FlextWebModels):
         class _MappingBodyModel(FlextModels.Value):
             """Internal model for wrapping mapping body data."""
 
-            model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(
+                arbitrary_types_allowed=True
+            )
 
             body: Annotated[
                 dict[str, t.ContainerValue],
@@ -654,7 +658,9 @@ class FlextApiModels(FlextWebModels):
         class _HttpClientRequestOptions(FlextModels.Value):
             """Internal model for HTTP client request options."""
 
-            model_config: ClassVar[ConfigDict] = ConfigDict(arbitrary_types_allowed=True)
+            model_config: ClassVar[ConfigDict] = ConfigDict(
+                arbitrary_types_allowed=True
+            )
 
             params: Annotated[
                 Mapping[str, str] | None,

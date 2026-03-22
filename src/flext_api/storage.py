@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from typing import Self
+from typing import ClassVar, Self
 
 from flext_core import FlextLogger, FlextRuntime, r
 from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
@@ -52,7 +52,9 @@ class FlextApiStorage:
     - Event tracking
     """
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=False, arbitrary_types_allowed=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        frozen=False, arbitrary_types_allowed=True
+    )
     _storage: dict[str, t.ApiJsonValue]
     _expiry_times: dict[str, float]
     _stats: m.Api.Storage.Stats
