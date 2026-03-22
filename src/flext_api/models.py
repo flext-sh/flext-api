@@ -18,7 +18,13 @@ from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
 from flext_web import FlextWebModels
-from pydantic import BeforeValidator, Field, computed_field
+from pydantic import (
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_validator,
+)
 
 from flext_api import c, t, u
 
@@ -602,6 +608,158 @@ class FlextApiModels(FlextWebModels):
             """Pydantic model for validating integer fields (immutable value object)."""
 
             value: Annotated[int, Field(..., description="Integer value")]
+
+        # =========================================================================
+        # PRIVATE INTERNAL MODELS (moved from protocol_impls for MRO compliance)
+        # =========================================================================
+
+        class _HttpRequestCallArgs(FlextModels.Value):
+            """Internal model for validating HTTP request call arguments."""
+
+            model_config = ConfigDict(arbitrary_types_allowed=True)
+
+            method: Annotated[str, Field(..., description="HTTP method")]
+            url: Annotated[str, Field(..., description="Request URL")]
+            headers: Annotated[
+                Mapping[str, str],
+                Field(default_factory=dict, description="HTTP headers"),
+            ]
+            params: Annotated[
+                Mapping[str, str],
+                Field(default_factory=dict, description="Query parameters"),
+            ]
+            json_body: Annotated[
+                t.Container | None,
+                Field(default=None, description="JSON request body"),
+            ]
+            content: Annotated[
+                bytes | None,
+                Field(default=None, description="Raw content body"),
+            ]
+            timeout: Annotated[
+                float | None,
+                Field(default=None, description="Request timeout"),
+            ]
+
+        class _MappingBodyModel(FlextModels.Value):
+            """Internal model for wrapping mapping body data."""
+
+            model_config = ConfigDict(arbitrary_types_allowed=True)
+
+            body: Annotated[
+                dict[str, t.ContainerValue],
+                Field(..., description="Request body as mapping"),
+            ]
+
+        class _HttpClientRequestOptions(FlextModels.Value):
+            """Internal model for HTTP client request options."""
+
+            model_config = ConfigDict(arbitrary_types_allowed=True)
+
+            params: Annotated[
+                Mapping[str, str] | None,
+                Field(default=None, description="Query parameters"),
+            ]
+            json_data: Annotated[
+                t.Container | None,
+                Field(default=None, description="JSON body"),
+            ]
+            content: Annotated[
+                bytes | None,
+                Field(default=None, description="Raw content body"),
+            ]
+            data: Annotated[
+                Mapping[str, t.ContainerValue] | None,
+                Field(default=None, description="Form data"),
+            ]
+            timeout: Annotated[
+                float | None,
+                Field(default=None, description="Request timeout"),
+            ]
+            headers: Annotated[
+                Mapping[str, str],
+                Field(default_factory=dict, description="Request headers"),
+            ]
+
+        class _HeadersRequest(FlextModels.Value):
+            """Encapsulates RFC header constraint for requests."""
+
+            headers: Annotated[dict[str, str], Field(default_factory=dict)]
+
+        class _MethodRequest(FlextModels.Value):
+            """Encapsulates RFC method constraint for requests."""
+
+            method: Annotated[str, Field(min_length=1)]
+
+            @field_validator("method")
+            @classmethod
+            def _validate_method(cls, value: str) -> str:
+                method_upper = value.upper()
+                valid_methods = {
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "PATCH",
+                    "HEAD",
+                    "OPTIONS",
+                    "TRACE",
+                    "CONNECT",
+                }
+                if method_upper not in valid_methods:
+                    msg = f"Invalid HTTP method: {method_upper} (RFC 7231)"
+                    raise ValueError(msg)
+                return method_upper
+
+        class _TimeoutRequest(FlextModels.Value):
+            """Encapsulates timeout constraints for RFC request URLs."""
+
+            timeout: Annotated[float, Field(gt=0)]
+
+        class _UrlRequest(FlextModels.Value):
+            """Encapsulates URL validation constraints for RFC requests."""
+
+            url: Annotated[str, Field(min_length=1)]
+
+            @field_validator("url")
+            @classmethod
+            def _validate_url(cls, value: str) -> str:
+                if not value.strip():
+                    msg = "URL cannot be empty (RFC 7230)"
+                    raise ValueError(msg)
+                if not value.startswith(("http://", "https://")):
+                    msg = "URL must start with http:// or https://"
+                    raise ValueError(msg)
+                return value
+
+        class _StatusCodeValue(FlextModels.Value):
+            """Validates status code values according to RFC conventions."""
+
+            status_code: Annotated[int, Field(ge=100, le=599)]
+
+        class _SendRequestSseOptions(FlextModels.Value):
+            """Options for SSE request sending behavior."""
+
+            method: Annotated[str, Field(default="GET", min_length=1)]
+            max_events: Annotated[int, Field(default=1, ge=1)]
+            auto_reconnect: Annotated[bool | None, Field(default=None)]
+            reconnect_max_attempts: Annotated[int | None, Field(default=None, ge=0)]
+            reconnect_backoff_factor: Annotated[float | None, Field(default=None, gt=0)]
+            retry_timeout: Annotated[int | None, Field(default=None, ge=0)]
+
+        class _SendRequestWsOptions(FlextModels.Value):
+            """Options for sending a WebSocket message request."""
+
+            message: Annotated[str | bytes | None, Field(default=None)]
+            message_type: Annotated[
+                str,
+                Field(default="text", min_length=1),
+            ]
+
+        class _InboundMessage(FlextModels.Value):
+            """Model for inbound WebSocket messages."""
+
+            message: str | bytes
 
         # =========================================================================
         # STORAGE MODELS

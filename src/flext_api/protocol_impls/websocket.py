@@ -19,34 +19,15 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Mapping
-from typing import Annotated, override
+from typing import override
 
 import websockets
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import c, t
+from flext_api import c, m, t
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-
-
-class _SendRequestOptions(BaseModel):
-    """Options for sending a WebSocket message request."""
-
-    message: Annotated[str | bytes | None, Field(default=None)]
-    message_type: Annotated[
-        str,
-        Field(
-            default=c.Api.WebSocket.MessageType.TEXT,
-            min_length=1,
-        ),
-    ]
-
-
-class _InboundMessage(BaseModel):
-    """Model for inbound WebSocket messages."""
-
-    message: str | bytes
 
 
 class WebSocketProtocolPlugin(RFCProtocolImplementation):
@@ -311,7 +292,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         try:
-            options = _SendRequestOptions.model_validate(kwargs)
+            options = m.Api._SendRequestWsOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
@@ -424,7 +405,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def _extract_message(
         self,
         request: Mapping[str, t.ContainerValue],
-        options: _SendRequestOptions,
+        options: m.Api._SendRequestWsOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
         if options.message is not None:
@@ -433,7 +414,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         if body is not None:
             if isinstance(body, (str, bytes)):
                 try:
-                    parsed = _InboundMessage(message=body)
+                    parsed = m.Api._InboundMessage(message=body)
                     return r[str | bytes].ok(parsed.message)
                 except ValidationError:
                     return r[str | bytes].ok(str(body))
@@ -441,7 +422,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return r[str | bytes].ok(str(body))
         return r[str | bytes].fail("Message or body is required")
 
-    def _extract_message_type(self, options: _SendRequestOptions) -> str:
+    def _extract_message_type(self, options: m.Api._SendRequestWsOptions) -> str:
         """Extract message type from kwargs."""
         return options.message_type
 
@@ -462,7 +443,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             try:
                 message = self._connection.recv()
                 try:
-                    inbound = _InboundMessage(message=message)
+                    inbound = m.Api._InboundMessage(message=message)
                 except ValidationError:
                     pass
                 else:

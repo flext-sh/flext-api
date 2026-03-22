@@ -358,6 +358,9 @@ split-on-trailing-comma = true
 "**/*oracle*" = [
   "DTZ007",
 ]
+"**/*protocol_impls*" = [
+  "SLF001",
+]
 "**/*result*" = [
   "PLC2701",
   "SLF001",

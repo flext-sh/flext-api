@@ -16,62 +16,15 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterator, Mapping
-from typing import Annotated, override
+from typing import override
 
 import httpx
 from flext_core import r
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ValidationError
 
 from flext_api import c, m, t, u
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
-
-
-class _HttpRequestCallArgs(BaseModel):
-    """Internal model for validating HTTP request call arguments.
-
-    Used to validate and structure kwargs passed to httpx client methods.
-    Ensures all required fields are present and properly typed.
-    """
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    method: Annotated[str, Field(..., description="HTTP method")]
-    url: Annotated[str, Field(..., description="Request URL")]
-    headers: Annotated[
-        Mapping[str, str],
-        Field(default_factory=dict, description="HTTP headers"),
-    ]
-    params: Annotated[
-        Mapping[str, str],
-        Field(default_factory=dict, description="Query parameters"),
-    ]
-    json_body: Annotated[
-        t.Container | None,
-        Field(
-            default=None,
-            description="JSON request body",
-        ),
-    ]
-    content: Annotated[
-        bytes | None,
-        Field(default=None, description="Raw content body"),
-    ]
-    timeout: Annotated[float | None, Field(default=None, description="Request timeout")]
-
-
-class _MappingBodyModel(BaseModel):
-    """Internal model for wrapping mapping body data.
-
-    Used to validate and structure dict-based request bodies.
-    """
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    body: Annotated[
-        dict[str, t.ContainerValue],
-        Field(..., description="Request body as mapping"),
-    ]
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):
@@ -247,7 +200,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             request.body,
         )
         try:
-            call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
+            call_args = m.Api._HttpRequestCallArgs.model_validate(request_kwargs)
         except ValidationError as e:
             return r.fail(f"Invalid streaming request arguments: {e}")
 
@@ -343,7 +296,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         content_type = self._get_content_type(headers)
         if isinstance(body, dict):
             try:
-                parsed_mapping = _MappingBodyModel(body=body)
+                parsed_mapping = m.Api._MappingBodyModel(body=body)
                 if c.Api.ContentType.FORM in content_type:
                     kwargs["data"] = str(parsed_mapping.body)
                 else:
@@ -397,7 +350,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     timeout,
                     body,
                 )
-                call_args = _HttpRequestCallArgs.model_validate(request_kwargs)
+                call_args = m.Api._HttpRequestCallArgs.model_validate(request_kwargs)
                 client = self._transport.client
                 if client is None:
                     return r[m.HttpResponse].fail("HTTP client is not connected")

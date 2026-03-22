@@ -12,84 +12,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated
 
 from flext_core import r
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import ValidationError
 
-from flext_api import c, t
+from flext_api import c, m, t
 from flext_api.protocol_impls.base import BaseProtocolImplementation
-
-
-def _validate_rfc_url(value: str) -> str:
-    """Validate URL per RFC 7230."""
-    if not value.strip():
-        msg = "URL cannot be empty (RFC 7230)"
-        raise ValueError(msg)
-    if not value.startswith(("http://", "https://")):
-        msg = "URL must start with http:// or https://"
-        raise ValueError(msg)
-    return value
-
-
-def _validate_rfc_method(value: str) -> str:
-    """Validate HTTP method per RFC 7231."""
-    method_upper = value.upper()
-    valid_methods = {
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "HEAD",
-        "OPTIONS",
-        "TRACE",
-        "CONNECT",
-    }
-    if method_upper not in valid_methods:
-        msg = f"Invalid HTTP method: {method_upper} (RFC 7231)"
-        raise ValueError(msg)
-    return method_upper
-
-
-class _HeadersRequest(BaseModel):
-    """Encapsulates RFC header constraint for requests."""
-
-    headers: Annotated[dict[str, str], Field(default_factory=dict)]
-
-
-class _MethodRequest(BaseModel):
-    """Encapsulates RFC method constraint for requests."""
-
-    method: Annotated[str, Field(min_length=1)]
-
-    @field_validator("method")
-    @classmethod
-    def _validate_method(cls, value: str) -> str:
-        return _validate_rfc_method(value)
-
-
-class _TimeoutRequest(BaseModel):
-    """Encapsulates timeout constraints for RFC request URLs."""
-
-    timeout: Annotated[float, Field(gt=0)]
-
-
-class _UrlRequest(BaseModel):
-    """Encapsulates URL validation constraints for RFC requests."""
-
-    url: Annotated[str, Field(min_length=1)]
-
-    @field_validator("url")
-    @classmethod
-    def _validate_url(cls, value: str) -> str:
-        return _validate_rfc_url(value)
-
-
-class _StatusCodeValue(BaseModel):
-    """Validates status code values according to RFC conventions."""
-
-    status_code: Annotated[int, Field(ge=100, le=599)]
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):
@@ -228,7 +156,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "headers" not in request:
             return {}
         try:
-            parsed = _HeadersRequest.model_validate(request)
+            parsed = m.Api._HeadersRequest.model_validate(request)
         except ValidationError:
             return {}
         normalized_headers: dict[str, str] = {}
@@ -247,7 +175,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = _MethodRequest.model_validate(request)
+            parsed = m.Api._MethodRequest.model_validate(request)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
             return r[str].fail(str(details))
@@ -267,7 +195,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "timeout" in request:
             try:
-                parsed = _TimeoutRequest.model_validate(request)
+                parsed = m.Api._TimeoutRequest.model_validate(request)
                 return parsed.timeout
             except ValidationError:
                 return float(c.Api.DEFAULT_TIMEOUT)
@@ -286,7 +214,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "url" not in request:
             return r[str].fail("URL is required in request (RFC 7230)")
         try:
-            parsed = _UrlRequest.model_validate(request)
+            parsed = m.Api._UrlRequest.model_validate(request)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
             return r[str].fail(str(details))
@@ -390,7 +318,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = _StatusCodeValue(status_code=status_code)
+            parsed = m.Api._StatusCodeValue(status_code=status_code)
         except ValidationError:
             return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
