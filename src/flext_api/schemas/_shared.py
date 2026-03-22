@@ -164,7 +164,7 @@ def parse_dict_field(
             return r[Mapping[str, t.ContainerValue]].fail(
                 f"'{field_name}' field must be a dictionary",
             )
-        parsed = DictField(value=value)
+        parsed = DictField(value=dict(value))
     except ValidationError:
         return r[Mapping[str, t.ContainerValue]].fail(
             f"'{field_name}' field must be a dictionary",
