@@ -11,14 +11,21 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Annotated, TypeIs
+from typing import TypeIs
 
 import yaml
 from flext_core import r
-from pydantic import BaseModel, Field, TypeAdapter, ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
+
+# Import field models from canonical models.py location
+from flext_api.models import FlextApiModels
 from flext_api.utilities import u
+
+DictField = FlextApiModels.Api.DictField
+StringField = FlextApiModels.Api.StringField
+IntField = FlextApiModels.Api.IntField
 
 _JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 _CONTAINER_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
@@ -50,24 +57,6 @@ def is_object_mapping(
 
     """
     return isinstance(value, Mapping)
-
-
-class DictField(BaseModel):
-    """Pydantic model for validating dictionary fields."""
-
-    value: Annotated[Mapping[str, t.ContainerValue], Field(default_factory=dict)]
-
-
-class StringField(BaseModel):
-    """Pydantic model for validating string fields."""
-
-    value: str
-
-
-class IntField(BaseModel):
-    """Pydantic model for validating integer fields."""
-
-    value: int
 
 
 def load_schema_document(schema_source: str) -> r[t.ContainerValue]:
