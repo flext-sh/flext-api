@@ -358,9 +358,6 @@ split-on-trailing-comma = true
 "**/*oracle*" = [
   "DTZ007",
 ]
-"**/*protocol_impls*" = [
-  "SLF001",
-]
 "**/*result*" = [
   "PLC2701",
   "SLF001",
@@ -584,6 +581,7 @@ extraPaths = [
 ]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
+reportCallIssue = "none"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
 reportIncompatibleVariableOverride = "error"
@@ -617,6 +615,7 @@ root = "src"
 reportPrivateUsage = "none"
 root = "tests"
 
+# [MANAGED] tomlsort
 [tool.tomlsort]
 all = true
 in_place = true
