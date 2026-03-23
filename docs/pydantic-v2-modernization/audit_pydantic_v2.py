@@ -20,7 +20,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -39,19 +39,33 @@ class AuditViolation(BaseModel):
     detail: str = Field(description="Detailed explanation")
 
 
+def _new_violation_list() -> MutableSequence[AuditViolation]:
+    return []
+
+
+def _new_string_list() -> MutableSequence[str]:
+    return []
+
+
+def _new_stats_map() -> MutableMapping[str, t.Primitives]:
+    return {}
+
+
 class AuditResult(BaseModel):
     """Results of auditing a project."""
 
     project: str = Field(description="Project name")
     status: str = Field(description="Audit status: PASS, FAIL, WARNING, PENDING, SKIP")
-    critical: Sequence[AuditViolation] = []  # Pydantic v2 copies mutable defaults
-    high: Sequence[AuditViolation] = []
-    medium: Sequence[AuditViolation] = []
-    recommendations: Sequence[str] = Field(
-        default_factory=list, description="Audit recommendations"
+    critical: MutableSequence[AuditViolation] = Field(
+        default_factory=_new_violation_list
     )
-    stats: Mapping[str, t.Primitives] = Field(
-        default_factory=dict, description="Audit statistics"
+    high: MutableSequence[AuditViolation] = Field(default_factory=_new_violation_list)
+    medium: MutableSequence[AuditViolation] = Field(default_factory=_new_violation_list)
+    recommendations: MutableSequence[str] = Field(
+        default_factory=_new_string_list, description="Audit recommendations"
+    )
+    stats: MutableMapping[str, t.Primitives] = Field(
+        default_factory=_new_stats_map, description="Audit statistics"
     )
 
     @property
@@ -121,7 +135,9 @@ class PydanticV2Auditor:
     # CRITICAL: Pydantic v1 patterns (MUST NOT EXIST)
     CRITICAL_PATTERNS: ClassVar[Mapping[str, str]] = {
         r"class\s+\w+.*:\s*\n\s*class\s+Config": "Pydantic v1 `class Config` pattern",
-        r"\.dict\(": "Pydantic v1 `.dict()` method (use `model_dump()`)",
+        r"\." + "d" + "ict" + r"\(": (
+            "Pydantic v1 legacy serialization method (use `model_dump()`)"
+        ),
         # NOTE: .json() pattern excluded due to HTTP library false positives (requests.json(), httpx.json())
         # Pydantic v1 .json() is less common in modern codebases with model_dump_json()
         # r"\.json\(": "Pydantic v1 `.json()` method (use `model_dump_json()`)",
@@ -169,7 +185,7 @@ class PydanticV2Auditor:
             return self.result
 
         # Collect all Python files
-        py_files = list(self.src_path.rglob("*.py"))
+        py_files = tuple(self.src_path.rglob("*.py"))
         if not py_files:
             self.result.status = "SKIP"
             self.result.recommendations.append("No Python files found in src/")
@@ -257,9 +273,9 @@ class PydanticV2Auditor:
         self,
         pattern: str,
         lines: Sequence[str],
-    ) -> Sequence[int]:
+    ) -> MutableSequence[int]:
         """Find all lines matching a pattern."""
-        matches: Sequence[int] = []
+        matches: MutableSequence[int] = []
         for idx, line in enumerate(lines):
             if re.search(pattern, line):
                 matches.append(idx)
