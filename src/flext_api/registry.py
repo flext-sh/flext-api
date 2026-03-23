@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from typing import ClassVar
 
 from flext_core import FlextRegistry, r
@@ -34,18 +34,18 @@ class FlextApiRegistry(FlextRegistry):
     TRANSPORTS: ClassVar[str] = "transports"
     AUTH_PROVIDERS: ClassVar[str] = "auth_providers"
     _global_instance: ClassVar[FlextApiRegistry | None] = None
-    _protocol_cache: Mapping[str, FlextApiPlugins.Protocol]
-    _schema_cache: Mapping[str, FlextApiPlugins.Schema]
-    _transport_cache: Mapping[str, FlextApiPlugins.Transport]
-    _auth_cache: Mapping[str, FlextApiPlugins.Authentication]
+    _protocol_cache: MutableMapping[str, FlextApiPlugins.Protocol]
+    _schema_cache: MutableMapping[str, FlextApiPlugins.Schema]
+    _transport_cache: MutableMapping[str, FlextApiPlugins.Transport]
+    _auth_cache: MutableMapping[str, FlextApiPlugins.Authentication]
 
     def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
-        self._protocol_cache: Mapping[str, FlextApiPlugins.Protocol] = {}
-        self._schema_cache: Mapping[str, FlextApiPlugins.Schema] = {}
-        self._transport_cache: Mapping[str, FlextApiPlugins.Transport] = {}
-        self._auth_cache: Mapping[str, FlextApiPlugins.Authentication] = {}
+        self._protocol_cache: MutableMapping[str, FlextApiPlugins.Protocol] = {}
+        self._schema_cache: MutableMapping[str, FlextApiPlugins.Schema] = {}
+        self._transport_cache: MutableMapping[str, FlextApiPlugins.Transport] = {}
+        self._auth_cache: MutableMapping[str, FlextApiPlugins.Authentication] = {}
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod

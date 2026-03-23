@@ -202,7 +202,7 @@ class BaseProtocolImplementation:
         Success response dictionary
 
         """
-        response: Mapping[str, t.ApiJsonValue] = {
+        response: MutableMapping[str, t.ApiJsonValue] = {
             "status": "success",
             "status_code": status_code,
         }

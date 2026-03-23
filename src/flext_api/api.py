@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 from typing import ClassVar, Self, override
 
 from flext_core import FlextLogger, r, s
@@ -203,7 +203,7 @@ class FlextApi(s[FlextApiSettings]):
         if not isinstance(params_value, Mapping):
             return r[t.Api.WebParams].fail(f"Invalid params type: {type(params_value)}")
         params_mapping: Mapping[str, t.ApiJsonValue] = params_value
-        params_result: t.Api.WebParams = {}
+        params_result: MutableMapping[str, str] = {}
         for k, v in params_mapping.items():
             if isinstance(v, str):
                 params_result[k] = v

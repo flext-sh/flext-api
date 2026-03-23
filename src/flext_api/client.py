@@ -173,7 +173,9 @@ class FlextApiClient(s[FlextApiSettings]):
                 return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")
-        return r[bytes].ok(body.encode("utf-8"))
+        if isinstance(body, str):
+            return r[bytes].ok(body.encode("utf-8"))
+        return r[bytes].ok(str(body).encode("utf-8"))
 
     @override
     def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
