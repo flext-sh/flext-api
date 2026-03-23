@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Annotated
 
 from flext_core import FlextModels
@@ -49,14 +50,14 @@ class FlextApiSettings(FlextModels.Value):
         Field(default=True, description="Enable TLS certificate check"),
     ]
     default_headers: Annotated[
-        dict[str, str],
+        Mapping[str, str],
         Field(
             default_factory=dict,
             description="Default headers applied to all requests",
         ),
     ]
     headers: Annotated[
-        dict[str, str],
+        Mapping[str, str],
         Field(
             default_factory=dict,
             description="Compatibility headers bag",

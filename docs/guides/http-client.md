@@ -734,7 +734,7 @@ client = FlextApiClient(
 ```python
 # Avoid logging sensitive data
 class SecureClient(FlextApiClient):
-    def _prepare_request_data(self, data: dict) -> dict[str, t.NormalizedValue]:
+    def _prepare_request_data(self, data: dict) -> Mapping[str, t.NormalizedValue]:
         """Remove sensitive fields before logging."""
         sensitive_fields = ["password", "token", "secret", "key"]
 

@@ -18,8 +18,8 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t, u
 
-_JSON_HEADERS_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
-    dict[str, t.ContainerValue],
+_JSON_HEADERS_ADAPTER: TypeAdapter[Mapping[str, t.ContainerValue]] = TypeAdapter(
+    Mapping[str, t.ContainerValue],
 )
 
 
@@ -109,14 +109,14 @@ class FlextApiSettingsManager:
             return r[Mapping[str, str]].ok({})
         headers_value = self._config["headers"]
         if isinstance(headers_value, Mapping):
-            config_headers_dict: dict[str, str] = {
+            config_headers_dict: Mapping[str, str] = {
                 str(k): str(v) for k, v in headers_value.items()
             }
             return r[Mapping[str, str]].ok(config_headers_dict)
         if isinstance(headers_value, str):
             try:
                 parsed_headers = _JSON_HEADERS_ADAPTER.validate_json(headers_value)
-                parsed_headers_dict: dict[str, str] = {
+                parsed_headers_dict: Mapping[str, str] = {
                     str(key_obj): str(value_obj)
                     for key_obj, value_obj in parsed_headers.items()
                 }

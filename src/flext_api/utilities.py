@@ -93,7 +93,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
             ) -> r[Mapping[str, str]]:
                 """Merge headers from headers dict and kwargs."""
-                merged: dict[str, str] = {}
+                merged: Mapping[str, str] = {}
                 if headers:
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
@@ -197,7 +197,7 @@ class FlextApiUtilities(FlextWebUtilities):
             headers: Mapping[str, str] | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build error result - returns r with error response."""
-            response: dict[str, t.ApiJsonValue] = {
+            response: Mapping[str, t.ApiJsonValue] = {
                 "error": error,
                 "status_code": status_code,
             }
@@ -215,7 +215,7 @@ class FlextApiUtilities(FlextWebUtilities):
             headers: Mapping[str, str] | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build success response with optional data and message."""
-            response: dict[str, t.ApiJsonValue] = {
+            response: Mapping[str, t.ApiJsonValue] = {
                 "status": "success",
                 "data": data,
                 "message": message,
@@ -231,7 +231,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def build_paginated_response(
-            data: list[t.ApiJsonValue],
+            data: Sequence[t.ApiJsonValue],
             page: int,
             page_size: int,
             total: int | None = None,
@@ -305,7 +305,7 @@ class FlextApiUtilities(FlextWebUtilities):
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
-            result: dict[str, t.ApiJsonValue] = {}
+            result: Mapping[str, t.ApiJsonValue] = {}
             default_page_size = getattr(config, "default_page_size", 20)
             max_page_size = getattr(config, "max_page_size", 1000)
             result["default_page_size"] = (
@@ -318,7 +318,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def prepare_pagination_data(
-            data: list[t.ApiJsonValue],
+            data: Sequence[t.ApiJsonValue],
             total: int,
             page: int,
             page_size: int,

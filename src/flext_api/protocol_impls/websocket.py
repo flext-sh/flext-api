@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import ClassVar, override
 
 import websockets
@@ -64,10 +64,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _connected: bool
     _url: str
     _headers: Mapping[str, str]
-    _on_message_handlers: list[Callable[[str | bytes], None]]
-    _on_connect_handlers: list[Callable[[], None]]
-    _on_disconnect_handlers: list[Callable[[], None]]
-    _on_error_handlers: list[Callable[[Exception], None]]
+    _on_message_handlers: Sequence[Callable[[str | bytes], None]]
+    _on_connect_handlers: Sequence[Callable[[], None]]
+    _on_disconnect_handlers: Sequence[Callable[[], None]]
+    _on_error_handlers: Sequence[Callable[[Exception], None]]
 
     def __init__(
         self,
@@ -184,7 +184,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         r indicating success or failure
 
         """
-        connect_headers: dict[str, str] = {}
+        connect_headers: Mapping[str, str] = {}
         if headers is not None:
             connect_headers.update(headers)
         return self._connect(url, connect_headers)
@@ -214,7 +214,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
     @override
-    def get_supported_protocols(self) -> list[str]:
+    def get_supported_protocols(self) -> Sequence[str]:
         """Get list of supported protocols.
 
         Returns:
@@ -320,7 +320,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[Mapping[str, t.ContainerValue]].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
-        response: dict[str, t.ContainerValue] = {
+        response: Mapping[str, t.ContainerValue] = {
             "status_code": c.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
             "method": "WEBSOCKET",

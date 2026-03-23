@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 from flext_core import FlextRegistry, r
@@ -34,18 +34,18 @@ class FlextApiRegistry(FlextRegistry):
     TRANSPORTS: ClassVar[str] = "transports"
     AUTH_PROVIDERS: ClassVar[str] = "auth_providers"
     _global_instance: ClassVar[FlextApiRegistry | None] = None
-    _protocol_cache: dict[str, FlextApiPlugins.Protocol]
-    _schema_cache: dict[str, FlextApiPlugins.Schema]
-    _transport_cache: dict[str, FlextApiPlugins.Transport]
-    _auth_cache: dict[str, FlextApiPlugins.Authentication]
+    _protocol_cache: Mapping[str, FlextApiPlugins.Protocol]
+    _schema_cache: Mapping[str, FlextApiPlugins.Schema]
+    _transport_cache: Mapping[str, FlextApiPlugins.Transport]
+    _auth_cache: Mapping[str, FlextApiPlugins.Authentication]
 
     def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
-        self._protocol_cache: dict[str, FlextApiPlugins.Protocol] = {}
-        self._schema_cache: dict[str, FlextApiPlugins.Schema] = {}
-        self._transport_cache: dict[str, FlextApiPlugins.Transport] = {}
-        self._auth_cache: dict[str, FlextApiPlugins.Authentication] = {}
+        self._protocol_cache: Mapping[str, FlextApiPlugins.Protocol] = {}
+        self._schema_cache: Mapping[str, FlextApiPlugins.Schema] = {}
+        self._transport_cache: Mapping[str, FlextApiPlugins.Transport] = {}
+        self._auth_cache: Mapping[str, FlextApiPlugins.Authentication] = {}
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod
@@ -130,19 +130,19 @@ class FlextApiRegistry(FlextRegistry):
             return r[FlextApiPlugins.Transport].fail(result.error)
         return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
 
-    def list_auth_providers(self) -> r[list[str]]:
+    def list_auth_providers(self) -> r[Sequence[str]]:
         """List all registered authentication provider names."""
         return self.list_plugins(self.AUTH_PROVIDERS)
 
-    def list_protocols(self) -> r[list[str]]:
+    def list_protocols(self) -> r[Sequence[str]]:
         """List all registered protocol names."""
         return self.list_plugins(self.PROTOCOLS)
 
-    def list_schemas(self) -> r[list[str]]:
+    def list_schemas(self) -> r[Sequence[str]]:
         """List all registered schema system names."""
         return self.list_plugins(self.SCHEMAS)
 
-    def list_transports(self) -> r[list[str]]:
+    def list_transports(self) -> r[Sequence[str]]:
         """List all registered transport names."""
         return self.list_plugins(self.TRANSPORTS)
 

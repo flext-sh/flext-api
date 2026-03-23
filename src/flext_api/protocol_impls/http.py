@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from typing import override
 
 import httpx
@@ -109,7 +109,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         return updated_info
 
     @override
-    def get_supported_protocols(self) -> list[str]:
+    def get_supported_protocols(self) -> Sequence[str]:
         """Get list of supported protocols."""
         if self._http3:
             return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
@@ -122,7 +122,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         **_kwargs: t.Scalar,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send HTTP request with retry logic and error handling."""
-        request_general: dict[str, t.ContainerValue] = {}
+        request_general: Mapping[str, t.ContainerValue] = {}
         for key, value in request.items():
             request_general[key] = self._to_general_value(value)
         request_result = self._build_http_request_from_dict(request_general)
@@ -282,7 +282,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         body: t.Api.RequestBody | None,
     ) -> Mapping[str, t.ContainerValue]:
         """Build request kwargs based on body type."""
-        kwargs: dict[str, t.ContainerValue] = {
+        kwargs: Mapping[str, t.ContainerValue] = {
             "method": method,
             "url": url,
             "headers": headers,
@@ -436,10 +436,10 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         if value is None:
             return None
         if isinstance(value, list):
-            empty_list: list[t.ContainerValue] = []
+            empty_list: Sequence[t.ContainerValue] = []
             return empty_list
         if isinstance(value, Mapping):
-            empty_mapping: dict[str, t.ContainerValue] = {}
+            empty_mapping: Mapping[str, t.ContainerValue] = {}
             return empty_mapping
         if u.is_primitive(value):
             return value

@@ -22,7 +22,7 @@ import hmac
 import time
 import uuid
 from collections import deque
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import TypeIs, override
 
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, r
@@ -39,7 +39,7 @@ def _is_object_mapping(
     return isinstance(value, Mapping)
 
 
-def _is_object_list(value: t.ContainerValue) -> TypeIs[list[t.ContainerValue]]:
+def _is_object_list(value: t.ContainerValue) -> TypeIs[Sequence[t.ContainerValue]]:
     return isinstance(value, list)
 
 
@@ -51,7 +51,7 @@ def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
     if _is_object_list(value):
         return [_to_container_value(item) for item in value]
     if _is_object_mapping(value):
-        normalized: dict[str, t.ContainerValue] = {}
+        normalized: Mapping[str, t.ContainerValue] = {}
         for key, item in value.items():
             normalized[str(key)] = _to_container_value(item)
         return normalized
@@ -89,9 +89,9 @@ class FlextWebhookHandler(FlextService[bool]):
     _max_retries: int
     _retry_delay: float
     _retry_backoff: float
-    _event_handlers: dict[str, list[Callable[..., None]]]
+    _event_handlers: Mapping[str, Sequence[Callable[..., None]]]
     _event_queue: deque[t.JsonObject]
-    _delivery_confirmations: dict[str, t.JsonObject]
+    _delivery_confirmations: Mapping[str, t.JsonObject]
     _retry_queue: deque[t.JsonObject]
 
     def __init__(
@@ -429,7 +429,7 @@ class FlextWebhookHandler(FlextService[bool]):
             return r[bool].fail("Event type must be a string")
         event_type: str = event_type_value
         event_data = event.get("data", {})
-        handlers: list[Callable[..., None]] = []
+        handlers: Sequence[Callable[..., None]] = []
         if event_type in self._event_handlers:
             handlers = self._event_handlers[event_type]
         if not handlers:

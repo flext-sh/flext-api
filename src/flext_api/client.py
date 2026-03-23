@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Self, override
 
 import httpx
@@ -22,8 +23,8 @@ from flext_api import FlextApiSettings, c, m, t
 _RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
     t.Api.ResponseBody,
 )
-_DICT_BODY_ADAPTER: TypeAdapter[dict[str, t.ContainerValue]] = TypeAdapter(
-    dict[str, t.ContainerValue],
+_DICT_BODY_ADAPTER: TypeAdapter[Mapping[str, t.ContainerValue]] = TypeAdapter(
+    Mapping[str, t.ContainerValue],
 )
 
 
@@ -229,11 +230,14 @@ class FlextApiClient(s[FlextApiSettings]):
         """Execute HTTP request using httpx client."""
         try:
             api_config = self._get_config()
-            headers: dict[str, str] = {**api_config.default_headers, **request.headers}
+            headers: Mapping[str, str] = {
+                **api_config.default_headers,
+                **request.headers,
+            }
             with httpx.Client(timeout=request.timeout) as client:
                 request_method: str = request.method
                 request_url: str = url
-                request_headers: dict[str, str] = headers
+                request_headers: Mapping[str, str] = headers
                 request_params: t.Api.WebParams = request.query_params
                 if serialized_body:
                     response = client.request(

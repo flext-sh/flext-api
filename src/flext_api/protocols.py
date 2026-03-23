@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
 from flext_core import r
@@ -119,7 +120,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
-                def keys(self) -> r[list[str]]:
+                def keys(self) -> r[Sequence[str]]:
                     """Get all keys."""
                     ...
 
@@ -266,7 +267,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     """
                     ...
 
-                def register_methods(self) -> list[t.ApiJsonValue]:
+                def register_methods(self) -> Sequence[t.ApiJsonValue]:
                     """Register service methods.
 
                     Returns:

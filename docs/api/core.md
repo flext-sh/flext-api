@@ -185,7 +185,7 @@ class MyApiConfig(FlextApiSettings):
     """Custom API configuration."""
 
     custom_setting: str = "default_value"
-    feature_flags: dict[str, t.NormalizedValue] = {}
+    feature_flags: Mapping[str, t.NormalizedValue] = {}
 ```
 
 ## HTTP Models and Schemas
@@ -243,7 +243,7 @@ from flext_api import ErrorResponse
 class ValidationErrorResponse(ErrorResponse):
     """Validation error response."""
 
-    field_errors: dict[str, t.StringList]
+    field_errors: Mapping[str, t.StringList]
 
 
 class AuthenticationErrorResponse(ErrorResponse):
@@ -444,12 +444,12 @@ def get_user_service():
 
 
 # Routes
-@app.get("/users", response_model=list[UserResponse])
+@app.get("/users", response_model=Sequence[UserResponse])
 async def list_users(
     limit: int = 10,
     offset: int = 0,
     user_service: UserService = Depends(get_user_service),
-) -> list[UserResponse]:
+) -> Sequence[UserResponse]:
     """List users with pagination."""
     result = user_service.get_users(limit=limit, offset=offset)
 

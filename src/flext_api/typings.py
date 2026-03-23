@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from flext_core import FlextTypes
 
@@ -26,7 +26,7 @@ class FlextApiTypes(FlextTypes):
     Only TypeVar loose outside class.
     """
 
-    type JsonObject = dict[str, FlextTypes.ContainerValue]
+    type JsonObject = Mapping[str, FlextTypes.ContainerValue]
     type ApiJsonValue = FlextTypes.ContainerValue | None
 
     class Api:
@@ -46,33 +46,33 @@ class FlextApiTypes(FlextTypes):
 
         """
 
-        type JsonObject = dict[str, FlextTypes.ContainerValue]
+        type JsonObject = Mapping[str, FlextTypes.ContainerValue]
         type ApiJsonValue = FlextTypes.ContainerValue | None
-        type WebData = FlextTypes.FileContent | dict[str, FlextTypes.ContainerValue]
-        type WebHeaders = dict[str, FlextTypes.Scalar | list[str]]
-        type WebParamValue = str | list[str]
-        type WebParams = dict[str, WebParamValue]
-        type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
+        type WebData = FlextTypes.FileContent | Mapping[str, FlextTypes.ContainerValue]
+        type WebHeaders = Mapping[str, FlextTypes.Scalar | Sequence[str]]
+        type WebParamValue = str | Sequence[str]
+        type WebParams = Mapping[str, WebParamValue]
+        type ResponseList = Sequence[Mapping[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
-        type RequestConfig = dict[str, FlextTypes.ContainerValue]
-        type ResponseConfig = dict[str, FlextTypes.ContainerValue]
-        type RequestBody = dict[str, FlextTypes.ContainerValue] | str | bytes
-        type ResponseBody = dict[str, FlextTypes.ContainerValue] | str | bytes | None
-        type HttpResponseDict = dict[
+        type RequestConfig = Mapping[str, FlextTypes.ContainerValue]
+        type ResponseConfig = Mapping[str, FlextTypes.ContainerValue]
+        type RequestBody = Mapping[str, FlextTypes.ContainerValue] | str | bytes
+        type ResponseBody = Mapping[str, FlextTypes.ContainerValue] | str | bytes | None
+        type HttpResponseDict = Mapping[
             str,
-            FlextTypes.ContainerValue | dict[str, str] | bytes | None,
+            FlextTypes.ContainerValue | Mapping[str, str] | bytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type ValidationResult = dict[str, FlextTypes.ContainerValue]
-        type EndpointConfig = dict[str, FlextTypes.ContainerValue]
-        type EndpointMetadata = dict[str, FlextTypes.ContainerValue]
-        type RouteConfig = dict[str, FlextTypes.ContainerValue]
-        type RouteData = dict[
+        type ValidationResult = Mapping[str, FlextTypes.ContainerValue]
+        type EndpointConfig = Mapping[str, FlextTypes.ContainerValue]
+        type EndpointMetadata = Mapping[str, FlextTypes.ContainerValue]
+        type RouteConfig = Mapping[str, FlextTypes.ContainerValue]
+        type RouteData = Mapping[
             str,
             FlextTypes.ContainerValue | FlextTypes.ResourceCallable | None,
         ]
         "Route registration data structure."
-        type SchemaValue = dict[str, FlextTypes.ContainerValue] | str
+        type SchemaValue = Mapping[str, FlextTypes.ContainerValue] | str
         type AuthConfig = Mapping[str, FlextTypes.ContainerValue]
         type AuthCredentials = Mapping[str, FlextTypes.ContainerValue]
         type AuthTokenData = Mapping[str, FlextTypes.ContainerValue]
@@ -90,27 +90,27 @@ class FlextApiTypes(FlextTypes):
             str,
             Mapping[str, str]
             | Mapping[str, FlextTypes.ContainerValue]
-            | Mapping[str, FlextTypes.Scalar | list[str]]
+            | Mapping[str, FlextTypes.Scalar | Sequence[str]]
             | float
             | None,
         ]
-        type StorageDict = dict[str, FlextTypes.Primitives | None]
-        type CacheDict = dict[str, FlextTypes.Primitives]
-        type MetricsDict = dict[str, int]
-        type ProtocolConfig = dict[str, FlextTypes.ContainerValue]
-        type ProtocolMessage = dict[str, FlextTypes.ContainerValue] | str | bytes
-        type SchemaDefinition = dict[str, FlextTypes.ContainerValue]
-        type ValidationErrors = list[dict[str, FlextTypes.ContainerValue]]
-        type ServiceConfig = dict[str, dict[str, FlextTypes.Scalar]]
-        type ServiceHealth = dict[str, FlextTypes.Primitives]
-        type RequestPipeline = list[dict[str, FlextTypes.ContainerValue]]
-        type ResponsePipeline = list[dict[str, FlextTypes.ContainerValue]]
-        type ProcessingResult = dict[str, FlextTypes.ContainerValue]
-        type ErrorInfo = dict[str, FlextTypes.ContainerValue]
+        type StorageDict = Mapping[str, FlextTypes.Primitives | None]
+        type CacheDict = Mapping[str, FlextTypes.Primitives]
+        type MetricsDict = Mapping[str, int]
+        type ProtocolConfig = Mapping[str, FlextTypes.ContainerValue]
+        type ProtocolMessage = Mapping[str, FlextTypes.ContainerValue] | str | bytes
+        type SchemaDefinition = Mapping[str, FlextTypes.ContainerValue]
+        type ValidationErrors = Sequence[Mapping[str, FlextTypes.ContainerValue]]
+        type ServiceConfig = Mapping[str, Mapping[str, FlextTypes.Scalar]]
+        type ServiceHealth = Mapping[str, FlextTypes.Primitives]
+        type RequestPipeline = Sequence[Mapping[str, FlextTypes.ContainerValue]]
+        type ResponsePipeline = Sequence[Mapping[str, FlextTypes.ContainerValue]]
+        type ProcessingResult = Mapping[str, FlextTypes.ContainerValue]
+        type ErrorInfo = Mapping[str, FlextTypes.ContainerValue]
         type ErrorCategory = str
-        type ErrorRecovery = dict[str, FlextTypes.ContainerValue]
-        type RetryStrategy = dict[str, FlextTypes.Scalar]
-        type CircuitBreaker = dict[str, FlextTypes.Primitives]
+        type ErrorRecovery = Mapping[str, FlextTypes.ContainerValue]
+        type RetryStrategy = Mapping[str, FlextTypes.Scalar]
+        type CircuitBreaker = Mapping[str, FlextTypes.Primitives]
 
 
 t = FlextApiTypes

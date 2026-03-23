@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import override
 
 from flext_core import r
@@ -80,7 +80,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             "amqps",
         ]
 
-    def get_supported_schemas(self) -> list[str]:
+    def get_supported_schemas(self) -> Sequence[str]:
         """Get list of supported schema types.
 
         Returns:

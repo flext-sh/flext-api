@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import TypeIs
 
@@ -43,7 +43,7 @@ def is_container_value(value: t.ContainerValue) -> TypeIs[t.ContainerValue]:
 
 def is_object_mapping(
     value: t.ContainerValue,
-) -> TypeIs[dict[str, t.ContainerValue]]:
+) -> TypeIs[Mapping[str, t.ContainerValue]]:
     """Type guard to check if value is a mapping of container values.
 
     Args:
@@ -128,12 +128,12 @@ def to_general_value(value: t.ContainerValue) -> t.ContainerValue:
     if value is None:
         return None
     if isinstance(value, list):
-        normalized_values: list[t.ContainerValue] = [
+        normalized_values: Sequence[t.ContainerValue] = [
             to_general_value(item) for item in value
         ]
         return normalized_values
     if isinstance(value, Mapping):
-        normalized_mapping: dict[str, t.ContainerValue] = {}
+        normalized_mapping: Mapping[str, t.ContainerValue] = {}
         for key, item in value.items():
             normalized_mapping[str(key)] = to_general_value(item)
         return normalized_mapping

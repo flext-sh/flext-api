@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import ClassVar, Self
 
 from flext_core import FlextLogger, FlextRuntime, r
@@ -30,8 +30,8 @@ from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 from flext_api import m, t, u
 
 _JSON_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
-_STORAGE_ENTRY_ADAPTER: TypeAdapter[dict[str, t.ApiJsonValue]] = TypeAdapter(
-    dict[str, t.ApiJsonValue],
+_STORAGE_ENTRY_ADAPTER: TypeAdapter[Mapping[str, t.ApiJsonValue]] = TypeAdapter(
+    Mapping[str, t.ApiJsonValue],
 )
 
 
@@ -55,8 +55,8 @@ class FlextApiStorage:
     model_config: ClassVar[ConfigDict] = ConfigDict(
         frozen=False, arbitrary_types_allowed=True
     )
-    _storage: dict[str, t.ApiJsonValue]
-    _expiry_times: dict[str, float]
+    _storage: Mapping[str, t.ApiJsonValue]
+    _expiry_times: Mapping[str, float]
     _stats: m.Api.Storage.Stats
     _operations_count: int
     _created_at: str
@@ -65,7 +65,7 @@ class FlextApiStorage:
     _default_ttl: float | None
     _backend: str
     _flext_storage_config: t.ApiJsonValue | None
-    _flext_storage_kwargs: dict[str, t.ApiJsonValue]
+    _flext_storage_kwargs: Mapping[str, t.ApiJsonValue]
 
     def __new__(
         cls,
@@ -89,7 +89,7 @@ class FlextApiStorage:
         self.logger = FlextLogger(__name__)
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
-        storage_kwargs_typed: dict[str, t.ApiJsonValue] = {
+        storage_kwargs_typed: Mapping[str, t.ApiJsonValue] = {
             k: FlextRuntime.normalize_to_container(v) for k, v in storage_kwargs.items()
         }
         super().__init__(**storage_kwargs_typed)
@@ -111,7 +111,7 @@ class FlextApiStorage:
         """Get namespace."""
         return self._namespace
 
-    def batch_delete(self, keys: list[str]) -> r[bool]:
+    def batch_delete(self, keys: Sequence[str]) -> r[bool]:
         """Delete multiple keys efficiently."""
         try:
             all_deleted = True
@@ -125,10 +125,10 @@ class FlextApiStorage:
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(str(e))
 
-    def batch_get(self, keys: list[str]) -> r[Mapping[str, t.ApiJsonValue]]:
+    def batch_get(self, keys: Sequence[str]) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get multiple keys efficiently."""
         try:
-            result_dict: dict[str, t.ApiJsonValue] = {}
+            result_dict: Mapping[str, t.ApiJsonValue] = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.is_success:
@@ -333,12 +333,12 @@ class FlextApiStorage:
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
-    def items(self) -> r[list[tuple[str, t.ApiJsonValue]]]:
+    def items(self) -> r[Sequence[tuple[str, t.ApiJsonValue]]]:
         """Get all key-value pairs."""
         self._cleanup_expired()
-        return r[list[tuple[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
+        return r[Sequence[tuple[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
 
-    def keys(self) -> r[list[str]]:
+    def keys(self) -> r[Sequence[str]]:
         """Get all non-namespaced keys."""
         self._cleanup_expired()
 
@@ -346,7 +346,7 @@ class FlextApiStorage:
             return not k.startswith(f"{self._namespace}:")
 
         filtered_keys = u.filter(list(self._storage.keys()), key_not_namespaced)
-        return r[list[str]].ok(list(filtered_keys))
+        return r[Sequence[str]].ok(list(filtered_keys))
 
     def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage metrics using Pydantic stats model."""
@@ -364,7 +364,7 @@ class FlextApiStorage:
                 memory_usage=len(str(self._storage)),
                 namespace=self._stats.namespace,
             )
-            stats_dict: dict[str, t.ApiJsonValue] = {
+            stats_dict: Mapping[str, t.ApiJsonValue] = {
                 "total_operations": self._stats.total_operations,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
@@ -420,7 +420,7 @@ class FlextApiStorage:
         self._storage[key] = json_value
         value_json = metadata.value
         ttl_json: t.ApiJsonValue = metadata.ttl if metadata.ttl is not None else None
-        metadata_dict: dict[str, t.ApiJsonValue] = {
+        metadata_dict: Mapping[str, t.ApiJsonValue] = {
             "value": value_json,
             "timestamp": metadata.timestamp,
             "ttl": ttl_json,
@@ -446,10 +446,10 @@ class FlextApiStorage:
         self._cleanup_expired()
         return r[int].ok(len(self._storage))
 
-    def values(self) -> r[list[t.ApiJsonValue]]:
+    def values(self) -> r[Sequence[t.ApiJsonValue]]:
         """Get all values."""
         self._cleanup_expired()
-        return r[list[t.ApiJsonValue]].ok(list(self._storage.values()))
+        return r[Sequence[t.ApiJsonValue]].ok(list(self._storage.values()))
 
     def _apply_config(
         self,
@@ -700,7 +700,7 @@ class FlextApiStorage:
         try:
             if not isinstance(data, dict):
                 return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
-            data_dict: dict[str, t.ApiJsonValue] = (
+            data_dict: Mapping[str, t.ApiJsonValue] = (
                 _STORAGE_ENTRY_ADAPTER.validate_python(data)
             )
             ttl_value = data_dict.get("ttl")

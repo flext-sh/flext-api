@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from typing import override
 
 import httpx
@@ -24,10 +24,10 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     is_connected: bool
     last_event_id: str
     _connected: bool
-    _on_event_handlers: dict[str, list[Callable[..., None]]]
-    _on_connect_handlers: list[Callable[[], None]]
-    _on_disconnect_handlers: list[Callable[[], None]]
-    _on_error_handlers: list[Callable[[Exception], None]]
+    _on_event_handlers: Mapping[str, Sequence[Callable[..., None]]]
+    _on_connect_handlers: Sequence[Callable[[], None]]
+    _on_disconnect_handlers: Sequence[Callable[[], None]]
+    _on_error_handlers: Sequence[Callable[[Exception], None]]
     _retry_timeout: int
     _auto_reconnect: bool
     _connect_timeout: float
@@ -101,7 +101,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         self.initialize().tap_error(_log_initialize_error)
 
     @override
-    def get_supported_protocols(self) -> list[str]:
+    def get_supported_protocols(self) -> Sequence[str]:
         """Get list of supported protocols."""
         return [
             c.Api.SSE.Protocol.SSE,
@@ -172,7 +172,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             if options.retry_timeout is not None
             else self._retry_timeout
         )
-        events: list[dict[str, t.ContainerValue]] = []
+        events: Sequence[Mapping[str, t.ContainerValue]] = []
         retry_timeout_ms = base_retry_timeout
         attempts = 0
         while len(events) < max_events:
@@ -209,7 +209,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                     )
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
-        response: dict[str, t.ContainerValue] = {
+        response: Mapping[str, t.ContainerValue] = {
             "status_code": 200,
             "url": url_result.value,
             "method": "SSE",
@@ -241,9 +241,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         method: str,
         headers: Mapping[str, str],
         remaining: int,
-    ) -> tuple[list[dict[str, t.ContainerValue]], int | None]:
+    ) -> tuple[Sequence[Mapping[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
-        events: list[dict[str, t.ContainerValue]] = []
+        events: Sequence[Mapping[str, t.ContainerValue]] = []
         retry_timeout: int | None = None
         self._set_connected_state(connected=True)
         self._notify_connect_handlers()
@@ -282,13 +282,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     def _iter_fallback_events(
         self,
         lines: Iterator[str],
-    ) -> Iterator[dict[str, t.ContainerValue]]:
+    ) -> Iterator[Mapping[str, t.ContainerValue]]:
         event_id = ""
         event_type = ""
-        data_lines: list[str] = []
+        data_lines: Sequence[str] = []
         retry: int | None = None
 
-        def flush_event() -> dict[str, t.ContainerValue] | None:
+        def flush_event() -> Mapping[str, t.ContainerValue] | None:
             if (
                 not event_id
                 and (not event_type)
@@ -374,7 +374,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         event_type: t.ContainerValue,
         data: t.ContainerValue,
         retry: t.ContainerValue,
-    ) -> dict[str, t.ContainerValue]:
+    ) -> Mapping[str, t.ContainerValue]:
         parsed_id = str(event_id) if event_id is not None else ""
         parsed_type = str(event_type) if event_type else "message"
         parsed_data = "" if data is None else str(data)
@@ -384,7 +384,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 parsed_retry = int(retry)
             except (TypeError, ValueError):
                 parsed_retry = None
-        event_payload: dict[str, t.ContainerValue] = {
+        event_payload: Mapping[str, t.ContainerValue] = {
             "id": parsed_id,
             "event": parsed_type,
             "data": parsed_data,

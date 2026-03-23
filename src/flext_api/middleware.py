@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 from flext_api import m
 
@@ -26,7 +26,7 @@ class FlextApiMiddleware:
     @staticmethod
     def apply_pipeline(
         request: m.HttpRequest,
-        middleware_list: list[Callable[[m.HttpRequest], m.HttpRequest]],
+        middleware_list: Sequence[Callable[[m.HttpRequest], m.HttpRequest]],
     ) -> m.HttpRequest:
         """Apply middleware pipeline to request."""
         for middleware in middleware_list:

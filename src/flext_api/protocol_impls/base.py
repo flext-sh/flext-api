@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from flext_core import FlextLogger, r
 
@@ -101,7 +101,7 @@ class BaseProtocolImplementation:
             "supported_protocols": self.get_supported_protocols(),
         }
 
-    def get_supported_protocols(self) -> list[str]:
+    def get_supported_protocols(self) -> Sequence[str]:
         """Get list of supported protocols.
 
         Returns:
@@ -202,7 +202,7 @@ class BaseProtocolImplementation:
         Success response dictionary
 
         """
-        response: dict[str, t.ApiJsonValue] = {
+        response: Mapping[str, t.ApiJsonValue] = {
             "status": "success",
             "status_code": status_code,
         }

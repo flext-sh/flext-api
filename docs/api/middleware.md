@@ -217,7 +217,7 @@ from flext_api import require_roles, require_permissions
 @app.get("/REDACTED_LDAP_BIND_PASSWORD/users")
 @require_roles(["REDACTED_LDAP_BIND_PASSWORD", "superuser"])
 async def get_REDACTED_LDAP_BIND_PASSWORD_users(
-    current_user: dict[str, t.NormalizedValue] = Depends(get_current_user),
+    current_user: Mapping[str, t.NormalizedValue] = Depends(get_current_user),
 ):
     """Get all users (REDACTED_LDAP_BIND_PASSWORD only)."""
     return await REDACTED_LDAP_BIND_PASSWORD_service.get_all_users()
@@ -227,7 +227,8 @@ async def get_REDACTED_LDAP_BIND_PASSWORD_users(
 @app.post("/users/{user_id}/delete")
 @require_permissions(["user.delete"])
 async def delete_user(
-    user_id: str, current_user: dict[str, t.NormalizedValue] = Depends(get_current_user)
+    user_id: str,
+    current_user: Mapping[str, t.NormalizedValue] = Depends(get_current_user),
 ):
     """Delete user (requires delete permission)."""
     return await user_service.delete_user(user_id)
@@ -265,7 +266,7 @@ class RequestValidationMiddleware(RequestMiddleware):
 
         return r[dict].ok({})
 
-    def sanitize_data(self, data: dict) -> dict[str, t.NormalizedValue]:
+    def sanitize_data(self, data: dict) -> Mapping[str, t.NormalizedValue]:
         """Sanitize input data."""
         if isinstance(data, dict):
             return {k: self.sanitize_value(v) for k, v in data.items()}

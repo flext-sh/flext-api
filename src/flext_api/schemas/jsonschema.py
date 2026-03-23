@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TypeGuard, override
 
@@ -103,7 +103,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             "regex",
         ]
 
-    def get_supported_schemas(self) -> list[str]:
+    def get_supported_schemas(self) -> Sequence[str]:
         """Get list of supported schema types.
 
         Returns:
@@ -315,7 +315,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             has_properties="properties" in schema_dict,
             has_required="required" in schema_dict,
         )
-        properties_list: list[t.ContainerValue] = list(
+        properties_list: Sequence[t.ContainerValue] = list(
             self._schema_properties_list(schema_dict),
         )
         validated_schema: t.Api.SchemaDefinition = {
@@ -325,7 +325,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         }
         return r[t.Api.SchemaDefinition].ok(validated_schema)
 
-    def _schema_properties_list(self, schema: t.Api.SchemaDefinition) -> list[str]:
+    def _schema_properties_list(self, schema: t.Api.SchemaDefinition) -> Sequence[str]:
         """Extract properties list from schema."""
         if "properties" not in schema:
             return []
@@ -341,7 +341,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if value is None:
             return "null"
         if isinstance(value, list):
-            normalized_items: list[t.ContainerValue] = []
+            normalized_items: Sequence[t.ContainerValue] = []
             for item in value:
                 if _is_api_json_value(item):
                     normalized_items.append(self._to_general_value(item))
@@ -349,7 +349,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     normalized_items.append(str(item))
             return normalized_items
         if isinstance(value, Mapping):
-            normalized_map: dict[str, t.ContainerValue] = {}
+            normalized_map: Mapping[str, t.ContainerValue] = {}
             for key, item in value.items():
                 if _is_api_json_value(item):
                     normalized_map[str(key)] = self._to_general_value(item)

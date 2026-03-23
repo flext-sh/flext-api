@@ -242,7 +242,7 @@ class FlextApi(s[FlextApiSettings]):
         r[HttpResponse]: Response or error.
 
         """
-        request_kwargs_dict: dict[str, t.ApiJsonValue] | None = (
+        request_kwargs_dict: Mapping[str, t.ApiJsonValue] | None = (
             dict(request_kwargs.items()) if request_kwargs is not None else None
         )
         body_result = FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(

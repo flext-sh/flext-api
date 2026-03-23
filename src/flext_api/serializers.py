@@ -15,9 +15,9 @@ from pydantic import TypeAdapter, ValidationError
 from flext_api import t
 
 _MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
-    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue] | None
+    t.Scalar | Mapping[str, t.ContainerValue] | Sequence[t.ContainerValue] | None
 ] = TypeAdapter(
-    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue] | None,
+    t.Scalar | Mapping[str, t.ContainerValue] | Sequence[t.ContainerValue] | None,
 )
 
 
@@ -67,7 +67,7 @@ class FlextApiSerializers:
         @staticmethod
         def unpackb(
             data: bytes,
-        ) -> r[t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue]]:
+        ) -> r[t.Scalar | Mapping[str, t.ContainerValue] | Sequence[t.ContainerValue]]:
             """Type-safe wrapper for msgpack.unpackb().
 
             Args:
@@ -80,12 +80,16 @@ class FlextApiSerializers:
             module = _load_msgpack()
             if module is None:
                 return r[
-                    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue]
+                    t.Scalar
+                    | Mapping[str, t.ContainerValue]
+                    | Sequence[t.ContainerValue]
                 ].fail("msgpack module not available")
             unpackb_fn = getattr(module, "unpackb", None)
             if unpackb_fn is None:
                 return r[
-                    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue]
+                    t.Scalar
+                    | Mapping[str, t.ContainerValue]
+                    | Sequence[t.ContainerValue]
                 ].fail("msgpack.unpackb function not found")
             try:
                 result = unpackb_fn(data)
@@ -94,15 +98,21 @@ class FlextApiSerializers:
                     return r[
                         t.Scalar
                         | Mapping[str, t.ContainerValue]
-                        | list[t.ContainerValue]
+                        | Sequence[t.ContainerValue]
                     ].fail("msgpack deserialization returned None")
                 non_none_value: (
-                    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue]
+                    t.Scalar
+                    | Mapping[str, t.ContainerValue]
+                    | Sequence[t.ContainerValue]
                 ) = validated
                 return r[
-                    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue]
+                    t.Scalar
+                    | Mapping[str, t.ContainerValue]
+                    | Sequence[t.ContainerValue]
                 ].ok(non_none_value)
             except (ValidationError, Exception) as e:
                 return r[
-                    t.Scalar | Mapping[str, t.ContainerValue] | list[t.ContainerValue]
+                    t.Scalar
+                    | Mapping[str, t.ContainerValue]
+                    | Sequence[t.ContainerValue]
                 ].fail(f"msgpack deserialization failed: {e}")

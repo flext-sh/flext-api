@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from typing import override
 
 from flext_core import FlextLogger, FlextRuntime, r
@@ -19,7 +20,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: dict[str, t.ApiJsonValue] = {}
+        self._storage: Mapping[str, t.ApiJsonValue] = {}
         self.logger = FlextLogger(__name__)
 
     @override
@@ -75,7 +76,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
             return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
     @override
-    def keys(self) -> r[list[str]]:
+    def keys(self) -> r[Sequence[str]]:
         """Get all keys."""
         return u.try_(
             lambda: list(self._storage),

@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Mapping, Sequence
 
 from flext_core import FlextLogger, r
 
@@ -52,7 +53,7 @@ class FlextApiPlugins:
     class Protocol(_FlextApiPluginBase):
         """Abstract protocol plugin for API protocol implementations."""
 
-        def get_supported_protocols(self) -> list[str]:
+        def get_supported_protocols(self) -> Sequence[str]:
             """Get list of supported protocols."""
             return []
 
@@ -177,7 +178,7 @@ class FlextApiPlugins:
     class Manager:
         """Plugin manager for discovery, loading, and lifecycle management."""
 
-        _loaded_plugins: dict[str, FlextApiPlugins.Plugin]
+        _loaded_plugins: Mapping[str, FlextApiPlugins.Plugin]
 
         def __init__(self) -> None:
             """Initialize plugin manager."""
@@ -195,7 +196,7 @@ class FlextApiPlugins:
         def get_plugins_by_type(
             self,
             plugin_type: type[FlextApiPlugins.Plugin],
-        ) -> list[FlextApiPlugins.Plugin]:
+        ) -> Sequence[FlextApiPlugins.Plugin]:
             """Get all loaded plugins of specific type."""
             return [
                 plugin
@@ -203,7 +204,7 @@ class FlextApiPlugins:
                 if issubclass(plugin.__class__, plugin_type)
             ]
 
-        def list_loaded_plugins(self) -> list[str]:
+        def list_loaded_plugins(self) -> Sequence[str]:
             """Get list of loaded plugin names."""
             return list(self._loaded_plugins.keys())
 
@@ -222,7 +223,7 @@ class FlextApiPlugins:
 
         def shutdown_all(self) -> r[bool]:
             """Shutdown and unload all plugins."""
-            failed_plugins: list[str] = []
+            failed_plugins: Sequence[str] = []
             for plugin_name in list(self._loaded_plugins.keys()):
                 result = self.unload_plugin(plugin_name)
                 if result.is_failure:

@@ -9,9 +9,10 @@ SPDX-License-Identifier: Proprietary
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from importlib.metadata import metadata
 
-_metadata_map: dict[str, str] = {}
+_metadata_map: Mapping[str, str] = {}
 try:
     _metadata = metadata("flext_api")
     for key in _metadata:
