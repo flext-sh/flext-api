@@ -132,13 +132,13 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     ) -> r[m.Api._HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
-            options = m.Api._HttpClientRequestOptions.model_validate(kwargs)
+            options = m.Api._HttpClientRequestOptions.model_validate(kwargs)  # noqa: SLF001 — internal model within same package
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
             )
-            return r[m.Api._HttpClientRequestOptions].fail(str(details))
-        return r[m.Api._HttpClientRequestOptions].ok(options)
+            return r[m.Api._HttpClientRequestOptions].fail(str(details))  # noqa: SLF001 — internal model within same package
+        return r[m.Api._HttpClientRequestOptions].ok(options)  # noqa: SLF001 — internal model within same package
 
     def _create_response_from_httpx(
         self,

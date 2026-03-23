@@ -293,7 +293,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         try:
-            options = m.Api._SendRequestWsOptions.model_validate(kwargs)
+            options = m.Api._SendRequestWsOptions.model_validate(kwargs)  # noqa: SLF001 — internal model within same package
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
@@ -415,7 +415,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         if body is not None:
             if isinstance(body, (str, bytes)):
                 try:
-                    parsed = m.Api._InboundMessage(message=body)
+                    parsed = m.Api._InboundMessage(message=body)  # noqa: SLF001 — internal model within same package
                     return r[str | bytes].ok(parsed.message)
                 except ValidationError:
                     return r[str | bytes].ok(str(body))
@@ -444,7 +444,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             try:
                 message = self._connection.recv()
                 try:
-                    inbound = m.Api._InboundMessage(message=message)
+                    inbound = m.Api._InboundMessage(message=message)  # noqa: SLF001 — internal model within same package
                 except ValidationError:
                     pass
                 else:

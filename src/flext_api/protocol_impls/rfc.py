@@ -155,7 +155,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "headers" not in request:
             return {}
         try:
-            parsed = m.Api._HeadersRequest.model_validate(request)
+            parsed = m.Api._HeadersRequest.model_validate(request)  # noqa: SLF001 — internal model within same package
         except ValidationError:
             return {}
         normalized_headers: Mapping[str, str] = {}
@@ -174,7 +174,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = m.Api._MethodRequest.model_validate(request)
+            parsed = m.Api._MethodRequest.model_validate(request)  # noqa: SLF001 — internal model within same package
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
             return r[str].fail(str(details))
@@ -194,7 +194,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "timeout" in request:
             try:
-                parsed = m.Api._TimeoutRequest.model_validate(request)
+                parsed = m.Api._TimeoutRequest.model_validate(request)  # noqa: SLF001 — internal model within same package
                 return parsed.timeout
             except ValidationError:
                 return float(c.Api.DEFAULT_TIMEOUT)
@@ -213,7 +213,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if "url" not in request:
             return r[str].fail("URL is required in request (RFC 7230)")
         try:
-            parsed = m.Api._UrlRequest.model_validate(request)
+            parsed = m.Api._UrlRequest.model_validate(request)  # noqa: SLF001 — internal model within same package
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
             return r[str].fail(str(details))
@@ -317,7 +317,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         try:
-            parsed = m.Api._StatusCodeValue(status_code=status_code)
+            parsed = m.Api._StatusCodeValue(status_code=status_code)  # noqa: SLF001 — internal model within same package
         except ValidationError:
             return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
