@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from flext_core import r
 
-from flext_api.server import FlextApiServer
-from flext_api.webhook import FlextWebhookHandler
+from flext_api import FlextApiServer, FlextWebhookHandler
 
 
 class FlextApiServerFactory:

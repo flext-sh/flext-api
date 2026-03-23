@@ -17,11 +17,8 @@ import yaml
 from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import t
-
 # Import field models from canonical models.py location
-from flext_api.models import FlextApiModels
-from flext_api.utilities import u
+from flext_api import FlextApiModels, t, u
 
 DictField = FlextApiModels.Api.DictField
 StringField = FlextApiModels.Api.StringField

@@ -29,7 +29,7 @@ This section covers the schema generation and validation capabilities for OpenAP
 Generate OpenAPI 3.0 specifications from FastAPI applications and FLEXT models.
 
 ```python
-from flext_api.schemas.openapi import OpenApiSchema
+from flext_api import OpenApiSchema
 from flext_api import create_fastapi_app
 
 # Create FastAPI application
@@ -61,7 +61,7 @@ schema_generator.export_to_file("openapi.yaml")
 
 ```python
 # Custom OpenAPI configuration
-from flext_api.schemas.openapi import OpenApiConfig
+from flext_api import OpenApiConfig
 
 config = OpenApiConfig(
     title="Enterprise API",
@@ -85,7 +85,7 @@ schema = OpenApiSchema(app, config=config)
 Generate AsyncAPI 2.0 specifications for event-driven architectures and WebSocket APIs.
 
 ```python
-from flext_api.schemas.asyncapi import AsyncApiSchema
+from flext_api import AsyncApiSchema
 
 # Define AsyncAPI configuration
 asyncapi_config = {
@@ -119,7 +119,7 @@ schema_generator.export_to_file("asyncapi.yaml")
 Generate JSON Schema specifications for data validation and API contracts.
 
 ```python
-from flext_api.schemas.jsonschema import JsonSchema
+from flext_api import JsonSchema
 from flext_api import FlextApiModels
 from typing import Optional
 
@@ -152,7 +152,7 @@ print(f"Properties: {list(json_schema.properties.keys())}")
 ### Schema Validation
 
 ```python
-from flext_api.schemas.jsonschema import JsonSchemaValidator
+from flext_api import JsonSchemaValidator
 
 # Create validator
 validator = JsonSchemaValidator(json_schema)
@@ -178,7 +178,7 @@ validation_result = validator.validate_with_context(
 Automatic schema generation for FastAPI applications with OpenAPI integration.
 
 ```python
-from flext_api.schemas.openapi import FastApiOpenApiIntegration
+from flext_api import FastApiOpenApiIntegration
 
 # Integrate with FastAPI application
 integration = FastApiOpenApiIntegration(app)
@@ -209,7 +209,7 @@ openapi_spec = integration.generate_complete_spec()
 Extend schemas with custom fields and metadata.
 
 ```python
-from flext_api.schemas.jsonschema import JsonSchemaExtension
+from flext_api import JsonSchemaExtension
 
 # Add custom extensions
 extension = JsonSchemaExtension()
@@ -240,8 +240,8 @@ extended_schema = extension.apply_to_schema(json_schema)
 ### Complete Schema Generation Workflow
 
 ```python
-from flext_api.schemas.openapi import OpenApiSchema, OpenApiConfig
-from flext_api.schemas.jsonschema import JsonSchema
+from flext_api import OpenApiSchema, OpenApiConfig
+from flext_api import JsonSchema
 from flext_api import create_fastapi_app
 
 # 1. Create FastAPI application
@@ -294,7 +294,7 @@ print(f"JSON Schema properties: {len(user_request_schema.properties)}")
 ### Schema Validation in Production
 
 ```python
-from flext_api.schemas.jsonschema import JsonSchemaValidator, SchemaValidationError
+from flext_api import JsonSchemaValidator, SchemaValidationError
 
 
 def validate_user_request(data: dict) -> tuple[bool, t.StringList]:

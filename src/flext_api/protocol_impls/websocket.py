@@ -26,8 +26,7 @@ from flext_core import r
 from pydantic import ConfigDict, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import c, m, t
-from flext_api.protocol_impls.rfc import RFCProtocolImplementation
+from flext_api import RFCProtocolImplementation, c, m, t
 
 
 class WebSocketProtocolPlugin(RFCProtocolImplementation):

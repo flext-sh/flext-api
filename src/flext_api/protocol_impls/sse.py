@@ -15,8 +15,7 @@ from flext_core import r
 from httpx_sse import connect_sse
 from pydantic import ValidationError
 
-from flext_api import c, m, t
-from flext_api.protocol_impls.rfc import RFCProtocolImplementation
+from flext_api import RFCProtocolImplementation, c, m, t
 
 
 class SSEProtocolPlugin(RFCProtocolImplementation):

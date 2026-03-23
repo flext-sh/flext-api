@@ -51,7 +51,7 @@ Protocol Layer
 Primary protocol implementation for REST APIs and HTTP-based communication.
 
 ```python
-from flext_api.protocol_impls.http import FlextWeb
+from flext_api import FlextWeb
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -102,7 +102,7 @@ if result.is_success:
 ### HTTP Request/Response Models
 
 ```python
-from flext_api.protocol_impls.http import (
+from flext_api import (
     FlextApiModels.HttpRequest,
     FlextApiModels.HttpResponse,
     FlextWebHeaders,
@@ -134,7 +134,7 @@ if response.is_success:
 Protocol implementation for GraphQL APIs with query and mutation support.
 
 ```python
-from flext_api.protocol_impls.graphql import GraphQL
+from flext_api import GraphQL
 
 # Create GraphQL protocol
 graphql_protocol = GraphQL
@@ -215,7 +215,7 @@ result = graphql_protocol.execute_mutation(mutation, mutation_variables)
 Protocol implementation for WebSocket connections and real-time messaging.
 
 ```python
-from flext_api.protocol_impls.websocket import WebSocket
+from flext_api import WebSocket
 
 # Create WebSocket protocol
 websocket_protocol = WebSocket
@@ -258,7 +258,7 @@ if connection_result.is_success:
 Protocol implementation for Server-Sent Events (SSE) for real-time data streaming.
 
 ```python
-from flext_api.protocol_impls.sse import ServerSentEvent
+from flext_api import ServerSentEvent
 
 # Create SSE protocol
 sse_protocol = ServerSentEvent
@@ -297,7 +297,7 @@ if stream_result.is_success:
 Protocol implementation for various storage backends (local filesystem, cloud storage, etc.).
 
 ```python
-from flext_api.protocol_impls.storage_backend import StorageBackend
+from flext_api import StorageBackend
 
 # Create storage protocol
 storage_protocol = StorageBackend
@@ -347,7 +347,7 @@ if list_result.is_success:
 Stub implementation for gRPC services using Protocol Buffers.
 
 ```python
-from flext_api.protocol_stubs.grpc_stub import GrpcStub
+from flext_api import GrpcStub
 
 # Create gRPC stub
 grpc_stub = GrpcStub(
@@ -375,7 +375,7 @@ if response.is_success:
 Stub for Protocol Buffer serialization/deserialization.
 
 ```python
-from flext_api.protocol_stubs.protobuf_stub import ProtobufStub
+from flext_api import ProtobufStub
 
 # Create protobuf stub
 protobuf_stub = ProtobufStub()
@@ -406,9 +406,9 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ```python
 from flext_api import FlextApiClient
-from flext_api.protocol_impls.http import FlextWeb
-from flext_api.protocol_impls.graphql import GraphQL
-from flext_api.protocol_impls.websocket import WebSocket
+from flext_api import FlextWeb
+from flext_api import GraphQL
+from flext_api import WebSocket
 
 
 class MultiProtocolClient:
@@ -470,8 +470,8 @@ print(f"GraphQL user: {user_graphql['name']}")
 
 ```python
 from flext_api import ProtocolRegistry
-from flext_api.protocol_impls.http import FlextWeb
-from flext_api.protocol_impls.graphql import GraphQL
+from flext_api import FlextWeb
+from flext_api import GraphQL
 
 # Register protocols
 registry = ProtocolRegistry()

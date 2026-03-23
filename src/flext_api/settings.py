@@ -15,7 +15,7 @@ from typing import Annotated
 from flext_core import FlextModels
 from pydantic import Field
 
-from flext_api.constants import FlextApiConstants as c
+from flext_api import c
 
 
 class FlextApiSettings(FlextModels.Value):

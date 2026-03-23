@@ -16,8 +16,7 @@ from collections.abc import Mapping
 from flext_core import r
 from pydantic import ValidationError
 
-from flext_api import c, m, t
-from flext_api.protocol_impls.base import BaseProtocolImplementation
+from flext_api import BaseProtocolImplementation, c, m, t
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):

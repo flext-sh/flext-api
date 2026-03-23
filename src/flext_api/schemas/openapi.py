@@ -21,8 +21,7 @@ from typing import override
 
 from flext_core import r
 
-from flext_api import FlextApiPlugins, t, u
-from flext_api.schemas import _shared
+from flext_api import FlextApiPlugins, _shared, t, u
 
 
 class OpenAPISchemaValidator(FlextApiPlugins.Schema):

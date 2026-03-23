@@ -16,8 +16,7 @@ import cbor2
 from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import m, t, u
-from flext_api.serializers import FlextApiSerializers
+from flext_api import FlextApiSerializers, m, t, u
 
 _HEADERS_ADAPTER: TypeAdapter[dict[str, str]] = TypeAdapter(dict[str, str])
 _HTTP_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(

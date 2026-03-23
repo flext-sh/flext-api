@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 from flext_tests import tm
 
-from flext_api.serializers import FlextApiSerializers
+from flext_api import FlextApiSerializers
 from tests import t
 
 
