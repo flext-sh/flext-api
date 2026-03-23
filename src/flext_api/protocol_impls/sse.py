@@ -140,7 +140,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 validation_result.error or "Request validation failed",
             )
         try:
-            options = m.Api._SendRequestSseOptions.model_validate(kwargs)  # noqa: SLF001 — internal model within same package
+            options = m.Api._SendRequestSseOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[Mapping[str, t.ContainerValue]].fail(str(details))
