@@ -13,14 +13,14 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from . import unit as unit
-    from .constants import FlextApiTestConstants, FlextApiTestConstants as c
-    from .models import FlextApiTestModels, FlextApiTestModels as m
-    from .protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
-    from .typings import FlextApiTestTypes, FlextApiTestTypes as t
-    from .unit.test_serializers import TestMessagePackUnpackb
-    from .unit.test_smoke import test_package_imports_main_facade
-    from .utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
+    from tests import unit
+    from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
+    from tests.models import FlextApiTestModels, FlextApiTestModels as m
+    from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
+    from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
+    from tests.unit.test_serializers import TestMessagePackUnpackb
+    from tests.unit.test_smoke import test_package_imports_main_facade
+    from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextApiTestConstants": ("tests.constants", "FlextApiTestConstants"),
