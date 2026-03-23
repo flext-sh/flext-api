@@ -1,7 +1,6 @@
 # 003. Protocol Plugin Architecture
 
 <!-- TOC START -->
-
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -14,10 +13,10 @@
   - [Option 2: Inheritance Hierarchy](#option-2-inheritance-hierarchy)
   - [Option 3: Facade Pattern Only](#option-3-facade-pattern-only)
 - [Implementation Architecture](#implementation-architecture)
-  - [Interface](#protocol-interface)
-  - [Registry](#protocol-registry)
+  - [Protocol Interface](#protocol-interface)
+  - [Protocol Registry](#protocol-registry)
   - [Unified Client Interface](#unified-client-interface)
-- [Implementations](#protocol-implementations)
+- [Protocol Implementations](#protocol-implementations)
   - [HTTP Protocol](#http-protocol)
   - [GraphQL Protocol](#graphql-protocol)
 - [Usage Examples](#usage-examples)
@@ -25,7 +24,7 @@
   - [GraphQL Usage](#graphql-usage)
   - [WebSocket Usage](#websocket-usage)
 - [Testing Strategy](#testing-strategy)
-  - [Isolation Testing](#protocol-isolation-testing)
+  - [Protocol Isolation Testing](#protocol-isolation-testing)
   - [Integration Testing](#integration-testing)
 - [Performance Considerations](#performance-considerations)
   - [Connection Pooling](#connection-pooling)
@@ -34,14 +33,13 @@
 - [Extension Points](#extension-points)
   - [Adding New Protocols](#adding-new-protocols)
 - [Monitoring and Observability](#monitoring-and-observability)
-  - [Metrics](#protocol-metrics)
+  - [Protocol Metrics](#protocol-metrics)
   - [Health Checks](#health-checks)
 - [Migration Strategy](#migration-strategy)
   - [Phase 1: Core Architecture](#phase-1-core-architecture)
   - [Phase 2: Additional Protocols](#phase-2-additional-protocols)
   - [Phase 3: Ecosystem Integration](#phase-3-ecosystem-integration)
 - [References](#references)
-
 <!-- TOC END -->
 
 Date: 2025-01-01

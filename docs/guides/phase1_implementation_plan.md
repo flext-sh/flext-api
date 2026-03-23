@@ -1,7 +1,6 @@
 # Phase 1 Implementation Plan: HTTP Foundation Core
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Phase Objectives](#phase-objectives)
   - [Primary Goals](#primary-goals)
@@ -41,7 +40,6 @@
 - [Lessons Learned & Best Practices](#lessons-learned-best-practices)
   - [Implementation Insights](#implementation-insights)
   - [Architectural Decisions](#architectural-decisions)
-
 <!-- TOC END -->
 
 ## Overview

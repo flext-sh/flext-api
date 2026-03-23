@@ -1,7 +1,6 @@
 # HTTP Client Guide
 
 <!-- TOC START -->
-
 - [HTTP Client Basics](#http-client-basics)
   - [Creating HTTP Clients](#creating-http-clients)
   - [HTTP Methods](#http-methods)
@@ -33,7 +32,6 @@
   - [Sensitive Data Handling](#sensitive-data-handling)
 - [Troubleshooting](#troubleshooting)
   - [Common Issues](#common-issues)
-
 <!-- TOC END -->
 
 Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, error handling, and advanced features.

@@ -1,7 +1,6 @@
 # Testing Plan & Strategy
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Test Categories & Structure](#test-categories-structure)
   - [1. Unit Tests (Primary Focus)](#1-unit-tests-primary-focus)
@@ -34,7 +33,6 @@
   - [Test Reliability Risks](#test-reliability-risks)
   - [Coverage Gaps](#coverage-gaps)
   - [Maintenance Overhead](#maintenance-overhead)
-
 <!-- TOC END -->
 
 ## Overview

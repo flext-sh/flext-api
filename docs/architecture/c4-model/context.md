@@ -1,7 +1,6 @@
 # C4 Model - System Context
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [System Context Diagram](#system-context-diagram)
 - [Context Description](#context-description)
@@ -19,7 +18,6 @@
 - [Risk Assessment](#risk-assessment)
   - [High Risk Items](#high-risk-items)
   - [Mitigation Strategies](#mitigation-strategies)
-
 <!-- TOC END -->
 
 ## Overview

@@ -1,7 +1,6 @@
 # FLEXT-API
 
 <!-- TOC START -->
-
 - [🚀 Overview](#overview)
   - [🎯 Core Features](#core-features)
   - [🏢 Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
@@ -22,7 +21,6 @@
   - [Immediate (Next Release)](#immediate-next-release)
   - [Short-term (Next Month)](#short-term-next-month)
   - [Long-term (Next Quarter)](#long-term-next-quarter)
-
 <!-- TOC END -->
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)

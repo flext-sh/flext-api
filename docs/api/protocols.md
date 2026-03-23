@@ -1,28 +1,26 @@
 # Protocols API Reference
 
 <!-- TOC START -->
-
-- [Architecture](#protocol-architecture)
+- [Protocol Architecture](#protocol-architecture)
 - [HTTP Protocol Implementation](#http-protocol-implementation)
-  - [FlextWebREST Implementation](#flextwebprotocol-httprest-implementation)
+  - [FlextWebREST Implementation](#flextwebrest-implementation)
   - [HTTP Request/Response Models](#http-requestresponse-models)
 - [GraphQL Protocol Implementation](#graphql-protocol-implementation)
-  - [GraphQLQL Support](#graphqlprotocol-graphql-support)
+  - [GraphQLQL Support](#graphqlql-support)
   - [GraphQL Operations](#graphql-operations)
 - [WebSocket Protocol Implementation](#websocket-protocol-implementation)
-  - [WebSockettime Communication](#websocketprotocol-real-time-communication)
+  - [WebSockettime Communication](#websockettime-communication)
 - [Server-Sent Events Protocol](#server-sent-events-protocol)
-  - [ServerSentEventay Streaming](#serversenteventprotocol-one-way-streaming)
+  - [ServerSentEventay Streaming](#serversenteventay-streaming)
 - [Storage Backend Protocol](#storage-backend-protocol)
-  - [StorageBackendObject Storage](#storagebackendprotocol-fileobject-storage)
-- [#protocol-stubs)
+  - [StorageBackendObject Storage](#storagebackendobject-storage)
+- [Protocol Stubs](#protocol-stubs)
   - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub-grpc-protocol-buffers)
   - [Protobuf Stub - Binary Serialization](#protobuf-stub-binary-serialization)
 - [Quality Metrics](#quality-metrics)
 - [Usage Examples](#usage-examples)
   - [Multi-Protocol API Client](#multi-protocol-api-client)
-  - [System](#protocol-plugin-system)
-
+  - [Protocol Plugin System](#protocol-plugin-system)
 <!-- TOC END -->
 
 This section covers the protocol implementations and stubs that enable FLEXT-API to support multiple communication protocols through a plugin architecture.

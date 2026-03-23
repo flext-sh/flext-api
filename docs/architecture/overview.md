@@ -1,15 +1,14 @@
 # Architecture Overview
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Layer Details](#layer-details)
   - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
   - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
   - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
-- [Plugin System](#protocol-plugin-system)
-  - [y](#protocol-registry)
-  - [ce](#protocol-interface)
+- [Protocol Plugin System](#protocol-plugin-system)
+  - [Protocol Registry](#protocol-registry)
+  - [Protocol Interface](#protocol-interface)
 - [HTTP Client Architecture](#http-client-architecture)
   - [FlextApiClient Design](#flextapiclient-design)
   - [Request Processing Pipeline](#request-processing-pipeline)
@@ -44,7 +43,6 @@
 - [Migration Guidelines](#migration-guidelines)
   - [Version Compatibility](#version-compatibility)
 - [References](#references)
-
 <!-- TOC END -->
 
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.

@@ -1,7 +1,6 @@
 # 002. Railway-Oriented Error Handling
 
 <!-- TOC START -->
-
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -26,7 +25,6 @@
   - [Error Message Standards](#error-message-standards)
   - [Performance Considerations](#performance-considerations)
 - [References](#references)
-
 <!-- TOC END -->
 
 Date: 2025-01-01

@@ -1,15 +1,14 @@
 # C4 Model - Code
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Code Diagram](#code-diagram)
 - [Code Structure Analysis](#code-structure-analysis)
   - [Core Module Relationships](#core-module-relationships)
   - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-- [Implementation Details](#protocol-implementation-details)
-  - [cture](#protocol-architecture)
-  - [y Pattern](#protocol-registry-pattern)
+- [Protocol Implementation Details](#protocol-implementation-details)
+  - [Protocol Architecture](#protocol-architecture)
+  - [Protocol Registry Pattern](#protocol-registry-pattern)
 - [Dependency Injection Pattern](#dependency-injection-pattern)
   - [FlextContainer Integration](#flextcontainer-integration)
 - [Error Handling Architecture](#error-handling-architecture)
@@ -26,7 +25,6 @@
   - [Response Caching](#response-caching)
 - [Security Implementation](#security-implementation)
   - [Authentication Handlers](#authentication-handlers)
-
 <!-- TOC END -->
 
 ## Overview

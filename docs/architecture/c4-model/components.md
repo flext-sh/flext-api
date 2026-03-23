@@ -1,13 +1,12 @@
 # C4 Model - Components
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Component Diagram](#component-diagram)
 - [Component Descriptions](#component-descriptions)
   - [HTTP Client Components](#http-client-components)
   - [FastAPI Application Components](#fastapi-application-components)
-  - [Layer Components](#protocol-layer-components)
+  - [Protocol Layer Components](#protocol-layer-components)
   - [Storage Layer Components](#storage-layer-components)
   - [Configuration Layer Components](#configuration-layer-components)
 - [Component Interactions](#component-interactions)
@@ -19,7 +18,6 @@
   - [Reliability](#reliability)
   - [Security](#security)
   - [Maintainability](#maintainability)
-
 <!-- TOC END -->
 
 ## Overview

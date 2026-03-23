@@ -1,7 +1,6 @@
 # Architecture Documentation
 
 <!-- TOC START -->
-
 - [📚 Documentation Structure](#documentation-structure)
 - [🏗️ Architecture Framework](#architecture-framework)
   - [Architectural Principles](#architectural-principles)
@@ -34,7 +33,6 @@
   - [Documentation Tools](#documentation-tools)
   - [Industry Standards](#industry-standards)
 - [🎯 Architecture Vision](#architecture-vision)
-
 <!-- TOC END -->
 
 This directory contains comprehensive architecture documentation for the FLEXT-API project, following industry best practices and modern documentation standards.

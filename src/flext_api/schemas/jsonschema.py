@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import TypeGuard, override
+from typing import TypeIs, override
 
 import yaml
 from flext_core import r
@@ -31,13 +31,13 @@ _JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(
 )
 
 
-def _is_api_json_value(value: t.ContainerValue) -> TypeGuard[t.ApiJsonValue]:
+def _is_api_json_value(value: t.ContainerValue) -> TypeIs[t.ApiJsonValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
 def _is_object_mapping(
     value: t.ApiJsonValue,
-) -> TypeGuard[Mapping[str, t.ContainerValue]]:
+) -> TypeIs[Mapping[str, t.ContainerValue]]:
     return isinstance(value, Mapping)
 
 
