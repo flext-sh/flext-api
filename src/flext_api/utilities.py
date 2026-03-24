@@ -69,7 +69,7 @@ class FlextApiUtilities(FlextWebUtilities):
                         raise ValueError(msg)
                     return enum_cls(v) if not isinstance(v, enum_cls) else v
 
-                annotated: type[E] = Annotated[  # type: ignore[assignment]
+                annotated: type[E] = Annotated[
                     enum_cls,
                     BeforeValidator(_coerce),
                 ]
