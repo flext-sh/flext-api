@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import override
 
 from flext_core import r
@@ -69,7 +69,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self._validate_responses = validate_responses
         self._cached_schemas: Mapping[str, Mapping[str, t.ContainerValue]] = {}
 
-    def get_supported_schemas(self) -> Sequence[str]:
+    def get_supported_schemas(self) -> t.StrSequence:
         """Get list of supported schema types.
 
         Returns:
@@ -206,7 +206,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             "paths": paths_keys,
         })
 
-    def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> Sequence[str]:
+    def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> t.StrSequence:
         """Extract path keys from validated paths t.NormalizedValue."""
         paths_result = _shared.parse_dict_field(paths_value, "paths")
         return paths_result.fold(

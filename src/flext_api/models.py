@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
@@ -84,7 +84,7 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(
                     default_factory=dict,
                     description="HTTP request headers",
@@ -144,7 +144,7 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(
                     default_factory=dict,
                     description="HTTP response headers",
@@ -307,7 +307,7 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(
                     default_factory=dict,
                     description="Default headers for all requests",
@@ -343,11 +343,9 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             page_size: Annotated[
-                int,
+                t.BatchSize,
                 Field(
                     default=c.DEFAULT_PAGE_SIZE,
-                    ge=c.MIN_PAGE_SIZE,
-                    le=c.MAX_PAGE_SIZE,
                     description="Items per page",
                 ),
             ]
@@ -458,7 +456,7 @@ class FlextApiModels(FlextWebModels):
                     return self.params[name]
                 return ""
 
-            def with_param(self, name: str, value: str | Sequence[str]) -> Self:
+            def with_param(self, name: str, value: str | t.StrSequence) -> Self:
                 """Return new instance with updated parameter (functional pattern)."""
                 updated_params = {**self.params, name: value}
                 return self.model_copy(update={"params": updated_params})
@@ -467,7 +465,7 @@ class FlextApiModels(FlextWebModels):
             """HTTP headers model (immutable value t.NormalizedValue)."""
 
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(
                     default_factory=dict,
                     description="HTTP headers",
@@ -508,7 +506,7 @@ class FlextApiModels(FlextWebModels):
             base_url: str | None = None,
             timeout: float | None = None,
             max_retries: int | None = None,
-            headers: Mapping[str, str] | None = None,
+            headers: t.StrMapping | None = None,
             *,
             verify_ssl: bool = True,
         ) -> FlextApiModels.Api.ClientConfig:
@@ -536,7 +534,7 @@ class FlextApiModels(FlextWebModels):
                 max_retries if max_retries is not None else c.DEFAULT_MAX_RETRY_ATTEMPTS
             )
             if headers is None:
-                config_headers: Mapping[str, str] = {}
+                config_headers: t.StrMapping = {}
             else:
                 config_headers = dict(headers.items())
 
@@ -557,7 +555,7 @@ class FlextApiModels(FlextWebModels):
             cls,
             status_code: int,
             body: t.Api.ResponseBody | None = None,
-            headers: Mapping[str, str] | None = None,
+            headers: t.StrMapping | None = None,
             request_id: str | None = None,
         ) -> FlextApiModels.Api.HttpResponse:
             """Create HttpResponse from parameters.
@@ -575,7 +573,7 @@ class FlextApiModels(FlextWebModels):
             # Use model defaults - body defaults to empty dict, not None
             response_body: t.Api.ResponseBody = body if body is not None else {}
             if headers is None:
-                response_headers: Mapping[str, str] = {}
+                response_headers: t.StrMapping = {}
             else:
                 response_headers = dict(headers.items())
             response_id: str = request_id if request_id is not None else ""
@@ -623,11 +621,11 @@ class FlextApiModels(FlextWebModels):
             method: Annotated[str, Field(..., description="HTTP method")]
             url: Annotated[str, Field(..., description="Request URL")]
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(default_factory=dict, description="HTTP headers"),
             ]
             params: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(default_factory=dict, description="Query parameters"),
             ]
             json_body: Annotated[
@@ -663,7 +661,7 @@ class FlextApiModels(FlextWebModels):
             )
 
             params: Annotated[
-                Mapping[str, str] | None,
+                t.StrMapping | None,
                 Field(default=None, description="Query parameters"),
             ]
             json_data: Annotated[
@@ -683,14 +681,14 @@ class FlextApiModels(FlextWebModels):
                 Field(default=None, description="Request timeout"),
             ]
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(default_factory=dict, description="Request headers"),
             ]
 
         class _HeadersRequest(FlextModels.Value):
             """Encapsulates RFC header constraint for requests."""
 
-            headers: Annotated[Mapping[str, str], Field(default_factory=dict)]
+            headers: Annotated[t.StrMapping, Field(default_factory=dict)]
 
         class _MethodRequest(FlextModels.Value):
             """Encapsulates RFC method constraint for requests."""
@@ -720,7 +718,7 @@ class FlextApiModels(FlextWebModels):
         class _TimeoutRequest(FlextModels.Value):
             """Encapsulates timeout constraints for RFC request URLs."""
 
-            timeout: Annotated[float, Field(gt=0)]
+            timeout: Annotated[t.PositiveTimeout, Field(...)]
 
         class _UrlRequest(FlextModels.Value):
             """Encapsulates URL validation constraints for RFC requests."""
@@ -741,17 +739,21 @@ class FlextApiModels(FlextWebModels):
         class _StatusCodeValue(FlextModels.Value):
             """Validates status code values according to RFC conventions."""
 
-            status_code: Annotated[int, Field(ge=100, le=599)]
+            status_code: Annotated[t.HttpStatusCode, Field(...)]
 
         class _SendRequestSseOptions(FlextModels.Value):
             """Options for SSE request sending behavior."""
 
             method: Annotated[str, Field(default="GET", min_length=1)]
-            max_events: Annotated[int, Field(default=1, ge=1)]
+            max_events: Annotated[t.PositiveInt, Field(default=1)]
             auto_reconnect: Annotated[bool | None, Field(default=None)]
-            reconnect_max_attempts: Annotated[int | None, Field(default=None, ge=0)]
-            reconnect_backoff_factor: Annotated[float | None, Field(default=None, gt=0)]
-            retry_timeout: Annotated[int | None, Field(default=None, ge=0)]
+            reconnect_max_attempts: Annotated[
+                t.NonNegativeInt | None, Field(default=None)
+            ]
+            reconnect_backoff_factor: Annotated[
+                t.PositiveFloat | None, Field(default=None)
+            ]
+            retry_timeout: Annotated[t.NonNegativeInt | None, Field(default=None)]
 
         class _SendRequestWsOptions(FlextModels.Value):
             """Options for sending a WebSocket message request."""
@@ -812,7 +814,6 @@ class FlextApiModels(FlextWebModels):
     Error = Api.Error
     QueryParams = Api.QueryParams
     Headers = Api.Headers
-    HttpPagination = Api.PaginationInfo  # Alias for backward compatibility
     DictField = Api.DictField
     StringField = Api.StringField
     IntField = Api.IntField

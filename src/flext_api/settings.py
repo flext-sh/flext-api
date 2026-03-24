@@ -10,10 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Annotated
 
-from flext_core import FlextModels
+from flext_core import FlextModels, t
 from pydantic import Field
 
 from flext_api import c
@@ -30,18 +29,16 @@ class FlextApiSettings(FlextModels.Value):
         ),
     ]
     timeout: Annotated[
-        float,
+        t.PositiveTimeout,
         Field(
             default=c.Api.DEFAULT_TIMEOUT,
-            gt=0.0,
             description="Default request timeout in seconds",
         ),
     ]
     max_retries: Annotated[
-        int,
+        t.RetryCount,
         Field(
             default=c.DEFAULT_MAX_RETRY_ATTEMPTS,
-            ge=0,
             description="Maximum retry attempts",
         ),
     ]
@@ -50,14 +47,14 @@ class FlextApiSettings(FlextModels.Value):
         Field(default=True, description="Enable TLS certificate check"),
     ]
     default_headers: Annotated[
-        Mapping[str, str],
+        t.StrMapping,
         Field(
             default_factory=dict,
             description="Default headers applied to all requests",
         ),
     ]
     headers: Annotated[
-        Mapping[str, str],
+        t.StrMapping,
         Field(
             default_factory=dict,
             description="Compatibility headers bag",

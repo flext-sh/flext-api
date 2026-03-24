@@ -95,7 +95,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             route_key = f"{prefix}{method}:{path}" if prefix else f"{method}:{path}"
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
-            options_json: Mapping[str, t.Scalar] = dict(options.items())
+            options_json: t.ConfigurationMapping = dict(options.items())
             route_data: t.Api.RouteData = {
                 "path": path,
                 "method": method,
@@ -391,7 +391,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         return self._lifecycle_manager.port
 
     @property
-    def protocols(self) -> Sequence[str]:
+    def protocols(self) -> t.StrSequence:
         """Get registered protocols."""
         return list(self._protocol_handlers.keys())
 
@@ -429,7 +429,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
-        options_typed: Mapping[str, t.Scalar] = dict(options.items())
+        options_typed: t.ConfigurationMapping = dict(options.items())
         return self._route_registry.register(
             "GRAPHQL",
             path,
@@ -474,7 +474,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
-        options_typed: Mapping[str, t.Scalar] = dict(options.items())
+        options_typed: t.ConfigurationMapping = dict(options.items())
         return self._route_registry.register(
             method,
             path,
@@ -491,7 +491,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
-        options_typed: Mapping[str, t.Scalar] = dict(options.items())
+        options_typed: t.ConfigurationMapping = dict(options.items())
         return self._route_registry.register(
             "SSE",
             path,
@@ -508,7 +508,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
-        options_typed: Mapping[str, t.Scalar] = dict(options.items())
+        options_typed: t.ConfigurationMapping = dict(options.items())
         return self._route_registry.register(
             "WS",
             path,

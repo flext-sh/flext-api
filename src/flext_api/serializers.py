@@ -6,7 +6,7 @@ Provides type-safe wrappers for untyped serialization libraries like msgpack.
 from __future__ import annotations
 
 import importlib
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from types import ModuleType
 
 from flext_core import r
@@ -40,7 +40,7 @@ class FlextApiSerializers:
         def packb(
             obj: Mapping[
                 str,
-                t.Scalar | Sequence[t.Scalar] | t.ContainerValueMapping | None,
+                t.Scalar | t.ScalarList | t.ContainerValueMapping | None,
             ]
             | t.ApiJsonValue,
         ) -> bytes:

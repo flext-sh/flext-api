@@ -156,7 +156,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         self,
         method: str,
         full_url: str,
-        headers: Mapping[str, str],
+        headers: t.StrMapping,
         options: m.Api._HttpClientRequestOptions,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute request using typed options."""
@@ -200,7 +200,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     def _prepare_request_headers(
         self,
         options: m.Api._HttpClientRequestOptions,
-    ) -> Mapping[str, str]:
+    ) -> t.StrMapping:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)
         headers.update(options.headers)

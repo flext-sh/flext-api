@@ -48,9 +48,9 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
     def _convert_kwargs_to_context(
         self,
         kwargs: Mapping[str, t.ApiJsonValue],
-    ) -> Mapping[str, t.Container]:
+    ) -> t.FlatContainerMapping:
         """Convert kwargs to context dict for logger compatibility."""
-        context: Mapping[str, t.Container] = {}
+        context: t.FlatContainerMapping = {}
         for key, value in kwargs.items():
             if u.is_container(value):
                 context[key] = value

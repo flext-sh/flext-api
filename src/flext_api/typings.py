@@ -49,8 +49,8 @@ class FlextApiTypes(FlextTypes):
         type JsonObject = Mapping[str, FlextTypes.ContainerValue]
         type ApiJsonValue = FlextTypes.ContainerValue | None
         type WebData = FlextTypes.FileContent | Mapping[str, FlextTypes.ContainerValue]
-        type WebHeaders = Mapping[str, FlextTypes.Scalar | Sequence[str]]
-        type WebParamValue = str | Sequence[str]
+        type WebHeaders = Mapping[str, FlextTypes.Scalar | t.StrSequence]
+        type WebParamValue = str | t.StrSequence
         type WebParams = Mapping[str, WebParamValue]
         type ResponseList = Sequence[Mapping[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
@@ -60,7 +60,7 @@ class FlextApiTypes(FlextTypes):
         type ResponseBody = Mapping[str, FlextTypes.ContainerValue] | str | bytes | None
         type HttpResponseDict = Mapping[
             str,
-            FlextTypes.ContainerValue | Mapping[str, str] | bytes | None,
+            FlextTypes.ContainerValue | t.StrMapping | bytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type ValidationResult = Mapping[str, FlextTypes.ContainerValue]
@@ -88,9 +88,9 @@ class FlextApiTypes(FlextTypes):
         ]
         type RequestKwargs = Mapping[
             str,
-            Mapping[str, str]
+            t.StrMapping
             | Mapping[str, FlextTypes.ContainerValue]
-            | Mapping[str, FlextTypes.Scalar | Sequence[str]]
+            | Mapping[str, FlextTypes.Scalar | t.StrSequence]
             | float
             | None,
         ]

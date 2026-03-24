@@ -18,7 +18,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import FlextApiSerializers, m, t, u
 
-_HEADERS_ADAPTER: TypeAdapter[Mapping[str, str]] = TypeAdapter(Mapping[str, str])
+_HEADERS_ADAPTER: TypeAdapter[t.StrMapping] = TypeAdapter(t.StrMapping)
 _HTTP_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
     t.Api.ResponseBody,
 )
@@ -89,7 +89,7 @@ class FlextApiAdapters:
             """
             try:
                 headers_raw = message.get("headers")
-                headers: Mapping[str, str] = {}
+                headers: t.StrMapping = {}
                 if isinstance(headers_raw, Mapping):
                     try:
                         headers = _HEADERS_ADAPTER.validate_python(headers_raw)
