@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
@@ -343,13 +343,12 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         if value is None:
             return "null"
         if isinstance(value, list):
-            normalized_items: MutableSequence[t.ContainerValue] = []
-            for item in value:
-                if FlextApiJsonschemaValidator._is_api_json_value(item):
-                    normalized_items.append(self._to_general_value(item))
-                else:
-                    normalized_items.append(str(item))
-            return normalized_items
+            return [
+                self._to_general_value(item)
+                if FlextApiJsonschemaValidator._is_api_json_value(item)
+                else str(item)
+                for item in value
+            ]
         if isinstance(value, Mapping):
             normalized_map: MutableMapping[str, t.ContainerValue] = {}
             for key, item in value.items():

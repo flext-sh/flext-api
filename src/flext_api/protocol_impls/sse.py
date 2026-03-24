@@ -246,7 +246,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         method: str,
         headers: t.StrMapping,
         remaining: int,
-    ) -> tuple[Sequence[Mapping[str, t.ContainerValue]], int | None]:
+    ) -> t.Pair[Sequence[Mapping[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
         events: MutableSequence[Mapping[str, t.ContainerValue]] = []
         retry_timeout: int | None = None
@@ -317,7 +317,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     yield payload
                 event_id = ""
                 event_type = ""
-                data_lines: list[str] = []
+                data_lines: MutableSequence[str] = []
                 retry = None
                 continue
             if line.startswith(":"):

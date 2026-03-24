@@ -299,7 +299,7 @@ class FlextApiUtilities(FlextWebUtilities):
         @staticmethod
         def extract_page_params(
             params: Mapping[str, t.ApiJsonValue],
-        ) -> r[tuple[int, int]]:
+        ) -> r[t.IntPair]:
             """Extract and validate page and page_size from params dict.
 
             Returns tuple of (page, page_size).
@@ -311,16 +311,16 @@ class FlextApiUtilities(FlextWebUtilities):
                 if isinstance(page_str, int | float | str):
                     page = int(page_str)
                 else:
-                    return r[tuple[int, int]].fail("Invalid page parameter")
+                    return r[t.IntPair].fail("Invalid page parameter")
                 if isinstance(page_size_str, int | float | str):
                     page_size = int(page_size_str)
                 else:
-                    return r[tuple[int, int]].fail("Invalid page_size parameter")
+                    return r[t.IntPair].fail("Invalid page_size parameter")
                 if page < 1 or page_size < 1:
-                    return r[tuple[int, int]].fail("Page and page_size must be >= 1")
-                return r[tuple[int, int]].ok((page, page_size))
+                    return r[t.IntPair].fail("Page and page_size must be >= 1")
+                return r[t.IntPair].ok((page, page_size))
             except (ValueError, TypeError):
-                return r[tuple[int, int]].fail("Invalid page or page_size parameters")
+                return r[t.IntPair].fail("Invalid page or page_size parameters")
 
         @staticmethod
         def extract_pagination_config(
@@ -380,20 +380,20 @@ class FlextApiUtilities(FlextWebUtilities):
             page: int,
             page_size: int,
             max_page_size: int = 1000,
-        ) -> r[tuple[int, int]]:
+        ) -> r[t.IntPair]:
             """Validate pagination parameters.
 
             Returns tuple of (page, page_size) if valid.
             """
             if page < 1:
-                return r[tuple[int, int]].fail("Page must be >= 1")
+                return r[t.IntPair].fail("Page must be >= 1")
             if page_size < 1:
-                return r[tuple[int, int]].fail("Page size must be >= 1")
+                return r[t.IntPair].fail("Page size must be >= 1")
             if page_size > max_page_size:
-                return r[tuple[int, int]].fail(
+                return r[t.IntPair].fail(
                     f"Page size cannot exceed {max_page_size}",
                 )
-            return r[tuple[int, int]].ok((page, page_size))
+            return r[t.IntPair].ok((page, page_size))
 
     class FlextWebValidator:
         """Web validation utilities for URLs and HTTP methods."""

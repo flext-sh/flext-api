@@ -27,6 +27,10 @@ class FlextApiTypes(FlextTypes):
     """
 
     # Class-level forwarding aliases (canonical definitions in Api namespace)
+    type Pair[LeftT, RightT] = tuple[LeftT, RightT]
+    type Triple[FirstT, SecondT, ThirdT] = tuple[FirstT, SecondT, ThirdT]
+    type VariadicTuple[ItemT] = tuple[ItemT, ...]
+    type IntPair = Pair[int, int]
     type JsonObject = Mapping[str, FlextTypes.ContainerValue]
     type ApiJsonValue = FlextTypes.ContainerValue | None
 

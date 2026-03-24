@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import MutableMapping, MutableSequence, Sequence
+from collections.abc import MutableMapping, Sequence
 
 from flext_core import FlextLogger, r
 
@@ -223,11 +223,11 @@ class FlextApiPlugins:
 
         def shutdown_all(self) -> r[bool]:
             """Shutdown and unload all plugins."""
-            failed_plugins: MutableSequence[str] = []
-            for plugin_name in list(self._loaded_plugins.keys()):
-                result = self.unload_plugin(plugin_name)
-                if result.is_failure:
-                    failed_plugins.append(plugin_name)
+            failed_plugins: Sequence[str] = [
+                plugin_name
+                for plugin_name in list(self._loaded_plugins.keys())
+                if self.unload_plugin(plugin_name).is_failure
+            ]
             if failed_plugins:
                 return r[bool].fail(
                     f"Failed to unload plugins: {', '.join(failed_plugins)}",

@@ -332,10 +332,10 @@ class FlextApiStorage:
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
-    def items(self) -> r[Sequence[tuple[str, t.ApiJsonValue]]]:
+    def items(self) -> r[Sequence[t.Pair[str, t.ApiJsonValue]]]:
         """Get all key-value pairs."""
         self._cleanup_expired()
-        return r[Sequence[tuple[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
+        return r[Sequence[t.Pair[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
 
     def keys(self) -> r[t.StrSequence]:
         """Get all non-namespaced keys."""
@@ -603,7 +603,7 @@ class FlextApiStorage:
         self,
         config: t.ApiJsonValue | None,
         kwargs: Mapping[str, t.ApiJsonValue],
-    ) -> tuple[t.ApiJsonValue | None, Mapping[str, t.ApiJsonValue]]:
+    ) -> t.Pair[t.ApiJsonValue | None, Mapping[str, t.ApiJsonValue]]:
         """Extract config and kwargs from __new__ or parameters."""
         config_obj = getattr(self, "_flext_storage_config", None)
         if config_obj is None:
@@ -659,7 +659,7 @@ class FlextApiStorage:
     def _extract_storage_kwargs(
         self,
         storage_kwargs: Mapping[str, t.ApiJsonValue],
-    ) -> tuple[t.ApiJsonValue | None, t.ApiJsonValue | None]:
+    ) -> t.Pair[t.ApiJsonValue | None, t.ApiJsonValue | None]:
         """Extract storage-specific kwargs before passing to super."""
         storage_kwargs_dict = dict(storage_kwargs)
         max_size_val = storage_kwargs_dict.pop("max_size", None)
