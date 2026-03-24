@@ -74,8 +74,14 @@ if TYPE_CHECKING:
     from flext_api.webhook import FlextWebhookHandler
 
 _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "AsyncAPISchemaValidator": ("flext_api.schemas.asyncapi", "AsyncAPISchemaValidator"),
-    "BaseProtocolImplementation": ("flext_api.protocol_impls.base", "BaseProtocolImplementation"),
+    "AsyncAPISchemaValidator": (
+        "flext_api.schemas.asyncapi",
+        "AsyncAPISchemaValidator",
+    ),
+    "BaseProtocolImplementation": (
+        "flext_api.protocol_impls.base",
+        "BaseProtocolImplementation",
+    ),
     "DictField": ("flext_api.schemas._shared", "DictField"),
     "FlextApi": ("flext_api.api", "FlextApi"),
     "FlextApiAdapters": ("flext_api.adapters", "FlextApiAdapters"),
@@ -83,7 +89,10 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "FlextApiClient": ("flext_api.client", "FlextApiClient"),
     "FlextApiConstants": ("flext_api.constants", "FlextApiConstants"),
     "FlextApiErrors": ("flext_api.exceptions", "FlextApiErrors"),
-    "FlextApiLifecycleManager": ("flext_api.lifecycle_manager", "FlextApiLifecycleManager"),
+    "FlextApiLifecycleManager": (
+        "flext_api.lifecycle_manager",
+        "FlextApiLifecycleManager",
+    ),
     "FlextApiMiddleware": ("flext_api.middleware", "FlextApiMiddleware"),
     "FlextApiModels": ("flext_api.models", "FlextApiModels"),
     "FlextApiPlugins": ("flext_api.plugins", "FlextApiPlugins"),
@@ -94,23 +103,44 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "FlextApiServer": ("flext_api.server", "FlextApiServer"),
     "FlextApiServerFactory": ("flext_api.server_factory", "FlextApiServerFactory"),
     "FlextApiSettings": ("flext_api.settings", "FlextApiSettings"),
-    "FlextApiSettingsManager": ("flext_api.settings_manager", "FlextApiSettingsManager"),
+    "FlextApiSettingsManager": (
+        "flext_api.settings_manager",
+        "FlextApiSettingsManager",
+    ),
     "FlextApiStorage": ("flext_api.storage", "FlextApiStorage"),
     "FlextApiTransports": ("flext_api.transports", "FlextApiTransports"),
     "FlextApiTypes": ("flext_api.typings", "FlextApiTypes"),
     "FlextApiUtilities": ("flext_api.utilities", "FlextApiUtilities"),
-    "FlextWebClientImplementation": ("flext_api.protocol_impls.http_client", "FlextWebClientImplementation"),
-    "FlextWebProtocolPlugin": ("flext_api.protocol_impls.http", "FlextWebProtocolPlugin"),
+    "FlextWebClientImplementation": (
+        "flext_api.protocol_impls.http_client",
+        "FlextWebClientImplementation",
+    ),
+    "FlextWebProtocolPlugin": (
+        "flext_api.protocol_impls.http",
+        "FlextWebProtocolPlugin",
+    ),
     "FlextWebhookHandler": ("flext_api.webhook", "FlextWebhookHandler"),
     "IntField": ("flext_api.schemas._shared", "IntField"),
     "JSONSchemaValidator": ("flext_api.schemas.jsonschema", "JSONSchemaValidator"),
-    "LoggerProtocolImplementation": ("flext_api.protocol_impls.logger", "LoggerProtocolImplementation"),
+    "LoggerProtocolImplementation": (
+        "flext_api.protocol_impls.logger",
+        "LoggerProtocolImplementation",
+    ),
     "OpenAPISchemaValidator": ("flext_api.schemas.openapi", "OpenAPISchemaValidator"),
-    "RFCProtocolImplementation": ("flext_api.protocol_impls.rfc", "RFCProtocolImplementation"),
+    "RFCProtocolImplementation": (
+        "flext_api.protocol_impls.rfc",
+        "RFCProtocolImplementation",
+    ),
     "SSEProtocolPlugin": ("flext_api.protocol_impls.sse", "SSEProtocolPlugin"),
-    "StorageBackendImplementation": ("flext_api.protocol_impls.storage_backend", "StorageBackendImplementation"),
+    "StorageBackendImplementation": (
+        "flext_api.protocol_impls.storage_backend",
+        "StorageBackendImplementation",
+    ),
     "StringField": ("flext_api.schemas._shared", "StringField"),
-    "WebSocketProtocolPlugin": ("flext_api.protocol_impls.websocket", "WebSocketProtocolPlugin"),
+    "WebSocketProtocolPlugin": (
+        "flext_api.protocol_impls.websocket",
+        "WebSocketProtocolPlugin",
+    ),
     "__all__": ("flext_api.__version__", "__all__"),
     "__author__": ("flext_api.__version__", "__author__"),
     "__author_email__": ("flext_api.__version__", "__author_email__"),
@@ -124,7 +154,10 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "h": ("flext_web", "h"),
     "is_container_value": ("flext_api.schemas._shared", "is_container_value"),
     "is_object_mapping": ("flext_api.schemas._shared", "is_object_mapping"),
-    "load_and_validate_schema_document": ("flext_api.schemas._shared", "load_and_validate_schema_document"),
+    "load_and_validate_schema_document": (
+        "flext_api.schemas._shared",
+        "load_and_validate_schema_document",
+    ),
     "load_schema_document": ("flext_api.schemas._shared", "load_schema_document"),
     "m": ("flext_api.models", "FlextApiModels"),
     "normalize_json_object": ("flext_api.schemas._shared", "normalize_json_object"),

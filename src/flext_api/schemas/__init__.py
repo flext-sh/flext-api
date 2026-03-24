@@ -30,7 +30,10 @@ if TYPE_CHECKING:
     from flext_api.schemas.openapi import OpenAPISchemaValidator
 
 _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "AsyncAPISchemaValidator": ("flext_api.schemas.asyncapi", "AsyncAPISchemaValidator"),
+    "AsyncAPISchemaValidator": (
+        "flext_api.schemas.asyncapi",
+        "AsyncAPISchemaValidator",
+    ),
     "JSONSchemaValidator": ("flext_api.schemas.jsonschema", "JSONSchemaValidator"),
     "OpenAPISchemaValidator": ("flext_api.schemas.openapi", "OpenAPISchemaValidator"),
 }
