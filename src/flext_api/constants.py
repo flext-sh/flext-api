@@ -18,7 +18,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from enum import StrEnum, unique
 from types import MappingProxyType
-from typing import Final, Literal
+from typing import Final
 
 from flext_web import FlextWebConstants
 
@@ -141,13 +141,13 @@ class FlextApiConstants(FlextWebConstants):
             CBOR = "cbor"
             CUSTOM = "custom"
 
-        type ActiveMethods = Literal["GET", "POST", "PUT", "DELETE"]
+        ACTIVE_METHODS: Final[frozenset[str]] = frozenset({"GET", "POST", "PUT", "DELETE"})
         "Active HTTP methods for operations."
-        type SafeMethods = Literal["GET", "HEAD", "OPTIONS", "TRACE"]
+        SAFE_METHODS: Final[frozenset[str]] = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
         "Safe HTTP methods (no side effects)."
-        type TerminalStatuses = Literal["completed", "failed", "error"]
+        TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({"completed", "failed", "error"})
         "Terminal operation statuses."
-        type SuccessStatuses = Literal["success", "completed"]
+        SUCCESS_STATUSES: Final[frozenset[str]] = frozenset({"success", "completed"})
         "Success operation statuses."
         "Immutable set of all valid HTTP methods for O(1) validation."
         VALID_STATUSES: Final[frozenset[str]] = frozenset(
@@ -217,40 +217,6 @@ class FlextApiConstants(FlextWebConstants):
         "Validation limits mapping."
         "CORS configuration."
         "URL configuration mapping."
-        type MethodLiteral = Literal[
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "PATCH",
-            "HEAD",
-            "OPTIONS",
-            "CONNECT",
-            "TRACE",
-        ]
-        "HTTP method literal - string values matching Method StrEnum."
-        type StatusLiteral = Literal[
-            "idle",
-            "pending",
-            "running",
-            "completed",
-            "failed",
-            "error",
-            "success",
-        ]
-        "Status literal - string values matching Status StrEnum."
-        type ContentTypeLiteral = Literal[
-            "application/json",
-            "application/xml",
-            "text/plain",
-            "text/html",
-            "application/x-www-form-urlencoded",
-            "multipart/form-data",
-            "application/octet-stream",
-        ]
-        "Content type literal - string values matching ContentType StrEnum."
-        type SerializationFormatLiteral = Literal["json", "msgpack", "cbor", "custom"]
-        "Serialization format literal - string values matching HttpSerializationFormat StrEnum."
 
         class HTTP:
             """HTTP protocol-specific constants."""
