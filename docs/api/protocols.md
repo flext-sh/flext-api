@@ -417,12 +417,12 @@ class MultiProtocolClient:
         self.graphql = GraphQLt="https://api.example.com/graphql")
         self.websocket = WebSockets://api.example.com/ws")
 
-    def get_user_http(self, user_id: str) -> Mapping[str, t.NormalizedValue]:
+    def get_user_http(self, user_id: str) -> t.ContainerMapping:
         """Get user via REST API."""
         result = self.http.execute_request("GET", f"/users/{user_id}")
         return result.unwrap().json() if result.is_success else None
 
-    def get_user_graphql(self, user_id: str) -> Mapping[str, t.NormalizedValue]:
+    def get_user_graphql(self, user_id: str) -> t.ContainerMapping:
         """Get user via GraphQL."""
         query = """
             query GetUser($id: ID!) {

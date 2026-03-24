@@ -361,7 +361,7 @@ def register_api_routes(app: FastAPI):
     async def list_users(
         limit: int = 10,
         offset: int = 0,
-        current_user: Mapping[str, t.NormalizedValue] = Depends(get_current_user),
+        current_user: t.ContainerMapping = Depends(get_current_user),
     ) -> List[UserResponse]:
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
@@ -421,7 +421,7 @@ class StorageBackend(ABC):
 
     @abstractmethod
     async def upload_file(
-        self, file, path: str, metadata: Mapping[str, t.NormalizedValue] = None
+        self, file, path: str, metadata: t.ContainerMapping = None
     ) -> r[str]:
         """Upload file to storage."""
         pass
@@ -449,7 +449,7 @@ class S3StorageBackend(StorageBackend):
         self.client = boto3.client("s3", **config)
 
     async def upload_file(
-        self, file, path: str, metadata: Mapping[str, t.NormalizedValue] = None
+        self, file, path: str, metadata: t.ContainerMapping = None
     ) -> r[str]:
         """Upload file to S3."""
         try:

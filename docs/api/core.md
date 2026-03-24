@@ -183,7 +183,7 @@ class MyApiConfig(FlextApiSettings):
     """Custom API configuration."""
 
     custom_setting: str = "default_value"
-    feature_flags: Mapping[str, t.NormalizedValue] = {}
+    feature_flags: t.ContainerMapping = {}
 ```
 
 ## HTTP Models and Schemas

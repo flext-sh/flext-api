@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 from flext_core import FlextConstants
 
 from flext_api import (
@@ -57,7 +55,7 @@ def example_storage_usage() -> None:
     """Demonstrate storage usage with refactored FlextApiStorage."""
     print("\n=== Storage Example ===")
     storage = FlextApiStorage()
-    cache_value: Mapping[str, t.NormalizedValue] = {
+    cache_value: t.ContainerMapping = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,
