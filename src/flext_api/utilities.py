@@ -91,7 +91,7 @@ class FlextApiUtilities(FlextWebUtilities):
                     if raw_data is not None:
                         return r[t.Api.RequestBody].ok(
                             FlextApiUtilities.Api.RequestUtils.to_request_body(
-                                raw_data
+                                raw_data,
                             ),
                         )
                 if kwargs is not None and "json" in kwargs:
@@ -99,7 +99,7 @@ class FlextApiUtilities(FlextWebUtilities):
                     if raw_json is not None:
                         return r[t.Api.RequestBody].ok(
                             FlextApiUtilities.Api.RequestUtils.to_request_body(
-                                raw_json
+                                raw_json,
                             ),
                         )
                 return r[t.Api.RequestBody].ok({})

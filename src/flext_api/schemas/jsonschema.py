@@ -144,7 +144,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                             schema_file.read(),
                         )
                         if not FlextApiJsonschemaValidator._is_api_json_value(
-                            loaded_schema_raw
+                            loaded_schema_raw,
                         ):
                             return r[t.ContainerValue].fail(
                                 "JSON schema file must contain JSON-compatible values",

@@ -187,7 +187,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         headers_result = self._extract_headers_from_model(request)
         if headers_result.is_failure:
             return r[Iterator[bytes]].fail(
-                headers_result.error or "Headers extraction failed"
+                headers_result.error or "Headers extraction failed",
             )
         method = request.method.upper()
         url = str(request.url)
