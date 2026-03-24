@@ -294,7 +294,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
 
         """
         try:
-            options = m.Api._SendRequestWsOptions.model_validate(kwargs)
+            options = m.Api.SendRequestWsOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
@@ -407,7 +407,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _extract_message(
         self,
         request: Mapping[str, t.ContainerValue],
-        options: m.Api._SendRequestWsOptions,
+        options: m.Api.SendRequestWsOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
         if options.message is not None:
@@ -416,7 +416,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         if body is not None:
             if isinstance(body, (str, bytes)):
                 try:
-                    parsed = m.Api._InboundMessage(message=body)
+                    parsed = m.Api.InboundMessage(message=body)
                     return r[str | bytes].ok(parsed.message)
                 except ValidationError:
                     return r[str | bytes].ok(str(body))
@@ -424,7 +424,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 return r[str | bytes].ok(str(body))
         return r[str | bytes].fail("Message or body is required")
 
-    def _extract_message_type(self, options: m.Api._SendRequestWsOptions) -> str:
+    def _extract_message_type(self, options: m.Api.SendRequestWsOptions) -> str:
         """Extract message type from kwargs."""
         return options.message_type
 
@@ -445,7 +445,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             try:
                 message = self._connection.recv()
                 try:
-                    inbound = m.Api._InboundMessage(message=message)
+                    inbound = m.Api.InboundMessage(message=message)
                 except ValidationError:
                     pass
                 else:

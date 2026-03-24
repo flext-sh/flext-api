@@ -129,16 +129,16 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     def _build_request_options(
         self,
         kwargs: Mapping[str, t.ContainerValue],
-    ) -> r[m.Api._HttpClientRequestOptions]:
+    ) -> r[m.Api.HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
-            options = m.Api._HttpClientRequestOptions.model_validate(kwargs)
+            options = m.Api.HttpClientRequestOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
             )
-            return r[m.Api._HttpClientRequestOptions].fail(str(details))
-        return r[m.Api._HttpClientRequestOptions].ok(options)
+            return r[m.Api.HttpClientRequestOptions].fail(str(details))
+        return r[m.Api.HttpClientRequestOptions].ok(options)
 
     def _create_response_from_httpx(
         self,
@@ -157,7 +157,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         method: str,
         full_url: str,
         headers: t.StrMapping,
-        options: m.Api._HttpClientRequestOptions,
+        options: m.Api.HttpClientRequestOptions,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute request using typed options."""
         try:
@@ -199,7 +199,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
 
     def _prepare_request_headers(
         self,
-        options: m.Api._HttpClientRequestOptions,
+        options: m.Api.HttpClientRequestOptions,
     ) -> t.StrMapping:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)

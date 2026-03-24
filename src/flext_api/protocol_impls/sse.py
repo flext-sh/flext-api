@@ -147,7 +147,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                 validation_result.error or "Request validation failed",
             )
         try:
-            options = m.Api._SendRequestSseOptions.model_validate(kwargs)
+            options = m.Api.SendRequestSseOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[t.ContainerValueMapping].fail(str(details))

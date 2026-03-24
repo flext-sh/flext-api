@@ -614,7 +614,7 @@ class FlextApiModels(FlextWebModels):
         # PRIVATE INTERNAL MODELS (moved from protocol_impls for MRO compliance)
         # =========================================================================
 
-        class _HttpRequestCallArgs(FlextWebModels.Value):
+        class HttpRequestCallArgs(FlextWebModels.Value):
             """Internal model for validating HTTP request call arguments."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -644,7 +644,7 @@ class FlextApiModels(FlextWebModels):
                 Field(default=None, description="Request timeout"),
             ]
 
-        class _MappingBodyModel(FlextWebModels.Value):
+        class MappingBodyModel(FlextWebModels.Value):
             """Internal model for wrapping mapping body data."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -656,7 +656,7 @@ class FlextApiModels(FlextWebModels):
                 Field(..., description="Request body as mapping"),
             ]
 
-        class _HttpClientRequestOptions(FlextWebModels.Value):
+        class HttpClientRequestOptions(FlextWebModels.Value):
             """Internal model for HTTP client request options."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -688,12 +688,12 @@ class FlextApiModels(FlextWebModels):
                 Field(default_factory=dict, description="Request headers"),
             ]
 
-        class _HeadersRequest(FlextWebModels.Value):
+        class HeadersRequest(FlextWebModels.Value):
             """Encapsulates RFC header constraint for requests."""
 
             headers: Annotated[t.StrMapping, Field(default_factory=dict)]
 
-        class _MethodRequest(FlextWebModels.Value):
+        class MethodRequest(FlextWebModels.Value):
             """Encapsulates RFC method constraint for requests."""
 
             method: Annotated[str, Field(min_length=1)]
@@ -718,12 +718,12 @@ class FlextApiModels(FlextWebModels):
                     raise ValueError(msg)
                 return method_upper
 
-        class _TimeoutRequest(FlextWebModels.Value):
+        class TimeoutRequest(FlextWebModels.Value):
             """Encapsulates timeout constraints for RFC request URLs."""
 
             timeout: Annotated[t.PositiveTimeout, Field(...)]
 
-        class _UrlRequest(FlextWebModels.Value):
+        class UrlRequest(FlextWebModels.Value):
             """Encapsulates URL validation constraints for RFC requests."""
 
             url: Annotated[str, Field(min_length=1)]
@@ -739,12 +739,12 @@ class FlextApiModels(FlextWebModels):
                     raise ValueError(msg)
                 return value
 
-        class _StatusCodeValue(FlextWebModels.Value):
+        class StatusCodeValue(FlextWebModels.Value):
             """Validates status code values according to RFC conventions."""
 
             status_code: Annotated[t.HttpStatusCode, Field(...)]
 
-        class _SendRequestSseOptions(FlextWebModels.Value):
+        class SendRequestSseOptions(FlextWebModels.Value):
             """Options for SSE request sending behavior."""
 
             method: Annotated[str, Field(default="GET", min_length=1)]
@@ -760,7 +760,7 @@ class FlextApiModels(FlextWebModels):
             ]
             retry_timeout: Annotated[t.NonNegativeInt | None, Field(default=None)]
 
-        class _SendRequestWsOptions(FlextWebModels.Value):
+        class SendRequestWsOptions(FlextWebModels.Value):
             """Options for sending a WebSocket message request."""
 
             message: Annotated[str | bytes | None, Field(default=None)]
@@ -769,7 +769,7 @@ class FlextApiModels(FlextWebModels):
                 Field(default="text", min_length=1),
             ]
 
-        class _InboundMessage(FlextWebModels.Value):
+        class InboundMessage(FlextWebModels.Value):
             """Model for inbound WebSocket messages."""
 
             message: str | bytes

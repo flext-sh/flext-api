@@ -146,7 +146,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             follow_redirects=self._follow_redirects,
         )
         if conn_result.is_failure:
-            return r[Mapping[str, t.ApiJsonValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
         connection = conn_result.value
@@ -160,10 +160,10 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             body,
         )
         return result.fold(
-            on_failure=lambda e: r[Mapping[str, t.ApiJsonValue]].fail(
+            on_failure=lambda e: r[t.ContainerValueMapping].fail(
                 e or "Request execution failed",
             ),
-            on_success=lambda response: r[Mapping[str, t.ApiJsonValue]].ok({
+            on_success=lambda response: r[t.ContainerValueMapping].ok({
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
                 "body": str(getattr(response, "text", response.body)),
@@ -198,7 +198,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             request.body,
         )
         try:
-            call_args = m.Api._HttpRequestCallArgs.model_validate(request_kwargs)
+            call_args = m.Api.HttpRequestCallArgs.model_validate(request_kwargs)
         except ValidationError as e:
             return r.fail(f"Invalid streaming request arguments: {e}")
 
@@ -294,7 +294,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         content_type = self._get_content_type(headers)
         if isinstance(body, dict):
             try:
-                parsed_mapping = m.Api._MappingBodyModel(body=body)
+                parsed_mapping = m.Api.MappingBodyModel(body=body)
                 if c.Api.ContentType.FORM in content_type:
                     kwargs["data"] = str(parsed_mapping.body)
                 else:
@@ -348,7 +348,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                     timeout,
                     body,
                 )
-                call_args = m.Api._HttpRequestCallArgs.model_validate(request_kwargs)
+                call_args = m.Api.HttpRequestCallArgs.model_validate(request_kwargs)
                 client = self._transport.client
                 if client is None:
                     return r[m.HttpResponse].fail("HTTP client is not connected")
