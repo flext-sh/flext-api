@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, Sequence
 from typing import override
 
 from fastapi import FastAPI
@@ -40,8 +40,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
     railway pattern results, and dependency injection.
     """
 
-    _protocol_handlers: Mapping[str, p.Api.Server.ProtocolHandler]
-    _middleware_pipeline: Sequence[Callable[..., None]]
+    _protocol_handlers: MutableMapping[str, p.Api.Server.ProtocolHandler]
+    _middleware_pipeline: MutableSequence[Callable[..., None]]
 
     class RouteRegistry:
         """Handle all endpoint registration with unified interface.
@@ -56,7 +56,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             logger: Logger instance for audit trail
 
             """
-            self._routes: Mapping[str, t.Api.RouteData] = {}
+            self._routes: MutableMapping[str, t.Api.RouteData] = {}
             self._logger = logger
 
         @property
@@ -67,7 +67,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         @property
         def routes(self) -> Mapping[str, t.Api.RouteData]:
             """Get all registered routes."""
-            return self._routes.copy()
+            return dict(self._routes)
 
         def register(
             self,
@@ -133,8 +133,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
             logger: Logger instance
 
             """
-            self._websocket_connections: Mapping[str, p.Api.Lifecycle.HttpResource] = {}
-            self._sse_connections: Mapping[str, p.Api.Lifecycle.HttpResource] = {}
+            self._websocket_connections: MutableMapping[str, p.Api.Lifecycle.HttpResource] = {}
+            self._sse_connections: MutableMapping[str, p.Api.Lifecycle.HttpResource] = {}
             self._logger = logger
 
         def close_all(self) -> r[bool]:

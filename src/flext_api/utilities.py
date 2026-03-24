@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Annotated, TypeIs
@@ -96,7 +96,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
             ) -> r[t.StrMapping]:
                 """Merge headers from headers dict and kwargs."""
-                merged: t.StrMapping = {}
+                merged: MutableMapping[str, str] = {}
                 if headers:
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
@@ -111,7 +111,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 if value is None or isinstance(value, t.PRIMITIVES_TYPES):
                     return value
                 if isinstance(value, Mapping):
-                    converted: t.JsonObject = {}
+                    converted: MutableMapping[str, t.ContainerValue] = {}
                     for key, item in value.items():
                         converted[str(key)] = (
                             FlextApiUtilities.Api.RequestUtils.to_json_value(item)
@@ -132,7 +132,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 if isinstance(value, str | bytes):
                     return value
                 if isinstance(value, Mapping):
-                    normalized: t.Api.JsonObject = {}
+                    normalized: MutableMapping[str, t.ContainerValue] = {}
                     for key, item in value.items():
                         key_str = str(key)
                         normalized[key_str] = (
@@ -200,7 +200,7 @@ class FlextApiUtilities(FlextWebUtilities):
             headers: t.StrMapping | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build error result - returns r with error response."""
-            response: Mapping[str, t.ApiJsonValue] = {
+            response: MutableMapping[str, t.ApiJsonValue] = {
                 "error": error,
                 "status_code": status_code,
             }
@@ -218,7 +218,7 @@ class FlextApiUtilities(FlextWebUtilities):
             headers: t.StrMapping | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build success response with optional data and message."""
-            response: Mapping[str, t.ApiJsonValue] = {
+            response: MutableMapping[str, t.ApiJsonValue] = {
                 "status": "success",
                 "data": data,
                 "message": message,
@@ -308,7 +308,7 @@ class FlextApiUtilities(FlextWebUtilities):
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
-            result: Mapping[str, t.ApiJsonValue] = {}
+            result: MutableMapping[str, t.ApiJsonValue] = {}
             default_page_size = getattr(config, "default_page_size", 20)
             max_page_size = getattr(config, "max_page_size", 1000)
             result["default_page_size"] = (

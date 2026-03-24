@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from typing import ClassVar, Self
 
 from flext_core import FlextLogger, FlextRuntime, r
@@ -55,8 +55,8 @@ class FlextApiStorage:
     model_config: ClassVar[ConfigDict] = ConfigDict(
         frozen=False, arbitrary_types_allowed=True
     )
-    _storage: Mapping[str, t.ApiJsonValue]
-    _expiry_times: Mapping[str, float]
+    _storage: MutableMapping[str, t.ApiJsonValue]
+    _expiry_times: MutableMapping[str, float]
     _stats: m.Api.Storage.Stats
     _operations_count: int
     _created_at: str
@@ -128,7 +128,7 @@ class FlextApiStorage:
     def batch_get(self, keys: t.StrSequence) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get multiple keys efficiently."""
         try:
-            result_dict: Mapping[str, t.ApiJsonValue] = {}
+            result_dict: MutableMapping[str, t.ApiJsonValue] = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.is_success:

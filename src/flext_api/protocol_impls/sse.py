@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, MutableMapping, MutableSequence, Sequence
 from typing import override
 
 import httpx
@@ -24,10 +24,10 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     is_connected: bool
     last_event_id: str
     _connected: bool
-    _on_event_handlers: Mapping[str, Sequence[Callable[..., None]]]
-    _on_connect_handlers: Sequence[Callable[[], None]]
-    _on_disconnect_handlers: Sequence[Callable[[], None]]
-    _on_error_handlers: Sequence[Callable[[Exception], None]]
+    _on_event_handlers: MutableMapping[str, MutableSequence[Callable[..., None]]]
+    _on_connect_handlers: MutableSequence[Callable[[], None]]
+    _on_disconnect_handlers: MutableSequence[Callable[[], None]]
+    _on_error_handlers: MutableSequence[Callable[[Exception], None]]
     _retry_timeout: int
     _auto_reconnect: bool
     _connect_timeout: float
@@ -172,7 +172,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             if options.retry_timeout is not None
             else self._retry_timeout
         )
-        events: Sequence[Mapping[str, t.ContainerValue]] = []
+        events: MutableSequence[Mapping[str, t.ContainerValue]] = []
         retry_timeout_ms = base_retry_timeout
         attempts = 0
         while len(events) < max_events:
@@ -243,7 +243,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         remaining: int,
     ) -> tuple[Sequence[Mapping[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
-        events: Sequence[Mapping[str, t.ContainerValue]] = []
+        events: MutableSequence[Mapping[str, t.ContainerValue]] = []
         retry_timeout: int | None = None
         self._set_connected_state(connected=True)
         self._notify_connect_handlers()
@@ -285,7 +285,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     ) -> Iterator[Mapping[str, t.ContainerValue]]:
         event_id = ""
         event_type = ""
-        data_lines: t.StrSequence = []
+        data_lines: MutableSequence[str] = []
         retry: int | None = None
 
         def flush_event() -> Mapping[str, t.ContainerValue] | None:
@@ -384,7 +384,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 parsed_retry = int(retry)
             except (TypeError, ValueError):
                 parsed_retry = None
-        event_payload: Mapping[str, t.ContainerValue] = {
+        event_payload: MutableMapping[str, t.ContainerValue] = {
             "id": parsed_id,
             "event": parsed_type,
             "data": parsed_data,

@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
@@ -158,7 +158,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return r[t.ContainerValue].fail(
                 "JSON schema file must contain a JSON/YAML t.NormalizedValue",
             )
-        schema_definition: t.Api.SchemaDefinition = {}
+        schema_definition: MutableMapping[str, t.ContainerValue] = {}
         for key, value in loaded_schema.items():
             if _is_api_json_value(value):
                 schema_definition[str(key)] = self._to_container_value(value)
@@ -262,13 +262,13 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         payload: t.JsonObject,
         schema: t.JsonObject,
     ) -> r[bool]:
-        schema_def: t.Api.SchemaDefinition = {}
+        schema_def: MutableMapping[str, t.ContainerValue] = {}
         for key, value in schema.items():
             schema_def[key] = self._to_container_value(value)
         schema_result = self.validate_schema(schema_def)
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
-        payload_typed: t.JsonObject = {}
+        payload_typed: MutableMapping[str, t.ContainerValue] = {}
         for key, value in payload.items():
             payload_typed[key] = self._to_container_value(value)
         instance_result = self.validate_instance(payload_typed, schema_def)
@@ -341,7 +341,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if value is None:
             return "null"
         if isinstance(value, list):
-            normalized_items: Sequence[t.ContainerValue] = []
+            normalized_items: MutableSequence[t.ContainerValue] = []
             for item in value:
                 if _is_api_json_value(item):
                     normalized_items.append(self._to_general_value(item))
@@ -349,7 +349,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     normalized_items.append(str(item))
             return normalized_items
         if isinstance(value, Mapping):
-            normalized_map: Mapping[str, t.ContainerValue] = {}
+            normalized_map: MutableMapping[str, t.ContainerValue] = {}
             for key, item in value.items():
                 if _is_api_json_value(item):
                     normalized_map[str(key)] = self._to_general_value(item)
@@ -543,7 +543,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema: t.JsonObject,
     ) -> r[t.Api.SchemaDefinition]:
         """Validate basic schema structure."""
-        schema_dict: t.Api.SchemaDefinition = {}
+        schema_dict: MutableMapping[str, t.ContainerValue] = {}
         for key, value in schema.items():
             match (key, value):
                 case [
