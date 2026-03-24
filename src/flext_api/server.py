@@ -391,7 +391,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         return self._lifecycle_manager.port
 
     @property
-    def protocols(self) -> t.StrSequence:
+    def protocols(self) -> Sequence[str]:
         """Get registered protocols."""
         return list(self._protocol_handlers.keys())
 

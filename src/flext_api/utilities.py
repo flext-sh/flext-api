@@ -89,18 +89,18 @@ class FlextApiUtilities(FlextWebUtilities):
 
             @staticmethod
             def merge_headers(
-                headers: t.StrMapping | None,
+                headers: Mapping[str, str] | None,
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
-            ) -> r[t.StrMapping]:
+            ) -> r[Mapping[str, str]]:
                 """Merge headers from headers dict and kwargs."""
-                merged: t.StrMapping = {}
+                merged: Mapping[str, str] = {}
                 if headers:
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
                     headers_value = kwargs["headers"]
                     if isinstance(headers_value, dict):
                         merged.update({k: str(v) for k, v in headers_value.items()})
-                return r[t.StrMapping].ok(merged)
+                return r[Mapping[str, str]].ok(merged)
 
             @staticmethod
             def to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
@@ -194,7 +194,7 @@ class FlextApiUtilities(FlextWebUtilities):
             error: str,
             status_code: int = 400,
             data: t.ApiJsonValue | None = None,
-            headers: t.StrMapping | None = None,
+            headers: Mapping[str, str] | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build error result - returns r with error response."""
             response: Mapping[str, t.ApiJsonValue] = {
@@ -212,7 +212,7 @@ class FlextApiUtilities(FlextWebUtilities):
             data: t.ApiJsonValue = None,
             message: str = "Success",
             status_code: int = 200,
-            headers: t.StrMapping | None = None,
+            headers: Mapping[str, str] | None = None,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build success response with optional data and message."""
             response: Mapping[str, t.ApiJsonValue] = {

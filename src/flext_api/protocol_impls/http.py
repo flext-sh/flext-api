@@ -109,7 +109,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         return updated_info
 
     @override
-    def get_supported_protocols(self) -> t.StrSequence:
+    def get_supported_protocols(self) -> Sequence[str]:
         """Get list of supported protocols."""
         if self._http3:
             return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
@@ -276,8 +276,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self,
         method: str,
         url: str,
-        headers: t.StrMapping,
-        params: t.StrMapping,
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
     ) -> Mapping[str, t.ContainerValue]:
@@ -331,8 +331,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         _connection_url: str,
         method: str,
         url: str,
-        headers: t.StrMapping,
-        params: t.StrMapping,
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
     ) -> r[m.HttpResponse]:
@@ -415,9 +415,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def _extract_headers_from_model(
         self,
         request: m.HttpRequest,
-    ) -> r[t.StrMapping]:
+    ) -> r[Mapping[str, str]]:
         """Extract headers from HttpRequest model without fallback."""
-        return r[t.StrMapping].ok(dict(request.headers))
+        return r[Mapping[str, str]].ok(dict(request.headers))
 
     def _handle_request_exception(
         self,

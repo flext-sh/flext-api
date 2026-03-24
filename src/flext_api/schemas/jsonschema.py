@@ -103,7 +103,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             "regex",
         ]
 
-    def get_supported_schemas(self) -> t.StrSequence:
+    def get_supported_schemas(self) -> Sequence[str]:
         """Get list of supported schema types.
 
         Returns:
@@ -325,7 +325,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         }
         return r[t.Api.SchemaDefinition].ok(validated_schema)
 
-    def _schema_properties_list(self, schema: t.Api.SchemaDefinition) -> t.StrSequence:
+    def _schema_properties_list(self, schema: t.Api.SchemaDefinition) -> Sequence[str]:
         """Extract properties list from schema."""
         if "properties" not in schema:
             return []

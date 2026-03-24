@@ -232,14 +232,14 @@ class FlextApiClient(s[FlextApiSettings]):
         """Execute HTTP request using httpx client."""
         try:
             api_config = self._get_config()
-            headers: t.StrMapping = {
+            headers: Mapping[str, str] = {
                 **api_config.default_headers,
                 **request.headers,
             }
             with httpx.Client(timeout=request.timeout) as client:
                 request_method: str = request.method
                 request_url: str = url
-                request_headers: t.StrMapping = headers
+                request_headers: Mapping[str, str] = headers
                 request_params: t.Api.WebParams = request.query_params
                 if serialized_body:
                     response = client.request(

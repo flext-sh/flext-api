@@ -101,7 +101,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         self.initialize().tap_error(_log_initialize_error)
 
     @override
-    def get_supported_protocols(self) -> t.StrSequence:
+    def get_supported_protocols(self) -> Sequence[str]:
         """Get list of supported protocols."""
         return [
             c.Api.SSE.Protocol.SSE,
@@ -239,7 +239,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         *,
         url: str,
         method: str,
-        headers: t.StrMapping,
+        headers: Mapping[str, str],
         remaining: int,
     ) -> tuple[Sequence[Mapping[str, t.ContainerValue]], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
@@ -285,7 +285,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     ) -> Iterator[Mapping[str, t.ContainerValue]]:
         event_id = ""
         event_type = ""
-        data_lines: t.StrSequence = []
+        data_lines: Sequence[str] = []
         retry: int | None = None
 
         def flush_event() -> Mapping[str, t.ContainerValue] | None:

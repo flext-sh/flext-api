@@ -120,7 +120,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
-                def keys(self) -> r[t.StrSequence]:
+                def keys(self) -> r[Sequence[str]]:
                     """Get all keys."""
                     ...
 

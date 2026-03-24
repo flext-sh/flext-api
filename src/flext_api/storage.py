@@ -111,7 +111,7 @@ class FlextApiStorage:
         """Get namespace."""
         return self._namespace
 
-    def batch_delete(self, keys: t.StrSequence) -> r[bool]:
+    def batch_delete(self, keys: Sequence[str]) -> r[bool]:
         """Delete multiple keys efficiently."""
         try:
             all_deleted = True
@@ -125,7 +125,7 @@ class FlextApiStorage:
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             return r[bool].fail(str(e))
 
-    def batch_get(self, keys: t.StrSequence) -> r[Mapping[str, t.ApiJsonValue]]:
+    def batch_get(self, keys: Sequence[str]) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get multiple keys efficiently."""
         try:
             result_dict: Mapping[str, t.ApiJsonValue] = {}
@@ -338,7 +338,7 @@ class FlextApiStorage:
         self._cleanup_expired()
         return r[Sequence[tuple[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
 
-    def keys(self) -> r[t.StrSequence]:
+    def keys(self) -> r[Sequence[str]]:
         """Get all non-namespaced keys."""
         self._cleanup_expired()
 
@@ -346,7 +346,7 @@ class FlextApiStorage:
             return not k.startswith(f"{self._namespace}:")
 
         filtered_keys = u.filter(list(self._storage.keys()), key_not_namespaced)
-        return r[t.StrSequence].ok(list(filtered_keys))
+        return r[Sequence[str]].ok(list(filtered_keys))
 
     def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage metrics using Pydantic stats model."""

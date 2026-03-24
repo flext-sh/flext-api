@@ -53,7 +53,7 @@ class FlextApiPlugins:
     class Protocol(_FlextApiPluginBase):
         """Abstract protocol plugin for API protocol implementations."""
 
-        def get_supported_protocols(self) -> t.StrSequence:
+        def get_supported_protocols(self) -> Sequence[str]:
             """Get list of supported protocols."""
             return []
 
@@ -204,7 +204,7 @@ class FlextApiPlugins:
                 if issubclass(plugin.__class__, plugin_type)
             ]
 
-        def list_loaded_plugins(self) -> t.StrSequence:
+        def list_loaded_plugins(self) -> Sequence[str]:
             """Get list of loaded plugin names."""
             return list(self._loaded_plugins.keys())
 
