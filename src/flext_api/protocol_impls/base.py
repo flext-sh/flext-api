@@ -189,7 +189,7 @@ class FlextApiBaseProtocolImplementation:
 
     def _build_success_response(
         self,
-        data: Mapping[str, t.ApiJsonValue] | None = None,
+        data: t.ApiJsonValue | None = None,
         status_code: int = 200,
     ) -> Mapping[str, t.ApiJsonValue]:
         """Build success response dictionary.

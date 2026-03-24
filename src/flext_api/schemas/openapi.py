@@ -91,14 +91,20 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         """
         schema_result = _shared.load_schema_document(schema_source)
         if schema_result.is_failure:
-            return r[t.ContainerValue].fail(schema_result.error or "Failed to load OpenAPI schema")
+            return r[t.ContainerValue].fail(
+                schema_result.error or "Failed to load OpenAPI schema"
+            )
         loaded_schema = schema_result.value
         if not _shared.is_object_mapping(loaded_schema):
-            return r[t.ContainerValue].fail("OpenAPI schema must be a JSON/YAML t.NormalizedValue")
+            return r[t.ContainerValue].fail(
+                "OpenAPI schema must be a JSON/YAML t.NormalizedValue"
+            )
         normalized_schema = _shared.normalize_json_object(loaded_schema)
         validation_result = self.validate_schema(normalized_schema)
         if validation_result.is_failure:
-            return r[t.ContainerValue].fail(f"Invalid OpenAPI schema: {validation_result.error}")
+            return r[t.ContainerValue].fail(
+                f"Invalid OpenAPI schema: {validation_result.error}"
+            )
         normalized_result: t.ContainerValue = normalized_schema
         return r.ok(normalized_result)
 

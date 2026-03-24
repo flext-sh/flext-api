@@ -106,7 +106,6 @@ class FlextApi(s[FlextApiSettings]):
         config = self._get_config()
         return r[FlextApiSettings].ok(config)
 
-    @override
     def get(
         self,
         url: str,
@@ -207,7 +206,7 @@ class FlextApi(s[FlextApiSettings]):
         for k, v in params_mapping.items():
             if isinstance(v, str):
                 params_result[k] = v
-            elif isinstance(v, (int, float, bool)) or v is None:
+            elif isinstance(v, (int, float, bool)):
                 params_result[k] = f"{v}"
             else:
                 params_result[k] = ""

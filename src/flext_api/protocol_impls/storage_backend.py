@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import override
 
-from flext_core import FlextLogger, FlextRuntime, r
+from flext_core import FlextLogger, r
 
 from flext_api import p, t, u
 
@@ -98,7 +98,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         def _set() -> bool:
             _ = timeout
             storage_data = dict(self._storage)
-            storage_data[str(key)] = FlextRuntime.normalize_to_container(value)
+            storage_data[str(key)] = value
             self._storage = storage_data
             self.logger.debug("Stored data with key: %s", key)
             return True

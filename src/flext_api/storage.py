@@ -24,7 +24,7 @@ import time
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import ClassVar, Self
 
-from flext_core import FlextLogger, FlextRuntime, r
+from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from flext_api import m, t, u
@@ -90,9 +90,7 @@ class FlextApiStorage:
         self.logger = FlextLogger(__name__)
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
-        storage_kwargs_typed: Mapping[str, t.ApiJsonValue] = {
-            k: FlextRuntime.normalize_to_container(v) for k, v in storage_kwargs.items()
-        }
+        storage_kwargs_typed: Mapping[str, t.ApiJsonValue] = dict(storage_kwargs)
         super().__init__(**storage_kwargs_typed)
         config_dict = self._normalize_config(config_obj)
         self._apply_config(config_dict, max_size_val, default_ttl_val)
@@ -190,7 +188,7 @@ class FlextApiStorage:
             return r[bool].ok(value=True)
         return r[bool].fail(f"Key not found: {key}")
 
-    def deserialize_json(self, json_str: str) -> r[t.ApiJsonValue]:
+    def deserialize_json(self, json_str: str) -> r[t.ContainerValue]:
         """Deserialize from JSON using Pydantic TypeAdapter."""
         return u.try_(
             lambda: _JSON_VALUE_ADAPTER.validate_json(json_str),
@@ -383,6 +381,8 @@ class FlextApiStorage:
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using Pydantic TypeAdapter."""
+        if data is None:
+            return r[str].ok("null")
         return u.try_(
             lambda: _JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
             catch=(ValueError, TypeError, KeyError, ConnectionError),
@@ -419,9 +419,11 @@ class FlextApiStorage:
         metadata = metadata_result.value
         json_value = value
         self._storage[key] = json_value
-        value_json = metadata.value
-        ttl_json: t.ApiJsonValue = metadata.ttl if metadata.ttl is not None else None
-        metadata_dict: Mapping[str, t.ApiJsonValue] = {
+        value_json: t.ContainerValue = (
+            metadata.value if metadata.value is not None else ""
+        )
+        ttl_json: float = metadata.ttl if metadata.ttl is not None else 0.0
+        metadata_dict: Mapping[str, t.ContainerValue] = {
             "value": value_json,
             "timestamp": metadata.timestamp,
             "ttl": ttl_json,
@@ -651,7 +653,7 @@ class FlextApiStorage:
         """Extract optional field from config t.NormalizedValue."""
         field_value = config_obj.model_dump().get(field_name)
         if field_value is not None:
-            return FlextRuntime.normalize_to_container(field_value)
+            return u.Api.RequestUtils.to_json_value(field_value)
         return None
 
     def _extract_storage_kwargs(

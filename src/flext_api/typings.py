@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 
 from flext_core import FlextTypes
 
@@ -68,7 +68,10 @@ class FlextApiTypes(FlextTypes):
         type RouteConfig = Mapping[str, FlextTypes.ContainerValue]
         type RouteData = Mapping[
             str,
-            FlextTypes.ContainerValue | FlextTypes.ResourceCallable | None,
+            FlextTypes.ContainerValue
+            | FlextTypes.ResourceCallable
+            | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
+            | None,
         ]
         "Route registration data structure."
         type SchemaValue = Mapping[str, FlextTypes.ContainerValue] | str

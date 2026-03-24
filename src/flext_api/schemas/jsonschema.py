@@ -51,7 +51,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     """
 
     @staticmethod
-    def _is_api_json_value(value: t.ContainerValue) -> TypeIs[t.ApiJsonValue]:
+    def _is_api_json_value(value: t.ApiJsonValue) -> TypeIs[t.ApiJsonValue]:
         return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
     @staticmethod

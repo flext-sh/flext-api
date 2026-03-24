@@ -260,11 +260,12 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                 connect_sse(client, method, url, headers=headers) as event_source,
             ):
                 for event in event_source.iter_sse():
+                    retry_raw = getattr(event, "retry", None)
                     parsed = self._parse_sse_event(
                         event_id=getattr(event, "id", ""),
                         event_type=getattr(event, "event", ""),
                         data=getattr(event, "data", ""),
-                        retry=getattr(event, "retry", None),
+                        retry=retry_raw if retry_raw is not None else "",
                     )
                     retry_timeout = self._extract_retry_timeout(parsed)
                     self._record_event_id(parsed)
@@ -307,7 +308,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                 event_id=event_id,
                 event_type=event_type,
                 data="\n".join(data_lines),
-                retry=retry,
+                retry=retry if retry is not None else "",
             )
 
         for raw_line in lines:
@@ -382,11 +383,11 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         data: t.ContainerValue,
         retry: t.ContainerValue,
     ) -> Mapping[str, t.ContainerValue]:
-        parsed_id = str(event_id) if event_id is not None else ""
+        parsed_id = str(event_id) if event_id else ""
         parsed_type = str(event_type) if event_type else "message"
-        parsed_data = "" if data is None else str(data)
+        parsed_data = str(data) if data else ""
         parsed_retry: int | None = None
-        if retry is not None and isinstance(retry, (int, float, str)):
+        if isinstance(retry, (int, float, str)):
             try:
                 parsed_retry = int(retry)
             except (TypeError, ValueError):

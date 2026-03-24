@@ -183,10 +183,12 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             chunk_size=chunk_size,
         )
         if chunk_size <= 0:
-            return r.fail("chunk_size must be greater than 0")
+            return r[Iterator[bytes]].fail("chunk_size must be greater than 0")
         headers_result = self._extract_headers_from_model(request)
         if headers_result.is_failure:
-            return r.fail(headers_result.error or "Headers extraction failed")
+            return r[Iterator[bytes]].fail(
+                headers_result.error or "Headers extraction failed"
+            )
         method = request.method.upper()
         url = str(request.url)
         request_kwargs = self._build_request_kwargs(
@@ -200,7 +202,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         try:
             call_args = m.Api.HttpRequestCallArgs.model_validate(request_kwargs)
         except ValidationError as e:
-            return r.fail(f"Invalid streaming request arguments: {e}")
+            return r[Iterator[bytes]].fail(f"Invalid streaming request arguments: {e}")
 
         def _iter_stream_chunks() -> Iterator[bytes]:
             timeout_config = (
@@ -261,7 +263,11 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[m.HttpRequest].fail(url_result.error or "URL extraction failed")
         headers = self._extract_headers(request)
         body_value = self._extract_body(request)
-        body = u.Api.RequestUtils.to_request_body(body_value)
+        body = (
+            u.Api.RequestUtils.to_request_body(body_value)
+            if body_value is not None
+            else ""
+        )
         http_request = m.HttpRequest(
             method=method_result.value,
             url=url_result.value,
@@ -287,8 +293,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             "url": url,
             "headers": headers,
             "params": params,
-            "timeout": timeout,
         }
+        if timeout is not None:
+            kwargs["timeout"] = timeout
         if body is None:
             return kwargs
         content_type = self._get_content_type(headers)
@@ -433,8 +440,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         return error_msg
 
     def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        if value is None:
-            return None
         if isinstance(value, list):
             empty_list: Sequence[t.ContainerValue] = []
             return empty_list

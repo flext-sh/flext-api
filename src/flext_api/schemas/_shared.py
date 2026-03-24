@@ -19,10 +19,6 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import FlextApiModels, t, u
 
-DictField = FlextApiModels.Api.DictField
-StringField = FlextApiModels.Api.StringField
-IntField = FlextApiModels.Api.IntField
-
 _JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 _CONTAINER_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
@@ -132,8 +128,6 @@ class FlextApiSchemaShared:
             Converted value as a general container type
 
         """
-        if value is None:
-            return None
         if isinstance(value, list):
             normalized_values: Sequence[t.ContainerValue] = [
                 FlextApiSchemaShared.to_general_value(item) for item in value
@@ -170,7 +164,7 @@ class FlextApiSchemaShared:
                 return r[t.ContainerValueMapping].fail(
                     f"'{field_name}' field must be a dictionary",
                 )
-            parsed = DictField(value=dict(value))
+            parsed = FlextApiModels.Api.DictField(value=dict(value))
         except ValidationError:
             return r[t.ContainerValueMapping].fail(
                 f"'{field_name}' field must be a dictionary",
@@ -192,7 +186,7 @@ class FlextApiSchemaShared:
         try:
             if not isinstance(value, str):
                 return r[str].fail(f"'{field_name}' field must be a string")
-            parsed = StringField(value=value)
+            parsed = FlextApiModels.Api.StringField(value=value)
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)
@@ -212,7 +206,7 @@ class FlextApiSchemaShared:
         try:
             if not isinstance(value, int):
                 return r[int].fail(f"'{field_name}' field must be an integer")
-            parsed = IntField(value=value)
+            parsed = FlextApiModels.Api.IntField(value=value)
         except ValidationError:
             return r[int].fail(f"'{field_name}' field must be an integer")
         return r[int].ok(parsed.value)
@@ -269,10 +263,7 @@ load_and_validate_schema_document = (
 )
 
 __all__ = [
-    "DictField",
     "FlextApiSchemaShared",
-    "IntField",
-    "StringField",
     "is_container_value",
     "is_object_mapping",
     "load_and_validate_schema_document",

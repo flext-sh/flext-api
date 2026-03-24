@@ -22,10 +22,10 @@ from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, 
 from typing import ClassVar, override
 
 from fastapi import FastAPI
-from flext_core import FlextLogger, FlextRuntime, FlextService, e, r, x
+from flext_core import FlextLogger, FlextService, e, r, x
 from pydantic import TypeAdapter, ValidationError
 
-from flext_api import c, p, t, u
+from flext_api import c, p, t
 
 
 class FlextApiServer(FlextService[bool], x.Validation):
@@ -101,7 +101,9 @@ class FlextApiServer(FlextService[bool], x.Validation):
             options_json: t.ConfigurationMapping = dict(options.items())
             route_data: MutableMapping[
                 str,
-                t.ContainerValue | t.ResourceCallable | None,
+                t.ContainerValue
+                | Callable[..., t.Api.HttpResponseDict | str | None]
+                | None,
             ] = {
                 "path": path,
                 "method": method,
@@ -111,15 +113,9 @@ class FlextApiServer(FlextService[bool], x.Validation):
             if schema is not None:
                 match schema:
                     case str() as schema_str:
-                        normalized_schema_input = schema_str
+                        route_data["schema"] = schema_str
                     case _:
-                        normalized_schema_input = str(schema)
-                schema_normalized = FlextRuntime.normalize_to_container(
-                    normalized_schema_input,
-                )
-                route_data["schema"] = u.Api.RequestUtils.to_json_value(
-                    schema_normalized,
-                )
+                        route_data["schema"] = str(schema)
             self._routes[route_key] = route_data
             self._logger.info(
                 "Endpoint registered",

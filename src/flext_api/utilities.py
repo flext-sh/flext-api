@@ -61,9 +61,17 @@ class FlextApiUtilities(FlextWebUtilities):
                 enum_cls: type[E],
             ) -> type[E]:
                 """Create Annotated type with automatic enum coercion."""
+
+                def _coerce(v: str | E) -> E:
+                    result = FlextWebUtilities.parse_enum(enum_cls, v)
+                    if result.is_failure:
+                        msg = result.error or f"Invalid {enum_cls.__name__}: {v!r}"
+                        raise ValueError(msg)
+                    return enum_cls(v) if not isinstance(v, enum_cls) else v
+
                 annotated: type[E] = Annotated[  # type: ignore[assignment]
                     enum_cls,
-                    BeforeValidator(FlextWebUtilities.Enum.coerce_validator(enum_cls)),
+                    BeforeValidator(_coerce),
                 ]
                 return annotated
 
@@ -80,14 +88,20 @@ class FlextApiUtilities(FlextWebUtilities):
                     return r[t.Api.RequestBody].ok(data)
                 if kwargs is not None and "data" in kwargs:
                     raw_data = kwargs["data"]
-                    return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data),
-                    )
+                    if raw_data is not None:
+                        return r[t.Api.RequestBody].ok(
+                            FlextApiUtilities.Api.RequestUtils.to_request_body(
+                                raw_data
+                            ),
+                        )
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
-                    return r[t.Api.RequestBody].ok(
-                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json),
-                    )
+                    if raw_json is not None:
+                        return r[t.Api.RequestBody].ok(
+                            FlextApiUtilities.Api.RequestUtils.to_request_body(
+                                raw_json
+                            ),
+                        )
                 return r[t.Api.RequestBody].ok({})
 
             @staticmethod
@@ -106,9 +120,11 @@ class FlextApiUtilities(FlextWebUtilities):
                 return r[t.StrMapping].ok(merged)
 
             @staticmethod
-            def to_json_value(value: t.ContainerValue) -> t.ApiJsonValue:
-                """Normalize arbitrary value to t.NormalizedValue."""
-                if value is None or isinstance(value, t.PRIMITIVES_TYPES):
+            def to_json_value(value: t.ApiJsonValue) -> t.ContainerValue:
+                """Normalize arbitrary value to ContainerValue (None becomes empty string)."""
+                if value is None:
+                    return ""
+                if isinstance(value, t.PRIMITIVES_TYPES):
                     return value
                 if isinstance(value, Mapping):
                     converted: MutableMapping[str, t.ContainerValue] = {}
@@ -118,10 +134,11 @@ class FlextApiUtilities(FlextWebUtilities):
                         )
                     return converted
                 if isinstance(value, Sequence) and (not isinstance(value, str | bytes)):
-                    return [
+                    result: Sequence[t.ContainerValue] = [
                         FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         for item in value
                     ]
+                    return result
                 if isinstance(value, bytes):
                     return value.decode("utf-8", errors="replace")
                 return str(value)
@@ -183,14 +200,17 @@ class FlextApiUtilities(FlextWebUtilities):
             error_code: str | None = None,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Build error response - returns plain dict."""
-            return {
-                "success": False,
-                "error": {
-                    "message": message,
-                    "status_code": status_code,
-                    "code": error_code,
-                },
+            error_detail: MutableMapping[str, t.ContainerValue] = {
+                "message": message,
+                "status_code": status_code,
             }
+            if error_code is not None:
+                error_detail["code"] = error_code
+            result: MutableMapping[str, t.ApiJsonValue] = {
+                "success": False,
+                "error": error_detail,
+            }
+            return result
 
         @staticmethod
         def build_error_result(
@@ -234,7 +254,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def build_paginated_response(
-            data: Sequence[t.ApiJsonValue],
+            data: t.ContainerValueList,
             page: int,
             page_size: int,
             total: int | None = None,
@@ -248,30 +268,33 @@ class FlextApiUtilities(FlextWebUtilities):
             total_pages = (
                 (total_items + page_size - 1) // page_size if page_size > 0 else 0
             )
-            return r[Mapping[str, t.ApiJsonValue]].ok({
+            pagination_info: Mapping[str, t.ContainerValue] = {
+                "page": page,
+                "page_size": page_size,
+                "total": total_items,
+                "total_pages": total_pages,
+            }
+            response: MutableMapping[str, t.ApiJsonValue] = {
                 "success": True,
                 "data": data,
-                "pagination": {
-                    "page": page,
-                    "page_size": page_size,
-                    "total": total_items,
-                    "total_pages": total_pages,
-                },
-            })
+                "pagination": pagination_info,
+            }
+            return r[Mapping[str, t.ApiJsonValue]].ok(response)
 
         @staticmethod
         def build_pagination_response(
-            pagination_data: Mapping[str, t.ApiJsonValue],
+            pagination_data: t.ContainerValueMapping,
         ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
                 return r[Mapping[str, t.ApiJsonValue]].fail(
                     "pagination_data must contain 'data' key",
                 )
-            return r[Mapping[str, t.ApiJsonValue]].ok({
+            result: MutableMapping[str, t.ApiJsonValue] = {
                 "success": True,
                 "pagination": pagination_data,
-            })
+            }
+            return r[Mapping[str, t.ApiJsonValue]].ok(result)
 
         @staticmethod
         def extract_page_params(
@@ -321,7 +344,7 @@ class FlextApiUtilities(FlextWebUtilities):
 
         @staticmethod
         def prepare_pagination_data(
-            data: Sequence[t.ApiJsonValue],
+            data: t.ContainerValueList,
             total: int,
             page: int,
             page_size: int,
@@ -337,9 +360,9 @@ class FlextApiUtilities(FlextWebUtilities):
             total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
             has_next = page < total_pages
             has_prev = page > 1
-            next_page = page + 1 if has_next else None
-            prev_page = page - 1 if has_prev else None
-            return r[Mapping[str, t.ApiJsonValue]].ok({
+            next_page: int = page + 1 if has_next else 0
+            prev_page: int = page - 1 if has_prev else 0
+            result: MutableMapping[str, t.ApiJsonValue] = {
                 "data": data,
                 "total": total,
                 "page": page,
@@ -349,7 +372,8 @@ class FlextApiUtilities(FlextWebUtilities):
                 "has_prev": has_prev,
                 "next_page": next_page,
                 "prev_page": prev_page,
-            })
+            }
+            return r[Mapping[str, t.ApiJsonValue]].ok(result)
 
         @staticmethod
         def validate_pagination_params(

@@ -57,12 +57,15 @@ class FlextApiAdapters:
                             body_value = "<binary data>"
                     else:
                         body_value = request.body
+                message_body: t.ContainerValue = (
+                    body_value if body_value is not None else ""
+                )
                 message: t.JsonObject = {
                     "type": "request",
                     "method": request.method,
                     "url": str(request.url),
                     "headers": dict(request.headers),
-                    "body": body_value,
+                    "body": message_body,
                 }
                 return r[t.JsonObject | m.HttpRequest].ok(message)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:

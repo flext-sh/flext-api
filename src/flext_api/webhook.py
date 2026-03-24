@@ -41,8 +41,8 @@ class FlextWebhookHandler(FlextService[bool]):
 
     @staticmethod
     def _is_object_mapping(
-        value: t.ContainerValue,
-    ) -> TypeIs[Mapping[str, t.ContainerValue]]:
+        value: t.GuardInput,
+    ) -> TypeIs[t.ContainerMapping]:
         return isinstance(value, Mapping)
 
     @staticmethod
@@ -51,8 +51,6 @@ class FlextWebhookHandler(FlextService[bool]):
 
     @staticmethod
     def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
-        if value is None:
-            return None
         if u.is_primitive(value):
             return value
         if FlextWebhookHandler._is_object_list(value):
