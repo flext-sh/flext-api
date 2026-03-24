@@ -87,7 +87,7 @@ class FlextApi(s[FlextApiSettings]):
     def delete(
         self,
         url: str,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[m.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
@@ -110,7 +110,7 @@ class FlextApi(s[FlextApiSettings]):
     def get(
         self,
         url: str,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[m.HttpResponse]:
         """HTTP GET - delegates to generic method."""
@@ -125,7 +125,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[m.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
@@ -141,7 +141,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[m.HttpResponse]:
         """HTTP POST - delegates to generic method."""
@@ -157,7 +157,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[m.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
@@ -224,7 +224,7 @@ class FlextApi(s[FlextApiSettings]):
         method: str,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
         timeout: float | None = None,
     ) -> r[m.HttpResponse]:

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence, Mapping, MutableMapping
+from collections.abc import Mapping, MutableMapping
 
 from flext_core import FlextLogger, r
 
@@ -101,7 +101,7 @@ class BaseProtocolImplementation:
             "supported_protocols": self.get_supported_protocols(),
         }
 
-    def get_supported_protocols(self) -> Sequence[str]:
+    def get_supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols.
 
         Returns:

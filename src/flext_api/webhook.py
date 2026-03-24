@@ -208,7 +208,7 @@ class FlextWebhookHandler(FlextService[bool]):
     def receive_webhook(
         self,
         payload: bytes | str,
-        headers: Mapping[str, str],
+        headers: t.StrMapping,
     ) -> r[t.JsonObject]:
         """Receive and process webhook request.
 
@@ -476,7 +476,7 @@ class FlextWebhookHandler(FlextService[bool]):
     def _verify_signature(
         self,
         payload: bytes | str,
-        headers: Mapping[str, str],
+        headers: t.StrMapping,
     ) -> r[bool]:
         """Verify webhook signature.
 

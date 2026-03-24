@@ -9,12 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence, Mapping, MutableMapping
+from collections.abc import Mapping, MutableMapping
 from typing import ClassVar
 
 from flext_core import FlextRegistry, r
 
-from flext_api import FlextApiPlugins, p
+from flext_api import FlextApiPlugins, p, t
 
 
 class FlextApiRegistry(FlextRegistry):
@@ -130,19 +130,19 @@ class FlextApiRegistry(FlextRegistry):
             return r[FlextApiPlugins.Transport].fail(result.error)
         return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
 
-    def list_auth_providers(self) -> r[Sequence[str]]:
+    def list_auth_providers(self) -> r[t.StrSequence]:
         """List all registered authentication provider names."""
         return self.list_plugins(self.AUTH_PROVIDERS)
 
-    def list_protocols(self) -> r[Sequence[str]]:
+    def list_protocols(self) -> r[t.StrSequence]:
         """List all registered protocol names."""
         return self.list_plugins(self.PROTOCOLS)
 
-    def list_schemas(self) -> r[Sequence[str]]:
+    def list_schemas(self) -> r[t.StrSequence]:
         """List all registered schema system names."""
         return self.list_plugins(self.SCHEMAS)
 
-    def list_transports(self) -> r[Sequence[str]]:
+    def list_transports(self) -> r[t.StrSequence]:
         """List all registered transport names."""
         return self.list_plugins(self.TRANSPORTS)
 

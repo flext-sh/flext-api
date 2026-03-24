@@ -101,30 +101,30 @@ class FlextApiSettingsManager:
             return r[str].ok(base_url_value)
         return r[str].fail(f"Invalid base_url type: {type(base_url_value)}")
 
-    def _extract_headers(self) -> r[Mapping[str, str]]:
+    def _extract_headers(self) -> r[t.StrMapping]:
         """Extract headers from config - no fallbacks."""
         if self._config is None:
-            return r[Mapping[str, str]].fail("No configuration set")
+            return r[t.StrMapping].fail("No configuration set")
         if "headers" not in self._config:
-            return r[Mapping[str, str]].ok({})
+            return r[t.StrMapping].ok({})
         headers_value = self._config["headers"]
         if isinstance(headers_value, Mapping):
-            config_headers_dict: Mapping[str, str] = {
+            config_headers_dict: t.StrMapping = {
                 str(k): str(v) for k, v in headers_value.items()
             }
-            return r[Mapping[str, str]].ok(config_headers_dict)
+            return r[t.StrMapping].ok(config_headers_dict)
         if isinstance(headers_value, str):
             try:
                 parsed_headers = _JSON_HEADERS_ADAPTER.validate_json(headers_value)
-                parsed_headers_dict: Mapping[str, str] = {
+                parsed_headers_dict: t.StrMapping = {
                     str(key_obj): str(value_obj)
                     for key_obj, value_obj in parsed_headers.items()
                 }
-                return r[Mapping[str, str]].ok(parsed_headers_dict)
+                return r[t.StrMapping].ok(parsed_headers_dict)
             except (ValidationError, TypeError) as e:
-                return r[Mapping[str, str]].fail(f"Failed to parse headers JSON: {e}")
+                return r[t.StrMapping].fail(f"Failed to parse headers JSON: {e}")
         else:
-            return r[Mapping[str, str]].fail(
+            return r[t.StrMapping].fail(
                 f"Invalid headers type: {type(headers_value)}",
             )
 

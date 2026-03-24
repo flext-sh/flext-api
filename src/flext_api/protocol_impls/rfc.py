@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence, Mapping
+from collections.abc import Mapping
 
 from flext_core import r
 from pydantic import ValidationError
@@ -94,7 +94,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         self,
         data: Mapping[str, t.ContainerValue] | None = None,
         status_code: int = 200,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Build RFC-compliant success response (RFC 7231).
 
@@ -112,7 +112,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             json_data = {}
             for key, value in data.items():
                 json_data[key] = value
-        web_headers: Mapping[str, str | Sequence[str]] | None = None
+        web_headers: Mapping[str, str | t.StrSequence] | None = None
         if headers is not None:
             web_headers = dict(headers)
         success_response: Mapping[str, t.ContainerValue] = {"status_code": status_code}
@@ -142,7 +142,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
     def _extract_headers(
         self,
         request: Mapping[str, t.ContainerValue],
-    ) -> Mapping[str, str]:
+    ) -> t.StrMapping:
         """Extract headers from request (RFC 7230 compliant).
 
         Args:
@@ -158,7 +158,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             parsed = m.Api._HeadersRequest.model_validate(request)
         except ValidationError:
             return {}
-        normalized_headers: Mapping[str, str] = {}
+        normalized_headers: t.StrMapping = {}
         for key, value in parsed.headers.items():
             normalized_headers[key.lower()] = value
         return normalized_headers
@@ -221,7 +221,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[str].fail("URL must be a string (RFC 7230)")
         return r[str].ok(parsed.url)
 
-    def _get_content_type(self, headers: Mapping[str, str]) -> str:
+    def _get_content_type(self, headers: t.StrMapping) -> str:
         """Extract Content-Type from headers (RFC 7231).
 
         Args:

@@ -48,8 +48,8 @@ class FlextApiTypes(FlextTypes):
         """
 
         type WebData = FlextTypes.FileContent | Mapping[str, FlextTypes.ContainerValue]
-        type WebHeaders = Mapping[str, FlextTypes.Scalar | Sequence[str]]
-        type WebParamValue = str | Sequence[str]
+        type WebHeaders = Mapping[str, FlextTypes.Scalar | t.StrSequence]
+        type WebParamValue = str | t.StrSequence
         type WebParams = Mapping[str, WebParamValue]
         type ResponseList = Sequence[Mapping[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
@@ -89,7 +89,7 @@ class FlextApiTypes(FlextTypes):
             str,
             t.StrMapping
             | Mapping[str, FlextTypes.ContainerValue]
-            | Mapping[str, FlextTypes.Scalar | Sequence[str]]
+            | Mapping[str, FlextTypes.Scalar | t.StrSequence]
             | float
             | None,
         ]

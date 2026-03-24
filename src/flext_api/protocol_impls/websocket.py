@@ -63,7 +63,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _connection: ClientConnection | None
     _connected: bool
     _url: str
-    _headers: Mapping[str, str]
+    _headers: t.StrMapping
     _on_message_handlers: Sequence[Callable[[str | bytes], None]]
     _on_connect_handlers: Sequence[Callable[[], None]]
     _on_disconnect_handlers: Sequence[Callable[[], None]]
@@ -173,7 +173,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Check if WebSocket is connected."""
         return self._connected
 
-    def connect(self, url: str, headers: Mapping[str, str] | None = None) -> r[bool]:
+    def connect(self, url: str, headers: t.StrMapping | None = None) -> r[bool]:
         """Connect to WebSocket server.
 
         Args:
@@ -184,7 +184,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         r indicating success or failure
 
         """
-        connect_headers: Mapping[str, str] = {}
+        connect_headers: t.StrMapping = {}
         if headers is not None:
             connect_headers.update(headers)
         return self._connect(url, connect_headers)
@@ -214,7 +214,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
     @override
-    def get_supported_protocols(self) -> Sequence[str]:
+    def get_supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols.
 
         Returns:
@@ -346,7 +346,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             c.Api.WebSocket.Protocol.WSS,
         }
 
-    def _connect(self, url: str, headers: Mapping[str, str]) -> r[bool]:
+    def _connect(self, url: str, headers: t.StrMapping) -> r[bool]:
         """Internal connection implementation.
 
         Args:
