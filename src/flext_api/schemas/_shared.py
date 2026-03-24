@@ -256,9 +256,29 @@ class FlextApiSchemaShared:
         return r[t.ContainerValue].ok(normalized_result)
 
 
+# Module-level aliases for pyrefly compatibility (callers do `_shared.parse_dict_field(...)`)
+is_container_value = FlextApiSchemaShared.is_container_value
+is_object_mapping = FlextApiSchemaShared.is_object_mapping
+load_schema_document = FlextApiSchemaShared.load_schema_document
+normalize_json_object = FlextApiSchemaShared.normalize_json_object
+to_general_value = FlextApiSchemaShared.to_general_value
+parse_dict_field = FlextApiSchemaShared.parse_dict_field
+parse_string_field = FlextApiSchemaShared.parse_string_field
+parse_int_field = FlextApiSchemaShared.parse_int_field
+load_and_validate_schema_document = FlextApiSchemaShared.load_and_validate_schema_document
+
 __all__ = [
     "DictField",
     "FlextApiSchemaShared",
     "IntField",
     "StringField",
+    "is_container_value",
+    "is_object_mapping",
+    "load_and_validate_schema_document",
+    "load_schema_document",
+    "normalize_json_object",
+    "parse_dict_field",
+    "parse_int_field",
+    "parse_string_field",
+    "to_general_value",
 ]
