@@ -30,7 +30,7 @@ class TestMessagePackUnpackb:
 
         # Assert
         tm.that(result.is_success, eq=True)
-        tm.that(result.value == {"key": "value"}, eq=True)
+        tm.that(result.value, eq={"key": "value"})
 
     def test_unpackb_success_with_list(self) -> None:
         """Test successful unpacking of msgpack bytes to list."""
@@ -42,7 +42,7 @@ class TestMessagePackUnpackb:
 
         # Assert
         tm.that(result.is_success, eq=True)
-        tm.that(result.value == [1, 2, 3], eq=True)
+        tm.that(result.value, eq=[1, 2, 3])
 
     def test_unpackb_success_with_scalar(self) -> None:
         """Test successful unpacking of msgpack bytes to scalar."""
@@ -54,7 +54,7 @@ class TestMessagePackUnpackb:
 
         # Assert
         tm.that(result.is_success, eq=True)
-        tm.that(result.value == "hello", eq=True)
+        tm.that(result.value, eq="hello")
 
     def test_unpackb_success_with_int(self) -> None:
         """Test successful unpacking of msgpack bytes to integer."""
@@ -66,7 +66,7 @@ class TestMessagePackUnpackb:
 
         # Assert
         tm.that(result.is_success, eq=True)
-        tm.that(result.value == 42, eq=True)
+        tm.that(result.value, eq=42)
 
     def test_unpackb_failure_msgpack_not_available(self) -> None:
         """Test failure when msgpack module is not available."""
@@ -80,7 +80,7 @@ class TestMessagePackUnpackb:
             # Assert
             tm.that(result.is_failure, eq=True)
             assert result.error is not None
-            tm.that("msgpack module not available" in result.error, eq=True)
+            tm.that(result.error, has="msgpack module not available")
 
     def test_unpackb_failure_unpackb_function_not_found(self) -> None:
         """Test failure when msgpack.unpackb function is not found."""
@@ -97,7 +97,7 @@ class TestMessagePackUnpackb:
             # Assert
             tm.that(result.is_failure, eq=True)
             assert result.error is not None
-            tm.that("msgpack.unpackb function not found" in result.error, eq=True)
+            tm.that(result.error, has="msgpack.unpackb function not found")
 
     def test_unpackb_failure_invalid_data(self) -> None:
         """Test failure when data is invalid/unparseable."""
@@ -110,7 +110,7 @@ class TestMessagePackUnpackb:
         # Assert
         tm.that(result.is_failure, eq=True)
         assert result.error is not None
-        tm.that("msgpack deserialization failed" in result.error, eq=True)
+        tm.that(result.error, has="msgpack deserialization failed")
 
     def test_unpackb_failure_validation_error(self) -> None:
         """Test failure when validation fails on unpacked data."""
@@ -130,7 +130,7 @@ class TestMessagePackUnpackb:
             # Assert
             tm.that(result.is_failure, eq=True)
             assert result.error is not None
-            tm.that("validation" in result.error.lower(), eq=True)
+            tm.that(result.error.lower(), has="validation")
 
     def test_unpackb_returns_result_type(self) -> None:
         """Test that unpackb returns r[T] type."""

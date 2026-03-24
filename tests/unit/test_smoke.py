@@ -8,4 +8,4 @@ from flext_api import FlextApi
 
 
 def test_package_imports_main_facade() -> None:
-    tm.that(FlextApi is not None, eq=True)
+    tm.that(FlextApi, none=False)
