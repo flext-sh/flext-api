@@ -16,7 +16,6 @@ from collections.abc import Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import FlextModels
 from flext_web import FlextWebModels
 from pydantic import (
     BeforeValidator,
@@ -27,20 +26,6 @@ from pydantic import (
 )
 
 from flext_api import c, t, u
-
-
-def _normalize_request_body(v: t.ApiJsonValue) -> t.Api.RequestBody:
-    """Normalize body - empty dict is valid."""
-    if v is None:
-        return {}
-    return u.Api.RequestUtils.to_request_body(v)
-
-
-def _normalize_response_body(v: t.ApiJsonValue) -> t.Api.ResponseBody:
-    """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
-    if v is None:
-        return None  # Explicit None is valid (e.g., for 204 responses)
-    return u.Api.RequestUtils.to_request_body(v)
 
 
 class FlextApiModels(FlextWebModels):
@@ -56,11 +41,25 @@ class FlextApiModels(FlextWebModels):
     class Api:
         """Api Models."""
 
+        @staticmethod
+        def _normalize_request_body(v: t.ApiJsonValue) -> t.Api.RequestBody:
+            """Normalize body - empty dict is valid."""
+            if v is None:
+                return {}
+            return u.Api.RequestUtils.to_request_body(v)
+
+        @staticmethod
+        def _normalize_response_body(v: t.ApiJsonValue) -> t.Api.ResponseBody:
+            """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
+            if v is None:
+                return None  # Explicit None is valid (e.g., for 204 responses)
+            return u.Api.RequestUtils.to_request_body(v)
+
         # =========================================================================
         # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
         # =========================================================================
 
-        class HttpRequest(FlextModels.Value):
+        class HttpRequest(FlextWebModels.Value):
             """Immutable HTTP request value t.NormalizedValue.
 
             Represents a complete HTTP request with all necessary parameters.
@@ -93,7 +92,9 @@ class FlextApiModels(FlextWebModels):
             body: Annotated[
                 Annotated[
                     t.Api.RequestBody,
-                    BeforeValidator(_normalize_request_body),
+                    BeforeValidator(
+                        lambda v: FlextApiModels.Api._normalize_request_body(v)
+                    ),
                 ],
                 Field(
                     default_factory=dict,
@@ -129,7 +130,7 @@ class FlextApiModels(FlextWebModels):
                 # Default from Constants
                 return c.Api.ContentType.JSON
 
-        class HttpResponse(FlextModels.Value):
+        class HttpResponse(FlextWebModels.Value):
             """Immutable HTTP response value t.NormalizedValue.
 
             Represents a complete HTTP response with all returned data.
@@ -153,7 +154,9 @@ class FlextApiModels(FlextWebModels):
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
-                    BeforeValidator(_normalize_response_body),
+                    BeforeValidator(
+                        lambda v: FlextApiModels.Api._normalize_response_body(v)
+                    ),
                 ],
                 Field(
                     default_factory=dict,
@@ -208,7 +211,7 @@ class FlextApiModels(FlextWebModels):
         # URL AND PARSING MODELS
         # =========================================================================
 
-        class Url(FlextModels.Value):
+        class Url(FlextWebModels.Value):
             """URL parsing and validation model (immutable value t.NormalizedValue)."""
 
             url: Annotated[
@@ -281,7 +284,7 @@ class FlextApiModels(FlextWebModels):
         # CONFIGURATION MODELS
         # =========================================================================
 
-        class ClientConfig(FlextModels.Value):
+        class ClientConfig(FlextWebModels.Value):
             """HTTP client configuration model (immutable value t.NormalizedValue)."""
 
             base_url: Annotated[
@@ -332,7 +335,7 @@ class FlextApiModels(FlextWebModels):
         # PAGINATION MODELS
         # =========================================================================
 
-        class PaginationInfo(FlextModels.Value):
+        class PaginationInfo(FlextWebModels.Value):
             """Pagination information model for HTTP operations (immutable value t.NormalizedValue)."""
 
             page: Annotated[
@@ -385,7 +388,7 @@ class FlextApiModels(FlextWebModels):
         # ERROR MODELS
         # =========================================================================
 
-        class Error(FlextModels.Value):
+        class Error(FlextWebModels.Value):
             """HTTP error response model (immutable value t.NormalizedValue)."""
 
             message: Annotated[
@@ -439,7 +442,7 @@ class FlextApiModels(FlextWebModels):
         # QUERY/FILTER MODELS
         # =========================================================================
 
-        class QueryParams(FlextModels.Value):
+        class QueryParams(FlextWebModels.Value):
             """Query parameters model (immutable value t.NormalizedValue)."""
 
             params: Annotated[
@@ -461,7 +464,7 @@ class FlextApiModels(FlextWebModels):
                 updated_params = {**self.params, name: value}
                 return self.model_copy(update={"params": updated_params})
 
-        class Headers(FlextModels.Value):
+        class Headers(FlextWebModels.Value):
             """HTTP headers model (immutable value t.NormalizedValue)."""
 
             headers: Annotated[
@@ -589,7 +592,7 @@ class FlextApiModels(FlextWebModels):
         # SCHEMA FIELD MODELS - Moved from schemas/_shared.py
         # =========================================================================
 
-        class DictField(FlextModels.Value):
+        class DictField(FlextWebModels.Value):
             """Pydantic model for validating dictionary fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[
@@ -597,12 +600,12 @@ class FlextApiModels(FlextWebModels):
                 Field(default_factory=dict, description="Dictionary value"),
             ]
 
-        class StringField(FlextModels.Value):
+        class StringField(FlextWebModels.Value):
             """Pydantic model for validating string fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[str, Field(..., description="String value")]
 
-        class IntField(FlextModels.Value):
+        class IntField(FlextWebModels.Value):
             """Pydantic model for validating integer fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[int, Field(..., description="Integer value")]
@@ -611,7 +614,7 @@ class FlextApiModels(FlextWebModels):
         # PRIVATE INTERNAL MODELS (moved from protocol_impls for MRO compliance)
         # =========================================================================
 
-        class _HttpRequestCallArgs(FlextModels.Value):
+        class _HttpRequestCallArgs(FlextWebModels.Value):
             """Internal model for validating HTTP request call arguments."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -641,7 +644,7 @@ class FlextApiModels(FlextWebModels):
                 Field(default=None, description="Request timeout"),
             ]
 
-        class _MappingBodyModel(FlextModels.Value):
+        class _MappingBodyModel(FlextWebModels.Value):
             """Internal model for wrapping mapping body data."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -653,7 +656,7 @@ class FlextApiModels(FlextWebModels):
                 Field(..., description="Request body as mapping"),
             ]
 
-        class _HttpClientRequestOptions(FlextModels.Value):
+        class _HttpClientRequestOptions(FlextWebModels.Value):
             """Internal model for HTTP client request options."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
@@ -685,12 +688,12 @@ class FlextApiModels(FlextWebModels):
                 Field(default_factory=dict, description="Request headers"),
             ]
 
-        class _HeadersRequest(FlextModels.Value):
+        class _HeadersRequest(FlextWebModels.Value):
             """Encapsulates RFC header constraint for requests."""
 
             headers: Annotated[t.StrMapping, Field(default_factory=dict)]
 
-        class _MethodRequest(FlextModels.Value):
+        class _MethodRequest(FlextWebModels.Value):
             """Encapsulates RFC method constraint for requests."""
 
             method: Annotated[str, Field(min_length=1)]
@@ -715,12 +718,12 @@ class FlextApiModels(FlextWebModels):
                     raise ValueError(msg)
                 return method_upper
 
-        class _TimeoutRequest(FlextModels.Value):
+        class _TimeoutRequest(FlextWebModels.Value):
             """Encapsulates timeout constraints for RFC request URLs."""
 
             timeout: Annotated[t.PositiveTimeout, Field(...)]
 
-        class _UrlRequest(FlextModels.Value):
+        class _UrlRequest(FlextWebModels.Value):
             """Encapsulates URL validation constraints for RFC requests."""
 
             url: Annotated[str, Field(min_length=1)]
@@ -736,12 +739,12 @@ class FlextApiModels(FlextWebModels):
                     raise ValueError(msg)
                 return value
 
-        class _StatusCodeValue(FlextModels.Value):
+        class _StatusCodeValue(FlextWebModels.Value):
             """Validates status code values according to RFC conventions."""
 
             status_code: Annotated[t.HttpStatusCode, Field(...)]
 
-        class _SendRequestSseOptions(FlextModels.Value):
+        class _SendRequestSseOptions(FlextWebModels.Value):
             """Options for SSE request sending behavior."""
 
             method: Annotated[str, Field(default="GET", min_length=1)]
@@ -755,7 +758,7 @@ class FlextApiModels(FlextWebModels):
             ]
             retry_timeout: Annotated[t.NonNegativeInt | None, Field(default=None)]
 
-        class _SendRequestWsOptions(FlextModels.Value):
+        class _SendRequestWsOptions(FlextWebModels.Value):
             """Options for sending a WebSocket message request."""
 
             message: Annotated[str | bytes | None, Field(default=None)]
@@ -764,7 +767,7 @@ class FlextApiModels(FlextWebModels):
                 Field(default="text", min_length=1),
             ]
 
-        class _InboundMessage(FlextModels.Value):
+        class _InboundMessage(FlextWebModels.Value):
             """Model for inbound WebSocket messages."""
 
             message: str | bytes
@@ -776,7 +779,7 @@ class FlextApiModels(FlextWebModels):
         class Storage:
             """Storage-related models namespace."""
 
-            class Metadata(FlextModels.Value):
+            class Metadata(FlextWebModels.Value):
                 """Internal metadata for stored values (using Pydantic for validation)."""
 
                 value: t.ApiJsonValue
@@ -791,7 +794,7 @@ class FlextApiModels(FlextWebModels):
                     elapsed = time.time() - self.created_at
                     return elapsed > self.ttl
 
-            class Stats(FlextModels.Value):
+            class Stats(FlextWebModels.Value):
                 """Storage statistics using Pydantic (automatic validation)."""
 
                 total_operations: int = 0

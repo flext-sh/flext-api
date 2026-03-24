@@ -34,13 +34,13 @@ class FlextApiTypes(FlextTypes):
         """API types namespace for cross-project access.
 
         Provides organized access to all API types for other FLEXT projects.
-        Usage: Other projects can reference `t.Api.RequestData`, `t.Api.ResponseData`, etc.
+        Usage: Other projects can reference `FlextTypes.Api.RequestData`, `FlextTypes.Api.ResponseData`, etc.
         This enables consistent namespace patterns for cross-project type access.
 
         Examples:
             from flext_api import t
-            request_data: t.Api.RequestData = ...
-            response_data: t.Api.ResponseData = ...
+            request_data: FlextTypes.Api.RequestData = ...
+            response_data: FlextTypes.Api.ResponseData = ...
 
         Note: Namespace composition via inheritance - no aliases needed.
         Access parent namespaces directly through inheritance.
@@ -48,8 +48,8 @@ class FlextApiTypes(FlextTypes):
         """
 
         type WebData = FlextTypes.FileContent | Mapping[str, FlextTypes.ContainerValue]
-        type WebHeaders = Mapping[str, FlextTypes.Scalar | t.StrSequence]
-        type WebParamValue = str | t.StrSequence
+        type WebHeaders = Mapping[str, FlextTypes.Scalar | FlextTypes.StrSequence]
+        type WebParamValue = str | FlextTypes.StrSequence
         type WebParams = Mapping[str, WebParamValue]
         type ResponseList = Sequence[Mapping[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
@@ -59,7 +59,7 @@ class FlextApiTypes(FlextTypes):
         type ResponseBody = Mapping[str, FlextTypes.ContainerValue] | str | bytes | None
         type HttpResponseDict = Mapping[
             str,
-            FlextTypes.ContainerValue | t.StrMapping | bytes | None,
+            FlextTypes.ContainerValue | FlextTypes.StrMapping | bytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type ValidationResult = Mapping[str, FlextTypes.ContainerValue]
@@ -87,9 +87,9 @@ class FlextApiTypes(FlextTypes):
         ]
         type RequestKwargs = Mapping[
             str,
-            t.StrMapping
+            FlextTypes.StrMapping
             | Mapping[str, FlextTypes.ContainerValue]
-            | Mapping[str, FlextTypes.Scalar | t.StrSequence]
+            | Mapping[str, FlextTypes.Scalar | FlextTypes.StrSequence]
             | float
             | None,
         ]

@@ -20,7 +20,6 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final, Literal
 
-from flext_core import FlextConstants
 from flext_web import FlextWebConstants
 
 
@@ -158,11 +157,11 @@ class FlextApiConstants(FlextWebConstants):
         "Immutable set of all valid content types."
         "Active HTTP methods for validation - references Method enum members."
         "Safe HTTP methods for validation - references Method enum members."
-        DEFAULT_TIMEOUT: Final[float] = float(FlextConstants.DEFAULT_TIMEOUT_SECONDS)
+        DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
         "Default request timeout in seconds."
         "Default maximum retry attempts."
         DEFAULT_BASE_URL: Final[str] = (
-            f"http://{FlextConstants.DEFAULT_HOST}:{FlextConstants.FLEXT_API_PORT}"
+            f"http://{FlextWebConstants.DEFAULT_HOST}:{FlextWebConstants.FLEXT_API_PORT}"
         )
         "Default base URL for API operations."
         "API version string."

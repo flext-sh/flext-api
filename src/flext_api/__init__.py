@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes, d, e, h, r, s, x
+    from flext_core import FlextTypes
+    from flext_web import d, e, h, r, s, x
 
     from flext_api import protocol_impls, schemas
     from flext_api.__version__ import (
@@ -146,9 +147,9 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "__title__": ("flext_api.__version__", "__title__"),
     "__url__": ("flext_api.__version__", "__url__"),
     "c": ("flext_api.constants", "FlextApiConstants"),
-    "d": ("flext_core", "d"),
-    "e": ("flext_core", "e"),
-    "h": ("flext_core", "h"),
+    "d": ("flext_web", "d"),
+    "e": ("flext_web", "e"),
+    "h": ("flext_web", "h"),
     "is_container_value": ("flext_api.schemas._shared", "is_container_value"),
     "is_object_mapping": ("flext_api.schemas._shared", "is_object_mapping"),
     "load_and_validate_schema_document": (
@@ -163,13 +164,13 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "parse_int_field": ("flext_api.schemas._shared", "parse_int_field"),
     "parse_string_field": ("flext_api.schemas._shared", "parse_string_field"),
     "protocol_impls": ("flext_api.protocol_impls", ""),
-    "r": ("flext_core", "r"),
-    "s": ("flext_core", "s"),
+    "r": ("flext_web", "r"),
+    "s": ("flext_web", "s"),
     "schemas": ("flext_api.schemas", ""),
     "t": ("flext_api.typings", "FlextApiTypes"),
     "to_general_value": ("flext_api.schemas._shared", "to_general_value"),
     "u": ("flext_api.utilities", "FlextApiUtilities"),
-    "x": ("flext_core", "x"),
+    "x": ("flext_web", "x"),
 }
 
 __all__ = [

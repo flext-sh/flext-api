@@ -9,25 +9,11 @@ from enum import StrEnum
 from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
-from flext_core import FlextUtilities, r
+from flext_core import r
 from flext_web import FlextWebUtilities
 from pydantic import BeforeValidator
 
 from flext_api import t
-
-MAX_HOSTNAME_LENGTH: int = 253
-MAX_PORT: int = 65535
-VALID_HTTP_METHODS: frozenset[str] = frozenset({
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE",
-    "PATCH",
-    "HEAD",
-    "OPTIONS",
-    "CONNECT",
-    "TRACE",
-})
 
 
 class FlextApiUtilities(FlextWebUtilities):
@@ -39,6 +25,20 @@ class FlextApiUtilities(FlextWebUtilities):
     - @validated decorators eliminating manual validation
     - Generic parsing utilities for StrEnums (inherited from parent)
     """
+
+    MAX_HOSTNAME_LENGTH: int = 253
+    MAX_PORT: int = 65535
+    VALID_HTTP_METHODS: frozenset[str] = frozenset({
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "CONNECT",
+        "TRACE",
+    })
 
     class Api:
         """API-specific utility namespace.
@@ -57,12 +57,15 @@ class FlextApiUtilities(FlextWebUtilities):
             """Annotated type factories."""
 
             @staticmethod
-            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> Annotated:
+            def coerced_enum[E: StrEnum](
+                enum_cls: type[E],
+            ) -> type[E]:
                 """Create Annotated type with automatic enum coercion."""
-                return Annotated[
+                annotated: type[E] = Annotated[  # type: ignore[assignment]
                     enum_cls,
-                    BeforeValidator(FlextUtilities.Enum.coerce_validator(enum_cls)),
+                    BeforeValidator(FlextWebUtilities.Enum.coerce_validator(enum_cls)),
                 ]
+                return annotated
 
         class RequestUtils:
             """Request utilities for extracting and validating HTTP request components."""
@@ -376,7 +379,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False
-            return 1 <= port <= MAX_PORT
+            return 1 <= port <= FlextApiUtilities.MAX_PORT
 
         @staticmethod
         def normalize_url(url: str) -> str:
@@ -392,7 +395,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Validate hostname format."""
             if not host or not host.strip():
                 return r[str].fail("Hostname cannot be empty")
-            if len(host) > MAX_HOSTNAME_LENGTH:
+            if len(host) > FlextApiUtilities.MAX_HOSTNAME_LENGTH:
                 return r[str].fail("Hostname too long")
             pattern = "^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^localhost$|^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$"
             if not re.match(pattern, host):
@@ -402,13 +405,15 @@ class FlextApiUtilities(FlextWebUtilities):
         @staticmethod
         def validate_http_method(method: str) -> bool:
             """Validate HTTP method."""
-            return method.upper() in VALID_HTTP_METHODS
+            return method.upper() in FlextApiUtilities.VALID_HTTP_METHODS
 
         @staticmethod
         def validate_port_number(port: int) -> r[int]:
             """Validate port number range."""
-            if port < 1 or port > MAX_PORT:
-                return r[int].fail(f"Port must be between 1 and {MAX_PORT}")
+            if port < 1 or port > FlextApiUtilities.MAX_PORT:
+                return r[int].fail(
+                    f"Port must be between 1 and {FlextApiUtilities.MAX_PORT}"
+                )
             return r[int].ok(port)
 
         @staticmethod
@@ -423,7 +428,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 if not parsed.netloc:
                     return r[str].fail("URL must have a valid host")
                 if parsed.port is not None and (
-                    parsed.port < 1 or parsed.port > MAX_PORT
+                    parsed.port < 1 or parsed.port > FlextApiUtilities.MAX_PORT
                 ):
                     return r[str].fail(f"Invalid port {parsed.port}")
                 return r[str].ok(url)
