@@ -141,11 +141,25 @@ class FlextApiConstants(FlextWebConstants):
             CBOR = "cbor"
             CUSTOM = "custom"
 
-        ACTIVE_METHODS: Final[frozenset[str]] = frozenset({"GET", "POST", "PUT", "DELETE"})
+        ACTIVE_METHODS: Final[frozenset[str]] = frozenset({
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+        })
         "Active HTTP methods for operations."
-        SAFE_METHODS: Final[frozenset[str]] = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
+        SAFE_METHODS: Final[frozenset[str]] = frozenset({
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "TRACE",
+        })
         "Safe HTTP methods (no side effects)."
-        TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({"completed", "failed", "error"})
+        TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({
+            "completed",
+            "failed",
+            "error",
+        })
         "Terminal operation statuses."
         SUCCESS_STATUSES: Final[frozenset[str]] = frozenset({"success", "completed"})
         "Success operation statuses."
