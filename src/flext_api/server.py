@@ -137,10 +137,12 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
             """
             self._websocket_connections: MutableMapping[
-                str, p.Api.Lifecycle.HttpResource
+                str,
+                p.Api.Lifecycle.HttpResource,
             ] = {}
             self._sse_connections: MutableMapping[
-                str, p.Api.Lifecycle.HttpResource
+                str,
+                p.Api.Lifecycle.HttpResource,
             ] = {}
             self._logger = logger
 

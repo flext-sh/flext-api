@@ -93,7 +93,7 @@ class FlextApiModels(FlextWebModels):
                 Annotated[
                     t.Api.RequestBody,
                     BeforeValidator(
-                        lambda v: FlextApiModels.Api._normalize_request_body(v)
+                        lambda v: FlextApiModels.Api._normalize_request_body(v),
                     ),
                 ],
                 Field(
@@ -155,7 +155,7 @@ class FlextApiModels(FlextWebModels):
                 Annotated[
                     t.Api.ResponseBody,
                     BeforeValidator(
-                        lambda v: FlextApiModels.Api._normalize_response_body(v)
+                        lambda v: FlextApiModels.Api._normalize_response_body(v),
                     ),
                 ],
                 Field(
@@ -618,7 +618,7 @@ class FlextApiModels(FlextWebModels):
             """Internal model for validating HTTP request call arguments."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
-                arbitrary_types_allowed=True
+                arbitrary_types_allowed=True,
             )
 
             method: Annotated[str, Field(..., description="HTTP method")]
@@ -648,7 +648,7 @@ class FlextApiModels(FlextWebModels):
             """Internal model for wrapping mapping body data."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
-                arbitrary_types_allowed=True
+                arbitrary_types_allowed=True,
             )
 
             body: Annotated[
@@ -660,7 +660,7 @@ class FlextApiModels(FlextWebModels):
             """Internal model for HTTP client request options."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
-                arbitrary_types_allowed=True
+                arbitrary_types_allowed=True,
             )
 
             params: Annotated[
@@ -751,10 +751,12 @@ class FlextApiModels(FlextWebModels):
             max_events: Annotated[t.PositiveInt, Field(default=1)]
             auto_reconnect: Annotated[bool | None, Field(default=None)]
             reconnect_max_attempts: Annotated[
-                t.NonNegativeInt | None, Field(default=None)
+                t.NonNegativeInt | None,
+                Field(default=None),
             ]
             reconnect_backoff_factor: Annotated[
-                t.PositiveFloat | None, Field(default=None)
+                t.PositiveFloat | None,
+                Field(default=None),
             ]
             retry_timeout: Annotated[t.NonNegativeInt | None, Field(default=None)]
 

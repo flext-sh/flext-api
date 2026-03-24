@@ -57,15 +57,17 @@ class AuditResult(BaseModel):
     project: str = Field(description="Project name")
     status: str = Field(description="Audit status: PASS, FAIL, WARNING, PENDING, SKIP")
     critical: MutableSequence[AuditViolation] = Field(
-        default_factory=_new_violation_list
+        default_factory=_new_violation_list,
     )
     high: MutableSequence[AuditViolation] = Field(default_factory=_new_violation_list)
     medium: MutableSequence[AuditViolation] = Field(default_factory=_new_violation_list)
     recommendations: MutableSequence[str] = Field(
-        default_factory=_new_string_list, description="Audit recommendations"
+        default_factory=_new_string_list,
+        description="Audit recommendations",
     )
     stats: MutableMapping[str, t.Primitives] = Field(
-        default_factory=_new_stats_map, description="Audit statistics"
+        default_factory=_new_stats_map,
+        description="Audit statistics",
     )
 
     @property

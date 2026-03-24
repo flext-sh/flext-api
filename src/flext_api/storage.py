@@ -53,7 +53,8 @@ class FlextApiStorage:
     """
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
-        frozen=False, arbitrary_types_allowed=True
+        frozen=False,
+        arbitrary_types_allowed=True,
     )
     _storage: MutableMapping[str, t.ApiJsonValue]
     _expiry_times: MutableMapping[str, float]

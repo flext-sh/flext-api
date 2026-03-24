@@ -49,7 +49,8 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     """
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
-        frozen=False, arbitrary_types_allowed=True
+        frozen=False,
+        arbitrary_types_allowed=True,
     )
     _ping_interval: float
     _ping_timeout: float

@@ -33,7 +33,8 @@ def example_client_creation() -> None:
     print("\n=== Client Creation Example ===")
     FlextApi()
     client_config = FlextApiSettings(
-        base_url="https://httpbin.org", timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS
+        base_url="https://httpbin.org",
+        timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS,
     )
     print(f"✅ Client config created: {client_config.base_url}")
     print(f"   Timeout: {client_config.timeout}s")
@@ -44,7 +45,8 @@ def example_direct_client() -> None:
     """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
     print("\n=== Direct Client Example ===")
     config = FlextApiSettings(
-        base_url="https://httpbin.org", timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS
+        base_url="https://httpbin.org",
+        timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS,
     )
     print(f"✅ Client config: {config.base_url}")
     print(f"   Timeout: {config.timeout}")
@@ -76,7 +78,7 @@ def example_utilities_usage() -> None:
     """Demonstrate utilities usage with refactored FlextApiUtilities."""
     print("\n=== Utilities Example ===")
     url_result = FlextApiUtilities.FlextWebValidator.validate_url(
-        "https://example.com/api/v1"
+        "https://example.com/api/v1",
     )
     if url_result.is_success:
         print(f"✅ URL validation successful: {url_result.value}")
@@ -140,7 +142,8 @@ def example_batch_operations() -> None:
         keys = ["key1", "key2", "key3"]
         for i, key in enumerate(keys):
             result = storage.set(
-                key, {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200}
+                key,
+                {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200},
             )
             if result.is_success:
                 print(f"✅ Set {key} successfully")

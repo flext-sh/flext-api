@@ -144,7 +144,7 @@ class FlextApiSchemaShared:
             normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
             for key, item in value.items():
                 normalized_mapping[str(key)] = FlextApiSchemaShared.to_general_value(
-                    item
+                    item,
                 )
             return normalized_mapping
         if u.is_primitive(value):

@@ -98,7 +98,7 @@ class FlextApiSerializers:
                     t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                 ) = validated
                 return r[t.Scalar | t.ContainerValueMapping | t.ContainerValueList].ok(
-                    non_none_value
+                    non_none_value,
                 )
             except (ValidationError, Exception) as e:
                 return r[

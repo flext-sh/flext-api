@@ -412,7 +412,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Validate port number range."""
             if port < 1 or port > FlextApiUtilities.MAX_PORT:
                 return r[int].fail(
-                    f"Port must be between 1 and {FlextApiUtilities.MAX_PORT}"
+                    f"Port must be between 1 and {FlextApiUtilities.MAX_PORT}",
                 )
             return r[int].ok(port)
 

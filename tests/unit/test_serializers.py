@@ -116,7 +116,7 @@ class TestMessagePackUnpackb:
         # Arrange: mock unpackb to return data that fails validation
         mock_module = MagicMock()
         mock_unpackb = MagicMock(
-            return_value=object()
+            return_value=object(),
         )  # object() fails TypeAdapter validation
         mock_module.unpackb = mock_unpackb
 

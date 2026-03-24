@@ -449,7 +449,8 @@ class FlextWebhookHandler(FlextService[bool]):
         return r[bool].ok(value=True)
 
     def _process_single_retry(
-        self, event: MutableMapping[str, t.ContainerValue]
+        self,
+        event: MutableMapping[str, t.ContainerValue],
     ) -> tuple[bool, bool]:
         """Process a single retry event. Returns (success, should_retry)."""
         attempts_value = self._get_attempts_count(event)

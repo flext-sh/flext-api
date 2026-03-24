@@ -116,7 +116,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if headers is not None:
             web_headers = dict(headers)
         success_response: MutableMapping[str, t.ContainerValue] = {
-            "status_code": status_code
+            "status_code": status_code,
         }
         if json_data is not None:
             success_response["data"] = json_data
