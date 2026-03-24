@@ -163,7 +163,7 @@ class FlextApiClient(s[FlextApiSettings]):
     @staticmethod
     def _serialize_body(body: t.Api.RequestBody) -> r[bytes]:
         """Serialize request body to bytes - no None, empty dict is valid."""
-        if isinstance(body, dict) and len(body) == 0:
+        if isinstance(body, dict) and not body:
             return r[bytes].ok(b"")
         if isinstance(body, bytes):
             return r[bytes].ok(body)
