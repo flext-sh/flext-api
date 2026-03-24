@@ -4,8 +4,11 @@
 # Sections with [CUSTOM] are project-specific extension points.
 # [MANAGED] build system
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = [ "poetry-core>=2" ]
+build-backend = "hatchling.build"
+requires = [ "hatchling" ]
+
+[tool.hatch.build.targets.wheel]
+packages = [ "src/flext_api" ]
 
 # [CUSTOM] project metadata
 [project]
@@ -26,8 +29,8 @@ classifiers = [
 dependencies = [
   "cbor2>=5.7",
   "fastapi>=0.116",
-  "flext-core @ file:../flext-core",
-  "flext-web @ file:../flext-web",
+  "flext-core",
+  "flext-web",
   "gql>=4",
   "httpx-sse>=0.4.0",
   "httpx>=0.28.1",
@@ -141,7 +144,6 @@ plugins = [
 ]
 python_version = "3.13"
 
-[tool.poetry]
 
 # [MANAGED] pydantic-mypy
 [tool.pydantic-mypy]
