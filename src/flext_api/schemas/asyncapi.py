@@ -196,46 +196,46 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """
         version_result = self._validate_asyncapi_version(schema)
         if version_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 version_result.error or "AsyncAPI version validation failed",
             )
         fields_result = self._validate_required_fields(schema, version_result.value)
         if fields_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 fields_result.error or "Required fields validation failed",
             )
         info_result = self._validate_info_object(schema)
         if info_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 info_result.error or "Info t.NormalizedValue validation failed",
             )
         info = info_result.value
         if "channels" not in schema:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 "Missing 'channels' field in schema",
             )
         channels_value = schema["channels"]
         channels_result = _shared.parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(channels_result.error)
+            return r[t.ContainerValueMapping].fail(channels_result.error)
         channels = channels_result.value
         channels_validation = self._validate_channels(
             channels_result.value,
             version_result.value,
         )
         if channels_validation.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"Channel validation failed: {channels_validation.error}",
             )
         components_result = self._validate_optional_components(schema)
         if components_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 components_result.error or "Components validation failed",
             )
         channels_value = schema["channels"]
         channels_result = _shared.parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(channels_result.error)
+            return r[t.ContainerValueMapping].fail(channels_result.error)
         title_str = ""
         if "title" in info:
             title_value = info["title"]
@@ -246,7 +246,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             title=title_str,
             channels_count=len(channels),
         )
-        return r[Mapping[str, t.ContainerValue]].ok({
+        return r[t.ContainerValueMapping].ok({
             "valid": True,
             "version": version_result.value,
             "title": title_str,
@@ -344,10 +344,10 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """Validate basic channel structure."""
         channel_result = _shared.parse_dict_field(channel, "channel")
         return channel_result.fold(
-            on_failure=lambda _: r[Mapping[str, t.ContainerValue]].fail(
+            on_failure=lambda _: r[t.ContainerValueMapping].fail(
                 f"Channel must be a dictionary: {channel_name}",
             ),
-            on_success=lambda v: r[Mapping[str, t.ContainerValue]].ok(v),
+            on_success=lambda v: r[t.ContainerValueMapping].ok(v),
         )
 
     def _validate_channels(
@@ -427,21 +427,21 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate info t.NormalizedValue and return it."""
         if "info" not in schema:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 "Missing 'info' field in schema",
             )
         info_value = schema["info"]
         info_result = _shared.parse_dict_field(info_value, "info")
         if info_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(info_result.error)
+            return r[t.ContainerValueMapping].fail(info_result.error)
         info = info_result.value
         info_required = ["title", "version"]
         info_missing = u.filter(list(info_required), lambda field: field not in info)
         if info_missing:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"Missing required info fields: {', '.join(info_missing)}",
             )
-        return r[Mapping[str, t.ContainerValue]].ok(info)
+        return r[t.ContainerValueMapping].ok(info)
 
     def _validate_message(
         self,

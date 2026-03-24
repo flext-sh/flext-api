@@ -24,7 +24,7 @@ _RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
     t.Api.ResponseBody,
 )
 _DICT_BODY_ADAPTER: TypeAdapter[Mapping[str, t.ContainerValue]] = TypeAdapter(
-    Mapping[str, t.ContainerValue],
+    t.ContainerValueMapping,
 )
 
 

@@ -158,15 +158,15 @@ def parse_dict_field(
     """
     try:
         if not isinstance(value, Mapping):
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"'{field_name}' field must be a dictionary",
             )
         parsed = DictField(value=dict(value))
     except ValidationError:
-        return r[Mapping[str, t.ContainerValue]].fail(
+        return r[t.ContainerValueMapping].fail(
             f"'{field_name}' field must be a dictionary",
         )
-    return r[Mapping[str, t.ContainerValue]].ok(parsed.value)
+    return r[t.ContainerValueMapping].ok(parsed.value)
 
 
 def parse_string_field(value: t.ApiJsonValue, field_name: str) -> r[str]:

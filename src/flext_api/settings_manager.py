@@ -19,7 +19,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_api import m, t, u
 
 _JSON_HEADERS_ADAPTER: TypeAdapter[Mapping[str, t.ContainerValue]] = TypeAdapter(
-    Mapping[str, t.ContainerValue],
+    t.ContainerValueMapping,
 )
 
 

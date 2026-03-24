@@ -298,26 +298,26 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[Mapping[str, t.ContainerValue]].fail(str(details))
+            return r[t.ContainerValueMapping].fail(str(details))
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 message_result.error or "Message extraction failed",
             )
         message_type = self._extract_message_type(options)
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"WebSocket send failed: {send_result.error}",
             )
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
         response: Mapping[str, t.ContainerValue] = {
@@ -327,7 +327,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
             "body": {"status": "message_sent", "message_type": message_type},
         }
-        return r[Mapping[str, t.ContainerValue]].ok(response)
+        return r[t.ContainerValueMapping].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:

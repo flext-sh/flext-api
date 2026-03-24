@@ -127,7 +127,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             request_general[key] = self._to_general_value(value)
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 request_result.error or "Request building failed",
             )
         http_request = request_result.value
@@ -135,7 +135,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value

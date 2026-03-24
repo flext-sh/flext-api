@@ -138,7 +138,7 @@ class BaseProtocolImplementation:
         """
         _ = request
         _ = kwargs
-        return r[Mapping[str, t.ContainerValue]].fail(
+        return r[t.ContainerValueMapping].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -224,8 +224,8 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[Mapping[str, t.ContainerValue]].fail("Request cannot be empty")
-        return r[Mapping[str, t.ContainerValue]].ok(request)
+            return r[t.ContainerValueMapping].fail("Request cannot be empty")
+        return r[t.ContainerValueMapping].ok(request)
 
 
 __all__ = ["BaseProtocolImplementation"]

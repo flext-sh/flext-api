@@ -136,17 +136,17 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 validation_result.error or "Request validation failed",
             )
         try:
             options = m.Api._SendRequestSseOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
-            return r[Mapping[str, t.ContainerValue]].fail(str(details))
+            return r[t.ContainerValueMapping].fail(str(details))
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 url_result.error or "URL extraction failed",
             )
         headers = dict(self._extract_headers(request))
@@ -204,7 +204,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             ) as exc:
                 self._notify_error_handlers(exc)
                 if not auto_reconnect or attempts >= max_attempts:
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         f"SSE stream failed: {exc}",
                     )
                 attempts += 1
@@ -222,7 +222,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
                 "reconnect_attempts": attempts,
             },
         }
-        return r[Mapping[str, t.ContainerValue]].ok(response)
+        return r[t.ContainerValueMapping].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:

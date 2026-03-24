@@ -467,10 +467,10 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         """Validate basic structure of security schemes."""
         schemes_result = _shared.parse_dict_field(security_schemes, "security_schemes")
         return schemes_result.fold(
-            on_failure=lambda _: r[Mapping[str, t.ContainerValue]].fail(
+            on_failure=lambda _: r[t.ContainerValueMapping].fail(
                 "Security schemes must be a dictionary",
             ),
-            on_success=lambda v: r[Mapping[str, t.ContainerValue]].ok(v),
+            on_success=lambda v: r[t.ContainerValueMapping].ok(v),
         )
 
     def _validate_single_security_scheme(
