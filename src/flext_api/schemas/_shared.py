@@ -265,7 +265,9 @@ to_general_value = FlextApiSchemaShared.to_general_value
 parse_dict_field = FlextApiSchemaShared.parse_dict_field
 parse_string_field = FlextApiSchemaShared.parse_string_field
 parse_int_field = FlextApiSchemaShared.parse_int_field
-load_and_validate_schema_document = FlextApiSchemaShared.load_and_validate_schema_document
+load_and_validate_schema_document = (
+    FlextApiSchemaShared.load_and_validate_schema_document
+)
 
 __all__ = [
     "DictField",
