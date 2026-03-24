@@ -18,10 +18,7 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestMessagePackUnpackb": ["tests.unit.test_serializers", "TestMessagePackUnpackb"],
-    "test_package_imports_main_facade": [
-        "tests.unit.test_smoke",
-        "test_package_imports_main_facade",
-    ],
+    "test_package_imports_main_facade": ["tests.unit.test_smoke", "test_package_imports_main_facade"],
 }
 
 __all__ = [
