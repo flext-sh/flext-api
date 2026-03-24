@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterator, Mapping, MutableMapping, Sequence
 from typing import override
 
 import httpx
@@ -122,7 +122,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         **_kwargs: t.Scalar,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Send HTTP request with retry logic and error handling."""
-        request_general: Mapping[str, t.ContainerValue] = {}
+        request_general: MutableMapping[str, t.ContainerValue] = {}
         for key, value in request.items():
             request_general[key] = self._to_general_value(value)
         request_result = self._build_http_request_from_dict(request_general)
@@ -282,7 +282,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         body: t.Api.RequestBody | None,
     ) -> Mapping[str, t.ContainerValue]:
         """Build request kwargs based on body type."""
-        kwargs: Mapping[str, t.ContainerValue] = {
+        kwargs: MutableMapping[str, t.ContainerValue] = {
             "method": method,
             "url": url,
             "headers": headers,

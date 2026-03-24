@@ -287,7 +287,7 @@ class FlextApiProtocols(FlextWebProtocols):
                 when flext-grpc is integrated.
                 """
 
-                def get_request_schema(self, method: str) -> r[t.Api.JsonObject]:
+                def get_request_schema(self, method: str) -> r[t.JsonObject]:
                     """Get request schema for method.
 
                     Args:
@@ -299,7 +299,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     """
                     ...
 
-                def get_response_schema(self, method: str) -> r[t.Api.JsonObject]:
+                def get_response_schema(self, method: str) -> r[t.JsonObject]:
                     """Get response schema for method.
 
                     Args:

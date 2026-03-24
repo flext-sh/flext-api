@@ -96,7 +96,10 @@ class FlextApiServer(FlextService[bool], x.Validation):
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
             options_json: t.ConfigurationMapping = dict(options.items())
-            route_data: t.Api.RouteData = {
+            route_data: MutableMapping[
+                str,
+                t.ContainerValue | t.ResourceCallable | None,
+            ] = {
                 "path": path,
                 "method": method,
                 "handler": handler,
@@ -133,8 +136,12 @@ class FlextApiServer(FlextService[bool], x.Validation):
             logger: Logger instance
 
             """
-            self._websocket_connections: MutableMapping[str, p.Api.Lifecycle.HttpResource] = {}
-            self._sse_connections: MutableMapping[str, p.Api.Lifecycle.HttpResource] = {}
+            self._websocket_connections: MutableMapping[
+                str, p.Api.Lifecycle.HttpResource
+            ] = {}
+            self._sse_connections: MutableMapping[
+                str, p.Api.Lifecycle.HttpResource
+            ] = {}
             self._logger = logger
 
         def close_all(self) -> r[bool]:

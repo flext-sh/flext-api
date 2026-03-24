@@ -1,7 +1,7 @@
-"""Generic HTTP Exceptions - Use flext-core only.
+"""Generic HTTP Exceptions - Namespace class for API-specific exceptions.
 
-NO local exception classes. Delegate all error handling to e.
-Use e.BaseError for all HTTP errors with status_code context.
+Unified exception facade extending flext-core exceptions.
+All exception types are organized under FlextApiErrors namespace.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,13 +13,20 @@ from __future__ import annotations
 from flext_core import e
 
 
-class HttpError(e.BaseError):
-    """HTTP error exception - real inheritance from e.BaseError.
+class FlextApiErrors:
+    """HTTP exception types extending flext-core.
 
-    Provides HTTP-specific error handling with status_code context.
-    Uses real inheritance to expose e.BaseError functionality through
-    the HttpError namespace for HTTP operations.
+    Unified namespace class that provides HTTP-specific exceptions
+    with status_code context for error handling.
     """
 
+    class HttpError(e.BaseError):
+        """HTTP error exception - real inheritance from e.BaseError.
 
-__all__ = ["HttpError"]
+        Provides HTTP-specific error handling with status_code context.
+        Uses real inheritance to expose e.BaseError functionality through
+        the HttpError namespace for HTTP operations.
+        """
+
+
+__all__ = ["FlextApiErrors"]

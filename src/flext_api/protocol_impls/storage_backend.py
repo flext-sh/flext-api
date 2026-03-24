@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import override
 
 from flext_core import FlextLogger, FlextRuntime, r
@@ -76,12 +76,13 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
             return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
     @override
-    def keys(self) -> r[t.StrSequence]:
+    def keys(self) -> r[Sequence[str]]:
         """Get all keys."""
-        return u.try_(
-            lambda: list(self._storage),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Keys operation failed: {e}")
+        try:
+            keys_list: Sequence[str] = list(self._storage)
+            return r[Sequence[str]].ok(keys_list)
+        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            return r[Sequence[str]].fail(f"Keys operation failed: {e}")
 
     @override
     def set(

@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, MutableMapping, Sequence
 from pathlib import Path
 from typing import TypeIs
 
@@ -111,7 +111,7 @@ class FlextApiSchemaShared:
             Normalized JSON t.NormalizedValue
 
         """
-        normalized: t.JsonObject = {}
+        normalized: MutableMapping[str, t.ContainerValue] = {}
         for key, item in value.items():
             if FlextApiSchemaShared.is_container_value(item):
                 normalized_value = FlextApiSchemaShared.to_general_value(item)
@@ -141,7 +141,7 @@ class FlextApiSchemaShared:
             ]
             return normalized_values
         if isinstance(value, Mapping):
-            normalized_mapping: Mapping[str, t.ContainerValue] = {}
+            normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
             for key, item in value.items():
                 normalized_mapping[str(key)] = FlextApiSchemaShared.to_general_value(
                     item
@@ -256,33 +256,9 @@ class FlextApiSchemaShared:
         return r[t.ContainerValue].ok(normalized_result)
 
 
-# Module-level aliases — delegate to FlextApiSchemaShared staticmethods for
-# backward compatibility with existing call sites.
-is_container_value = FlextApiSchemaShared.is_container_value
-is_object_mapping = FlextApiSchemaShared.is_object_mapping
-load_schema_document = FlextApiSchemaShared.load_schema_document
-normalize_json_object = FlextApiSchemaShared.normalize_json_object
-to_general_value = FlextApiSchemaShared.to_general_value
-parse_dict_field = FlextApiSchemaShared.parse_dict_field
-parse_string_field = FlextApiSchemaShared.parse_string_field
-parse_int_field = FlextApiSchemaShared.parse_int_field
-load_and_validate_schema_document = (
-    FlextApiSchemaShared.load_and_validate_schema_document
-)
-
-
 __all__ = [
     "DictField",
     "FlextApiSchemaShared",
     "IntField",
     "StringField",
-    "is_container_value",
-    "is_object_mapping",
-    "load_and_validate_schema_document",
-    "load_schema_document",
-    "normalize_json_object",
-    "parse_dict_field",
-    "parse_int_field",
-    "parse_string_field",
-    "to_general_value",
 ]

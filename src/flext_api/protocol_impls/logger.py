@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from typing import override
 
 from flext_core import FlextLogger
@@ -50,7 +50,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
         kwargs: Mapping[str, t.ApiJsonValue],
     ) -> t.FlatContainerMapping:
         """Convert kwargs to context dict for logger compatibility."""
-        context: t.FlatContainerMapping = {}
+        context: MutableMapping[str, t.Container] = {}
         for key, value in kwargs.items():
             if u.is_container(value):
                 context[key] = value

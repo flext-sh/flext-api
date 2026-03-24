@@ -410,7 +410,7 @@ class FlextApiModels(FlextWebModels):
                 ),
             ]
             details: Annotated[
-                t.Api.JsonObject,
+                t.JsonObject,
                 Field(
                     default_factory=dict,
                     description="Additional error details",

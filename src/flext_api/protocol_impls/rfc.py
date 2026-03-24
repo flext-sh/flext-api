@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 
 from flext_core import r
 from pydantic import ValidationError
@@ -82,7 +82,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         RFC-compliant error response dictionary
 
         """
-        error_response: Mapping[str, t.ContainerValue] = {
+        error_response: MutableMapping[str, t.ContainerValue] = {
             "error": error,
             "status_code": status_code,
         }
@@ -107,7 +107,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         r with RFC-compliant success response
 
         """
-        json_data: Mapping[str, t.ContainerValue] | None = None
+        json_data: MutableMapping[str, t.ContainerValue] | None = None
         if data is not None:
             json_data = {}
             for key, value in data.items():
@@ -115,7 +115,9 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         web_headers: Mapping[str, str | t.StrSequence] | None = None
         if headers is not None:
             web_headers = dict(headers)
-        success_response: Mapping[str, t.ContainerValue] = {"status_code": status_code}
+        success_response: MutableMapping[str, t.ContainerValue] = {
+            "status_code": status_code
+        }
         if json_data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
@@ -158,7 +160,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             parsed = m.Api._HeadersRequest.model_validate(request)
         except ValidationError:
             return {}
-        normalized_headers: t.StrMapping = {}
+        normalized_headers: MutableMapping[str, str] = {}
         for key, value in parsed.headers.items():
             normalized_headers[key.lower()] = value
         return normalized_headers

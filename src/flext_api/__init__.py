@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from flext_api.app import FlextApiApp
     from flext_api.client import FlextApiClient
     from flext_api.constants import FlextApiConstants, FlextApiConstants as c
-    from flext_api.exceptions import HttpError
+    from flext_api.exceptions import FlextApiErrors, HttpError
     from flext_api.lifecycle_manager import FlextApiLifecycleManager
     from flext_api.middleware import FlextApiMiddleware
     from flext_api.models import FlextApiModels, FlextApiModels as m
@@ -46,17 +46,9 @@ if TYPE_CHECKING:
     from flext_api.registry import FlextApiRegistry
     from flext_api.schemas._shared import (
         DictField,
+        FlextApiSchemaShared,
         IntField,
         StringField,
-        is_container_value,
-        is_object_mapping,
-        load_and_validate_schema_document,
-        load_schema_document,
-        normalize_json_object,
-        parse_dict_field,
-        parse_int_field,
-        parse_string_field,
-        to_general_value,
     )
     from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
     from flext_api.schemas.jsonschema import JSONSchemaValidator
@@ -87,6 +79,7 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "FlextApiApp": ("flext_api.app", "FlextApiApp"),
     "FlextApiClient": ("flext_api.client", "FlextApiClient"),
     "FlextApiConstants": ("flext_api.constants", "FlextApiConstants"),
+    "FlextApiErrors": ("flext_api.exceptions", "FlextApiErrors"),
     "FlextApiLifecycleManager": (
         "flext_api.lifecycle_manager",
         "FlextApiLifecycleManager",
@@ -96,6 +89,7 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "FlextApiPlugins": ("flext_api.plugins", "FlextApiPlugins"),
     "FlextApiProtocols": ("flext_api.protocols", "FlextApiProtocols"),
     "FlextApiRegistry": ("flext_api.registry", "FlextApiRegistry"),
+    "FlextApiSchemaShared": ("flext_api.schemas._shared", "FlextApiSchemaShared"),
     "FlextApiSerializers": ("flext_api.serializers", "FlextApiSerializers"),
     "FlextApiServer": ("flext_api.server", "FlextApiServer"),
     "FlextApiServerFactory": ("flext_api.server_factory", "FlextApiServerFactory"),
@@ -150,25 +144,13 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "d": ("flext_web", "d"),
     "e": ("flext_web", "e"),
     "h": ("flext_web", "h"),
-    "is_container_value": ("flext_api.schemas._shared", "is_container_value"),
-    "is_object_mapping": ("flext_api.schemas._shared", "is_object_mapping"),
-    "load_and_validate_schema_document": (
-        "flext_api.schemas._shared",
-        "load_and_validate_schema_document",
-    ),
-    "load_schema_document": ("flext_api.schemas._shared", "load_schema_document"),
     "m": ("flext_api.models", "FlextApiModels"),
-    "normalize_json_object": ("flext_api.schemas._shared", "normalize_json_object"),
     "p": ("flext_api.protocols", "FlextApiProtocols"),
-    "parse_dict_field": ("flext_api.schemas._shared", "parse_dict_field"),
-    "parse_int_field": ("flext_api.schemas._shared", "parse_int_field"),
-    "parse_string_field": ("flext_api.schemas._shared", "parse_string_field"),
     "protocol_impls": ("flext_api.protocol_impls", ""),
     "r": ("flext_web", "r"),
     "s": ("flext_web", "s"),
     "schemas": ("flext_api.schemas", ""),
     "t": ("flext_api.typings", "FlextApiTypes"),
-    "to_general_value": ("flext_api.schemas._shared", "to_general_value"),
     "u": ("flext_api.utilities", "FlextApiUtilities"),
     "x": ("flext_web", "x"),
 }
@@ -182,12 +164,14 @@ __all__ = [
     "FlextApiApp",
     "FlextApiClient",
     "FlextApiConstants",
+    "FlextApiErrors",
     "FlextApiLifecycleManager",
     "FlextApiMiddleware",
     "FlextApiModels",
     "FlextApiPlugins",
     "FlextApiProtocols",
     "FlextApiRegistry",
+    "FlextApiSchemaShared",
     "FlextApiSerializers",
     "FlextApiServer",
     "FlextApiServerFactory",
@@ -221,22 +205,13 @@ __all__ = [
     "d",
     "e",
     "h",
-    "is_container_value",
-    "is_object_mapping",
-    "load_and_validate_schema_document",
-    "load_schema_document",
     "m",
-    "normalize_json_object",
     "p",
-    "parse_dict_field",
-    "parse_int_field",
-    "parse_string_field",
     "protocol_impls",
     "r",
     "s",
     "schemas",
     "t",
-    "to_general_value",
     "u",
     "x",
 ]

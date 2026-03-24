@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, MutableMapping, MutableSequence
 from typing import ClassVar, override
 
 import websockets
@@ -64,10 +64,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _connected: bool
     _url: str
     _headers: t.StrMapping
-    _on_message_handlers: Sequence[Callable[[str | bytes], None]]
-    _on_connect_handlers: Sequence[Callable[[], None]]
-    _on_disconnect_handlers: Sequence[Callable[[], None]]
-    _on_error_handlers: Sequence[Callable[[Exception], None]]
+    _on_message_handlers: MutableSequence[Callable[[str | bytes], None]]
+    _on_connect_handlers: MutableSequence[Callable[[], None]]
+    _on_disconnect_handlers: MutableSequence[Callable[[], None]]
+    _on_error_handlers: MutableSequence[Callable[[Exception], None]]
 
     def __init__(
         self,
@@ -184,7 +184,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         r indicating success or failure
 
         """
-        connect_headers: t.StrMapping = {}
+        connect_headers: MutableMapping[str, str] = {}
         if headers is not None:
             connect_headers.update(headers)
         return self._connect(url, connect_headers)

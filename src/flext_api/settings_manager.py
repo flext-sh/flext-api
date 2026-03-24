@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 
 from flext_core import r
 from pydantic import TypeAdapter, ValidationError
@@ -210,7 +210,7 @@ class FlextApiSettingsManager:
         config: Mapping[str, str | float | bool],
     ) -> r[t.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
-        processed: t.JsonObject = {}
+        processed: MutableMapping[str, t.ContainerValue] = {}
         for key, value in config.items():
             normalize_result = self._normalize_value(key, value=value)
             if normalize_result.is_failure:
