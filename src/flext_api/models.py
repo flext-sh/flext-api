@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence, Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 

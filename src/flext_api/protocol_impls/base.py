@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Sequence, Mapping, MutableMapping
 
 from flext_core import FlextLogger, r
 

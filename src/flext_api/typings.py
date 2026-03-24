@@ -26,6 +26,7 @@ class FlextApiTypes(FlextTypes):
     Only TypeVar loose outside class.
     """
 
+    # Class-level forwarding aliases (canonical definitions in Api namespace)
     type JsonObject = Mapping[str, FlextTypes.ContainerValue]
     type ApiJsonValue = FlextTypes.ContainerValue | None
 
@@ -46,8 +47,6 @@ class FlextApiTypes(FlextTypes):
 
         """
 
-        type JsonObject = Mapping[str, FlextTypes.ContainerValue]
-        type ApiJsonValue = FlextTypes.ContainerValue | None
         type WebData = FlextTypes.FileContent | Mapping[str, FlextTypes.ContainerValue]
         type WebHeaders = Mapping[str, FlextTypes.Scalar | Sequence[str]]
         type WebParamValue = str | Sequence[str]
