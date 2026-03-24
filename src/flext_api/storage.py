@@ -612,7 +612,7 @@ class FlextApiStorage:
         storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
         if storage_kwargs is None:
             storage_kwargs = kwargs
-        self._flext_storage_kwargs = {}
+        self._flext_storage_kwargs: Mapping[str, t.ApiJsonValue] = {}
         return (config_obj, storage_kwargs)
 
     def _extract_max_size(

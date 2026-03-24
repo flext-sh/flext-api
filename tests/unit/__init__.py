@@ -16,12 +16,12 @@ if TYPE_CHECKING:
     from tests.unit.test_serializers import TestMessagePackUnpackb
     from tests.unit.test_smoke import test_package_imports_main_facade
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
-    "test_package_imports_main_facade": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "TestMessagePackUnpackb": ["tests.unit.test_serializers", "TestMessagePackUnpackb"],
+    "test_package_imports_main_facade": [
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
-    ),
+    ],
 }
 
 __all__ = [

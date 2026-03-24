@@ -29,19 +29,19 @@ if TYPE_CHECKING:
     from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "FlextApiAsyncapiSchemaValidator": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "FlextApiAsyncapiSchemaValidator": [
         "flext_api.schemas.asyncapi",
         "FlextApiAsyncapiSchemaValidator",
-    ),
-    "FlextApiJsonschemaValidator": (
+    ],
+    "FlextApiJsonschemaValidator": [
         "flext_api.schemas.jsonschema",
         "FlextApiJsonschemaValidator",
-    ),
-    "FlextApiOpenapiSchemaValidator": (
+    ],
+    "FlextApiOpenapiSchemaValidator": [
         "flext_api.schemas.openapi",
         "FlextApiOpenapiSchemaValidator",
-    ),
+    ],
 }
 
 __all__ = [

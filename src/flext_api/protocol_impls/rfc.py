@@ -109,7 +109,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         json_data: MutableMapping[str, t.ContainerValue] | None = None
         if data is not None:
-            json_data = {}
+            json_data: MutableMapping[str, t.ContainerValue] = {}
             for key, value in data.items():
                 json_data[key] = value
         web_headers: Mapping[str, str | t.StrSequence] | None = None

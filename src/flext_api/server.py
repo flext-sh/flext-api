@@ -380,8 +380,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
             version,
             logger,
         )
-        self._protocol_handlers = {}
-        self._middleware_pipeline = []
+        self._protocol_handlers: MutableMapping[str, p.Api.Server.ProtocolHandler] = {}
+        self._middleware_pipeline: MutableSequence[Callable[..., None]] = []
 
     @property
     def host(self) -> str:

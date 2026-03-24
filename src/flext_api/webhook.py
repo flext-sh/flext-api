@@ -100,9 +100,13 @@ class FlextWebhookHandler(FlextService[bool]):
         self._max_retries = max_retries
         self._retry_delay = retry_delay
         self._retry_backoff = retry_backoff
-        self._event_handlers = {}
+        self._event_handlers: MutableMapping[
+            str, MutableSequence[Callable[..., None]]
+        ] = {}
         self._event_queue = deque(maxlen=1000)
-        self._delivery_confirmations = {}
+        self._delivery_confirmations: MutableMapping[
+            str, Mapping[str, t.ContainerValue]
+        ] = {}
         self._retry_queue = deque(maxlen=500)
 
     @override
@@ -239,9 +243,7 @@ class FlextWebhookHandler(FlextService[bool]):
             r indicating success or failure
 
         """
-        if event_type not in self._event_handlers:
-            self._event_handlers[event_type] = []
-        self._event_handlers[event_type].append(handler)
+        self._event_handlers.setdefault(event_type, []).append(handler)
         FlextLogger(__name__).info("Event handler registered", event_type=event_type)
         return r[bool].ok(value=True)
 

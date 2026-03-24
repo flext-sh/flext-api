@@ -28,7 +28,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         """Clear all stored values."""
 
         def _clear() -> bool:
-            self._storage = {}
+            self._storage: MutableMapping[str, t.ApiJsonValue] = {}
             self.logger.debug("Cleared all storage data")
             return True
 

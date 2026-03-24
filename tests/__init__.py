@@ -23,29 +23,29 @@ if TYPE_CHECKING:
     from tests.unit.test_smoke import test_package_imports_main_facade
     from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "FlextApiTestConstants": ("tests.constants", "FlextApiTestConstants"),
-    "FlextApiTestModels": ("tests.models", "FlextApiTestModels"),
-    "FlextApiTestProtocols": ("tests.protocols", "FlextApiTestProtocols"),
-    "FlextApiTestTypes": ("tests.typings", "FlextApiTestTypes"),
-    "FlextApiTestUtilities": ("tests.utilities", "FlextApiTestUtilities"),
-    "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
-    "c": ("tests.constants", "FlextApiTestConstants"),
-    "d": ("flext_tests", "d"),
-    "e": ("flext_tests", "e"),
-    "h": ("flext_tests", "h"),
-    "m": ("tests.models", "FlextApiTestModels"),
-    "p": ("tests.protocols", "FlextApiTestProtocols"),
-    "r": ("flext_tests", "r"),
-    "s": ("flext_tests", "s"),
-    "t": ("tests.typings", "FlextApiTestTypes"),
-    "test_package_imports_main_facade": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "FlextApiTestConstants": ["tests.constants", "FlextApiTestConstants"],
+    "FlextApiTestModels": ["tests.models", "FlextApiTestModels"],
+    "FlextApiTestProtocols": ["tests.protocols", "FlextApiTestProtocols"],
+    "FlextApiTestTypes": ["tests.typings", "FlextApiTestTypes"],
+    "FlextApiTestUtilities": ["tests.utilities", "FlextApiTestUtilities"],
+    "TestMessagePackUnpackb": ["tests.unit.test_serializers", "TestMessagePackUnpackb"],
+    "c": ["tests.constants", "FlextApiTestConstants"],
+    "d": ["flext_tests", "d"],
+    "e": ["flext_tests", "e"],
+    "h": ["flext_tests", "h"],
+    "m": ["tests.models", "FlextApiTestModels"],
+    "p": ["tests.protocols", "FlextApiTestProtocols"],
+    "r": ["flext_tests", "r"],
+    "s": ["flext_tests", "s"],
+    "t": ["tests.typings", "FlextApiTestTypes"],
+    "test_package_imports_main_facade": [
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
-    ),
-    "u": ("tests.utilities", "FlextApiTestUtilities"),
-    "unit": ("tests.unit", ""),
-    "x": ("flext_tests", "x"),
+    ],
+    "u": ["tests.utilities", "FlextApiTestUtilities"],
+    "unit": ["tests.unit", ""],
+    "x": ["flext_tests", "x"],
 }
 
 __all__ = [

@@ -97,7 +97,7 @@ class FlextApiAdapters:
                     try:
                         headers = _HEADERS_ADAPTER.validate_python(headers_raw)
                     except ValidationError:
-                        headers = {}
+                        headers: Mapping[str, str] = {}
                 status_code = message.get("status", 200)
                 if not isinstance(status_code, int):
                     status_code = 200

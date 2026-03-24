@@ -183,7 +183,7 @@ class FlextApiPlugins:
         def __init__(self) -> None:
             """Initialize plugin manager."""
             self.logger = FlextLogger(__name__)
-            self._loaded_plugins = {}
+            self._loaded_plugins: MutableMapping[str, FlextApiPlugins.Plugin] = {}
 
         def get_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
             """Get loaded plugin by name."""

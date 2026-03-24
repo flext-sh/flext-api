@@ -46,7 +46,7 @@ class FlextApiSettingsManager:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
             if config is None:
-                self._config = {}
+                self._config: t.JsonObject = {}
             else:
                 process_result = self._process_config(config)
                 if process_result.is_failure:

@@ -130,9 +130,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def on_event(self, event_type: str, handler: Callable[..., None]) -> None:
         """Register a handler for a specific SSE event type."""
-        if event_type not in self._on_event_handlers:
-            self._on_event_handlers[event_type] = []
-        self._on_event_handlers[event_type].append(handler)
+        self._on_event_handlers.setdefault(event_type, []).append(handler)
 
     @override
     def send_request(
@@ -319,7 +317,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     yield payload
                 event_id = ""
                 event_type = ""
-                data_lines = []
+                data_lines: list[str] = []
                 retry = None
                 continue
             if line.startswith(":"):
