@@ -15,7 +15,7 @@ from flext_core import FlextLogger, FlextRuntime, r
 from flext_api import p, t, u
 
 
-class StorageBackendImplementation(p.Api.Storage.StorageBackend):
+class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
     """Storage backend implementation conforming to StorageBackend."""
 
     def __init__(self) -> None:
@@ -107,3 +107,6 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
             _set,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Storage operation failed: {e}")
+
+
+__all__ = ["FlextApiStorageBackendImplementation"]

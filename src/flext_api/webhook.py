@@ -1,15 +1,5 @@
 """Webhook handler for flext-api.
 
-Provides webhook functionality with:
-- Webhook receiver with signature verification
-- Event processing and routing
-- Retry handling with exponential backoff
-- Delivery confirmation tracking
-- Event queue management
-- Webhook registration and management
-
-See TRANSFORMATION_PLAN.md - Phase 6 for implementation details.
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -33,53 +23,8 @@ from flext_api import c, p, t, u
 _JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
 
-def _is_object_mapping(
-    value: t.ContainerValue,
-) -> TypeIs[Mapping[str, t.ContainerValue]]:
-    return isinstance(value, Mapping)
-
-
-def _is_object_list(value: t.ContainerValue) -> TypeIs[Sequence[t.ContainerValue]]:
-    return isinstance(value, list)
-
-
-def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
-    if value is None:
-        return None
-    if u.is_primitive(value):
-        return value
-    if _is_object_list(value):
-        return [_to_container_value(item) for item in value]
-    if _is_object_mapping(value):
-        normalized: MutableMapping[str, t.ContainerValue] = {}
-        for key, item in value.items():
-            normalized[str(key)] = _to_container_value(item)
-        return normalized
-    return str(value)
-
-
 class FlextWebhookHandler(FlextService[bool]):
-    """Webhook handler with signature verification and event processing.
-
-    Features:
-    - Webhook receiver with request validation
-    - Signature verification (HMAC-SHA256, HMAC-SHA512)
-    - Event processing and routing
-    - Retry handling with exponential backoff
-    - Delivery confirmation tracking
-    - Event queue management
-    - Webhook registration and lifecycle
-
-    Integration:
-    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, CommandBus, u)
-    - Signature verification using HMAC
-    - Event routing to registered handlers
-    - Retry queue with configurable attempts
-    - r for railway-oriented error handling
-    - FlextLogger for structured audit logging
-    - FlextService for service lifecycle management
-    - ual utility functions
-    """
+    """Webhook handler with signature verification and event processing."""
 
     _flext_context: p.Context
     _dispatcher: p.Dispatcher
@@ -93,6 +38,31 @@ class FlextWebhookHandler(FlextService[bool]):
     _event_queue: deque[MutableMapping[str, t.ContainerValue]]
     _delivery_confirmations: MutableMapping[str, Mapping[str, t.ContainerValue]]
     _retry_queue: deque[MutableMapping[str, t.ContainerValue]]
+
+    @staticmethod
+    def _is_object_mapping(
+        value: t.ContainerValue,
+    ) -> TypeIs[Mapping[str, t.ContainerValue]]:
+        return isinstance(value, Mapping)
+
+    @staticmethod
+    def _is_object_list(value: t.ContainerValue) -> TypeIs[Sequence[t.ContainerValue]]:
+        return isinstance(value, list)
+
+    @staticmethod
+    def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
+        if value is None:
+            return None
+        if u.is_primitive(value):
+            return value
+        if FlextWebhookHandler._is_object_list(value):
+            return [FlextWebhookHandler._to_container_value(item) for item in value]
+        if FlextWebhookHandler._is_object_mapping(value):
+            normalized: MutableMapping[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                normalized[str(key)] = FlextWebhookHandler._to_container_value(item)
+            return normalized
+        return str(value)
 
     def __init__(
         self,
@@ -405,11 +375,11 @@ class FlextWebhookHandler(FlextService[bool]):
             event_data: t.ContainerValue = _JSON_OBJECT_ADAPTER.validate_json(
                 payload_str,
             )
-            if not _is_object_mapping(event_data):
+            if not FlextWebhookHandler._is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON t.NormalizedValue")
             json_object: MutableMapping[str, t.ContainerValue] = {}
             for key, value in event_data.items():
-                json_object[str(key)] = _to_container_value(value)
+                json_object[str(key)] = FlextWebhookHandler._to_container_value(value)
             return r[t.JsonObject].ok(json_object)
         except (ValueError, TypeError, KeyError, ConnectionError, ValidationError) as e:
             return r[t.JsonObject].fail(f"Failed to parse payload: {e}")

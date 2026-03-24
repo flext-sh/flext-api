@@ -21,11 +21,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_api import FlextApiPlugins, t, u
-from flext_api.schemas import _shared
+from flext_api import FlextApiPlugins, _shared, t, u
 
 
-class OpenAPISchemaValidator(FlextApiPlugins.Schema):
+class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
     """OpenAPI 3.x schema validator with specification validation.
 
     Features:
@@ -502,4 +501,4 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return self._validate_scheme_type_requirements(scheme_name, scheme, scheme_type)
 
 
-__all__ = ["OpenAPISchemaValidator"]
+__all__ = ["FlextApiOpenapiSchemaValidator"]

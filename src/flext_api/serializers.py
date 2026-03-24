@@ -21,17 +21,17 @@ _MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
 )
 
 
-def _load_msgpack() -> ModuleType | None:
-    """Load msgpack lazily to avoid static typing dependency issues."""
-    try:
-        module = importlib.import_module("msgpack")
-    except ModuleNotFoundError:
-        return None
-    return module
-
-
 class FlextApiSerializers:
     """Serialization utilities for API operations."""
+
+    @staticmethod
+    def _load_msgpack() -> ModuleType | None:
+        """Load msgpack lazily to avoid static typing dependency issues."""
+        try:
+            module = importlib.import_module("msgpack")
+        except ModuleNotFoundError:
+            return None
+        return module
 
     class MessagePack:
         """Type-safe wrappers for msgpack library."""
@@ -53,7 +53,7 @@ class FlextApiSerializers:
                 bytes: Packed binary data.
 
             """
-            module = _load_msgpack()
+            module = FlextApiSerializers._load_msgpack()
             if module is None:
                 return b""
             packb_fn = getattr(module, "packb", None)
@@ -77,7 +77,7 @@ class FlextApiSerializers:
                 Result containing unpacked t.NormalizedValue (dict, list, or scalar).
 
             """
-            module = _load_msgpack()
+            module = FlextApiSerializers._load_msgpack()
             if module is None:
                 return r[
                     t.Scalar | t.ContainerValueMapping | t.ContainerValueList

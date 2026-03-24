@@ -25,23 +25,29 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
-    from flext_api.schemas.jsonschema import JSONSchemaValidator
-    from flext_api.schemas.openapi import OpenAPISchemaValidator
+    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
+    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
+    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
 
 _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "AsyncAPISchemaValidator": (
+    "FlextApiAsyncapiSchemaValidator": (
         "flext_api.schemas.asyncapi",
-        "AsyncAPISchemaValidator",
+        "FlextApiAsyncapiSchemaValidator",
     ),
-    "JSONSchemaValidator": ("flext_api.schemas.jsonschema", "JSONSchemaValidator"),
-    "OpenAPISchemaValidator": ("flext_api.schemas.openapi", "OpenAPISchemaValidator"),
+    "FlextApiJsonschemaValidator": (
+        "flext_api.schemas.jsonschema",
+        "FlextApiJsonschemaValidator",
+    ),
+    "FlextApiOpenapiSchemaValidator": (
+        "flext_api.schemas.openapi",
+        "FlextApiOpenapiSchemaValidator",
+    ),
 }
 
 __all__ = [
-    "AsyncAPISchemaValidator",
-    "JSONSchemaValidator",
-    "OpenAPISchemaValidator",
+    "FlextApiAsyncapiSchemaValidator",
+    "FlextApiJsonschemaValidator",
+    "FlextApiOpenapiSchemaValidator",
 ]
 
 

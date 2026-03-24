@@ -21,11 +21,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_api import FlextApiPlugins, t, u
-from flext_api.schemas import _shared
+from flext_api import FlextApiPlugins, _shared, t, u
 
 
-class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
+class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
     """AsyncAPI schema validator with version support.
 
     Features:
@@ -650,4 +649,4 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return self._validate_channel_messages(channel, channel_name)
 
 
-__all__ = ["AsyncAPISchemaValidator"]
+__all__ = ["FlextApiAsyncapiSchemaValidator"]

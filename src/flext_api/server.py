@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, Sequence
-from typing import override
+from typing import ClassVar, override
 
 from fastapi import FastAPI
 from flext_core import FlextLogger, FlextRuntime, FlextService, e, r, x
@@ -39,6 +39,9 @@ class FlextApiServer(FlextService[bool], x.Validation):
     Uses Flext patterns: Service lifecycle decorator, logging/validation mixins,
     railway pattern results, and dependency injection.
     """
+
+    _hostname_adapter: ClassVar[TypeAdapter[t.HostnameStr]] = TypeAdapter(t.HostnameStr)
+    _port_adapter: ClassVar[TypeAdapter[t.PortNumber]] = TypeAdapter(t.PortNumber)
 
     _protocol_handlers: MutableMapping[str, p.Api.Server.ProtocolHandler]
     _middleware_pipeline: MutableSequence[Callable[..., None]]
@@ -565,11 +568,11 @@ class FlextApiServer(FlextService[bool], x.Validation):
     ) -> r[bool]:
         """Validate server configuration using utilities directly."""
         try:
-            TypeAdapter(t.HostnameStr).validate_python(host)
+            self._hostname_adapter.validate_python(host)
         except ValidationError as error:
             return r[bool].fail(f"Host validation failed: {error}")
         try:
-            TypeAdapter(t.PortNumber).validate_python(port)
+            self._port_adapter.validate_python(port)
         except ValidationError as error:
             return r[bool].fail(f"Port validation failed: {error}")
         title_result: r[str]

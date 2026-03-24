@@ -22,10 +22,10 @@ import httpx
 from flext_core import r
 from pydantic import ValidationError
 
-from flext_api import FlextApiTransports, RFCProtocolImplementation, c, m, t, u
+from flext_api import FlextApiRfcProtocolImplementation, FlextApiTransports, c, m, t, u
 
 
-class FlextWebProtocolPlugin(RFCProtocolImplementation):
+class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     """HTTP protocol implementation with HTTP/1.1, HTTP/2, and HTTP/3 support.
 
     Features:

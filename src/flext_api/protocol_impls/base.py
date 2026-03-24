@@ -17,7 +17,7 @@ from flext_core import FlextLogger, r
 from flext_api import t
 
 
-class BaseProtocolImplementation:
+class FlextApiBaseProtocolImplementation:
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
@@ -228,4 +228,4 @@ class BaseProtocolImplementation:
         return r[t.ContainerValueMapping].ok(request)
 
 
-__all__ = ["BaseProtocolImplementation"]
+__all__ = ["FlextApiBaseProtocolImplementation"]

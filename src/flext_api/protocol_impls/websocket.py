@@ -26,10 +26,10 @@ from flext_core import r
 from pydantic import ConfigDict, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import RFCProtocolImplementation, c, m, t
+from flext_api import FlextApiRfcProtocolImplementation, c, m, t
 
 
-class WebSocketProtocolPlugin(RFCProtocolImplementation):
+class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     """WebSocket protocol plugin with full lifecycle management.
 
     Features:
@@ -519,4 +519,4 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[bool].fail(f"WebSocket send error: {e}")
 
 
-__all__ = ["WebSocketProtocolPlugin"]
+__all__ = ["FlextApiWebsocketProtocolPlugin"]

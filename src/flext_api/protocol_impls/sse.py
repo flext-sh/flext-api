@@ -22,10 +22,10 @@ from flext_core import r
 from httpx_sse import connect_sse
 from pydantic import ValidationError
 
-from flext_api import RFCProtocolImplementation, c, m, t
+from flext_api import FlextApiRfcProtocolImplementation, c, m, t
 
 
-class SSEProtocolPlugin(RFCProtocolImplementation):
+class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     """Server-Sent Events protocol plugin implementation."""
 
     is_connected: bool
@@ -422,4 +422,4 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             time.sleep(delay_seconds)
 
 
-__all__ = ["SSEProtocolPlugin"]
+__all__ = ["FlextApiSseProtocolPlugin"]

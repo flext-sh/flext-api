@@ -14,7 +14,7 @@ from flext_core import FlextLogger
 from flext_api import FlextApiProtocols as api_protocols, t, u
 
 
-class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
+class FlextApiLoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
     """Logger implementation conforming to Logger."""
 
     def __init__(self) -> None:
@@ -60,3 +60,6 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
                 continue
             context[key] = "<unstructured>"
         return context
+
+
+__all__ = ["FlextApiLoggerProtocolImplementation"]

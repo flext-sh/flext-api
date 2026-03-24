@@ -18,19 +18,41 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_api.protocol_impls.base import BaseProtocolImplementation
+    from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.logger import LoggerProtocolImplementation
-    from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-    from flext_api.protocol_impls.sse import SSEProtocolPlugin
-    from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
-    from flext_api.protocol_impls.websocket import WebSocketProtocolPlugin
+    from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
+    from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
+    from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
+    from flext_api.protocol_impls.storage_backend import (
+        FlextApiStorageBackendImplementation,
+    )
+    from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
 
 _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "BaseProtocolImplementation": (
+    "FlextApiBaseProtocolImplementation": (
         "flext_api.protocol_impls.base",
-        "BaseProtocolImplementation",
+        "FlextApiBaseProtocolImplementation",
+    ),
+    "FlextApiLoggerProtocolImplementation": (
+        "flext_api.protocol_impls.logger",
+        "FlextApiLoggerProtocolImplementation",
+    ),
+    "FlextApiRfcProtocolImplementation": (
+        "flext_api.protocol_impls.rfc",
+        "FlextApiRfcProtocolImplementation",
+    ),
+    "FlextApiSseProtocolPlugin": (
+        "flext_api.protocol_impls.sse",
+        "FlextApiSseProtocolPlugin",
+    ),
+    "FlextApiStorageBackendImplementation": (
+        "flext_api.protocol_impls.storage_backend",
+        "FlextApiStorageBackendImplementation",
+    ),
+    "FlextApiWebsocketProtocolPlugin": (
+        "flext_api.protocol_impls.websocket",
+        "FlextApiWebsocketProtocolPlugin",
     ),
     "FlextWebClientImplementation": (
         "flext_api.protocol_impls.http_client",
@@ -40,34 +62,17 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
         "flext_api.protocol_impls.http",
         "FlextWebProtocolPlugin",
     ),
-    "LoggerProtocolImplementation": (
-        "flext_api.protocol_impls.logger",
-        "LoggerProtocolImplementation",
-    ),
-    "RFCProtocolImplementation": (
-        "flext_api.protocol_impls.rfc",
-        "RFCProtocolImplementation",
-    ),
-    "SSEProtocolPlugin": ("flext_api.protocol_impls.sse", "SSEProtocolPlugin"),
-    "StorageBackendImplementation": (
-        "flext_api.protocol_impls.storage_backend",
-        "StorageBackendImplementation",
-    ),
-    "WebSocketProtocolPlugin": (
-        "flext_api.protocol_impls.websocket",
-        "WebSocketProtocolPlugin",
-    ),
 }
 
 __all__ = [
-    "BaseProtocolImplementation",
+    "FlextApiBaseProtocolImplementation",
+    "FlextApiLoggerProtocolImplementation",
+    "FlextApiRfcProtocolImplementation",
+    "FlextApiSseProtocolPlugin",
+    "FlextApiStorageBackendImplementation",
+    "FlextApiWebsocketProtocolPlugin",
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
-    "LoggerProtocolImplementation",
-    "RFCProtocolImplementation",
-    "SSEProtocolPlugin",
-    "StorageBackendImplementation",
-    "WebSocketProtocolPlugin",
 ]
 
 

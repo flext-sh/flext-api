@@ -16,13 +16,13 @@ from collections.abc import Mapping, MutableMapping
 from flext_core import r
 from pydantic import ValidationError
 
-from flext_api import BaseProtocolImplementation, c, m, t
+from flext_api import FlextApiBaseProtocolImplementation, c, m, t
 
 
-class RFCProtocolImplementation(BaseProtocolImplementation):
+class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
     """RFC-compliant protocol implementation base class.
 
-    Extends BaseProtocolImplementation with RFC-compliant patterns and utilities.
+    Extends FlextApiBaseProtocolImplementation with RFC-compliant patterns and utilities.
     All standard protocol implementations should extend this class to inherit
     RFC-compliant behavior.
 
@@ -327,4 +327,4 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return r[int].ok(parsed.status_code)
 
 
-__all__ = ["RFCProtocolImplementation"]
+__all__ = ["FlextApiRfcProtocolImplementation"]
