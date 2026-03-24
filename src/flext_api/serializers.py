@@ -15,9 +15,9 @@ from pydantic import TypeAdapter, ValidationError
 from flext_api import t
 
 _MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
-    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue] | None
+    t.Scalar | t.ContainerValueMapping | t.ContainerValueList | None
 ] = TypeAdapter(
-    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue] | None,
+    t.Scalar | t.ContainerValueMapping | t.ContainerValueList | None,
 )
 
 
@@ -67,7 +67,7 @@ class FlextApiSerializers:
         @staticmethod
         def unpackb(
             data: bytes,
-        ) -> r[t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]]:
+        ) -> r[t.Scalar | t.ContainerValueMapping | t.ContainerValueList]:
             """Type-safe wrapper for msgpack.unpackb().
 
             Args:
@@ -80,27 +80,27 @@ class FlextApiSerializers:
             module = _load_msgpack()
             if module is None:
                 return r[
-                    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]
+                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                 ].fail("msgpack module not available")
             unpackb_fn = getattr(module, "unpackb", None)
             if unpackb_fn is None:
                 return r[
-                    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]
+                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                 ].fail("msgpack.unpackb function not found")
             try:
                 result = unpackb_fn(data)
                 validated = _MESSAGEPACK_RESULT_ADAPTER.validate_python(result)
                 if validated is None:
                     return r[
-                        t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]
+                        t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                     ].fail("msgpack deserialization returned None")
                 non_none_value: (
-                    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]
+                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                 ) = validated
-                return r[
-                    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]
-                ].ok(non_none_value)
+                return r[t.Scalar | t.ContainerValueMapping | t.ContainerValueList].ok(
+                    non_none_value
+                )
             except (ValidationError, Exception) as e:
                 return r[
-                    t.Scalar | t.ContainerValueMapping | Sequence[t.ContainerValue]
+                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                 ].fail(f"msgpack deserialization failed: {e}")
