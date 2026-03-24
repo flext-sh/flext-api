@@ -30,18 +30,9 @@ if TYPE_CHECKING:
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextApiAsyncapiSchemaValidator": [
-        "flext_api.schemas.asyncapi",
-        "FlextApiAsyncapiSchemaValidator",
-    ],
-    "FlextApiJsonschemaValidator": [
-        "flext_api.schemas.jsonschema",
-        "FlextApiJsonschemaValidator",
-    ],
-    "FlextApiOpenapiSchemaValidator": [
-        "flext_api.schemas.openapi",
-        "FlextApiOpenapiSchemaValidator",
-    ],
+    "FlextApiAsyncapiSchemaValidator": ["flext_api.schemas.asyncapi", "FlextApiAsyncapiSchemaValidator"],
+    "FlextApiJsonschemaValidator": ["flext_api.schemas.jsonschema", "FlextApiJsonschemaValidator"],
+    "FlextApiOpenapiSchemaValidator": ["flext_api.schemas.openapi", "FlextApiOpenapiSchemaValidator"],
 }
 
 __all__ = [
