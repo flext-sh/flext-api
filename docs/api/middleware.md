@@ -70,11 +70,7 @@ class LoggingMiddleware(FlextApiMiddleware):
                 "user_agent": request.headers.get("User-Agent"),
             },
         )
-<<<<<<< Updated upstream
         return r[dict].ok({})
-=======
-        return FlextResult[dict].ok({})
->>>>>>> Stashed changes
 
     async def process_response(self, request, response) -> r[dict]:
         """Process outgoing response."""
@@ -85,12 +81,7 @@ class LoggingMiddleware(FlextApiMiddleware):
                 "duration_ms": response.duration_ms,
             },
         )
-<<<<<<< Updated upstream
         return r[dict].ok({})
-
-=======
-        return FlextResult[dict].ok({})
->>>>>>> Stashed changes
 
 
 # Usage
@@ -202,7 +193,6 @@ class JwtAuthenticationMiddleware(AuthenticationMiddleware):
             return r[dict].fail("Invalid token")
 
 
-
 # Usage
 auth_middleware = JwtAuthenticationMiddleware("your-secret-key")
 app.add_middleware(auth_middleware)
@@ -221,16 +211,11 @@ app.add_middleware(auth_middleware)
 from flext_api import require_roles, require_permissions
 
 
-
 # Role-based authorization
 @app.get("/REDACTED_LDAP_BIND_PASSWORD/users")
 @require_roles(["REDACTED_LDAP_BIND_PASSWORD", "superuser"])
 async def get_REDACTED_LDAP_BIND_PASSWORD_users(
-<<<<<<< Updated upstream
     current_user: t.ContainerMapping = Depends(get_current_user),
-=======
-    current_user: dict[str, object] = Depends(get_current_user),
->>>>>>> Stashed changes
 ):
     """Get all users (REDACTED_LDAP_BIND_PASSWORD only)."""
     return await REDACTED_LDAP_BIND_PASSWORD_service.get_all_users()
@@ -240,12 +225,8 @@ async def get_REDACTED_LDAP_BIND_PASSWORD_users(
 @app.post("/users/{user_id}/delete")
 @require_permissions(["user.delete"])
 async def delete_user(
-<<<<<<< Updated upstream
     user_id: str,
     current_user: t.ContainerMapping = Depends(get_current_user),
-=======
-    user_id: str, current_user: dict[str, object] = Depends(get_current_user)
->>>>>>> Stashed changes
 ):
     """Delete user (requires delete permission)."""
     return await user_service.delete_user(user_id)
@@ -259,7 +240,6 @@ Middleware for preprocessing incoming requests.
 
 ```python
 from flext_api import RequestMiddleware
-
 
 
 class RequestValidationMiddleware(RequestMiddleware):
@@ -276,11 +256,7 @@ class RequestValidationMiddleware(RequestMiddleware):
 
         # Validate request size
         if hasattr(request, "body") and len(request.body) > 1024 * 1024:  # 1MB limit
-<<<<<<< Updated upstream
             return r[dict].fail("Request body too large")
-=======
-            return FlextResult[dict].fail("Request body too large")
->>>>>>> Stashed changes
 
         # Sanitize input data
         if hasattr(request, "json"):
@@ -308,7 +284,6 @@ Middleware for postprocessing outgoing responses.
 
 ```python
 from flext_api import ResponseMiddleware
-
 
 
 class ResponseFormattingMiddleware(ResponseMiddleware):
@@ -345,7 +320,6 @@ Middleware for centralized error handling and response formatting.
 ```python
 from flext_api import ErrorHandlingMiddleware
 from flext_api import m
-
 
 
 class FlextApiErrorHandler(ErrorHandlingMiddleware):
@@ -407,7 +381,6 @@ Middleware for monitoring request performance and metrics.
 
 ```python
 from flext_api import PerformanceMonitoringMiddleware
-
 
 
 class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
@@ -522,7 +495,6 @@ class CustomHeaderMiddleware(FlextApiMiddleware):
         return r[dict].ok({})
 
 
-
 # Usage
 custom_middleware = CustomHeaderMiddleware({
     "X-API-Version": "1.0.0",
@@ -575,7 +547,6 @@ class DatabaseMiddleware(FlextApiMiddleware):
             # Close database connection
             await request.db.close()
         return r[dict].ok({})
-
 
 
 # Register database service

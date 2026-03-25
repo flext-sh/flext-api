@@ -238,16 +238,10 @@ Standardized error responses across the API.
 from flext_api import ErrorResponse
 
 
-
 class ValidationErrorResponse(ErrorResponse):
     """Validation error response."""
 
-<<<<<<< Updated upstream
     field_errors: Mapping[str, t.StringList]
-
-=======
-    field_errors: dict[str, t.StringList]
->>>>>>> Stashed changes
 
 
 class AuthenticationErrorResponse(ErrorResponse):
@@ -453,11 +447,7 @@ async def list_users(
     limit: int = 10,
     offset: int = 0,
     user_service: UserService = Depends(get_user_service),
-<<<<<<< Updated upstream
 ) -> Sequence[UserResponse]:
-=======
-) -> list[UserResponse]:
->>>>>>> Stashed changes
     """List users with pagination."""
     result = user_service.get_users(limit=limit, offset=offset)
 

@@ -15,9 +15,9 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
-
 if TYPE_CHECKING:
     from flext_core import FlextTypes
+
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
@@ -30,14 +30,38 @@ if TYPE_CHECKING:
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextApiBaseProtocolImplementation": ["flext_api.protocol_impls.base", "FlextApiBaseProtocolImplementation"],
-    "FlextApiLoggerProtocolImplementation": ["flext_api.protocol_impls.logger", "FlextApiLoggerProtocolImplementation"],
-    "FlextApiRfcProtocolImplementation": ["flext_api.protocol_impls.rfc", "FlextApiRfcProtocolImplementation"],
-    "FlextApiSseProtocolPlugin": ["flext_api.protocol_impls.sse", "FlextApiSseProtocolPlugin"],
-    "FlextApiStorageBackendImplementation": ["flext_api.protocol_impls.storage_backend", "FlextApiStorageBackendImplementation"],
-    "FlextApiWebsocketProtocolPlugin": ["flext_api.protocol_impls.websocket", "FlextApiWebsocketProtocolPlugin"],
-    "FlextWebClientImplementation": ["flext_api.protocol_impls.http_client", "FlextWebClientImplementation"],
-    "FlextWebProtocolPlugin": ["flext_api.protocol_impls.http", "FlextWebProtocolPlugin"],
+    "FlextApiBaseProtocolImplementation": [
+        "flext_api.protocol_impls.base",
+        "FlextApiBaseProtocolImplementation",
+    ],
+    "FlextApiLoggerProtocolImplementation": [
+        "flext_api.protocol_impls.logger",
+        "FlextApiLoggerProtocolImplementation",
+    ],
+    "FlextApiRfcProtocolImplementation": [
+        "flext_api.protocol_impls.rfc",
+        "FlextApiRfcProtocolImplementation",
+    ],
+    "FlextApiSseProtocolPlugin": [
+        "flext_api.protocol_impls.sse",
+        "FlextApiSseProtocolPlugin",
+    ],
+    "FlextApiStorageBackendImplementation": [
+        "flext_api.protocol_impls.storage_backend",
+        "FlextApiStorageBackendImplementation",
+    ],
+    "FlextApiWebsocketProtocolPlugin": [
+        "flext_api.protocol_impls.websocket",
+        "FlextApiWebsocketProtocolPlugin",
+    ],
+    "FlextWebClientImplementation": [
+        "flext_api.protocol_impls.http_client",
+        "FlextWebClientImplementation",
+    ],
+    "FlextWebProtocolPlugin": [
+        "flext_api.protocol_impls.http",
+        "FlextWebProtocolPlugin",
+    ],
 }
 
 __all__ = [
@@ -69,6 +93,7 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
+
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -83,6 +108,7 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
+
     """
     return sorted(__all__)
 

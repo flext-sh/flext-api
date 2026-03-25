@@ -204,26 +204,6 @@ class FlextApiClient(FlextService[None]):
 
         # Convert back to unified response format
         return self._convert_from_protocol_response(result)
-<<<<<<< Updated upstream
-=======
-
-    def _convert_to_protocol_request(self, method: str, url: str, kwargs) -> object:
-        """Convert unified request to protocol-specific format."""
-        if self._protocol_name == "http":
-            return FlextApiModels.HttpRequest(method=method, url=url, **kwargs)
-        elif self._protocol_name == "graphql":
-            return GraphQLRequest(
-                query=kwargs.get("query"), variables=kwargs.get("variables")
-            )
-        # ... other protocol conversions
-
-    def _convert_from_protocol_response(
-        self, result: FlextResult[object]
-    ) -> FlextResult[object]:
-        """Convert protocol-specific response to unified format."""
-        # Standardize response format across protocols
-        return result
->>>>>>> Stashed changes
 ```
 
 ## Protocol Implementations
@@ -239,11 +219,7 @@ class FlextWeb(Base):
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-<<<<<<< Updated upstream
     ) -> r[FlextApiModels.HttpResponse]:
-=======
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
->>>>>>> Stashed changes
         client = self.create_client(request.config)
 
         try:
@@ -255,11 +231,7 @@ class FlextWeb(Base):
                 timeout=request.timeout,
             )
 
-<<<<<<< Updated upstream
             return r.ok(
-=======
-            return FlextResult.ok(
->>>>>>> Stashed changes
                 FlextApiModels.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
@@ -294,13 +266,7 @@ class GraphQL(Base):
             transport=transport, execute_timeout=config.get("timeout", 30)
         )
 
-<<<<<<< Updated upstream
     async def execute_request(self, request: GraphQLRequest) -> r[GraphQLResponse]:
-=======
-    async def execute_request(
-        self, request: GraphQLRequest
-    ) -> FlextResult[GraphQLResponse]:
->>>>>>> Stashed changes
         client = self.create_client(request.config)
 
         try:
@@ -369,7 +335,6 @@ await client.send({"type": "subscribe", "channel": "updates"})
 @pytest.fixture
 def http_protocol():
     return FlextWeb()
-
 
 
 @pytest.mark.asyncio

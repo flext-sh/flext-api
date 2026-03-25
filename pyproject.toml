@@ -5,30 +5,16 @@
 
 # [MANAGED] build system
 [build-system]
-<<<<<<< Updated upstream
 build-backend = "hatchling.build"
 requires = [ "hatchling" ]
 
 # [CUSTOM] project metadata
 [project]
 
-authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
-=======
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=2"]
 
-# [CUSTOM] project metadata
-[project]
-name = "flext-api"
-version = "0.12.0-dev"
-description = "FLEXT API - High-Performance REST API with FastAPI"
-readme = "README.md"
-keywords = ["enterprise", "fastapi", "flext", "http", "rest", "typed"]
-license = "MIT"
-maintainers = [{ email = "team@flext.sh", name = "FLEXT Team" }]
-authors = [{ email = "team@flext.sh", name = "FLEXT Team" }]
-requires-python = ">=3.13,<3.14"
->>>>>>> Stashed changes
+
+
+authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Development Status :: 5 - Production/Stable",
@@ -129,7 +115,12 @@ dev = [
   "types-toml>=0.10.8.20240310",
   "vulture>=2.13",
 ]
-<<<<<<< Updated upstream
+
+
+
+
+
+
 
 # [MANAGED] coverage
 [tool.coverage.report]
@@ -137,6 +128,9 @@ fail_under = 25
 precision = 2
 show_missing = true
 skip_covered = false
+
+
+
 
 # [MANAGED] deptry
 [tool.deptry]
@@ -146,16 +140,15 @@ known_first_party = [
 pep621_dev_dependency_groups = [
   "dev",
 ]
-=======
-urls = { Documentation = "https://github.com/flext-sh/flext/blob/main/README.md", Homepage = "https://github.com/flext-sh/flext" }
 
-# [MANAGED] deptry
-[tool.deptry]
-pep621_dev_dependency_groups = ["dev"]
->>>>>>> Stashed changes
+
+
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+
+
 
 # [MANAGED] mypy
 [tool.mypy]
@@ -173,11 +166,17 @@ python_version = "3.13"
 
 [tool.poetry]
 
+
+
+
 # [MANAGED] pydantic-mypy
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+
+
 
 # [MANAGED] pyrefly
 [tool.pyrefly]
@@ -227,6 +226,9 @@ redundant-cast = true
 unannotated-attribute = true
 unannotated-parameter = true
 unannotated-return = true
+
+
+
 
 # [MANAGED] pyright
 [tool.pyright]
@@ -280,17 +282,17 @@ venv = ".venv"
 venvPath = ".."
 
 [[tool.pyright.executionEnvironments]]
-extraPaths = [ "src" ]
+extraPaths = ["src"]
 reportPrivateUsage = "error"
 root = "src"
 
 [[tool.pyright.executionEnvironments]]
-extraPaths = [ ".", "src" ]
+extraPaths = [".", "src"]
 reportPrivateUsage = "none"
 root = "tests"
 
 [[tool.pyright.executionEnvironments]]
-extraPaths = [ ".", "src" ]
+extraPaths = [".", "src"]
 reportPrivateUsage = "none"
 root = "examples"
 
@@ -311,7 +313,6 @@ markers = [
   "unit: unit tests",
 ]
 minversion = "8.0"
-<<<<<<< Updated upstream
 python_classes = [
   "Test*",
 ]
@@ -320,6 +321,9 @@ python_files = [
   "*_tests.py",
   "test_*.py",
 ]
+
+
+
 
 # [MANAGED] ruff
 [tool.ruff]
@@ -427,9 +431,7 @@ split-on-trailing-comma = true
 
 [tool.ruff.lint.per-file-ignores]
 
-"**/.vulture_whitelist.py" = [
-  "ALL",
-]
+
 "**/*_pb2*.py" = [
   "ALL",
 ]
@@ -606,6 +608,9 @@ split-on-trailing-comma = true
   "S404",
   "S603",
 ]
+"**/.vulture_whitelist.py" = [
+  "ALL",
+]
 "**/__init__.py" = [
   "ANN401",
   "D107",
@@ -688,7 +693,7 @@ split-on-trailing-comma = true
   "S404",
   "S603",
 ]
-"**/tools/*.py" = [
+"**/tools/**/*.py" = [
   "FBT001",
   "FBT002",
   "N802",
@@ -697,7 +702,7 @@ split-on-trailing-comma = true
   "S607",
   "T201",
 ]
-"**/tools/**/*.py" = [
+"**/tools/*.py" = [
   "FBT001",
   "FBT002",
   "N802",
@@ -716,6 +721,8 @@ split-on-trailing-comma = true
   "S607",
 ]
 
+
+
 # [MANAGED] tomlsort
 [tool.tomlsort]
 all = true
@@ -733,6 +740,9 @@ workspace = true
 [tool.uv.sources.flext-web]
 workspace = true
 
+
+
+
 # [MANAGED] yamlfix
 [tool.yamlfix]
 explicit_start = false
@@ -740,24 +750,3 @@ line_length = 88
 preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
-=======
-python_classes = ["Test*"]
-python_files = ["*_test.py", "*_tests.py", "test_*.py"]
-addopts = ["--strict-markers"]
-markers = [
-  "unit: unit tests",
-  "integration: integration tests",
-  "performance: performance and benchmark tests",
-  "slow: slow-running tests",
-  "docker: tests requiring Docker",
-  "e2e: end-to-end integration tests",
-  "edge_cases: edge case tests",
-  "stress: stress tests",
-  "resilience: resilience tests",
-]
-
-# [MANAGED] ruff
-
-# [CUSTOM] poetry dev extensions
-[tool.poetry.group.dev.dependencies]
->>>>>>> Stashed changes

@@ -295,7 +295,6 @@ print(f"JSON Schema properties: {len(user_request_schema.properties)}")
 from flext_api import JsonSchemaValidator, SchemaValidationError
 
 
-
 def validate_user_request(data: dict) -> tuple[bool, t.StringList]:
     """Validate user creation request data."""
     try:
