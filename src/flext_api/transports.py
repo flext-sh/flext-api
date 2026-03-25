@@ -140,14 +140,14 @@ class FlextApiTransports:
             data: t.Api.RequestConfig | t.Api.RequestBody,
             *,
             connection_url: str,
-        ) -> r[m.HttpRequest]:
+        ) -> r[m.Api.HttpRequest]:
             """Extract and validate request parameters from data."""
             try:
                 match data:
                     case dict() as payload:
-                        request_model = m.HttpRequest.model_validate(payload)
+                        request_model = m.Api.HttpRequest.model_validate(payload)
                     case str() as body_text:
-                        request_model = m.HttpRequest(
+                        request_model = m.Api.HttpRequest(
                             method=c.Api.Method.GET,
                             url=connection_url,
                             body=body_text,
@@ -156,7 +156,7 @@ class FlextApiTransports:
                             timeout=float(c.Api.DEFAULT_TIMEOUT),
                         )
                     case bytes() as body_bytes:
-                        request_model = m.HttpRequest(
+                        request_model = m.Api.HttpRequest(
                             method=c.Api.Method.GET,
                             url=connection_url,
                             body=body_bytes,
@@ -165,10 +165,10 @@ class FlextApiTransports:
                             timeout=float(c.Api.DEFAULT_TIMEOUT),
                         )
                     case _:
-                        return r[m.HttpRequest].fail(
+                        return r[m.Api.HttpRequest].fail(
                             "Unsupported HTTP request payload type",
                         )
-                return r[m.HttpRequest].ok(request_model)
+                return r[m.Api.HttpRequest].ok(request_model)
             except (
                 ValueError,
                 TypeError,
@@ -176,7 +176,7 @@ class FlextApiTransports:
                 httpx.HTTPError,
                 ConnectionError,
             ) as e:
-                return r[m.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
+                return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
 
 __all__ = ["FlextApiTransports"]

@@ -21,7 +21,7 @@ from flext_api import c, m, p, t
 class FlextWebClientImplementation(p.Api.Client.HttpClient):
     """HTTP client implementation conforming to FlextWebClient."""
 
-    def __init__(self, client_config: m.ClientConfig) -> None:
+    def __init__(self, client_config: m.Api.ClientConfig) -> None:
         """Initialize HTTP client protocol implementation.
 
         Args:
@@ -143,9 +143,9 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     def _create_response_from_httpx(
         self,
         httpx_response: httpx.Response,
-    ) -> m.HttpResponse:
+    ) -> m.Api.HttpResponse:
         """Convert httpx response to FlextApiModels.HttpResponse."""
-        return m.HttpResponse(
+        return m.Api.HttpResponse(
             status_code=httpx_response.status_code,
             headers=dict(httpx_response.headers),
             body=httpx_response.content,
@@ -206,7 +206,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         headers.update(options.headers)
         return headers
 
-    def _response_to_dict(self, response: m.HttpResponse) -> t.Api.HttpResponseDict:
+    def _response_to_dict(self, response: m.Api.HttpResponse) -> t.Api.HttpResponseDict:
         """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
         return {
             "status_code": response.status_code,

@@ -96,7 +96,9 @@ class FlextApiStorage:
         self._apply_config(config_dict, max_size_val, default_ttl_val)
         object.__setattr__(self, "_storage", {})
         object.__setattr__(self, "_expiry_times", {})
-        object.__setattr__(self, "_stats", m.Storage.Stats(namespace=self._namespace))
+        object.__setattr__(
+            self, "_stats", m.Api.Storage.Stats(namespace=self._namespace)
+        )
         object.__setattr__(self, "_operations_count", 0)
         object.__setattr__(self, "_created_at", u.generate_iso_timestamp())
 
@@ -216,7 +218,7 @@ class FlextApiStorage:
         self._operations_count += 1
         if key in self._storage:
             value = self._storage[key]
-            self._stats = m.Storage.Stats(
+            self._stats = m.Api.Storage.Stats(
                 total_operations=self._stats.total_operations,
                 cache_hits=self._stats.cache_hits + 1,
                 cache_misses=self._stats.cache_misses,
@@ -231,7 +233,7 @@ class FlextApiStorage:
             result = self._process_namespaced_entry(namespaced_key, key)
             if result.is_success:
                 return result
-        self._stats = m.Storage.Stats(
+        self._stats = m.Api.Storage.Stats(
             total_operations=self._stats.total_operations,
             cache_hits=self._stats.cache_hits,
             cache_misses=self._stats.cache_misses + 1,
@@ -354,7 +356,7 @@ class FlextApiStorage:
             hit_ratio = 0.0
             if self._stats.total_operations > 0:
                 hit_ratio = self._stats.cache_hits / self._stats.total_operations
-            self._stats = m.Storage.Stats(
+            self._stats = m.Api.Storage.Stats(
                 total_operations=self._stats.total_operations,
                 cache_hits=self._stats.cache_hits,
                 cache_misses=self._stats.cache_misses,
@@ -406,7 +408,7 @@ class FlextApiStorage:
             else self._default_ttl
         )
         metadata_result = u.try_(
-            lambda: m.Storage.Metadata(
+            lambda: m.Api.Storage.Metadata(
                 value=value,
                 timestamp=u.generate_iso_timestamp(),
                 ttl=ttl_val,
@@ -433,7 +435,7 @@ class FlextApiStorage:
         if ttl_val is not None:
             self._expiry_times[key] = time.time() + ttl_val
         self._operations_count += 1
-        self._stats = m.Storage.Stats(
+        self._stats = m.Api.Storage.Stats(
             total_operations=self._operations_count,
             cache_hits=self._stats.cache_hits,
             cache_misses=self._stats.cache_misses,
@@ -719,14 +721,14 @@ class FlextApiStorage:
                 created_at_float = float(str(created_at_value))
             except (ValueError, TypeError):
                 created_at_float = 0.0
-            metadata = m.Storage.Metadata(
+            metadata = m.Api.Storage.Metadata(
                 value=data_dict.get("value"),
                 timestamp=str(data_dict.get("timestamp", "")),
                 ttl=ttl_int,
                 created_at=created_at_float,
             )
             if not metadata.is_expired():
-                self._stats = m.Storage.Stats(
+                self._stats = m.Api.Storage.Stats(
                     total_operations=self._stats.total_operations,
                     cache_hits=self._stats.cache_hits + 1,
                     cache_misses=self._stats.cache_misses,

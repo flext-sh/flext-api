@@ -59,18 +59,18 @@ class FlextApiSettingsManager:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 
-    def get_client_config(self) -> r[m.ClientConfig]:
+    def get_client_config(self) -> r[m.Api.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._config is None:
-            return r[m.ClientConfig].fail("No configuration set")
+            return r[m.Api.ClientConfig].fail("No configuration set")
         headers_result = self._extract_headers()
         if headers_result.is_failure:
-            return r[m.ClientConfig].fail(
+            return r[m.Api.ClientConfig].fail(
                 headers_result.error or "Headers extraction failed",
             )
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
-            return r[m.ClientConfig].fail(
+            return r[m.Api.ClientConfig].fail(
                 base_url_result.error or "Base URL extraction failed",
             )
         timeout_result = self._extract_positive_float_setting(
@@ -78,11 +78,11 @@ class FlextApiSettingsManager:
             label="Timeout",
         )
         return timeout_result.fold(
-            on_failure=lambda e: r[m.ClientConfig].fail(
+            on_failure=lambda e: r[m.Api.ClientConfig].fail(
                 e or "Timeout extraction failed",
             ),
-            on_success=lambda timeout: r[m.ClientConfig].ok(
-                m.create_config(
+            on_success=lambda timeout: r[m.Api.ClientConfig].ok(
+                m.Api.create_config(
                     base_url=base_url_result.value,
                     timeout=timeout,
                     headers=headers_result.value,

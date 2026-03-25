@@ -184,7 +184,7 @@ class FlextApiClient(s[FlextApiSettings]):
             self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")
         return r[FlextApiSettings].ok(self._get_config())
 
-    def request(self, request: m.HttpRequest) -> r[m.HttpResponse]:
+    def request(self, request: m.Api.HttpRequest) -> r[m.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns.
 
         Args:
@@ -196,10 +196,12 @@ class FlextApiClient(s[FlextApiSettings]):
         """
         url_result = self._build_url(request.url)
         if url_result.is_failure:
-            return r[m.HttpResponse].fail(url_result.error or "URL validation failed")
+            return r[m.Api.HttpResponse].fail(
+                url_result.error or "URL validation failed"
+            )
         body_result = self._serialize_body(request.body)
         if body_result.is_failure:
-            return r[m.HttpResponse].fail(
+            return r[m.Api.HttpResponse].fail(
                 body_result.error or "Body serialization failed",
             )
         return self._execute_http_request(
@@ -225,10 +227,10 @@ class FlextApiClient(s[FlextApiSettings]):
 
     def _execute_http_request(
         self,
-        request: m.HttpRequest,
+        request: m.Api.HttpRequest,
         url: str,
         serialized_body: bytes,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
             api_config = self._get_config()
@@ -257,11 +259,11 @@ class FlextApiClient(s[FlextApiSettings]):
                         params=request_params,
                     )
             if response.status_code >= c.Api.HTTP_ERROR_MIN:
-                return r[m.HttpResponse].fail(
+                return r[m.Api.HttpResponse].fail(
                     f"HTTP {response.status_code}: {response.reason_phrase}",
                 )
             return self._deserialize_body(response).map(
-                lambda body: m.HttpResponse(
+                lambda body: m.Api.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=body,
@@ -275,7 +277,7 @@ class FlextApiClient(s[FlextApiSettings]):
             httpx.HTTPError,
             ConnectionError,
         ) as exc:
-            return r[m.HttpResponse].fail(str(exc))
+            return r[m.Api.HttpResponse].fail(str(exc))
 
     def _get_config(self) -> FlextApiSettings:
         """Get FlextApiSettings with proper type narrowing."""

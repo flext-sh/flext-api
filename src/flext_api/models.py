@@ -798,25 +798,6 @@ class FlextApiModels(FlextWebModels):
                 memory_usage: int = 0
                 namespace: str = "flext"
 
-    # =========================================================================
-    # CLASS-LEVEL ALIASES FOR FLAT NAMESPACE ACCESS
-    # =========================================================================
-    # Expose nested Api models at root level for convenient access
-    HttpRequest = Api.HttpRequest
-    HttpResponse = Api.HttpResponse
-    ClientConfig = Api.ClientConfig
-    Url = Api.Url
-    PaginationInfo = Api.PaginationInfo
-    Error = Api.Error
-    QueryParams = Api.QueryParams
-    Headers = Api.Headers
-    DictField = Api.DictField
-    StringField = Api.StringField
-    IntField = Api.IntField
-    Storage = Api.Storage
-    create_config = Api.create_config
-    create_response = Api.create_response
-
 
 __all__ = ["FlextApiModels", "m"]
 

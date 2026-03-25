@@ -25,9 +25,9 @@ class FlextApiMiddleware:
 
     @staticmethod
     def apply_pipeline(
-        request: m.HttpRequest,
-        middleware_list: Sequence[Callable[[m.HttpRequest], m.HttpRequest]],
-    ) -> m.HttpRequest:
+        request: m.Api.HttpRequest,
+        middleware_list: Sequence[Callable[[m.Api.HttpRequest], m.Api.HttpRequest]],
+    ) -> m.Api.HttpRequest:
         """Apply middleware pipeline to request."""
         for middleware in middleware_list:
             try:
@@ -38,12 +38,12 @@ class FlextApiMiddleware:
         return request
 
     @staticmethod
-    def log_request(request: m.HttpRequest) -> m.HttpRequest:
+    def log_request(request: m.Api.HttpRequest) -> m.Api.HttpRequest:
         """Log HTTP request."""
         return request
 
     @staticmethod
-    def validate_request(request: m.HttpRequest) -> m.HttpRequest:
+    def validate_request(request: m.Api.HttpRequest) -> m.Api.HttpRequest:
         """Validate HTTP request."""
         return request
 

@@ -89,7 +89,7 @@ class FlextApi(s[FlextApiSettings]):
         url: str,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.DELETE,
@@ -111,7 +111,7 @@ class FlextApi(s[FlextApiSettings]):
         url: str,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.GET,
@@ -126,7 +126,7 @@ class FlextApi(s[FlextApiSettings]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.PATCH,
@@ -142,7 +142,7 @@ class FlextApi(s[FlextApiSettings]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.POST,
@@ -158,7 +158,7 @@ class FlextApi(s[FlextApiSettings]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.PUT,
@@ -168,7 +168,7 @@ class FlextApi(s[FlextApiSettings]):
             request_kwargs=request_kwargs,
         )
 
-    def request(self, request: m.HttpRequest) -> r[m.HttpResponse]:
+    def request(self, request: m.Api.HttpRequest) -> r[m.Api.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
         Args:
@@ -226,7 +226,7 @@ class FlextApi(s[FlextApiSettings]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
         timeout: float | None = None,
-    ) -> r[m.HttpResponse]:
+    ) -> r[m.Api.HttpResponse]:
         """Generic HTTP method executor using monadic patterns - no fallbacks.
 
         Args:
@@ -249,13 +249,15 @@ class FlextApi(s[FlextApiSettings]):
             request_kwargs_dict,
         )
         if body_result.is_failure:
-            return r[m.HttpResponse].fail(body_result.error or "Body extraction failed")
+            return r[m.Api.HttpResponse].fail(
+                body_result.error or "Body extraction failed"
+            )
         headers_result = FlextApiUtilities.Api.RequestUtils.merge_headers(
             headers,
             request_kwargs_dict,
         )
         if headers_result.is_failure:
-            return r[m.HttpResponse].fail(
+            return r[m.Api.HttpResponse].fail(
                 headers_result.error or "Header extraction failed",
             )
         timeout_result = (
@@ -265,16 +267,16 @@ class FlextApi(s[FlextApiSettings]):
             )
         )
         if timeout_result.is_failure:
-            return r[m.HttpResponse].fail(
+            return r[m.Api.HttpResponse].fail(
                 timeout_result.error or "Timeout extraction failed",
             )
         query_params_result = self._extract_query_params(request_kwargs)
         if query_params_result.is_failure:
-            return r[m.HttpResponse].fail(
+            return r[m.Api.HttpResponse].fail(
                 query_params_result.error or "Query params extraction failed",
             )
         body_final = body_result.value
-        http_request = m.HttpRequest(
+        http_request = m.Api.HttpRequest(
             method=method,
             url=url,
             body=body_final,
