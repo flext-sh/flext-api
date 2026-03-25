@@ -13,10 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Annotated
 
-from flext_core import FlextModels, t
+from flext_core import FlextModels
 from pydantic import Field
 
-from flext_api import c
+from flext_api import c, t
 
 
 class FlextApiSettings(FlextModels.Value):
