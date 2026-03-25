@@ -85,10 +85,9 @@ class FlextApiModels(FlextWebModels):
             headers: Annotated[
                 t.StrMapping,
                 Field(
-                    default_factory=dict,
                     description="HTTP request headers",
                 ),
-            ]
+            ] = Field(default_factory=dict)
             body: Annotated[
                 Annotated[
                     t.Api.RequestBody,
@@ -97,18 +96,16 @@ class FlextApiModels(FlextWebModels):
                     ),
                 ],
                 Field(
-                    default_factory=dict,
                     description="Request body",
                 ),
-            ]
+            ] = Field(default_factory=dict)
 
             query_params: Annotated[
                 t.Api.WebParams,
                 Field(
-                    default_factory=dict,
                     description="Query parameters",
                 ),
-            ]
+            ] = Field(default_factory=dict)
             timeout: Annotated[
                 t.PositiveTimeout,
                 Field(
@@ -147,10 +144,9 @@ class FlextApiModels(FlextWebModels):
             headers: Annotated[
                 t.StrMapping,
                 Field(
-                    default_factory=dict,
                     description="HTTP response headers",
                 ),
-            ]
+            ] = Field(default_factory=dict)
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
@@ -159,10 +155,9 @@ class FlextApiModels(FlextWebModels):
                     ),
                 ],
                 Field(
-                    default_factory=dict,
                     description="Response body (empty dict by default, None allowed for 204)",
                 ),
-            ]
+            ] = Field(default_factory=dict)
 
             request_id: Annotated[
                 str,
@@ -312,10 +307,9 @@ class FlextApiModels(FlextWebModels):
             headers: Annotated[
                 t.StrMapping,
                 Field(
-                    default_factory=dict,
                     description="Default headers for all requests",
                 ),
-            ]
+            ] = Field(default_factory=dict)
             verify_ssl: Annotated[
                 bool,
                 Field(
@@ -412,10 +406,9 @@ class FlextApiModels(FlextWebModels):
             details: Annotated[
                 t.JsonObject,
                 Field(
-                    default_factory=dict,
                     description="Additional error details",
                 ),
-            ]
+            ] = Field(default_factory=dict)
             request_id: Annotated[
                 str,
                 Field(
@@ -448,10 +441,9 @@ class FlextApiModels(FlextWebModels):
             params: Annotated[
                 t.Api.WebParams,
                 Field(
-                    default_factory=dict,
                     description="Query parameters",
                 ),
-            ]
+            ] = Field(default_factory=dict)
 
             def get_param(self, name: str) -> t.Api.WebParamValue:
                 """Get query parameter value."""
@@ -470,10 +462,9 @@ class FlextApiModels(FlextWebModels):
             headers: Annotated[
                 t.StrMapping,
                 Field(
-                    default_factory=dict,
                     description="HTTP headers",
                 ),
-            ]
+            ] = Field(default_factory=dict)
 
             def get_header(self, name: str) -> str:
                 """Get header value (case-insensitive)."""
@@ -597,8 +588,8 @@ class FlextApiModels(FlextWebModels):
 
             value: Annotated[
                 Mapping[str, t.ContainerValue],
-                Field(default_factory=dict, description="Dictionary value"),
-            ]
+                Field(description="Dictionary value"),
+            ] = Field(default_factory=dict)
 
         class StringField(FlextWebModels.Value):
             """Pydantic model for validating string fields (immutable value t.NormalizedValue)."""
@@ -625,12 +616,12 @@ class FlextApiModels(FlextWebModels):
             url: Annotated[str, Field(..., description="Request URL")]
             headers: Annotated[
                 t.StrMapping,
-                Field(default_factory=dict, description="HTTP headers"),
-            ]
+                Field(description="HTTP headers"),
+            ] = Field(default_factory=dict)
             params: Annotated[
                 t.StrMapping,
-                Field(default_factory=dict, description="Query parameters"),
-            ]
+                Field(description="Query parameters"),
+            ] = Field(default_factory=dict)
             json_body: Annotated[
                 t.Container | None,
                 Field(default=None, description="JSON request body"),
@@ -685,13 +676,13 @@ class FlextApiModels(FlextWebModels):
             ]
             headers: Annotated[
                 t.StrMapping,
-                Field(default_factory=dict, description="Request headers"),
-            ]
+                Field(description="Request headers"),
+            ] = Field(default_factory=dict)
 
         class HeadersRequest(FlextWebModels.Value):
             """Encapsulates RFC header constraint for requests."""
 
-            headers: Annotated[t.StrMapping, Field(default_factory=dict)]
+            headers: t.StrMapping = Field(default_factory=dict)
 
         class MethodRequest(FlextWebModels.Value):
             """Encapsulates RFC method constraint for requests."""
@@ -787,7 +778,7 @@ class FlextApiModels(FlextWebModels):
                 value: t.ApiJsonValue
                 timestamp: str
                 ttl: float | int | None = None
-                created_at: Annotated[float, Field(default_factory=time.time)]
+                created_at: float = Field(default_factory=time.time)
 
                 def is_expired(self) -> bool:
                     """Check if entry has expired using Pydantic-validated TTL."""

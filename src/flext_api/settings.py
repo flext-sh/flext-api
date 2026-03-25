@@ -50,17 +50,15 @@ class FlextApiSettings(FlextModels.Value):
     default_headers: Annotated[
         Mapping[str, str],
         Field(
-            default_factory=dict,
             description="Default headers applied to all requests",
         ),
-    ]
+    ] = Field(default_factory=dict)
     headers: Annotated[
         Mapping[str, str],
         Field(
-            default_factory=dict,
             description="Compatibility headers bag",
         ),
-    ]
+    ] = Field(default_factory=dict)
     log_requests: Annotated[
         bool,
         Field(default=False, description="Log outbound requests"),
