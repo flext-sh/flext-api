@@ -232,7 +232,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                     if chunk:
                         yield chunk
 
-        return r.ok(_iter_stream_chunks())
+        return r[Iterator[bytes]].ok(_iter_stream_chunks())
 
     @override
     def supports_protocol(self, protocol: str) -> bool:

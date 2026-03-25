@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Annotated, TypeIs
+from typing import TypeIs
 from urllib.parse import urlparse
 
 from flext_core import r
@@ -57,23 +57,23 @@ class FlextApiUtilities(FlextWebUtilities):
             """Annotated type factories."""
 
             @staticmethod
-            def coerced_enum[E: StrEnum](
-                enum_cls: type[E],
-            ) -> type[E]:
-                """Create Annotated type with automatic enum coercion."""
+            def coerced_enum_validator(
+                enum_cls: type[StrEnum],
+            ) -> BeforeValidator:
+                """Create a BeforeValidator for automatic enum coercion.
 
-                def _coerce(v: str | E) -> E:
+                Usage in Pydantic models:
+                    field: Annotated[MyEnum, u.Api.Pydantic.coerced_enum_validator(MyEnum)]
+                """
+
+                def _coerce(v: str | StrEnum) -> StrEnum:
                     result = FlextWebUtilities.parse_enum(enum_cls, v)
                     if result.is_failure:
                         msg = result.error or f"Invalid {enum_cls.__name__}: {v!r}"
                         raise ValueError(msg)
                     return enum_cls(v) if not isinstance(v, enum_cls) else v
 
-                annotated: type[E] = Annotated[
-                    enum_cls,
-                    BeforeValidator(_coerce),
-                ]
-                return annotated
+                return BeforeValidator(_coerce)
 
         class RequestUtils:
             """Request utilities for extracting and validating HTTP request components."""

@@ -106,7 +106,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                 f"Invalid OpenAPI schema: {validation_result.error}",
             )
         normalized_result: t.ContainerValue = normalized_schema
-        return r.ok(normalized_result)
+        return r[t.ContainerValue].ok(normalized_result)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.

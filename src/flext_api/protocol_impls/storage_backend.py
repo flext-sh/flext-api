@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import MutableMapping, Sequence
 from typing import override
 
 from flext_core import FlextLogger, r
@@ -20,7 +20,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: Mapping[str, t.ApiJsonValue] = {}
+        self._storage: MutableMapping[str, t.ApiJsonValue] = {}
         self.logger = FlextLogger(__name__)
 
     @override
@@ -28,7 +28,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         """Clear all stored values."""
 
         def _clear() -> bool:
-            self._storage: MutableMapping[str, t.ApiJsonValue] = {}
+            self._storage = {}
             self.logger.debug("Cleared all storage data")
             return True
 

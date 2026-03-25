@@ -109,7 +109,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         json_data: MutableMapping[str, t.ContainerValue] | None = None
         if data is not None:
-            json_data: MutableMapping[str, t.ContainerValue] = {}
+            json_data = {}
             for key, value in data.items():
                 json_data[key] = value
         web_headers: Mapping[str, str | t.StrSequence] | None = None
@@ -122,7 +122,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
-        return r.ok(success_response)
+        return r[Mapping[str, t.ContainerValue]].ok(success_response)
 
     def _extract_body(
         self,

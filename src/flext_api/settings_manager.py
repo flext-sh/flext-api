@@ -30,9 +30,11 @@ class FlextApiSettingsManager:
     following railway-oriented error handling throughout. Domain-agnostic.
     """
 
+    _config: t.JsonObject | None
+
     def __init__(self) -> None:
         """Initialize configuration manager."""
-        self._config: t.JsonObject | None = None
+        self._config = None
 
     @property
     def config(self) -> t.JsonObject | None:
@@ -46,7 +48,7 @@ class FlextApiSettingsManager:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
             if config is None:
-                self._config: t.JsonObject = {}
+                self._config = {}
             else:
                 process_result = self._process_config(config)
                 if process_result.is_failure:
@@ -202,8 +204,8 @@ class FlextApiSettingsManager:
                 on_success=lambda v: r[t.Scalar].ok(v),
             )
         if key in {"log_requests", "log_responses"}:
-            return r.ok(bool(value))
-        return r.ok(value)
+            return r[t.Scalar].ok(bool(value))
+        return r[t.Scalar].ok(value)
 
     def _process_config(
         self,
