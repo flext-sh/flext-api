@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_core import FlextConstants
 
 from flext_api import (
@@ -57,9 +59,11 @@ def example_storage_usage() -> None:
     """Demonstrate storage usage with refactored FlextApiStorage."""
     print("\n=== Storage Example ===")
     storage = FlextApiStorage()
-    cache_value: t.ContainerMapping = {
-        "data": {"message": "Hello FlextAPI!"},
-        "headers": {},
+    data: Mapping[str, t.ContainerValue] = {"message": "Hello FlextAPI!"}
+    headers: Mapping[str, t.ContainerValue] = {}
+    cache_value: Mapping[str, t.ContainerValue] = {
+        "data": data,
+        "headers": headers,
         "status_code": 200,
     }
     set_result = storage.set("example_key", cache_value, timeout=300)
@@ -112,7 +116,7 @@ def example_app_creation() -> None:
     "Demonstrate models usage with refactored FlextApiModels."
     print("\n=== Models Example ===")
     try:
-        request = FlextApiModels.HttpRequest(
+        request = FlextApiModels.Api.HttpRequest(
             method="GET",
             url="https://httpbin.org/get",
             headers={"Accept": "application/json"},
@@ -120,7 +124,7 @@ def example_app_creation() -> None:
         )
         print(f"✅ Request model created: {request.method} {request.url}")
         print(f"   Timeout: {request.timeout}s")
-        response = FlextApiModels.HttpResponse(
+        response = FlextApiModels.Api.HttpResponse(
             status_code=200,
             headers={"Content-Type": "application/json"},
             body=b'{"message": "Success"}',
