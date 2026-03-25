@@ -216,7 +216,11 @@ Protocol implementation for WebSocket connections and real-time messaging.
 from flext_api import WebSocket
 
 # Create WebSocket protocol
+<<<<<<< Updated upstream
 websocket_protocol = WebSocket
+=======
+websocket_protocol = WebSocketProtocol(
+>>>>>>> Stashed changes
     url="wss://api.example.com/ws", headers={"Authorization": "Bearer token123"}
 )
 
@@ -259,7 +263,11 @@ Protocol implementation for Server-Sent Events (SSE) for real-time data streamin
 from flext_api import ServerSentEvent
 
 # Create SSE protocol
+<<<<<<< Updated upstream
 sse_protocol = ServerSentEvent
+=======
+sse_protocol = ServerSentEventProtocol(
+>>>>>>> Stashed changes
     url="https://api.example.com/events", headers={"Authorization": "Bearer token123"}
 )
 
@@ -407,6 +415,7 @@ from flext_api import FlextApiClient
 from flext_api import FlextWeb
 from flext_api import GraphQL
 from flext_api import WebSocket
+
 
 
 class MultiProtocolClient:

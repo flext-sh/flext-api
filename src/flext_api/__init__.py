@@ -10,11 +10,9 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
-    from flext_web import d, e, h, r, s, x
-
-    from flext_api import protocol_impls, schemas
     from flext_api.__version__ import (
         __all__,
         __author__,
@@ -34,6 +32,7 @@ if TYPE_CHECKING:
     from flext_api.middleware import FlextApiMiddleware
     from flext_api.models import FlextApiModels, FlextApiModels as m
     from flext_api.plugins import FlextApiPlugins
+    import flext_api.protocol_impls as protocol_impls
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
@@ -46,6 +45,7 @@ if TYPE_CHECKING:
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
     from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
     from flext_api.registry import FlextApiRegistry
+    import flext_api.schemas as schemas
     from flext_api.schemas._shared import (
         FlextApiSchemaShared,
         is_container_value,
@@ -66,85 +66,46 @@ if TYPE_CHECKING:
     from flext_api.server_factory import FlextApiServerFactory
     from flext_api.settings import FlextApiSettings
     from flext_api.settings_manager import FlextApiSettingsManager
-    from flext_api.storage import FlextApiStorage
     from flext_api.transports import FlextApiTransports
     from flext_api.typings import FlextApiTypes, FlextApiTypes as t
     from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
     from flext_api.webhook import FlextWebhookHandler
 
+    from flext_web import d, e, h, r, s, x
+
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextApi": ["flext_api.api", "FlextApi"],
     "FlextApiAdapters": ["flext_api.adapters", "FlextApiAdapters"],
     "FlextApiApp": ["flext_api.app", "FlextApiApp"],
-    "FlextApiAsyncapiSchemaValidator": [
-        "flext_api.schemas.asyncapi",
-        "FlextApiAsyncapiSchemaValidator",
-    ],
-    "FlextApiBaseProtocolImplementation": [
-        "flext_api.protocol_impls.base",
-        "FlextApiBaseProtocolImplementation",
-    ],
+    "FlextApiAsyncapiSchemaValidator": ["flext_api.schemas.asyncapi", "FlextApiAsyncapiSchemaValidator"],
+    "FlextApiBaseProtocolImplementation": ["flext_api.protocol_impls.base", "FlextApiBaseProtocolImplementation"],
     "FlextApiClient": ["flext_api.client", "FlextApiClient"],
     "FlextApiConstants": ["flext_api.constants", "FlextApiConstants"],
     "FlextApiErrors": ["flext_api.exceptions", "FlextApiErrors"],
-    "FlextApiJsonschemaValidator": [
-        "flext_api.schemas.jsonschema",
-        "FlextApiJsonschemaValidator",
-    ],
-    "FlextApiLifecycleManager": [
-        "flext_api.lifecycle_manager",
-        "FlextApiLifecycleManager",
-    ],
-    "FlextApiLoggerProtocolImplementation": [
-        "flext_api.protocol_impls.logger",
-        "FlextApiLoggerProtocolImplementation",
-    ],
+    "FlextApiJsonschemaValidator": ["flext_api.schemas.jsonschema", "FlextApiJsonschemaValidator"],
+    "FlextApiLifecycleManager": ["flext_api.lifecycle_manager", "FlextApiLifecycleManager"],
+    "FlextApiLoggerProtocolImplementation": ["flext_api.protocol_impls.logger", "FlextApiLoggerProtocolImplementation"],
     "FlextApiMiddleware": ["flext_api.middleware", "FlextApiMiddleware"],
     "FlextApiModels": ["flext_api.models", "FlextApiModels"],
-    "FlextApiOpenapiSchemaValidator": [
-        "flext_api.schemas.openapi",
-        "FlextApiOpenapiSchemaValidator",
-    ],
+    "FlextApiOpenapiSchemaValidator": ["flext_api.schemas.openapi", "FlextApiOpenapiSchemaValidator"],
     "FlextApiPlugins": ["flext_api.plugins", "FlextApiPlugins"],
     "FlextApiProtocols": ["flext_api.protocols", "FlextApiProtocols"],
     "FlextApiRegistry": ["flext_api.registry", "FlextApiRegistry"],
-    "FlextApiRfcProtocolImplementation": [
-        "flext_api.protocol_impls.rfc",
-        "FlextApiRfcProtocolImplementation",
-    ],
+    "FlextApiRfcProtocolImplementation": ["flext_api.protocol_impls.rfc", "FlextApiRfcProtocolImplementation"],
     "FlextApiSchemaShared": ["flext_api.schemas._shared", "FlextApiSchemaShared"],
     "FlextApiSerializers": ["flext_api.serializers", "FlextApiSerializers"],
     "FlextApiServer": ["flext_api.server", "FlextApiServer"],
     "FlextApiServerFactory": ["flext_api.server_factory", "FlextApiServerFactory"],
     "FlextApiSettings": ["flext_api.settings", "FlextApiSettings"],
-    "FlextApiSettingsManager": [
-        "flext_api.settings_manager",
-        "FlextApiSettingsManager",
-    ],
-    "FlextApiSseProtocolPlugin": [
-        "flext_api.protocol_impls.sse",
-        "FlextApiSseProtocolPlugin",
-    ],
-    "FlextApiStorage": ["flext_api.storage", "FlextApiStorage"],
-    "FlextApiStorageBackendImplementation": [
-        "flext_api.protocol_impls.storage_backend",
-        "FlextApiStorageBackendImplementation",
-    ],
+    "FlextApiSettingsManager": ["flext_api.settings_manager", "FlextApiSettingsManager"],
+    "FlextApiSseProtocolPlugin": ["flext_api.protocol_impls.sse", "FlextApiSseProtocolPlugin"],
+    "FlextApiStorageBackendImplementation": ["flext_api.protocol_impls.storage_backend", "FlextApiStorageBackendImplementation"],
     "FlextApiTransports": ["flext_api.transports", "FlextApiTransports"],
     "FlextApiTypes": ["flext_api.typings", "FlextApiTypes"],
     "FlextApiUtilities": ["flext_api.utilities", "FlextApiUtilities"],
-    "FlextApiWebsocketProtocolPlugin": [
-        "flext_api.protocol_impls.websocket",
-        "FlextApiWebsocketProtocolPlugin",
-    ],
-    "FlextWebClientImplementation": [
-        "flext_api.protocol_impls.http_client",
-        "FlextWebClientImplementation",
-    ],
-    "FlextWebProtocolPlugin": [
-        "flext_api.protocol_impls.http",
-        "FlextWebProtocolPlugin",
-    ],
+    "FlextApiWebsocketProtocolPlugin": ["flext_api.protocol_impls.websocket", "FlextApiWebsocketProtocolPlugin"],
+    "FlextWebClientImplementation": ["flext_api.protocol_impls.http_client", "FlextWebClientImplementation"],
+    "FlextWebProtocolPlugin": ["flext_api.protocol_impls.http", "FlextWebProtocolPlugin"],
     "FlextWebhookHandler": ["flext_api.webhook", "FlextWebhookHandler"],
     "__all__": ["flext_api.__version__", "__all__"],
     "__author__": ["flext_api.__version__", "__author__"],
@@ -159,10 +120,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "h": ["flext_web", "h"],
     "is_container_value": ["flext_api.schemas._shared", "is_container_value"],
     "is_object_mapping": ["flext_api.schemas._shared", "is_object_mapping"],
-    "load_and_validate_schema_document": [
-        "flext_api.schemas._shared",
-        "load_and_validate_schema_document",
-    ],
+    "load_and_validate_schema_document": ["flext_api.schemas._shared", "load_and_validate_schema_document"],
     "load_schema_document": ["flext_api.schemas._shared", "load_schema_document"],
     "m": ["flext_api.models", "FlextApiModels"],
     "normalize_json_object": ["flext_api.schemas._shared", "normalize_json_object"],
@@ -206,7 +164,6 @@ __all__ = [
     "FlextApiSettings",
     "FlextApiSettingsManager",
     "FlextApiSseProtocolPlugin",
-    "FlextApiStorage",
     "FlextApiStorageBackendImplementation",
     "FlextApiTransports",
     "FlextApiTypes",
@@ -264,7 +221,6 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
-
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -279,7 +235,6 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
-
     """
     return sorted(__all__)
 

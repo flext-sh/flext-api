@@ -197,7 +197,11 @@ class Custom
         return CustomClient(config)
 
 
+<<<<<<< Updated upstream
 registry.register("custom", Custom
+=======
+registry.register("custom", CustomProtocol)
+>>>>>>> Stashed changes
 ```
 
 ### Protocol Interface
@@ -226,7 +230,11 @@ from flext_core import t
 from flext_core import u
 
 
+<<<<<<< Updated upstream
 class Base
+=======
+class BaseProtocol(ABC):
+>>>>>>> Stashed changes
     """Base protocol interface."""
 
     @abstractmethod
@@ -240,7 +248,11 @@ class Base
         pass
 
 
+<<<<<<< Updated upstream
 class FlextWebBase
+=======
+class FlextWebProtocol(BaseProtocol):
+>>>>>>> Stashed changes
     """HTTP protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
@@ -248,7 +260,11 @@ class FlextWebBase
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
+<<<<<<< Updated upstream
     ) -> r[FlextApiModels.HttpResponse]:
+=======
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+>>>>>>> Stashed changes
         # HTTP-specific implementation
         pass
 ```
@@ -361,7 +377,11 @@ def register_api_routes(app: FastAPI):
     async def list_users(
         limit: int = 10,
         offset: int = 0,
+<<<<<<< Updated upstream
         current_user: t.ContainerMapping = Depends(get_current_user),
+=======
+        current_user: dict[str, object] = Depends(get_current_user),
+>>>>>>> Stashed changes
     ) -> List[UserResponse]:
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
@@ -421,8 +441,13 @@ class StorageBackend(ABC):
 
     @abstractmethod
     async def upload_file(
+<<<<<<< Updated upstream
         self, file, path: str, metadata: t.ContainerMapping = None
     ) -> r[str]:
+=======
+        self, file: object, path: str, metadata: dict[str, object] = None
+    ) -> FlextResult[str]:
+>>>>>>> Stashed changes
         """Upload file to storage."""
         pass
 
@@ -449,15 +474,24 @@ class S3StorageBackend(StorageBackend):
         self.client = boto3.client("s3", **config)
 
     async def upload_file(
+<<<<<<< Updated upstream
         self, file, path: str, metadata: t.ContainerMapping = None
     ) -> r[str]:
+=======
+        self, file: object, path: str, metadata: dict[str, object] = None
+    ) -> FlextResult[str]:
+>>>>>>> Stashed changes
         """Upload file to S3."""
         try:
             # S3 upload implementation
             self.client.upload_fileobj(
                 file, self.bucket, path, ExtraArgs={"Metadata": metadata or {}}
             )
+<<<<<<< Updated upstream
             return r[str].ok(f"s3://{self.bucket}/{path}")
+=======
+            return FlextResult[str].ok(f"s3://{self.bucket}/{path}")
+>>>>>>> Stashed changes
         except Exception as e:
             return r[str].fail(f"S3 upload failed: {e}")
 ```
@@ -562,6 +596,7 @@ Security Layer
 from flext_api import SecurityMiddleware
 
 
+
 class ComprehensiveSecurityMiddleware(SecurityMiddleware):
     """Comprehensive security middleware."""
 
@@ -652,6 +687,7 @@ Performance Layer
 
 ```python
 from flext_api import PerformanceMonitoringMiddleware
+
 
 
 class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
@@ -828,7 +864,11 @@ spec:
 from flext_api import Base
 
 
+<<<<<<< Updated upstream
 class CustomBase
+=======
+class CustomProtocol(BaseProtocol):
+>>>>>>> Stashed changes
     """Custom protocol implementation."""
 
     def create_client(self, config: dict):
@@ -852,6 +892,7 @@ registry.register("custom", Custom
 from flext_api import FlextApiMiddleware
 
 
+
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""
 
@@ -864,6 +905,7 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
         }
 
         return r[dict].ok({})
+
 
 
 # Register middleware

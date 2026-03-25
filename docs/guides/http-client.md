@@ -276,6 +276,7 @@ def safe_api_call():
             return r[dict].fail(f"API error: {error.message}")
 
 
+
 # Usage
 result = safe_api_call()
 if result.is_success:
@@ -442,7 +443,11 @@ if result.is_success:
 from typing import List
 
 
+<<<<<<< Updated upstream
 async def batch_create_users(users: List[dict]) -> List[r[dict]]:
+=======
+async def batch_create_users(users: List[dict]) -> List[FlextResult[dict]]:
+>>>>>>> Stashed changes
     """Create multiple users in parallel."""
     import asyncio
 
@@ -579,6 +584,7 @@ result = retry_client.get("/data")
 import pytest
 from flext_api import FlextApiClient
 from flext_api import FlextApiTestClient
+
 
 
 class TestUserAPI:

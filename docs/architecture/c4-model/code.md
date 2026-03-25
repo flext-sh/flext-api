@@ -253,10 +253,21 @@ class FlextApiClient(FlextService[None]):
     def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP GET request."""
 
+<<<<<<< Updated upstream
     def post(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
         """HTTP POST request."""
 
     def put(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
+=======
+    def post(
+        self, url: str, data=None, **kwargs
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """HTTP POST request."""
+
+    def put(
+        self, url: str, data=None, **kwargs
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+>>>>>>> Stashed changes
         """HTTP PUT request."""
 
     def delete(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
@@ -265,12 +276,20 @@ class FlextApiClient(FlextService[None]):
     # Advanced features
     def request(
         self, request: FlextApiModels.HttpRequest
+<<<<<<< Updated upstream
     ) -> r[FlextApiModels.HttpResponse]:
+=======
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+>>>>>>> Stashed changes
         """Generic HTTP request."""
 
     async def arequest(
         self, request: FlextApiModels.HttpRequest
+<<<<<<< Updated upstream
     ) -> r[FlextApiModels.HttpResponse]:
+=======
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+>>>>>>> Stashed changes
         """Async HTTP request."""
 ```
 
@@ -342,7 +361,11 @@ class FlextWebBase
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
+<<<<<<< Updated upstream
     ) -> r[FlextApiModels.HttpResponse]:
+=======
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+>>>>>>> Stashed changes
         """Execute HTTP request with error handling."""
         try:
             # HTTP-specific implementation
@@ -355,7 +378,11 @@ class FlextWebBase
                     timeout=request.timeout,
                 )
 
+<<<<<<< Updated upstream
                 return r.ok(
+=======
+                return FlextResult.ok(
+>>>>>>> Stashed changes
                     FlextApiModels.HttpResponse(
                         status_code=response.status_code,
                         headers=dict(response.headers),
@@ -541,7 +568,11 @@ class StorageBackend(ABC):
     @abstractmethod
     async def upload_file(
         self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
+<<<<<<< Updated upstream
     ) -> r[str]:
+=======
+    ) -> FlextResult[str]:
+>>>>>>> Stashed changes
         """Upload file to storage."""
         pass
 
@@ -581,7 +612,11 @@ class S3Backend(StorageBackend):
 
     async def upload_file(
         self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
+<<<<<<< Updated upstream
     ) -> r[str]:
+=======
+    ) -> FlextResult[str]:
+>>>>>>> Stashed changes
         """Upload file to S3."""
         try:
             self.client.upload_fileobj(
@@ -733,7 +768,11 @@ class AuthenticationManager:
 
     async def authenticate_request(
         self, request: FlextApiModels.HttpRequest, credentials: AuthCredentials
+<<<<<<< Updated upstream
     ) -> r[FlextApiModels.HttpRequest]:
+=======
+    ) -> FlextResult[FlextApiModels.HttpRequest]:
+>>>>>>> Stashed changes
         """Add authentication to request."""
         handler = self.get_handler(credentials.scheme)
 

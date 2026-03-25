@@ -10,15 +10,16 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests import unit
     from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
     from tests.models import FlextApiTestModels, FlextApiTestModels as m
     from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
     from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
+    import tests.unit as unit
     from tests.unit.test_serializers import TestMessagePackUnpackb
     from tests.unit.test_smoke import test_package_imports_main_facade
     from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
@@ -39,10 +40,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "r": ["flext_tests", "r"],
     "s": ["flext_tests", "s"],
     "t": ["tests.typings", "FlextApiTestTypes"],
-    "test_package_imports_main_facade": [
-        "tests.unit.test_smoke",
-        "test_package_imports_main_facade",
-    ],
+    "test_package_imports_main_facade": ["tests.unit.test_smoke", "test_package_imports_main_facade"],
     "u": ["tests.utilities", "FlextApiTestUtilities"],
     "unit": ["tests.unit", ""],
     "x": ["flext_tests", "x"],
@@ -88,7 +86,6 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
-
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -103,7 +100,6 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
-
     """
     return sorted(__all__)
 

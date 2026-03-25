@@ -102,6 +102,7 @@ class FlextApiStorage:
         object.__setattr__(self, "_operations_count", 0)
         object.__setattr__(self, "_created_at", u.generate_iso_timestamp())
 
+<<<<<<< Updated upstream
     @property
     def backend(self) -> str:
         """Get backend."""
@@ -111,6 +112,26 @@ class FlextApiStorage:
     def namespace(self) -> str:
         """Get namespace."""
         return self._namespace
+=======
+    def _extract_init_params(
+        self,
+        config: t.ApiJsonValue | None,
+        kwargs: Mapping[str, t.ApiJsonValue],
+    ) -> tuple[t.ApiJsonValue | None, Mapping[str, t.ApiJsonValue]]:
+        """Extract config and kwargs from __new__ or parameters."""
+        config_obj = getattr(self, "_flext_storage_config", None)
+        if config_obj is None:
+            config_obj = config
+        with contextlib.suppress(AttributeError):
+            del self._flext_storage_config
+
+        storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
+        if storage_kwargs is None:
+            storage_kwargs = kwargs
+        with contextlib.suppress(AttributeError):
+            del self._flext_storage_kwargs
+        return config_obj, storage_kwargs
+>>>>>>> Stashed changes
 
     def batch_delete(self, keys: t.StrSequence) -> r[bool]:
         """Delete multiple keys efficiently."""

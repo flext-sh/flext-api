@@ -22,26 +22,17 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
     from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextApiAsyncapiSchemaValidator": [
-        "flext_api.schemas.asyncapi",
-        "FlextApiAsyncapiSchemaValidator",
-    ],
-    "FlextApiJsonschemaValidator": [
-        "flext_api.schemas.jsonschema",
-        "FlextApiJsonschemaValidator",
-    ],
-    "FlextApiOpenapiSchemaValidator": [
-        "flext_api.schemas.openapi",
-        "FlextApiOpenapiSchemaValidator",
-    ],
+    "FlextApiAsyncapiSchemaValidator": ["flext_api.schemas.asyncapi", "FlextApiAsyncapiSchemaValidator"],
+    "FlextApiJsonschemaValidator": ["flext_api.schemas.jsonschema", "FlextApiJsonschemaValidator"],
+    "FlextApiOpenapiSchemaValidator": ["flext_api.schemas.openapi", "FlextApiOpenapiSchemaValidator"],
 }
 
 __all__ = [
@@ -68,7 +59,6 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
-
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -83,7 +73,6 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
-
     """
     return sorted(__all__)
 
