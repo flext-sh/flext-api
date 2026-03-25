@@ -1,5 +1,5 @@
 # AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
-# Regenerate with: make codegen
+# Regenerate with: make gen
 #
 """Protocol implementations for flext-api.
 
@@ -30,38 +30,14 @@ if TYPE_CHECKING:
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextApiBaseProtocolImplementation": [
-        "flext_api.protocol_impls.base",
-        "FlextApiBaseProtocolImplementation",
-    ],
-    "FlextApiLoggerProtocolImplementation": [
-        "flext_api.protocol_impls.logger",
-        "FlextApiLoggerProtocolImplementation",
-    ],
-    "FlextApiRfcProtocolImplementation": [
-        "flext_api.protocol_impls.rfc",
-        "FlextApiRfcProtocolImplementation",
-    ],
-    "FlextApiSseProtocolPlugin": [
-        "flext_api.protocol_impls.sse",
-        "FlextApiSseProtocolPlugin",
-    ],
-    "FlextApiStorageBackendImplementation": [
-        "flext_api.protocol_impls.storage_backend",
-        "FlextApiStorageBackendImplementation",
-    ],
-    "FlextApiWebsocketProtocolPlugin": [
-        "flext_api.protocol_impls.websocket",
-        "FlextApiWebsocketProtocolPlugin",
-    ],
-    "FlextWebClientImplementation": [
-        "flext_api.protocol_impls.http_client",
-        "FlextWebClientImplementation",
-    ],
-    "FlextWebProtocolPlugin": [
-        "flext_api.protocol_impls.http",
-        "FlextWebProtocolPlugin",
-    ],
+    "FlextApiBaseProtocolImplementation": ["flext_api.protocol_impls.base", "FlextApiBaseProtocolImplementation"],
+    "FlextApiLoggerProtocolImplementation": ["flext_api.protocol_impls.logger", "FlextApiLoggerProtocolImplementation"],
+    "FlextApiRfcProtocolImplementation": ["flext_api.protocol_impls.rfc", "FlextApiRfcProtocolImplementation"],
+    "FlextApiSseProtocolPlugin": ["flext_api.protocol_impls.sse", "FlextApiSseProtocolPlugin"],
+    "FlextApiStorageBackendImplementation": ["flext_api.protocol_impls.storage_backend", "FlextApiStorageBackendImplementation"],
+    "FlextApiWebsocketProtocolPlugin": ["flext_api.protocol_impls.websocket", "FlextApiWebsocketProtocolPlugin"],
+    "FlextWebClientImplementation": ["flext_api.protocol_impls.http_client", "FlextWebClientImplementation"],
+    "FlextWebProtocolPlugin": ["flext_api.protocol_impls.http", "FlextWebProtocolPlugin"],
 }
 
 __all__ = [
