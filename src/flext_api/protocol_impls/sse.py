@@ -317,7 +317,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     yield payload
                 event_id = ""
                 event_type = ""
-                data_lines: MutableSequence[str] = []
+                data_lines = []
                 retry = None
                 continue
             if line.startswith(":"):

@@ -20,7 +20,13 @@ if TYPE_CHECKING:
     from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
     from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
     from tests.unit.test_serializers import TestMessagePackUnpackb
-    from tests.unit.test_smoke import test_package_imports_main_facade
+    from tests.unit.test_smoke import (
+        TestConstants,
+        TestFacadeInheritance,
+        TestModels,
+        TestSerializers,
+        test_package_imports_main_facade,
+    )
     from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
@@ -29,7 +35,11 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextApiTestProtocols": ["tests.protocols", "FlextApiTestProtocols"],
     "FlextApiTestTypes": ["tests.typings", "FlextApiTestTypes"],
     "FlextApiTestUtilities": ["tests.utilities", "FlextApiTestUtilities"],
+    "TestConstants": ["tests.unit.test_smoke", "TestConstants"],
+    "TestFacadeInheritance": ["tests.unit.test_smoke", "TestFacadeInheritance"],
     "TestMessagePackUnpackb": ["tests.unit.test_serializers", "TestMessagePackUnpackb"],
+    "TestModels": ["tests.unit.test_smoke", "TestModels"],
+    "TestSerializers": ["tests.unit.test_smoke", "TestSerializers"],
     "c": ["tests.constants", "FlextApiTestConstants"],
     "d": ["flext_tests", "d"],
     "e": ["flext_tests", "e"],
@@ -39,10 +49,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "r": ["flext_tests", "r"],
     "s": ["flext_tests", "s"],
     "t": ["tests.typings", "FlextApiTestTypes"],
-    "test_package_imports_main_facade": [
-        "tests.unit.test_smoke",
-        "test_package_imports_main_facade",
-    ],
+    "test_package_imports_main_facade": ["tests.unit.test_smoke", "test_package_imports_main_facade"],
     "u": ["tests.utilities", "FlextApiTestUtilities"],
     "unit": ["tests.unit", ""],
     "x": ["flext_tests", "x"],
@@ -54,7 +61,11 @@ __all__ = [
     "FlextApiTestProtocols",
     "FlextApiTestTypes",
     "FlextApiTestUtilities",
+    "TestConstants",
+    "TestFacadeInheritance",
     "TestMessagePackUnpackb",
+    "TestModels",
+    "TestSerializers",
     "c",
     "d",
     "e",

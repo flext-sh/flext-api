@@ -24,49 +24,36 @@ class FlextApiSettings(FlextModels.Value):
 
     base_url: Annotated[
         str,
-        Field(
-            default=c.Api.DEFAULT_BASE_URL,
-            description="Base URL for relative requests",
-        ),
-    ]
+        Field(description="Base URL for relative requests"),
+    ] = c.Api.DEFAULT_BASE_URL
     timeout: Annotated[
         t.PositiveTimeout,
-        Field(
-            default=c.Api.DEFAULT_TIMEOUT,
-            description="Default request timeout in seconds",
-        ),
-    ]
+        Field(description="Default request timeout in seconds"),
+    ] = c.Api.DEFAULT_TIMEOUT
     max_retries: Annotated[
         t.RetryCount,
-        Field(
-            default=c.DEFAULT_MAX_RETRY_ATTEMPTS,
-            description="Maximum retry attempts",
-        ),
-    ]
+        Field(description="Maximum retry attempts"),
+    ] = c.DEFAULT_MAX_RETRY_ATTEMPTS
     verify_ssl: Annotated[
         bool,
-        Field(default=True, description="Enable TLS certificate check"),
-    ]
+        Field(description="Enable TLS certificate check"),
+    ] = True
     default_headers: Annotated[
         Mapping[str, str],
-        Field(
-            description="Default headers applied to all requests",
-        ),
+        Field(description="Default headers applied to all requests"),
     ] = Field(default_factory=dict)
     headers: Annotated[
         Mapping[str, str],
-        Field(
-            description="Compatibility headers bag",
-        ),
+        Field(description="Compatibility headers bag"),
     ] = Field(default_factory=dict)
     log_requests: Annotated[
         bool,
-        Field(default=False, description="Log outbound requests"),
-    ]
+        Field(description="Log outbound requests"),
+    ] = False
     log_responses: Annotated[
         bool,
-        Field(default=False, description="Log inbound responses"),
-    ]
+        Field(description="Log inbound responses"),
+    ] = False
 
 
 __all__ = ["FlextApiSettings"]

@@ -14,18 +14,29 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
 
     from tests.unit.test_serializers import TestMessagePackUnpackb
-    from tests.unit.test_smoke import test_package_imports_main_facade
+    from tests.unit.test_smoke import (
+        TestConstants,
+        TestFacadeInheritance,
+        TestModels,
+        TestSerializers,
+        test_package_imports_main_facade,
+    )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "TestConstants": ["tests.unit.test_smoke", "TestConstants"],
+    "TestFacadeInheritance": ["tests.unit.test_smoke", "TestFacadeInheritance"],
     "TestMessagePackUnpackb": ["tests.unit.test_serializers", "TestMessagePackUnpackb"],
-    "test_package_imports_main_facade": [
-        "tests.unit.test_smoke",
-        "test_package_imports_main_facade",
-    ],
+    "TestModels": ["tests.unit.test_smoke", "TestModels"],
+    "TestSerializers": ["tests.unit.test_smoke", "TestSerializers"],
+    "test_package_imports_main_facade": ["tests.unit.test_smoke", "test_package_imports_main_facade"],
 }
 
 __all__ = [
+    "TestConstants",
+    "TestFacadeInheritance",
     "TestMessagePackUnpackb",
+    "TestModels",
+    "TestSerializers",
     "test_package_imports_main_facade",
 ]
 

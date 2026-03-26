@@ -100,7 +100,7 @@ class FlextApiSerializers:
                 return r[t.Scalar | t.ContainerValueMapping | t.ContainerValueList].ok(
                     non_none_value,
                 )
-            except ValidationError as e:
+            except (ValidationError, ValueError) as e:
                 return r[
                     t.Scalar | t.ContainerValueMapping | t.ContainerValueList
                 ].fail(f"msgpack deserialization failed: {e}")

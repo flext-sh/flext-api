@@ -128,7 +128,7 @@ def example_app_creation() -> None:
             status_code=200,
             headers={"Content-Type": "application/json"},
             body=b'{"message": "Success"}',
-            content_type="application/json",
+            request_id="example-001",
         )
         print(f"✅ Response model created: {response.status_code}")
         print(f"   Status: {response.status_code}")

@@ -70,7 +70,7 @@ class TestMessagePackUnpackb:
     def test_unpackb_failure_msgpack_not_available(self) -> None:
         """Test failure when msgpack module is not available."""
         # Arrange: mock _load_msgpack to return None
-        with patch("flext_api.serializers._load_msgpack", return_value=None):
+        with patch.object(FlextApiSerializers, "_load_msgpack", return_value=None):
             test_data = b"\x81\xa3key\xa5value"
 
             # Act
@@ -87,7 +87,9 @@ class TestMessagePackUnpackb:
         mock_module = MagicMock()
         mock_module.unpackb = None
 
-        with patch("flext_api.serializers._load_msgpack", return_value=mock_module):
+        with patch.object(
+            FlextApiSerializers, "_load_msgpack", return_value=mock_module
+        ):
             test_data = b"\x81\xa3key\xa5value"
 
             # Act
@@ -120,7 +122,9 @@ class TestMessagePackUnpackb:
         )  # object() fails TypeAdapter validation
         mock_module.unpackb = mock_unpackb
 
-        with patch("flext_api.serializers._load_msgpack", return_value=mock_module):
+        with patch.object(
+            FlextApiSerializers, "_load_msgpack", return_value=mock_module
+        ):
             test_data = b"\x00"
 
             # Act
@@ -132,15 +136,15 @@ class TestMessagePackUnpackb:
             tm.that(result.error.lower(), has="validation")
 
     def test_unpackb_returns_result_type(self) -> None:
-        """Test that unpackb returns r[T] type."""
+        """Test that unpackb returns FlextResult with success/failure semantics."""
         # Arrange
         test_data = b"\x81\xa3key\xa5value"
 
         # Act
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
-        # Assert: verify it's a FlextResult instance
-        tm.that(hasattr(result, "is_success"), eq=True)
-        tm.that(hasattr(result, "is_failure"), eq=True)
-        tm.that(hasattr(result, "value"), eq=True)
-        tm.that(hasattr(result, "error"), eq=True)
+        # Assert: verify FlextResult semantics (success case)
+        tm.that(result.is_success, eq=True)
+        tm.that(result.is_failure, eq=False)
+        tm.that(result.value, eq={"key": "value"})
+        tm.that(result.error, eq=None)
