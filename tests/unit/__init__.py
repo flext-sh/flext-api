@@ -28,7 +28,10 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestMessagePackUnpackb": ["tests.unit.test_serializers", "TestMessagePackUnpackb"],
     "TestModels": ["tests.unit.test_smoke", "TestModels"],
     "TestSerializers": ["tests.unit.test_smoke", "TestSerializers"],
-    "test_package_imports_main_facade": ["tests.unit.test_smoke", "test_package_imports_main_facade"],
+    "test_package_imports_main_facade": [
+        "tests.unit.test_smoke",
+        "test_package_imports_main_facade",
+    ],
 }
 
 __all__ = [
