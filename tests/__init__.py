@@ -49,7 +49,10 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "r": ["flext_tests", "r"],
     "s": ["flext_tests", "s"],
     "t": ["tests.typings", "FlextApiTestTypes"],
-    "test_package_imports_main_facade": ["tests.unit.test_smoke", "test_package_imports_main_facade"],
+    "test_package_imports_main_facade": [
+        "tests.unit.test_smoke",
+        "test_package_imports_main_facade",
+    ],
     "u": ["tests.utilities", "FlextApiTestUtilities"],
     "unit": ["tests.unit", ""],
     "x": ["flext_tests", "x"],
