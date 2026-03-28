@@ -114,7 +114,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     ],
     "FlextApiSchemaShared": ["flext_api.schemas._shared", "FlextApiSchemaShared"],
     "FlextApiSerializers": ["flext_api._utilities.serializers", "FlextApiSerializers"],
-    "FlextApiServer": ["flext_api._utilities.server", "FlextApiServer"],
+    "FlextApiServer": ["flext_api.server", "FlextApiServer"],
     "FlextApiServerFactory": [
         "flext_api._utilities.server_factory",
         "FlextApiServerFactory",
