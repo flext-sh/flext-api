@@ -9,7 +9,6 @@ from __future__ import annotations
 import time
 from collections.abc import (
     Callable,
-    Iterator,
     Mapping,
     MutableMapping,
     MutableSequence,
@@ -284,62 +283,6 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         if isinstance(retry_value, int) and retry_value >= 0:
             return retry_value
         return None
-
-    def _iter_fallback_events(
-        self,
-        lines: Iterator[str],
-    ) -> Iterator[Mapping[str, t.ContainerValue]]:
-        event_id = ""
-        event_type = ""
-        data_lines: MutableSequence[str] = []
-        retry: int | None = None
-
-        def flush_event() -> Mapping[str, t.ContainerValue] | None:
-            if (
-                not event_id
-                and (not event_type)
-                and (not data_lines)
-                and (retry is None)
-            ):
-                return None
-            return self._parse_sse_event(
-                event_id=event_id,
-                event_type=event_type,
-                data="\n".join(data_lines),
-                retry=retry if retry is not None else "",
-            )
-
-        for raw_line in lines:
-            line = raw_line.rstrip("\r")
-            if not line:
-                payload = flush_event()
-                if payload is not None:
-                    yield payload
-                event_id = ""
-                event_type = ""
-                data_lines = []
-                retry = None
-                continue
-            if line.startswith(":"):
-                continue
-            field, separator, value = line.partition(":")
-            if separator and value.startswith(" "):
-                value = value[1:]
-            if field == "data":
-                data_lines.append(value)
-            elif field == "event":
-                event_type = value
-            elif field == "id":
-                if "\x00" not in value:
-                    event_id = value
-            elif field == "retry":
-                try:
-                    retry = int(value)
-                except ValueError:
-                    continue
-        payload = flush_event()
-        if payload is not None:
-            yield payload
 
     def _notify_connect_handlers(self) -> None:
         for handler in self._on_connect_handlers:

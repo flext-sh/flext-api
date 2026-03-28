@@ -245,7 +245,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
         class Grpc:
-            """gRPC-related protocols (stubs until flext-grpc integration)."""
+            """gRPC-related protocols exposed through the flext-grpc boundary."""
 
             @runtime_checkable
             class GrpcService(Protocol):
@@ -277,7 +277,7 @@ class FlextApiProtocols(FlextWebProtocols):
                     ...
 
         class Protobuf:
-            """Protobuf-related protocols (stubs until flext-grpc integration)."""
+            """Protobuf-related protocols exposed through the flext-grpc boundary."""
 
             @runtime_checkable
             class ProtobufService(Protocol):
