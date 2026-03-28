@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_web import d, e, h, r, s, x
 
-    from flext_api import protocol_impls, schemas
+    from flext_api import _protocols, _utilities, protocol_impls, schemas
     from flext_api.__version__ import (
         __all__,
         __author__,
@@ -113,10 +113,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "FlextApiRfcProtocolImplementation",
     ],
     "FlextApiSchemaShared": ["flext_api.schemas._shared", "FlextApiSchemaShared"],
-    "FlextApiSerializers": [
-        "flext_api._utilities.serializers",
-        "FlextApiSerializers",
-    ],
+    "FlextApiSerializers": ["flext_api._utilities.serializers", "FlextApiSerializers"],
     "FlextApiServer": ["flext_api.server", "FlextApiServer"],
     "FlextApiServerFactory": [
         "flext_api._utilities.server_factory",
@@ -159,6 +156,8 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "__license__": ["flext_api.__version__", "__license__"],
     "__title__": ["flext_api.__version__", "__title__"],
     "__url__": ["flext_api.__version__", "__url__"],
+    "_protocols": ["flext_api._protocols", ""],
+    "_utilities": ["flext_api._utilities", ""],
     "c": ["flext_api.constants", "FlextApiConstants"],
     "d": ["flext_web", "d"],
     "e": ["flext_web", "e"],
@@ -228,6 +227,8 @@ __all__ = [
     "__license__",
     "__title__",
     "__url__",
+    "_protocols",
+    "_utilities",
     "c",
     "d",
     "e",
