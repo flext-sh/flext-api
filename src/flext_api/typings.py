@@ -14,10 +14,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 
-from flext_core import FlextTypes
+from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(FlextTypes):
+class FlextApiTypes(FlextWebTypes):
     """Unified API type definitions extending t with composition.
 
     Single namespace containing ALL API types.
@@ -31,92 +31,96 @@ class FlextApiTypes(FlextTypes):
     type Triple[FirstT, SecondT, ThirdT] = tuple[FirstT, SecondT, ThirdT]
     type VariadicTuple[ItemT] = tuple[ItemT, ...]
     type IntPair = Pair[int, int]
-    type JsonObject = Mapping[str, FlextTypes.ContainerValue]
-    type ApiJsonValue = FlextTypes.ContainerValue | None
+    type JsonObject = Mapping[str, FlextWebTypes.ContainerValue]
+    type ApiJsonValue = FlextWebTypes.ContainerValue | None
 
     class Api:
         """API types namespace for cross-project access.
 
         Provides organized access to all API types for other FLEXT projects.
-        Usage: Other projects can reference `FlextTypes.Api.RequestData`, `FlextTypes.Api.ResponseData`, etc.
+        Usage: Other projects can reference `FlextWebTypes.Api.RequestData`, `FlextWebTypes.Api.ResponseData`, etc.
         This enables consistent namespace patterns for cross-project type access.
 
         Examples:
             from flext_api import t
-            request_data: FlextTypes.Api.RequestData = ...
-            response_data: FlextTypes.Api.ResponseData = ...
+            request_data: FlextWebTypes.Api.RequestData = ...
+            response_data: FlextWebTypes.Api.ResponseData = ...
 
         Note: Namespace composition via inheritance - no aliases needed.
         Access parent namespaces directly through inheritance.
 
         """
 
-        type WebData = FlextTypes.FileContent | Mapping[str, FlextTypes.ContainerValue]
-        type WebHeaders = Mapping[str, FlextTypes.Scalar | FlextTypes.StrSequence]
-        type WebParamValue = str | FlextTypes.StrSequence
+        type WebData = (
+            FlextWebTypes.FileContent | Mapping[str, FlextWebTypes.ContainerValue]
+        )
+        type WebHeaders = Mapping[str, FlextWebTypes.Scalar | FlextWebTypes.StrSequence]
+        type WebParamValue = str | FlextWebTypes.StrSequence
         type WebParams = Mapping[str, WebParamValue]
-        type ResponseList = Sequence[Mapping[str, FlextTypes.ContainerValue]]
-        type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
-        type RequestConfig = Mapping[str, FlextTypes.ContainerValue]
-        type ResponseConfig = Mapping[str, FlextTypes.ContainerValue]
-        type RequestBody = Mapping[str, FlextTypes.ContainerValue] | str | bytes
-        type ResponseBody = Mapping[str, FlextTypes.ContainerValue] | str | bytes | None
+        type ResponseList = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
+        type ResponseDict = Mapping[str, FlextWebTypes.ContainerValue]
+        type RequestConfig = Mapping[str, FlextWebTypes.ContainerValue]
+        type ResponseConfig = Mapping[str, FlextWebTypes.ContainerValue]
+        type RequestBody = Mapping[str, FlextWebTypes.ContainerValue] | str | bytes
+        type ResponseBody = (
+            Mapping[str, FlextWebTypes.ContainerValue] | str | bytes | None
+        )
         type HttpResponseDict = Mapping[
             str,
-            FlextTypes.ContainerValue | FlextTypes.StrMapping | bytes | None,
+            FlextWebTypes.ContainerValue | FlextWebTypes.StrMapping | bytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type ValidationResult = Mapping[str, FlextTypes.ContainerValue]
-        type EndpointConfig = Mapping[str, FlextTypes.ContainerValue]
-        type EndpointMetadata = Mapping[str, FlextTypes.ContainerValue]
-        type RouteConfig = Mapping[str, FlextTypes.ContainerValue]
+        type ValidationResult = Mapping[str, FlextWebTypes.ContainerValue]
+        type EndpointConfig = Mapping[str, FlextWebTypes.ContainerValue]
+        type EndpointMetadata = Mapping[str, FlextWebTypes.ContainerValue]
+        type RouteConfig = Mapping[str, FlextWebTypes.ContainerValue]
         type RouteData = Mapping[
             str,
-            FlextTypes.ContainerValue
-            | FlextTypes.ResourceCallable
+            FlextWebTypes.ContainerValue
+            | FlextWebTypes.ResourceCallable
             | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
             | None,
         ]
         "Route registration data structure."
-        type SchemaValue = Mapping[str, FlextTypes.ContainerValue] | str
-        type AuthConfig = Mapping[str, FlextTypes.ContainerValue]
-        type AuthCredentials = Mapping[str, FlextTypes.ContainerValue]
-        type AuthTokenData = Mapping[str, FlextTypes.ContainerValue]
-        type SecurityConfig = Mapping[str, FlextTypes.ContainerValue]
-        type ClientConfig = Mapping[str, FlextTypes.ContainerValue]
+        type SchemaValue = Mapping[str, FlextWebTypes.ContainerValue] | str
+        type AuthConfig = Mapping[str, FlextWebTypes.ContainerValue]
+        type AuthCredentials = Mapping[str, FlextWebTypes.ContainerValue]
+        type AuthTokenData = Mapping[str, FlextWebTypes.ContainerValue]
+        type SecurityConfig = Mapping[str, FlextWebTypes.ContainerValue]
+        type ClientConfig = Mapping[str, FlextWebTypes.ContainerValue]
         type ConnectionPool = Mapping[
             str,
-            FlextTypes.Primitives | Mapping[str, FlextTypes.Primitives],
+            FlextWebTypes.Primitives | Mapping[str, FlextWebTypes.Primitives],
         ]
         type TimeoutConfig = Mapping[
             str,
-            FlextTypes.Scalar | Mapping[str, FlextTypes.Scalar],
+            FlextWebTypes.Scalar | Mapping[str, FlextWebTypes.Scalar],
         ]
         type RequestKwargs = Mapping[
             str,
-            FlextTypes.StrMapping
-            | Mapping[str, FlextTypes.ContainerValue]
-            | Mapping[str, FlextTypes.Scalar | FlextTypes.StrSequence]
+            FlextWebTypes.StrMapping
+            | Mapping[str, FlextWebTypes.ContainerValue]
+            | Mapping[str, FlextWebTypes.Scalar | FlextWebTypes.StrSequence]
             | float
             | None,
         ]
-        type StorageDict = Mapping[str, FlextTypes.Primitives | None]
-        type CacheDict = Mapping[str, FlextTypes.Primitives]
+        type StorageDict = Mapping[str, FlextWebTypes.Primitives | None]
+        type CacheDict = Mapping[str, FlextWebTypes.Primitives]
         type MetricsDict = Mapping[str, int]
-        type ProtocolConfig = Mapping[str, FlextTypes.ContainerValue]
-        type ProtocolMessage = Mapping[str, FlextTypes.ContainerValue] | str | bytes
-        type SchemaDefinition = Mapping[str, FlextTypes.ContainerValue]
-        type ValidationErrors = Sequence[Mapping[str, FlextTypes.ContainerValue]]
-        type ServiceConfig = Mapping[str, Mapping[str, FlextTypes.Scalar]]
-        type ServiceHealth = Mapping[str, FlextTypes.Primitives]
-        type RequestPipeline = Sequence[Mapping[str, FlextTypes.ContainerValue]]
-        type ResponsePipeline = Sequence[Mapping[str, FlextTypes.ContainerValue]]
-        type ProcessingResult = Mapping[str, FlextTypes.ContainerValue]
-        type ErrorInfo = Mapping[str, FlextTypes.ContainerValue]
+        type ProtocolConfig = Mapping[str, FlextWebTypes.ContainerValue]
+        type ProtocolMessage = Mapping[str, FlextWebTypes.ContainerValue] | str | bytes
+        type SchemaDefinition = Mapping[str, FlextWebTypes.ContainerValue]
+        type ValidationErrors = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
+        type ServiceConfig = Mapping[str, Mapping[str, FlextWebTypes.Scalar]]
+        type ServiceHealth = Mapping[str, FlextWebTypes.Primitives]
+        type RequestPipeline = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
+        type ResponsePipeline = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
+        type ProcessingResult = Mapping[str, FlextWebTypes.ContainerValue]
+        type ErrorInfo = Mapping[str, FlextWebTypes.ContainerValue]
         type ErrorCategory = str
-        type ErrorRecovery = Mapping[str, FlextTypes.ContainerValue]
-        type RetryStrategy = Mapping[str, FlextTypes.Scalar]
-        type CircuitBreaker = Mapping[str, FlextTypes.Primitives]
+        type ErrorRecovery = Mapping[str, FlextWebTypes.ContainerValue]
+        type RetryStrategy = Mapping[str, FlextWebTypes.Scalar]
+        type CircuitBreaker = Mapping[str, FlextWebTypes.Primitives]
 
 
 t = FlextApiTypes
