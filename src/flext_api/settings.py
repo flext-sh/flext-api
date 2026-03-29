@@ -33,7 +33,7 @@ class FlextApiSettings(FlextModels.Value):
     max_retries: Annotated[
         t.RetryCount,
         Field(description="Maximum retry attempts"),
-    ] = c.DEFAULT_MAX_RETRY_ATTEMPTS
+    ] = c.MAX_RETRY_ATTEMPTS
     verify_ssl: Annotated[
         bool,
         Field(description="Enable TLS certificate check"),

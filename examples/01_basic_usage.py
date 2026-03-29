@@ -11,8 +11,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_core import FlextConstants
-
 from flext_api import (
     FlextApi,
     FlextApiModels,
@@ -36,7 +34,7 @@ def example_client_creation() -> None:
     FlextApi()
     client_config = FlextApiSettings(
         base_url="https://httpbin.org",
-        timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS,
+        timeout=c.DEFAULT_TIMEOUT_SECONDS,
     )
     print(f"✅ Client config created: {client_config.base_url}")
     print(f"   Timeout: {client_config.timeout}s")
@@ -48,7 +46,7 @@ def example_direct_client() -> None:
     print("\n=== Direct Client Example ===")
     config = FlextApiSettings(
         base_url="https://httpbin.org",
-        timeout=FlextConstants.DEFAULT_TIMEOUT_SECONDS,
+        timeout=c.DEFAULT_TIMEOUT_SECONDS,
     )
     print(f"✅ Client config: {config.base_url}")
     print(f"   Timeout: {config.timeout}")
@@ -120,7 +118,7 @@ def example_app_creation() -> None:
             method="GET",
             url="https://httpbin.org/get",
             headers={"Accept": "application/json"},
-            timeout=int(FlextConstants.DEFAULT_TIMEOUT_SECONDS),
+            timeout=int(c.DEFAULT_TIMEOUT_SECONDS),
         )
         print(f"✅ Request model created: {request.method} {request.url}")
         print(f"   Timeout: {request.timeout}s")

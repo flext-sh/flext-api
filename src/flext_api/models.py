@@ -300,7 +300,7 @@ class FlextApiModels(FlextWebModels):
             max_retries: Annotated[
                 t.RetryCount,
                 Field(
-                    default=c.DEFAULT_MAX_RETRY_ATTEMPTS,
+                    default=c.MAX_RETRY_ATTEMPTS,
                     description="Maximum retry attempts",
                 ),
             ]
@@ -525,7 +525,7 @@ class FlextApiModels(FlextWebModels):
                 float(timeout) if timeout is not None else float(c.Api.DEFAULT_TIMEOUT)
             )
             config_max_retries = (
-                max_retries if max_retries is not None else c.DEFAULT_MAX_RETRY_ATTEMPTS
+                max_retries if max_retries is not None else c.MAX_RETRY_ATTEMPTS
             )
             if headers is None:
                 config_headers: t.StrMapping = {}

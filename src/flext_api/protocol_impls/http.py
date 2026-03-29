@@ -68,9 +68,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         self._http2 = http2
         self._http3 = http3
         self._max_retries = (
-            max_retries
-            if max_retries is not None
-            else int(c.DEFAULT_MAX_RETRY_ATTEMPTS)
+            max_retries if max_retries is not None else int(c.MAX_RETRY_ATTEMPTS)
         )
         self._retry_backoff_factor = (
             retry_backoff_factor
