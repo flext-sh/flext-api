@@ -23,47 +23,19 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.schemas import (
-        asyncapi as asyncapi,
-        jsonschema as jsonschema,
-        openapi as openapi,
-    )
-    from flext_api.schemas.asyncapi import (
-        FlextApiAsyncapiSchemaValidator as FlextApiAsyncapiSchemaValidator,
-    )
-    from flext_api.schemas.jsonschema import (
-        FlextApiJsonschemaValidator as FlextApiJsonschemaValidator,
-    )
-    from flext_api.schemas.openapi import (
-        FlextApiOpenapiSchemaValidator as FlextApiOpenapiSchemaValidator,
-    )
+    from flext_api.schemas import asyncapi, jsonschema, openapi
+    from flext_api.schemas.asyncapi import *
+    from flext_api.schemas.jsonschema import *
+    from flext_api.schemas.openapi import *
 
-_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextApiAsyncapiSchemaValidator": [
-        "flext_api.schemas.asyncapi",
-        "FlextApiAsyncapiSchemaValidator",
-    ],
-    "FlextApiJsonschemaValidator": [
-        "flext_api.schemas.jsonschema",
-        "FlextApiJsonschemaValidator",
-    ],
-    "FlextApiOpenapiSchemaValidator": [
-        "flext_api.schemas.openapi",
-        "FlextApiOpenapiSchemaValidator",
-    ],
-    "asyncapi": ["flext_api.schemas.asyncapi", ""],
-    "jsonschema": ["flext_api.schemas.jsonschema", ""],
-    "openapi": ["flext_api.schemas.openapi", ""],
+_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+    "FlextApiAsyncapiSchemaValidator": "flext_api.schemas.asyncapi",
+    "FlextApiJsonschemaValidator": "flext_api.schemas.jsonschema",
+    "FlextApiOpenapiSchemaValidator": "flext_api.schemas.openapi",
+    "asyncapi": "flext_api.schemas.asyncapi",
+    "jsonschema": "flext_api.schemas.jsonschema",
+    "openapi": "flext_api.schemas.openapi",
 }
 
-_EXPORTS: Sequence[str] = [
-    "FlextApiAsyncapiSchemaValidator",
-    "FlextApiJsonschemaValidator",
-    "FlextApiOpenapiSchemaValidator",
-    "asyncapi",
-    "jsonschema",
-    "openapi",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))

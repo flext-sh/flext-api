@@ -11,6 +11,7 @@ requires = [ "hatchling" ]
 # [CUSTOM] project metadata
 [project]
 
+
 authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -124,6 +125,8 @@ dev = [
   "vulture>=2.13",
 ]
 
+
+
 # [MANAGED] coverage
 [tool.coverage.report]
 fail_under = 25
@@ -136,6 +139,7 @@ omit = [
   "*/dependency_injector/providers.pyx",
 ]
 
+
 # [MANAGED] deptry
 [tool.deptry]
 known_first_party = [
@@ -145,8 +149,10 @@ pep621_dev_dependency_groups = [
   "dev",
 ]
 
+
 [tool.hatch.metadata]
 allow-direct-references = true
+
 
 # [MANAGED] mypy
 [tool.mypy]
@@ -165,11 +171,13 @@ python_version = "3.13"
 
 [tool.poetry]
 
+
 # [MANAGED] pydantic-mypy
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
 
 # [MANAGED] pyrefly
 [tool.pyrefly]
@@ -296,24 +304,23 @@ unused-coroutine = true
 unused-ignore = true
 variance-mismatch = true
 
+
 # [MANAGED] pyright
 [tool.pyright]
 exclude = [
-  "**/.*",
-  "**/.venv",
-  "**/.venv/**",
-  "**/__pycache__",
-  "**/dist-packages",
-  "**/dist-packages/**",
-  "**/node_modules",
-  "**/site-packages",
-  "**/site-packages/**",
-  "**/venv",
-  "**/venv/**",
-  ".mypy_cache",
-  ".pytest_cache",
-  ".ruff_cache",
-  ".venv",
+    "**/.*",
+    "**/.venv",
+    "**/.venv/**",
+    "**/__pycache__",
+    "**/dist-packages",
+    "**/dist-packages/**",
+    "**/node_modules",
+    "**/site-packages",
+    "**/site-packages/**",
+    "**/venv",
+    "**/venv/**",
+    ".ruff_cache",
+    ".venv",
 ]
 extraPaths = [
   ".",
@@ -322,9 +329,9 @@ extraPaths = [
   "src",
 ]
 ignore = [
-  "**/*.pyi",
-  "../typings",
-  "../typings/generated",
+    "../typings",
+    "../typings/generated",
+    "**/*.pyi",
 ]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
@@ -350,17 +357,17 @@ venv = ".venv"
 venvPath = ".."
 
 [[tool.pyright.executionEnvironments]]
-extraPaths = [ "src" ]
+extraPaths = ["src"]
 reportPrivateUsage = "error"
 root = "src"
 
 [[tool.pyright.executionEnvironments]]
-extraPaths = [ ".", "src" ]
+extraPaths = [".", "src"]
 reportPrivateUsage = "none"
 root = "tests"
 
 [[tool.pyright.executionEnvironments]]
-extraPaths = [ ".", "src" ]
+extraPaths = [".", "src"]
 reportPrivateUsage = "none"
 root = "examples"
 
@@ -389,6 +396,7 @@ python_files = [
   "*_tests.py",
   "test_*.py",
 ]
+
 
 # [MANAGED] ruff
 [tool.ruff]
@@ -496,9 +504,7 @@ split-on-trailing-comma = true
 
 [tool.ruff.lint.per-file-ignores]
 
-"**/.vulture_whitelist.py" = [
-  "ALL",
-]
+
 "**/*_pb2*.py" = [
   "ALL",
 ]
@@ -675,9 +681,14 @@ split-on-trailing-comma = true
   "S404",
   "S603",
 ]
+"**/.vulture_whitelist.py" = [
+  "ALL",
+]
 "**/__init__.py" = [
   "ANN401",
   "D107",
+  "F401",
+  "F403",
   "F822",
   "N999",
   "PLC2701",
@@ -757,7 +768,7 @@ split-on-trailing-comma = true
   "S404",
   "S603",
 ]
-"**/tools/*.py" = [
+"**/tools/**/*.py" = [
   "FBT001",
   "FBT002",
   "N802",
@@ -766,7 +777,7 @@ split-on-trailing-comma = true
   "S607",
   "T201",
 ]
-"**/tools/**/*.py" = [
+"**/tools/*.py" = [
   "FBT001",
   "FBT002",
   "N802",
@@ -801,6 +812,7 @@ workspace = true
 
 [tool.uv.sources.flext-web]
 workspace = true
+
 
 # [MANAGED] yamlfix
 [tool.yamlfix]
