@@ -25,6 +25,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_api.schemas import asyncapi, jsonschema, openapi
     from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
     from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
@@ -42,12 +43,18 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_api.schemas.openapi",
         "FlextApiOpenapiSchemaValidator",
     ],
+    "asyncapi": ["flext_api.schemas.asyncapi", ""],
+    "jsonschema": ["flext_api.schemas.jsonschema", ""],
+    "openapi": ["flext_api.schemas.openapi", ""],
 }
 
 __all__ = [
     "FlextApiAsyncapiSchemaValidator",
     "FlextApiJsonschemaValidator",
     "FlextApiOpenapiSchemaValidator",
+    "asyncapi",
+    "jsonschema",
+    "openapi",
 ]
 
 

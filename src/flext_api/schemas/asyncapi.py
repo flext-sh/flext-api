@@ -21,7 +21,15 @@ from typing import override
 
 from flext_core import r
 
-from flext_api import FlextApiPlugins, _shared, t, u
+from flext_api import (
+    FlextApiPlugins,
+    load_and_validate_schema_document,
+    parse_dict_field,
+    parse_int_field,
+    parse_string_field,
+    t,
+    u,
+)
 
 
 class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
@@ -99,7 +107,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         r containing loaded schema or error
 
         """
-        return _shared.load_and_validate_schema_document(
+        return load_and_validate_schema_document(
             schema_source,
             schema_label="AsyncAPI",
             validate_schema=self.validate_schema,
@@ -139,7 +147,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         if "channels" not in schema:
             return r[bool].ok(value=True)
         channels_value = schema["channels"]
-        channels_result = _shared.parse_dict_field(channels_value, "channels")
+        channels_result = parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
             return r[bool].fail(channels_result.error)
         channels = channels_result.value
@@ -214,7 +222,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
                 "Missing 'channels' field in schema",
             )
         channels_value = schema["channels"]
-        channels_result = _shared.parse_dict_field(channels_value, "channels")
+        channels_result = parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
             return r[t.ContainerValueMapping].fail(channels_result.error)
         channels = channels_result.value
@@ -232,7 +240,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
                 components_result.error or "Components validation failed",
             )
         channels_value = schema["channels"]
-        channels_result = _shared.parse_dict_field(channels_value, "channels")
+        channels_result = parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
             return r[t.ContainerValueMapping].fail(channels_result.error)
         title_str = ""
@@ -260,7 +268,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         """Validate AsyncAPI 2.x publish/subscribe operations."""
         if "publish" in channel:
             publish_value = channel["publish"]
-            publish_result = _shared.parse_dict_field(publish_value, "publish")
+            publish_result = parse_dict_field(publish_value, "publish")
             if publish_result.is_failure:
                 return r[bool].fail(
                     f"'publish' must be a dictionary in channel: {channel_name}",
@@ -274,7 +282,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
                 return pub_result
         if "subscribe" in channel:
             subscribe_value = channel["subscribe"]
-            subscribe_result = _shared.parse_dict_field(subscribe_value, "subscribe")
+            subscribe_result = parse_dict_field(subscribe_value, "subscribe")
             if subscribe_result.is_failure:
                 return r[bool].fail(
                     f"'subscribe' must be a dictionary in channel: {channel_name}",
@@ -306,7 +314,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         if "asyncapi" not in schema:
             return r[str].fail("Missing 'asyncapi' version field")
         asyncapi_version = schema["asyncapi"]
-        parsed_version = _shared.parse_string_field(asyncapi_version, "asyncapi")
+        parsed_version = parse_string_field(asyncapi_version, "asyncapi")
         if parsed_version.is_failure:
             return parsed_version
         asyncapi_version = parsed_version.value
@@ -322,7 +330,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         """Validate channel messages if present."""
         if self._validate_messages and "messages" in channel:
             messages_value = channel["messages"]
-            messages_result = _shared.parse_dict_field(messages_value, "messages")
+            messages_result = parse_dict_field(messages_value, "messages")
             if messages_result.is_failure:
                 return r[bool].fail(
                     f"'messages' must be a dictionary in channel: {channel_name}",
@@ -341,7 +349,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         channel: t.ContainerValue,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic channel structure."""
-        channel_result = _shared.parse_dict_field(channel, "channel")
+        channel_result = parse_dict_field(channel, "channel")
         return channel_result.fold(
             on_failure=lambda _: r[t.ContainerValueMapping].fail(
                 f"Channel must be a dictionary: {channel_name}",
@@ -413,7 +421,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         for section_name, section_value in components.items():
             if section_name not in valid_sections and self._strict_mode:
                 return r[bool].fail(f"Invalid component section: {section_name}")
-            section_result = _shared.parse_dict_field(section_value, section_name)
+            section_result = parse_dict_field(section_value, section_name)
             if section_result.is_failure:
                 return r[bool].fail(
                     f"Component section must be a dictionary: {section_name}",
@@ -430,7 +438,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
                 "Missing 'info' field in schema",
             )
         info_value = schema["info"]
-        info_result = _shared.parse_dict_field(info_value, "info")
+        info_result = parse_dict_field(info_value, "info")
         if info_result.is_failure:
             return r[t.ContainerValueMapping].fail(info_result.error)
         info = info_result.value
@@ -461,7 +469,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         """
         if "payload" in message:
             payload = message["payload"]
-            payload_result = _shared.parse_dict_field(payload, "payload")
+            payload_result = parse_dict_field(payload, "payload")
             if payload_result.is_failure:
                 return r[bool].fail(
                     f"Message payload must be a dictionary: {op_type} in {channel_name}",
@@ -484,7 +492,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
 
         """
         for message_name, message in messages.items():
-            message_result = _shared.parse_dict_field(message, "message")
+            message_result = parse_dict_field(message, "message")
             if message_result.is_failure:
                 return r[bool].fail(
                     f"Message must be a dictionary: {message_name} in {channel_name}",
@@ -517,7 +525,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         """
         if "message" in operation and self._validate_messages:
             message = operation["message"]
-            message_result = _shared.parse_dict_field(message, "message")
+            message_result = parse_dict_field(message, "message")
             if message_result.is_failure:
                 return r[bool].fail(
                     f"'message' must be a dictionary in {op_type} operation of channel: {channel_name}",
@@ -538,7 +546,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         """Validate optional components like servers and components."""
         if "servers" in schema:
             servers_value = schema["servers"]
-            servers_result = _shared.parse_dict_field(servers_value, "servers")
+            servers_result = parse_dict_field(servers_value, "servers")
             if servers_result.is_failure:
                 return r[bool].fail(servers_result.error)
             servers_validation = self._validate_servers(servers_result.value)
@@ -548,7 +556,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
                 )
         if "components" in schema:
             components_value = schema["components"]
-            components_result = _shared.parse_dict_field(components_value, "components")
+            components_result = parse_dict_field(components_value, "components")
             if components_result.is_failure:
                 return r[bool].fail(components_result.error)
             components_validation = self._validate_components(components_result.value)
@@ -580,7 +588,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         if "channels" not in schema:
             return r[bool].ok(value=True)
         channels_value = schema["channels"]
-        channels_result = _shared.parse_dict_field(channels_value, "channels")
+        channels_result = parse_dict_field(channels_value, "channels")
         if channels_result.is_failure:
             return r[bool].fail(channels_result.error)
         if not channels_result.value:
@@ -594,7 +602,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         status_code_value = response["status_code"]
         http_status_min = 100
         http_status_max = 599
-        status_result = _shared.parse_int_field(status_code_value, "status_code")
+        status_result = parse_int_field(status_code_value, "status_code")
         if status_result.is_failure:
             return r[bool].fail("Invalid status code")
         if not http_status_min <= status_result.value <= http_status_max:
@@ -612,7 +620,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
 
         """
         for server_name, server in servers.items():
-            server_result = _shared.parse_dict_field(server, "server")
+            server_result = parse_dict_field(server, "server")
             if server_result.is_failure:
                 return r[bool].fail(f"Server must be a dictionary: {server_name}")
             server = server_result.value
@@ -621,7 +629,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
             if "protocol" not in server:
                 return r[bool].fail(f"Server missing 'protocol': {server_name}")
             protocol_value = server["protocol"]
-            protocol_result = _shared.parse_string_field(protocol_value, "protocol")
+            protocol_result = parse_string_field(protocol_value, "protocol")
             if protocol_result.is_failure:
                 return r[bool].fail(
                     f"Server 'protocol' must be a string: {server_name}",

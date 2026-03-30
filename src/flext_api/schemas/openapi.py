@@ -21,7 +21,16 @@ from typing import override
 
 from flext_core import r
 
-from flext_api import FlextApiPlugins, _shared, t, u
+from flext_api import (
+    FlextApiPlugins,
+    is_object_mapping,
+    load_schema_document,
+    normalize_json_object,
+    parse_dict_field,
+    parse_string_field,
+    t,
+    u,
+)
 
 
 class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
@@ -88,17 +97,17 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         r containing loaded schema or error
 
         """
-        schema_result = _shared.load_schema_document(schema_source)
+        schema_result = load_schema_document(schema_source)
         if schema_result.is_failure:
             return r[t.ContainerValue].fail(
                 schema_result.error or "Failed to load OpenAPI schema",
             )
         loaded_schema = schema_result.value
-        if not _shared.is_object_mapping(loaded_schema):
+        if not is_object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
                 "OpenAPI schema must be a JSON/YAML t.NormalizedValue",
             )
-        normalized_schema = _shared.normalize_json_object(loaded_schema)
+        normalized_schema = normalize_json_object(loaded_schema)
         validation_result = self.validate_schema(normalized_schema)
         if validation_result.is_failure:
             return r[t.ContainerValue].fail(
@@ -213,7 +222,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
 
     def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> t.StrSequence:
         """Extract path keys from validated paths t.NormalizedValue."""
-        paths_result = _shared.parse_dict_field(paths_value, "paths")
+        paths_result = parse_dict_field(paths_value, "paths")
         return paths_result.fold(
             on_failure=lambda _: [],
             on_success=lambda v: list(v.keys()),
@@ -221,7 +230,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
 
     def _extract_title(self, info_value: t.ApiJsonValue) -> str:
         """Extract title from validated info t.NormalizedValue."""
-        info_result = _shared.parse_dict_field(info_value, "info")
+        info_result = parse_dict_field(info_value, "info")
         if info_result.is_failure:
             return ""
         info = info_result.value
@@ -256,7 +265,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         for section_name, section_value in components.items():
             if section_name not in valid_sections and self._strict_mode:
                 return r[bool].fail(f"Invalid component section: {section_name}")
-            section_result = _shared.parse_dict_field(section_value, section_name)
+            section_result = parse_dict_field(section_value, section_name)
             if section_result.is_failure:
                 return r[bool].fail(
                     f"Component section must be a dictionary: {section_name}",
@@ -272,7 +281,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         if "info" not in schema:
             return r[bool].fail("Missing 'info' field in schema")
         info_value = schema["info"]
-        info_result = _shared.parse_dict_field(info_value, "info")
+        info_result = parse_dict_field(info_value, "info")
         if info_result.is_failure:
             return r[bool].fail(info_result.error)
         info_value = info_result.value
@@ -292,7 +301,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         if "openapi" not in schema:
             return r[str].fail("Missing 'openapi' version field")
         openapi_version_value = schema["openapi"]
-        version_result = _shared.parse_string_field(openapi_version_value, "openapi")
+        version_result = parse_string_field(openapi_version_value, "openapi")
         if version_result.is_failure:
             return version_result
         openapi_version = version_result.value
@@ -321,7 +330,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(f"Missing required 'responses' field: {method} {path}")
         if self._validate_responses:
             responses_value = operation["responses"]
-            responses_result = _shared.parse_dict_field(responses_value, "responses")
+            responses_result = parse_dict_field(responses_value, "responses")
             if responses_result.is_failure:
                 return r[bool].fail(f"Responses must be a dictionary: {method} {path}")
             responses = responses_result.value
@@ -334,7 +343,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         if "components" not in schema:
             return r[bool].ok(value=True)
         components_value = schema["components"]
-        components_result = _shared.parse_dict_field(components_value, "components")
+        components_result = parse_dict_field(components_value, "components")
         if components_result.is_failure:
             return r[bool].fail(components_result.error)
         components_map = components_result.value
@@ -343,7 +352,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             return components_validation
         if "securitySchemes" in components_map:
             security_schemes_value = components_map["securitySchemes"]
-            schemes_result = _shared.parse_dict_field(
+            schemes_result = parse_dict_field(
                 security_schemes_value,
                 "securitySchemes",
             )
@@ -368,7 +377,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             path = str(path_key)
             if not path.startswith("/"):
                 return r[bool].fail(f"Path must start with '/': {path}")
-            path_item_result = _shared.parse_dict_field(path_item, "path_item")
+            path_item_result = parse_dict_field(path_item, "path_item")
             if path_item_result.is_failure:
                 return r[bool].fail(f"Path item must be a dictionary: {path}")
             path_item = path_item_result.value
@@ -385,7 +394,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             for method in http_methods:
                 if method in path_item:
                     method_value = path_item[method]
-                    method_result = _shared.parse_dict_field(method_value, method)
+                    method_result = parse_dict_field(method_value, method)
                     if method_result.is_failure:
                         return r[bool].fail(
                             f"Operation must be a dictionary: {method} {path}",
@@ -408,7 +417,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         if "paths" not in schema:
             return r[bool].fail("Missing 'paths' field in schema")
         paths_value = schema["paths"]
-        paths_result = _shared.parse_dict_field(paths_value, "paths")
+        paths_result = parse_dict_field(paths_value, "paths")
         return paths_result.fold(
             on_failure=lambda e: r[bool].fail(e),
             on_success=lambda v: self._validate_paths(v),
@@ -470,7 +479,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         security_schemes: t.ContainerValue,
     ) -> r[Mapping[str, t.ContainerValue]]:
         """Validate basic structure of security schemes."""
-        schemes_result = _shared.parse_dict_field(security_schemes, "security_schemes")
+        schemes_result = parse_dict_field(security_schemes, "security_schemes")
         return schemes_result.fold(
             on_failure=lambda _: r[t.ContainerValueMapping].fail(
                 "Security schemes must be a dictionary",
@@ -484,7 +493,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         scheme: t.ContainerValue,
     ) -> r[bool]:
         """Validate a single security scheme."""
-        scheme_result = _shared.parse_dict_field(scheme, "scheme")
+        scheme_result = parse_dict_field(scheme, "scheme")
         if scheme_result.is_failure:
             return r[bool].fail(f"Security scheme must be a dictionary: {scheme_name}")
         scheme = scheme_result.value
@@ -493,7 +502,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                 f"Missing 'type' field in security scheme: {scheme_name}",
             )
         scheme_type_value = scheme["type"]
-        type_result = _shared.parse_string_field(scheme_type_value, "type")
+        type_result = parse_string_field(scheme_type_value, "type")
         if type_result.is_failure:
             return r[bool].fail(
                 f"'type' field must be a string in security scheme: {scheme_name}",

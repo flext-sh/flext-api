@@ -25,9 +25,37 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_web import d, e, h, r, s, x
 
-    from flext_api import _protocols, _utilities, protocol_impls, schemas
+    from flext_api import (
+        _protocols,
+        _utilities,
+        api,
+        constants,
+        errors,
+        models,
+        protocol_impls,
+        protocols,
+        schemas,
+        server,
+        settings,
+        typings,
+        utilities,
+    )
+    from flext_api._protocols import plugins, transports
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.transports import FlextApiTransports
+    from flext_api._utilities import (
+        adapters,
+        app,
+        client,
+        lifecycle_manager,
+        middleware,
+        registry,
+        serializers,
+        server_factory,
+        settings_manager,
+        storage,
+        webhook,
+    )
     from flext_api._utilities.adapters import FlextApiAdapters
     from flext_api._utilities.app import FlextApiApp
     from flext_api._utilities.client import FlextApiClient
@@ -43,6 +71,16 @@ if TYPE_CHECKING:
     from flext_api.constants import FlextApiConstants, FlextApiConstants as c
     from flext_api.errors import FlextApiErrors
     from flext_api.models import FlextApiModels, FlextApiModels as m
+    from flext_api.protocol_impls import (
+        base,
+        http,
+        http_client,
+        logger,
+        rfc,
+        sse,
+        storage_backend,
+        websocket,
+    )
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
@@ -54,6 +92,7 @@ if TYPE_CHECKING:
     )
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
     from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
+    from flext_api.schemas import asyncapi, jsonschema, openapi
     from flext_api.schemas._shared import (
         FlextApiSchemaShared,
         is_container_value,
@@ -153,30 +192,63 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextWebhookHandler": ["flext_api._utilities.webhook", "FlextWebhookHandler"],
     "_protocols": ["flext_api._protocols", ""],
     "_utilities": ["flext_api._utilities", ""],
+    "adapters": ["flext_api._utilities.adapters", ""],
+    "api": ["flext_api.api", ""],
+    "app": ["flext_api._utilities.app", ""],
+    "asyncapi": ["flext_api.schemas.asyncapi", ""],
+    "base": ["flext_api.protocol_impls.base", ""],
     "c": ["flext_api.constants", "FlextApiConstants"],
+    "client": ["flext_api._utilities.client", ""],
+    "constants": ["flext_api.constants", ""],
     "d": ["flext_web", "d"],
     "e": ["flext_web", "e"],
+    "errors": ["flext_api.errors", ""],
     "h": ["flext_web", "h"],
+    "http": ["flext_api.protocol_impls.http", ""],
+    "http_client": ["flext_api.protocol_impls.http_client", ""],
     "is_container_value": ["flext_api.schemas._shared", "is_container_value"],
     "is_object_mapping": ["flext_api.schemas._shared", "is_object_mapping"],
+    "jsonschema": ["flext_api.schemas.jsonschema", ""],
+    "lifecycle_manager": ["flext_api._utilities.lifecycle_manager", ""],
     "load_and_validate_schema_document": [
         "flext_api.schemas._shared",
         "load_and_validate_schema_document",
     ],
     "load_schema_document": ["flext_api.schemas._shared", "load_schema_document"],
+    "logger": ["flext_api.protocol_impls.logger", ""],
     "m": ["flext_api.models", "FlextApiModels"],
+    "middleware": ["flext_api._utilities.middleware", ""],
+    "models": ["flext_api.models", ""],
     "normalize_json_object": ["flext_api.schemas._shared", "normalize_json_object"],
+    "openapi": ["flext_api.schemas.openapi", ""],
     "p": ["flext_api.protocols", "FlextApiProtocols"],
     "parse_dict_field": ["flext_api.schemas._shared", "parse_dict_field"],
     "parse_int_field": ["flext_api.schemas._shared", "parse_int_field"],
     "parse_string_field": ["flext_api.schemas._shared", "parse_string_field"],
+    "plugins": ["flext_api._protocols.plugins", ""],
     "protocol_impls": ["flext_api.protocol_impls", ""],
+    "protocols": ["flext_api.protocols", ""],
     "r": ["flext_web", "r"],
+    "registry": ["flext_api._utilities.registry", ""],
+    "rfc": ["flext_api.protocol_impls.rfc", ""],
     "s": ["flext_web", "s"],
     "schemas": ["flext_api.schemas", ""],
+    "serializers": ["flext_api._utilities.serializers", ""],
+    "server": ["flext_api.server", ""],
+    "server_factory": ["flext_api._utilities.server_factory", ""],
+    "settings": ["flext_api.settings", ""],
+    "settings_manager": ["flext_api._utilities.settings_manager", ""],
+    "sse": ["flext_api.protocol_impls.sse", ""],
+    "storage": ["flext_api._utilities.storage", ""],
+    "storage_backend": ["flext_api.protocol_impls.storage_backend", ""],
     "t": ["flext_api.typings", "FlextApiTypes"],
     "to_general_value": ["flext_api.schemas._shared", "to_general_value"],
+    "transports": ["flext_api._protocols.transports", ""],
+    "typings": ["flext_api.typings", ""],
     "u": ["flext_api.utilities", "FlextApiUtilities"],
+    "utilities": ["flext_api.utilities", ""],
+    "webhook": ["flext_api._utilities.webhook", ""],
+    "websocket": ["flext_api.protocol_impls.websocket", ""],
     "x": ["flext_web", "x"],
 }
 
@@ -225,27 +297,60 @@ __all__ = [
     "__version_info__",
     "_protocols",
     "_utilities",
+    "adapters",
+    "api",
+    "app",
+    "asyncapi",
+    "base",
     "c",
+    "client",
+    "constants",
     "d",
     "e",
+    "errors",
     "h",
+    "http",
+    "http_client",
     "is_container_value",
     "is_object_mapping",
+    "jsonschema",
+    "lifecycle_manager",
     "load_and_validate_schema_document",
     "load_schema_document",
+    "logger",
     "m",
+    "middleware",
+    "models",
     "normalize_json_object",
+    "openapi",
     "p",
     "parse_dict_field",
     "parse_int_field",
     "parse_string_field",
+    "plugins",
     "protocol_impls",
+    "protocols",
     "r",
+    "registry",
+    "rfc",
     "s",
     "schemas",
+    "serializers",
+    "server",
+    "server_factory",
+    "settings",
+    "settings_manager",
+    "sse",
+    "storage",
+    "storage_backend",
     "t",
     "to_general_value",
+    "transports",
+    "typings",
     "u",
+    "utilities",
+    "webhook",
+    "websocket",
     "x",
 ]
 

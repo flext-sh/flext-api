@@ -14,11 +14,12 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests import unit
+    from tests import constants, models, protocols, typings, unit, utilities
     from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
     from tests.models import FlextApiTestModels, FlextApiTestModels as m
     from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
     from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
+    from tests.unit import test_serializers, test_smoke
     from tests.unit.test_serializers import TestMessagePackUnpackb
     from tests.unit.test_smoke import (
         TestConstants,
@@ -41,11 +42,14 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestModels": ["tests.unit.test_smoke", "TestModels"],
     "TestSerializers": ["tests.unit.test_smoke", "TestSerializers"],
     "c": ["tests.constants", "FlextApiTestConstants"],
+    "constants": ["tests.constants", ""],
     "d": ["flext_tests", "d"],
     "e": ["flext_tests", "e"],
     "h": ["flext_tests", "h"],
     "m": ["tests.models", "FlextApiTestModels"],
+    "models": ["tests.models", ""],
     "p": ["tests.protocols", "FlextApiTestProtocols"],
+    "protocols": ["tests.protocols", ""],
     "r": ["flext_tests", "r"],
     "s": ["flext_tests", "s"],
     "t": ["tests.typings", "FlextApiTestTypes"],
@@ -53,8 +57,12 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
     ],
+    "test_serializers": ["tests.unit.test_serializers", ""],
+    "test_smoke": ["tests.unit.test_smoke", ""],
+    "typings": ["tests.typings", ""],
     "u": ["tests.utilities", "FlextApiTestUtilities"],
     "unit": ["tests.unit", ""],
+    "utilities": ["tests.utilities", ""],
     "x": ["flext_tests", "x"],
 }
 
@@ -70,17 +78,24 @@ __all__ = [
     "TestModels",
     "TestSerializers",
     "c",
+    "constants",
     "d",
     "e",
     "h",
     "m",
+    "models",
     "p",
+    "protocols",
     "r",
     "s",
     "t",
     "test_package_imports_main_facade",
+    "test_serializers",
+    "test_smoke",
+    "typings",
     "u",
     "unit",
+    "utilities",
     "x",
 ]
 

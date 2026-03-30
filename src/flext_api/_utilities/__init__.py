@@ -13,6 +13,19 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_api._utilities import (
+        adapters,
+        app,
+        client,
+        lifecycle_manager,
+        middleware,
+        registry,
+        serializers,
+        server_factory,
+        settings_manager,
+        storage,
+        webhook,
+    )
     from flext_api._utilities.adapters import FlextApiAdapters
     from flext_api._utilities.app import FlextApiApp
     from flext_api._utilities.client import FlextApiClient
@@ -46,6 +59,17 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     ],
     "FlextApiStorage": ["flext_api._utilities.storage", "FlextApiStorage"],
     "FlextWebhookHandler": ["flext_api._utilities.webhook", "FlextWebhookHandler"],
+    "adapters": ["flext_api._utilities.adapters", ""],
+    "app": ["flext_api._utilities.app", ""],
+    "client": ["flext_api._utilities.client", ""],
+    "lifecycle_manager": ["flext_api._utilities.lifecycle_manager", ""],
+    "middleware": ["flext_api._utilities.middleware", ""],
+    "registry": ["flext_api._utilities.registry", ""],
+    "serializers": ["flext_api._utilities.serializers", ""],
+    "server_factory": ["flext_api._utilities.server_factory", ""],
+    "settings_manager": ["flext_api._utilities.settings_manager", ""],
+    "storage": ["flext_api._utilities.storage", ""],
+    "webhook": ["flext_api._utilities.webhook", ""],
 }
 
 __all__ = [
@@ -60,6 +84,17 @@ __all__ = [
     "FlextApiSettingsManager",
     "FlextApiStorage",
     "FlextWebhookHandler",
+    "adapters",
+    "app",
+    "client",
+    "lifecycle_manager",
+    "middleware",
+    "registry",
+    "serializers",
+    "server_factory",
+    "settings_manager",
+    "storage",
+    "webhook",
 ]
 
 

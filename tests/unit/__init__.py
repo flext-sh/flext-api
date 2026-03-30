@@ -13,6 +13,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.unit import test_serializers, test_smoke
     from tests.unit.test_serializers import TestMessagePackUnpackb
     from tests.unit.test_smoke import (
         TestConstants,
@@ -32,6 +33,8 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.unit.test_smoke",
         "test_package_imports_main_facade",
     ],
+    "test_serializers": ["tests.unit.test_serializers", ""],
+    "test_smoke": ["tests.unit.test_smoke", ""],
 }
 
 __all__ = [
@@ -41,6 +44,8 @@ __all__ = [
     "TestModels",
     "TestSerializers",
     "test_package_imports_main_facade",
+    "test_serializers",
+    "test_smoke",
 ]
 
 

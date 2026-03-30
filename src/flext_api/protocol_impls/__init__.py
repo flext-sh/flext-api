@@ -18,6 +18,16 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_api.protocol_impls import (
+        base,
+        http,
+        http_client,
+        logger,
+        rfc,
+        sse,
+        storage_backend,
+        websocket,
+    )
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
@@ -62,6 +72,14 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_api.protocol_impls.http",
         "FlextWebProtocolPlugin",
     ],
+    "base": ["flext_api.protocol_impls.base", ""],
+    "http": ["flext_api.protocol_impls.http", ""],
+    "http_client": ["flext_api.protocol_impls.http_client", ""],
+    "logger": ["flext_api.protocol_impls.logger", ""],
+    "rfc": ["flext_api.protocol_impls.rfc", ""],
+    "sse": ["flext_api.protocol_impls.sse", ""],
+    "storage_backend": ["flext_api.protocol_impls.storage_backend", ""],
+    "websocket": ["flext_api.protocol_impls.websocket", ""],
 }
 
 __all__ = [
@@ -73,6 +91,14 @@ __all__ = [
     "FlextApiWebsocketProtocolPlugin",
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
+    "base",
+    "http",
+    "http_client",
+    "logger",
+    "rfc",
+    "sse",
+    "storage_backend",
+    "websocket",
 ]
 
 

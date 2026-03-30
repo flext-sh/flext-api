@@ -13,17 +13,22 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_api._protocols import plugins, transports
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.transports import FlextApiTransports
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextApiPlugins": ["flext_api._protocols.plugins", "FlextApiPlugins"],
     "FlextApiTransports": ["flext_api._protocols.transports", "FlextApiTransports"],
+    "plugins": ["flext_api._protocols.plugins", ""],
+    "transports": ["flext_api._protocols.transports", ""],
 }
 
 __all__ = [
     "FlextApiPlugins",
     "FlextApiTransports",
+    "plugins",
+    "transports",
 ]
 
 
