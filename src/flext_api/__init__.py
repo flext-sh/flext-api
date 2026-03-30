@@ -25,75 +25,25 @@ if TYPE_CHECKING:
     from flext_web import *
 
     from flext_api import (
-        _protocols,
-        _utilities,
         api,
         constants,
         errors,
         models,
-        protocol_impls,
         protocols,
-        schemas,
         server,
         settings,
         typings,
         utilities,
     )
-    from flext_api._protocols import plugins, transports
-    from flext_api._protocols.plugins import *
-    from flext_api._protocols.transports import *
-    from flext_api._utilities import (
-        adapters,
-        app,
-        client,
-        lifecycle_manager,
-        middleware,
-        registry,
-        serializers,
-        server_factory,
-        settings_manager,
-        storage,
-        webhook,
-    )
-    from flext_api._utilities.adapters import *
-    from flext_api._utilities.app import *
-    from flext_api._utilities.client import *
-    from flext_api._utilities.lifecycle_manager import *
-    from flext_api._utilities.middleware import *
-    from flext_api._utilities.registry import *
-    from flext_api._utilities.serializers import *
-    from flext_api._utilities.server_factory import *
-    from flext_api._utilities.settings_manager import *
-    from flext_api._utilities.storage import *
-    from flext_api._utilities.webhook import *
+    from flext_api._protocols import *
+    from flext_api._utilities import *
     from flext_api.api import *
     from flext_api.constants import *
     from flext_api.errors import *
     from flext_api.models import *
-    from flext_api.protocol_impls import (
-        base,
-        http,
-        http_client,
-        logger,
-        rfc,
-        sse,
-        storage_backend,
-        websocket,
-    )
-    from flext_api.protocol_impls.base import *
-    from flext_api.protocol_impls.http import *
-    from flext_api.protocol_impls.http_client import *
-    from flext_api.protocol_impls.logger import *
-    from flext_api.protocol_impls.rfc import *
-    from flext_api.protocol_impls.sse import *
-    from flext_api.protocol_impls.storage_backend import *
-    from flext_api.protocol_impls.websocket import *
+    from flext_api.protocol_impls import *
     from flext_api.protocols import *
-    from flext_api.schemas import asyncapi, jsonschema, openapi
-    from flext_api.schemas._shared import *
-    from flext_api.schemas.asyncapi import *
-    from flext_api.schemas.jsonschema import *
-    from flext_api.schemas.openapi import *
+    from flext_api.schemas import *
     from flext_api.server import *
     from flext_api.settings import *
     from flext_api.typings import *

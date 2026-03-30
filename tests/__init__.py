@@ -13,14 +13,12 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_tests import *
 
-    from tests import constants, models, protocols, typings, unit, utilities
+    from tests import constants, models, protocols, typings, utilities
     from tests.constants import *
     from tests.models import *
     from tests.protocols import *
     from tests.typings import *
-    from tests.unit import test_serializers, test_smoke
-    from tests.unit.test_serializers import *
-    from tests.unit.test_smoke import *
+    from tests.unit import *
     from tests.utilities import *
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
