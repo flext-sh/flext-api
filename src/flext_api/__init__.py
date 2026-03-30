@@ -10,20 +10,22 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+from flext_api.__version__ import (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
+)
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_web import d, e, h, r, s, x
 
     from flext_api import _protocols, _utilities, protocol_impls, schemas
-    from flext_api.__version__ import (
-        __all__,
-        __author__,
-        __author_email__,
-        __description__,
-        __license__,
-        __title__,
-        __url__,
-    )
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.transports import FlextApiTransports
     from flext_api._utilities.adapters import FlextApiAdapters
@@ -149,13 +151,6 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "FlextWebProtocolPlugin",
     ],
     "FlextWebhookHandler": ["flext_api._utilities.webhook", "FlextWebhookHandler"],
-    "__all__": ["flext_api.__version__", "__all__"],
-    "__author__": ["flext_api.__version__", "__author__"],
-    "__author_email__": ["flext_api.__version__", "__author_email__"],
-    "__description__": ["flext_api.__version__", "__description__"],
-    "__license__": ["flext_api.__version__", "__license__"],
-    "__title__": ["flext_api.__version__", "__title__"],
-    "__url__": ["flext_api.__version__", "__url__"],
     "_protocols": ["flext_api._protocols", ""],
     "_utilities": ["flext_api._utilities", ""],
     "c": ["flext_api.constants", "FlextApiConstants"],
@@ -220,13 +215,14 @@ __all__ = [
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
     "FlextWebhookHandler",
-    "__all__",
     "__author__",
     "__author_email__",
     "__description__",
     "__license__",
     "__title__",
     "__url__",
+    "__version__",
+    "__version_info__",
     "_protocols",
     "_utilities",
     "c",
