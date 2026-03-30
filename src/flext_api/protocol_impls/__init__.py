@@ -16,16 +16,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.protocol_impls import (
-        base,
-        http,
-        http_client,
-        logger,
-        rfc,
-        sse,
-        storage_backend,
-        websocket,
-    )
     from flext_api.protocol_impls.base import *
     from flext_api.protocol_impls.http import *
     from flext_api.protocol_impls.http_client import *
@@ -55,4 +45,4 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
 }
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)

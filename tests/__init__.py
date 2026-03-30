@@ -10,10 +10,9 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-if TYPE_CHECKING:
-    from flext_tests import *
+from tests.unit import _LAZY_IMPORTS as _CHILD_LAZY_0
 
-    from tests import constants, models, protocols, typings, utilities
+if TYPE_CHECKING:
     from tests.constants import *
     from tests.models import *
     from tests.protocols import *
@@ -22,16 +21,12 @@ if TYPE_CHECKING:
     from tests.utilities import *
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+    **_CHILD_LAZY_0,
     "FlextApiTestConstants": "tests.constants",
     "FlextApiTestModels": "tests.models",
     "FlextApiTestProtocols": "tests.protocols",
     "FlextApiTestTypes": "tests.typings",
     "FlextApiTestUtilities": "tests.utilities",
-    "TestConstants": "tests.unit.test_smoke",
-    "TestFacadeInheritance": "tests.unit.test_smoke",
-    "TestMessagePackUnpackb": "tests.unit.test_serializers",
-    "TestModels": "tests.unit.test_smoke",
-    "TestSerializers": "tests.unit.test_smoke",
     "c": ["tests.constants", "FlextApiTestConstants"],
     "constants": "tests.constants",
     "d": "flext_tests",
@@ -44,9 +39,6 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "r": "flext_tests",
     "s": "flext_tests",
     "t": ["tests.typings", "FlextApiTestTypes"],
-    "test_package_imports_main_facade": "tests.unit.test_smoke",
-    "test_serializers": "tests.unit.test_serializers",
-    "test_smoke": "tests.unit.test_smoke",
     "typings": "tests.typings",
     "u": ["tests.utilities", "FlextApiTestUtilities"],
     "unit": "tests.unit",
@@ -55,4 +47,4 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
 }
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
