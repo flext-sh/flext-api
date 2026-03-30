@@ -68,19 +68,7 @@ class FlextApi(s[FlextApiSettings]):
         else:
             api_config = FlextApiSettings.model_validate({})
         _ = kwargs
-        super().__init__(
-            config_type=None,
-            config_overrides=None,
-            initial_context=None,
-            subproject=None,
-            services=None,
-            factories=None,
-            resources=None,
-            container_overrides=None,
-            wire_modules=None,
-            wire_packages=None,
-            wire_classes=None,
-        )
+        super().__init__()
         object.__setattr__(self, "_config", api_config)
         self._client = FlextApiClient(config=api_config)
 

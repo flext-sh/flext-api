@@ -68,19 +68,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
         """
         _ = kwargs
-        super().__init__(
-            config_type=None,
-            config_overrides=None,
-            initial_context=None,
-            subproject=None,
-            services=None,
-            factories=None,
-            resources=None,
-            container_overrides=None,
-            wire_modules=None,
-            wire_packages=None,
-            wire_classes=None,
-        )
+        super().__init__()
         init_config = getattr(self, "_init_config", None)
         if init_config is not None:
             api_config = init_config
