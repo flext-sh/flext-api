@@ -5,30 +5,54 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
-    from flext_tests import d, e, h, r, s, x
-
-    from tests import constants, models, protocols, typings, unit, utilities
-    from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
-    from tests.models import FlextApiTestModels, FlextApiTestModels as m
-    from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
-    from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
-    from tests.unit import test_serializers, test_smoke
-    from tests.unit.test_serializers import TestMessagePackUnpackb
-    from tests.unit.test_smoke import (
-        TestConstants,
-        TestFacadeInheritance,
-        TestModels,
-        TestSerializers,
-        test_package_imports_main_facade,
+    from tests import (
+        constants as constants,
+        models as models,
+        protocols as protocols,
+        typings as typings,
+        unit as unit,
+        utilities as utilities,
     )
-    from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
+    from tests.constants import (
+        FlextApiTestConstants as FlextApiTestConstants,
+        FlextApiTestConstants as c,
+    )
+    from tests.models import (
+        FlextApiTestModels as FlextApiTestModels,
+        FlextApiTestModels as m,
+    )
+    from tests.protocols import (
+        FlextApiTestProtocols as FlextApiTestProtocols,
+        FlextApiTestProtocols as p,
+    )
+    from tests.typings import (
+        FlextApiTestTypes as FlextApiTestTypes,
+        FlextApiTestTypes as t,
+    )
+    from tests.unit import (
+        test_serializers as test_serializers,
+        test_smoke as test_smoke,
+    )
+    from tests.unit.test_serializers import (
+        TestMessagePackUnpackb as TestMessagePackUnpackb,
+    )
+    from tests.unit.test_smoke import (
+        TestConstants as TestConstants,
+        TestFacadeInheritance as TestFacadeInheritance,
+        TestModels as TestModels,
+        TestSerializers as TestSerializers,
+        test_package_imports_main_facade as test_package_imports_main_facade,
+    )
+    from tests.utilities import (
+        FlextApiTestUtilities as FlextApiTestUtilities,
+        FlextApiTestUtilities as u,
+    )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextApiTestConstants": ["tests.constants", "FlextApiTestConstants"],
@@ -66,7 +90,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "x": ["flext_tests", "x"],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "FlextApiTestConstants",
     "FlextApiTestModels",
     "FlextApiTestProtocols",
@@ -100,41 +124,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)

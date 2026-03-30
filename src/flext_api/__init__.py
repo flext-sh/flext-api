@@ -5,113 +5,151 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 from flext_api.__version__ import (
-    __author__,
-    __author_email__,
-    __description__,
-    __license__,
-    __title__,
-    __url__,
-    __version__,
-    __version_info__,
+    __author__ as __author__,
+    __author_email__ as __author_email__,
+    __description__ as __description__,
+    __license__ as __license__,
+    __title__ as __title__,
+    __url__ as __url__,
+    __version__ as __version__,
+    __version_info__ as __version_info__,
 )
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
-    from flext_web import d, e, h, r, s, x
-
     from flext_api import (
-        _protocols,
-        _utilities,
-        api,
-        constants,
-        errors,
-        models,
-        protocol_impls,
-        protocols,
-        schemas,
-        server,
-        settings,
-        typings,
-        utilities,
+        _protocols as _protocols,
+        _utilities as _utilities,
+        api as api,
+        constants as constants,
+        errors as errors,
+        models as models,
+        protocol_impls as protocol_impls,
+        protocols as protocols,
+        schemas as schemas,
+        server as server,
+        settings as settings,
+        typings as typings,
+        utilities as utilities,
     )
-    from flext_api._protocols import plugins, transports
-    from flext_api._protocols.plugins import FlextApiPlugins
-    from flext_api._protocols.transports import FlextApiTransports
+    from flext_api._protocols import plugins as plugins, transports as transports
+    from flext_api._protocols.plugins import FlextApiPlugins as FlextApiPlugins
+    from flext_api._protocols.transports import FlextApiTransports as FlextApiTransports
     from flext_api._utilities import (
-        adapters,
-        app,
-        client,
-        lifecycle_manager,
-        middleware,
-        registry,
-        serializers,
-        server_factory,
-        settings_manager,
-        storage,
-        webhook,
+        adapters as adapters,
+        app as app,
+        client as client,
+        lifecycle_manager as lifecycle_manager,
+        middleware as middleware,
+        registry as registry,
+        serializers as serializers,
+        server_factory as server_factory,
+        settings_manager as settings_manager,
+        storage as storage,
+        webhook as webhook,
     )
-    from flext_api._utilities.adapters import FlextApiAdapters
-    from flext_api._utilities.app import FlextApiApp
-    from flext_api._utilities.client import FlextApiClient
-    from flext_api._utilities.lifecycle_manager import FlextApiLifecycleManager
-    from flext_api._utilities.middleware import FlextApiMiddleware
-    from flext_api._utilities.registry import FlextApiRegistry
-    from flext_api._utilities.serializers import FlextApiSerializers
-    from flext_api._utilities.server_factory import FlextApiServerFactory
-    from flext_api._utilities.settings_manager import FlextApiSettingsManager
-    from flext_api._utilities.storage import FlextApiStorage
-    from flext_api._utilities.webhook import FlextWebhookHandler
-    from flext_api.api import FlextApi
-    from flext_api.constants import FlextApiConstants, FlextApiConstants as c
-    from flext_api.errors import FlextApiErrors
-    from flext_api.models import FlextApiModels, FlextApiModels as m
+    from flext_api._utilities.adapters import FlextApiAdapters as FlextApiAdapters
+    from flext_api._utilities.app import FlextApiApp as FlextApiApp
+    from flext_api._utilities.client import FlextApiClient as FlextApiClient
+    from flext_api._utilities.lifecycle_manager import (
+        FlextApiLifecycleManager as FlextApiLifecycleManager,
+    )
+    from flext_api._utilities.middleware import FlextApiMiddleware as FlextApiMiddleware
+    from flext_api._utilities.registry import FlextApiRegistry as FlextApiRegistry
+    from flext_api._utilities.serializers import (
+        FlextApiSerializers as FlextApiSerializers,
+    )
+    from flext_api._utilities.server_factory import (
+        FlextApiServerFactory as FlextApiServerFactory,
+    )
+    from flext_api._utilities.settings_manager import (
+        FlextApiSettingsManager as FlextApiSettingsManager,
+    )
+    from flext_api._utilities.storage import FlextApiStorage as FlextApiStorage
+    from flext_api._utilities.webhook import FlextWebhookHandler as FlextWebhookHandler
+    from flext_api.api import FlextApi as FlextApi
+    from flext_api.constants import (
+        FlextApiConstants as FlextApiConstants,
+        FlextApiConstants as c,
+    )
+    from flext_api.errors import FlextApiErrors as FlextApiErrors
+    from flext_api.models import FlextApiModels as FlextApiModels, FlextApiModels as m
     from flext_api.protocol_impls import (
-        base,
-        http,
-        http_client,
-        logger,
-        rfc,
-        sse,
-        storage_backend,
-        websocket,
+        base as base,
+        http as http,
+        http_client as http_client,
+        logger as logger,
+        rfc as rfc,
+        sse as sse,
+        storage_backend as storage_backend,
+        websocket as websocket,
     )
-    from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
-    from flext_api.protocol_impls.http import FlextWebProtocolPlugin
-    from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
-    from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
-    from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
+    from flext_api.protocol_impls.base import (
+        FlextApiBaseProtocolImplementation as FlextApiBaseProtocolImplementation,
+    )
+    from flext_api.protocol_impls.http import (
+        FlextWebProtocolPlugin as FlextWebProtocolPlugin,
+    )
+    from flext_api.protocol_impls.http_client import (
+        FlextWebClientImplementation as FlextWebClientImplementation,
+    )
+    from flext_api.protocol_impls.logger import (
+        FlextApiLoggerProtocolImplementation as FlextApiLoggerProtocolImplementation,
+    )
+    from flext_api.protocol_impls.rfc import (
+        FlextApiRfcProtocolImplementation as FlextApiRfcProtocolImplementation,
+    )
+    from flext_api.protocol_impls.sse import (
+        FlextApiSseProtocolPlugin as FlextApiSseProtocolPlugin,
+    )
     from flext_api.protocol_impls.storage_backend import (
-        FlextApiStorageBackendImplementation,
+        FlextApiStorageBackendImplementation as FlextApiStorageBackendImplementation,
     )
-    from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
-    from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
-    from flext_api.schemas import asyncapi, jsonschema, openapi
+    from flext_api.protocol_impls.websocket import (
+        FlextApiWebsocketProtocolPlugin as FlextApiWebsocketProtocolPlugin,
+    )
+    from flext_api.protocols import (
+        FlextApiProtocols as FlextApiProtocols,
+        FlextApiProtocols as p,
+    )
+    from flext_api.schemas import (
+        asyncapi as asyncapi,
+        jsonschema as jsonschema,
+        openapi as openapi,
+    )
     from flext_api.schemas._shared import (
-        FlextApiSchemaShared,
-        is_container_value,
-        is_object_mapping,
-        load_and_validate_schema_document,
-        load_schema_document,
-        normalize_json_object,
-        parse_dict_field,
-        parse_int_field,
-        parse_string_field,
-        to_general_value,
+        FlextApiSchemaShared as FlextApiSchemaShared,
+        is_container_value as is_container_value,
+        is_object_mapping as is_object_mapping,
+        load_and_validate_schema_document as load_and_validate_schema_document,
+        load_schema_document as load_schema_document,
+        normalize_json_object as normalize_json_object,
+        parse_dict_field as parse_dict_field,
+        parse_int_field as parse_int_field,
+        parse_string_field as parse_string_field,
+        to_general_value as to_general_value,
     )
-    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
-    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
-    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
-    from flext_api.server import FlextApiServer
-    from flext_api.settings import FlextApiSettings
-    from flext_api.typings import FlextApiTypes, FlextApiTypes as t
-    from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
+    from flext_api.schemas.asyncapi import (
+        FlextApiAsyncapiSchemaValidator as FlextApiAsyncapiSchemaValidator,
+    )
+    from flext_api.schemas.jsonschema import (
+        FlextApiJsonschemaValidator as FlextApiJsonschemaValidator,
+    )
+    from flext_api.schemas.openapi import (
+        FlextApiOpenapiSchemaValidator as FlextApiOpenapiSchemaValidator,
+    )
+    from flext_api.server import FlextApiServer as FlextApiServer
+    from flext_api.settings import FlextApiSettings as FlextApiSettings
+    from flext_api.typings import FlextApiTypes as FlextApiTypes, FlextApiTypes as t
+    from flext_api.utilities import (
+        FlextApiUtilities as FlextApiUtilities,
+        FlextApiUtilities as u,
+    )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextApi": ["flext_api.api", "FlextApi"],
@@ -252,7 +290,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "x": ["flext_web", "x"],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "FlextApi",
     "FlextApiAdapters",
     "FlextApiApp",
@@ -355,41 +393,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)

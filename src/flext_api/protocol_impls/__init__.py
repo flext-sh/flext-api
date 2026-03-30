@@ -10,34 +10,46 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from flext_api.protocol_impls import (
-        base,
-        http,
-        http_client,
-        logger,
-        rfc,
-        sse,
-        storage_backend,
-        websocket,
+        base as base,
+        http as http,
+        http_client as http_client,
+        logger as logger,
+        rfc as rfc,
+        sse as sse,
+        storage_backend as storage_backend,
+        websocket as websocket,
     )
-    from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
-    from flext_api.protocol_impls.http import FlextWebProtocolPlugin
-    from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
-    from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
-    from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
+    from flext_api.protocol_impls.base import (
+        FlextApiBaseProtocolImplementation as FlextApiBaseProtocolImplementation,
+    )
+    from flext_api.protocol_impls.http import (
+        FlextWebProtocolPlugin as FlextWebProtocolPlugin,
+    )
+    from flext_api.protocol_impls.http_client import (
+        FlextWebClientImplementation as FlextWebClientImplementation,
+    )
+    from flext_api.protocol_impls.logger import (
+        FlextApiLoggerProtocolImplementation as FlextApiLoggerProtocolImplementation,
+    )
+    from flext_api.protocol_impls.rfc import (
+        FlextApiRfcProtocolImplementation as FlextApiRfcProtocolImplementation,
+    )
+    from flext_api.protocol_impls.sse import (
+        FlextApiSseProtocolPlugin as FlextApiSseProtocolPlugin,
+    )
     from flext_api.protocol_impls.storage_backend import (
-        FlextApiStorageBackendImplementation,
+        FlextApiStorageBackendImplementation as FlextApiStorageBackendImplementation,
     )
-    from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
+    from flext_api.protocol_impls.websocket import (
+        FlextApiWebsocketProtocolPlugin as FlextApiWebsocketProtocolPlugin,
+    )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextApiBaseProtocolImplementation": [
@@ -82,7 +94,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "websocket": ["flext_api.protocol_impls.websocket", ""],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "FlextApiBaseProtocolImplementation",
     "FlextApiLoggerProtocolImplementation",
     "FlextApiRfcProtocolImplementation",
@@ -102,41 +114,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)
