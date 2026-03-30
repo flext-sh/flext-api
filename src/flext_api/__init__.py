@@ -6,11 +6,13 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
-if TYPE_CHECKING:
+if _TYPE_CHECKING:
+    from flext_web import d, e, h, r, s, x
+
     from flext_api.__version__ import *
     from flext_api._protocols import *
     from flext_api._utilities import *
@@ -25,7 +27,6 @@ if TYPE_CHECKING:
     from flext_api.settings import *
     from flext_api.typings import *
     from flext_api.utilities import *
-
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
     (
