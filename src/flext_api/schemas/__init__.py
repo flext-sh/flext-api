@@ -25,10 +25,22 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_api.schemas._shared import *
-    from flext_api.schemas.asyncapi import *
-    from flext_api.schemas.jsonschema import *
-    from flext_api.schemas.openapi import *
+    from flext_api.schemas import _shared, asyncapi, jsonschema, openapi
+    from flext_api.schemas._shared import (
+        FlextApiSchemaShared,
+        is_container_value,
+        is_object_mapping,
+        load_and_validate_schema_document,
+        load_schema_document,
+        normalize_json_object,
+        parse_dict_field,
+        parse_int_field,
+        parse_string_field,
+        to_general_value,
+    )
+    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
+    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
+    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextApiAsyncapiSchemaValidator": "flext_api.schemas.asyncapi",

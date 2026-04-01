@@ -13,17 +13,30 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_api._utilities.adapters import *
-    from flext_api._utilities.app import *
-    from flext_api._utilities.client import *
-    from flext_api._utilities.lifecycle_manager import *
-    from flext_api._utilities.middleware import *
-    from flext_api._utilities.registry import *
-    from flext_api._utilities.serializers import *
-    from flext_api._utilities.server_factory import *
-    from flext_api._utilities.settings_manager import *
-    from flext_api._utilities.storage import *
-    from flext_api._utilities.webhook import *
+    from flext_api._utilities import (
+        adapters,
+        app,
+        client,
+        lifecycle_manager,
+        middleware,
+        registry,
+        serializers,
+        server_factory,
+        settings_manager,
+        storage,
+        webhook,
+    )
+    from flext_api._utilities.adapters import FlextApiAdapters
+    from flext_api._utilities.app import FlextApiApp
+    from flext_api._utilities.client import FlextApiClient
+    from flext_api._utilities.lifecycle_manager import FlextApiLifecycleManager
+    from flext_api._utilities.middleware import FlextApiMiddleware
+    from flext_api._utilities.registry import FlextApiRegistry
+    from flext_api._utilities.serializers import FlextApiSerializers
+    from flext_api._utilities.server_factory import FlextApiServerFactory
+    from flext_api._utilities.settings_manager import FlextApiSettingsManager
+    from flext_api._utilities.storage import FlextApiStorage
+    from flext_api._utilities.webhook import FlextWebhookHandler
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextApiAdapters": "flext_api._utilities.adapters",

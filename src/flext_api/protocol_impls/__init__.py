@@ -18,14 +18,26 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_api.protocol_impls.base import *
-    from flext_api.protocol_impls.http import *
-    from flext_api.protocol_impls.http_client import *
-    from flext_api.protocol_impls.logger import *
-    from flext_api.protocol_impls.rfc import *
-    from flext_api.protocol_impls.sse import *
-    from flext_api.protocol_impls.storage_backend import *
-    from flext_api.protocol_impls.websocket import *
+    from flext_api.protocol_impls import (
+        base,
+        http,
+        http_client,
+        logger,
+        rfc,
+        sse,
+        storage_backend,
+        websocket,
+    )
+    from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
+    from flext_api.protocol_impls.http import FlextWebProtocolPlugin
+    from flext_api.protocol_impls.http_client import FlextWebClientImplementation
+    from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
+    from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
+    from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
+    from flext_api.protocol_impls.storage_backend import (
+        FlextApiStorageBackendImplementation,
+    )
+    from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextApiBaseProtocolImplementation": "flext_api.protocol_impls.base",

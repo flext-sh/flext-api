@@ -14,12 +14,22 @@ if _TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests.constants import *
-    from tests.models import *
-    from tests.protocols import *
-    from tests.typings import *
-    from tests.unit import *
-    from tests.utilities import *
+    from tests import constants, models, protocols, typings, unit, utilities
+    from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
+    from tests.models import FlextApiTestModels, FlextApiTestModels as m
+    from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
+    from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
+    from tests.unit import (
+        TestConstants,
+        TestFacadeInheritance,
+        TestMessagePackUnpackb,
+        TestModels,
+        TestSerializers,
+        test_package_imports_main_facade,
+        test_serializers,
+        test_smoke,
+    )
+    from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
     ("tests.unit",),

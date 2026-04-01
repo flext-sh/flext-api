@@ -13,8 +13,9 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_api._protocols.plugins import *
-    from flext_api._protocols.transports import *
+    from flext_api._protocols import plugins, transports
+    from flext_api._protocols.plugins import FlextApiPlugins
+    from flext_api._protocols.transports import FlextApiTransports
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextApiPlugins": "flext_api._protocols.plugins",
