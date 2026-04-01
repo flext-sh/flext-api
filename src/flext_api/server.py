@@ -22,13 +22,13 @@ from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, 
 from typing import ClassVar, override
 
 from fastapi import FastAPI
-from flext_core import FlextLogger, FlextService, e, r, x
+from flext_core import FlextLogger, FlextService, e, r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import c, p, t
 
 
-class FlextApiServer(FlextService[bool], x.Validation):
+class FlextApiServer(FlextService[bool]):
     """Generic API server with protocol handler support using Clean Architecture.
 
     Single responsibility: Orchestrate server components (RouteRegistry,

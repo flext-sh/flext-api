@@ -498,15 +498,6 @@ class FlextApiStorage:
             if k in self._expiry_times:
                 del self._expiry_times[k]
 
-    def _convert_to_int(self, value: t.ApiJsonValue) -> int | None:
-        """Convert value to int or return None if conversion fails."""
-        if value is None:
-            return None
-        try:
-            return int(str(value))
-        except (ValueError, TypeError):
-            return None
-
     def _extract_backend(self, config_dict: t.Api.StorageDict) -> r[str]:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
@@ -690,8 +681,12 @@ class FlextApiStorage:
             return {
                 "namespace": namespace_str,
                 "backend": backend_str,
-                "max_size": self._convert_to_int(max_size_val),
-                "default_ttl": self._convert_to_int(default_ttl_val),
+                "max_size": u.to_int(max_size_val)
+                if max_size_val is not None
+                else None,
+                "default_ttl": u.to_int(default_ttl_val)
+                if default_ttl_val is not None
+                else None,
             }
         return {}
 

@@ -23,6 +23,8 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
+    from flext_core import FlextTypes
+
     from flext_api.schemas._shared import *
     from flext_api.schemas.asyncapi import *
     from flext_api.schemas.jsonschema import *
