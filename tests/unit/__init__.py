@@ -13,8 +13,14 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from tests.unit.test_serializers import *
-    from tests.unit.test_smoke import *
+    from tests.unit.test_serializers import TestMessagePackUnpackb
+    from tests.unit.test_smoke import (
+        TestConstants,
+        TestFacadeInheritance,
+        TestModels,
+        TestSerializers,
+        test_package_imports_main_facade,
+    )
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "TestConstants": "tests.unit.test_smoke",
