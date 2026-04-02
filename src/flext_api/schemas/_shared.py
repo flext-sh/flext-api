@@ -9,18 +9,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, MutableMapping, Sequence
+from collections.abc import Callable, Mapping, MutableMapping
 from pathlib import Path
 from typing import TypeIs
 
 import yaml
 from flext_core import r
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
-from flext_api import FlextApiModels, t, u
-
-_JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
-_CONTAINER_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
+from flext_api import m, t, u
 
 
 class FlextApiSchemaShared:
@@ -82,10 +79,14 @@ class FlextApiSchemaShared:
                         lambda e: f"Failed to parse YAML schema: {e}",
                     )
                     return parsed_yaml.map(
-                        lambda value: _CONTAINER_VALUE_ADAPTER.validate_python(value),
+                        lambda value: t.Api.CONTAINER_VALUE_ADAPTER.validate_python(
+                            value
+                        ),
                     )
                 return u.try_(
-                    lambda: _CONTAINER_VALUE_ADAPTER.validate_json(schema_file.read()),
+                    lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(
+                        schema_file.read()
+                    ),
                     catch=ValidationError,
                 ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
         except OSError as e:
@@ -108,41 +109,13 @@ class FlextApiSchemaShared:
         """
         normalized: MutableMapping[str, t.ContainerValue] = {}
         for key, item in value.items():
-            if FlextApiSchemaShared.is_container_value(item):
-                normalized_value = FlextApiSchemaShared.to_general_value(item)
-            else:
-                normalized_value = str(item)
-            normalized[str(key)] = normalized_value
+            normalized[key] = FlextApiSchemaShared.to_general_value(item)
         return normalized
 
     @staticmethod
     def to_general_value(value: t.ContainerValue) -> t.ContainerValue:
-        """Convert value to a general container value type.
-
-        Recursively processes nested structures.
-
-        Args:
-            value: Value to convert
-
-        Returns:
-            Converted value as a general container type
-
-        """
-        if isinstance(value, list):
-            normalized_values: Sequence[t.ContainerValue] = [
-                FlextApiSchemaShared.to_general_value(item) for item in value
-            ]
-            return normalized_values
-        if isinstance(value, Mapping):
-            normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
-            for key, item in value.items():
-                normalized_mapping[str(key)] = FlextApiSchemaShared.to_general_value(
-                    item,
-                )
-            return normalized_mapping
-        if u.is_primitive(value):
-            return value
-        return str(value)
+        """Validate value as a general container value using centralized contracts."""
+        return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(value)
 
     @staticmethod
     def parse_dict_field(
@@ -164,7 +137,7 @@ class FlextApiSchemaShared:
                 return r[t.ContainerValueMapping].fail(
                     f"'{field_name}' field must be a dictionary",
                 )
-            parsed = FlextApiModels.Api.DictField(value=dict(value))
+            parsed = m.Api.DictField(value=dict(value))
         except ValidationError:
             return r[t.ContainerValueMapping].fail(
                 f"'{field_name}' field must be a dictionary",
@@ -186,7 +159,7 @@ class FlextApiSchemaShared:
         try:
             if not isinstance(value, str):
                 return r[str].fail(f"'{field_name}' field must be a string")
-            parsed = FlextApiModels.Api.StringField(value=value)
+            parsed = m.Api.StringField(value=value)
         except ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)
@@ -206,7 +179,7 @@ class FlextApiSchemaShared:
         try:
             if not isinstance(value, int):
                 return r[int].fail(f"'{field_name}' field must be an integer")
-            parsed = FlextApiModels.Api.IntField(value=value)
+            parsed = m.Api.IntField(value=value)
         except ValidationError:
             return r[int].fail(f"'{field_name}' field must be an integer")
         return r[int].ok(parsed.value)

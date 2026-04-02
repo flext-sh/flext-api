@@ -228,7 +228,7 @@ class FlextApiProtocols(FlextWebProtocols):
                 def send(
                     self,
                     connection: str,
-                    data: t.Api.RequestConfig | t.Api.RequestBody,
+                    data: t.ContainerValueMapping | t.Api.RequestBody,
                 ) -> r[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...

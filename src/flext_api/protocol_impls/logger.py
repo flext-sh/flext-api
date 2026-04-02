@@ -11,10 +11,10 @@ from typing import override
 
 from flext_core import FlextLogger
 
-from flext_api import FlextApiProtocols as api_protocols, t, u
+from flext_api import t, u
 
 
-class FlextApiLoggerProtocolImplementation(api_protocols.Api.Logger.Logger):
+class FlextApiLoggerProtocolImplementation(t.Api.Logger.Logger):
     """Logger implementation conforming to Logger."""
 
     def __init__(self) -> None:

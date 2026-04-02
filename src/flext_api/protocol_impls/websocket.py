@@ -299,7 +299,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[t.ContainerValueMapping].fail(str(details))
+            return r[t.ContainerValueMapping].fail(details)
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
             return r[t.ContainerValueMapping].fail(
@@ -419,9 +419,12 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                     parsed = m.Api.InboundMessage(message=body)
                     return r[str | bytes].ok(parsed.message)
                 except ValidationError:
-                    return r[str | bytes].ok(str(body))
-            else:
-                return r[str | bytes].ok(str(body))
+                    return r[str | bytes].ok(body)
+            try:
+                serialized_body = t.Api.CONTAINER_VALUE_ADAPTER.dump_json(body)
+            except ValidationError:
+                return r[str | bytes].fail("Unsupported WebSocket body type")
+            return r[str | bytes].ok(serialized_body.decode("utf-8"))
         return r[str | bytes].fail("Message or body is required")
 
     def _extract_message_type(self, options: m.Api.SendRequestWsOptions) -> str:
@@ -502,10 +505,14 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[bool].fail("WebSocket connection is None")
         try:
             if message_type == c.Api.WebSocket.MessageType.TEXT:
-                text_message = str(message)
+                text_message = (
+                    message if isinstance(message, str) else message.decode("utf-8")
+                )
                 self._connection.send(text_message)
             elif message_type == c.Api.WebSocket.MessageType.BINARY:
-                binary_message = bytes(str(message), encoding="utf-8")
+                binary_message = (
+                    message if isinstance(message, bytes) else message.encode("utf-8")
+                )
                 self._connection.send(binary_message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")

@@ -11,21 +11,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Self, override
 
 import httpx
 from flext_core import r, s
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiSettings, c, m, t
-
-_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
-    t.Api.ResponseBody,
-)
-_DICT_BODY_ADAPTER: TypeAdapter[Mapping[str, t.ContainerValue]] = TypeAdapter(
-    t.ContainerValueMapping,
-)
 
 
 class FlextApiClient(s[FlextApiSettings]):
@@ -127,12 +119,8 @@ class FlextApiClient(s[FlextApiSettings]):
         """Deserialize response as JSON."""
         try:
             json_data = response.json()
-            try:
-                return r[t.Api.ResponseBody].ok(
-                    _RESPONSE_BODY_ADAPTER.validate_python(json_data),
-                )
-            except ValidationError:
-                return r[t.Api.ResponseBody].ok({"value": str(json_data)})
+            validated = t.Api.RESPONSE_BODY_ADAPTER.validate_python(json_data)
+            return r[t.Api.ResponseBody].ok(validated)
         except (
             AttributeError,
             ValueError,
@@ -140,6 +128,7 @@ class FlextApiClient(s[FlextApiSettings]):
             KeyError,
             httpx.HTTPError,
             ConnectionError,
+            ValidationError,
         ) as e:
             return r[t.Api.ResponseBody].fail(f"JSON deserialization failed: {e}")
 
@@ -157,13 +146,13 @@ class FlextApiClient(s[FlextApiSettings]):
             return r[bytes].ok(body)
         if isinstance(body, dict):
             try:
-                serialized = _DICT_BODY_ADAPTER.dump_json(body)
+                serialized = t.Api.DICT_BODY_ADAPTER.dump_json(body)
                 return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")
         if isinstance(body, str):
             return r[bytes].ok(body.encode("utf-8"))
-        return r[bytes].ok(str(body).encode("utf-8"))
+        return r[bytes].fail("Request body must be bytes, str, or JSON object")
 
     @override
     def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
@@ -265,7 +254,7 @@ class FlextApiClient(s[FlextApiSettings]):
             httpx.HTTPError,
             ConnectionError,
         ) as exc:
-            return r[m.Api.HttpResponse].fail(str(exc))
+            return r[m.Api.HttpResponse].fail(f"HTTP client request failed: {exc}")
 
     def _get_config(self) -> FlextApiSettings:
         """Get FlextApiSettings with proper type narrowing."""

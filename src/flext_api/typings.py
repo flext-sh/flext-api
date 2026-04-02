@@ -12,9 +12,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping
 
 from flext_web import FlextWebTypes
+from pydantic import TypeAdapter
 
 
 class FlextApiTypes(FlextWebTypes):
@@ -25,14 +26,6 @@ class FlextApiTypes(FlextWebTypes):
     Python 3.13+ syntax with maximum code reduction.
     Only TypeVar loose outside class.
     """
-
-    # Class-level forwarding aliases (canonical definitions in Api namespace)
-    type Pair[LeftT, RightT] = tuple[LeftT, RightT]
-    type Triple[FirstT, SecondT, ThirdT] = tuple[FirstT, SecondT, ThirdT]
-    type VariadicTuple[ItemT] = tuple[ItemT, ...]
-    type IntPair = Pair[int, int]
-    type JsonObject = Mapping[str, FlextWebTypes.ContainerValue]
-    type ApiJsonValue = FlextWebTypes.ContainerValue | None
 
     class Api:
         """API types namespace for cross-project access.
@@ -51,29 +44,26 @@ class FlextApiTypes(FlextWebTypes):
 
         """
 
-        type WebData = (
-            FlextWebTypes.FileContent | Mapping[str, FlextWebTypes.ContainerValue]
-        )
         type WebHeaders = Mapping[str, FlextWebTypes.Scalar | FlextWebTypes.StrSequence]
         type WebParamValue = str | FlextWebTypes.StrSequence
         type WebParams = Mapping[str, WebParamValue]
-        type ResponseList = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
-        type ResponseDict = Mapping[str, FlextWebTypes.ContainerValue]
-        type RequestConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type ResponseConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type RequestBody = Mapping[str, FlextWebTypes.ContainerValue] | str | bytes
+        type RequestBody = (
+            FlextWebTypes.ContainerValueMapping | str | FlextWebTypes.BinaryContent
+        )
         type ResponseBody = (
-            Mapping[str, FlextWebTypes.ContainerValue] | str | bytes | None
+            FlextWebTypes.ContainerValueMapping
+            | str
+            | FlextWebTypes.BinaryContent
+            | None
         )
         type HttpResponseDict = Mapping[
             str,
-            FlextWebTypes.ContainerValue | FlextWebTypes.StrMapping | bytes | None,
+            FlextWebTypes.ContainerValue
+            | FlextWebTypes.StrMapping
+            | FlextWebTypes.BinaryContent
+            | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type ValidationResult = Mapping[str, FlextWebTypes.ContainerValue]
-        type EndpointConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type EndpointMetadata = Mapping[str, FlextWebTypes.ContainerValue]
-        type RouteConfig = Mapping[str, FlextWebTypes.ContainerValue]
         type RouteData = Mapping[
             str,
             FlextWebTypes.ContainerValue
@@ -82,20 +72,6 @@ class FlextApiTypes(FlextWebTypes):
             | None,
         ]
         "Route registration data structure."
-        type SchemaValue = Mapping[str, FlextWebTypes.ContainerValue] | str
-        type AuthConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type AuthCredentials = Mapping[str, FlextWebTypes.ContainerValue]
-        type AuthTokenData = Mapping[str, FlextWebTypes.ContainerValue]
-        type SecurityConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type ClientConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type ConnectionPool = Mapping[
-            str,
-            FlextWebTypes.Primitives | Mapping[str, FlextWebTypes.Primitives],
-        ]
-        type TimeoutConfig = Mapping[
-            str,
-            FlextWebTypes.Scalar | Mapping[str, FlextWebTypes.Scalar],
-        ]
         type RequestKwargs = Mapping[
             str,
             FlextWebTypes.StrMapping
@@ -104,23 +80,64 @@ class FlextApiTypes(FlextWebTypes):
             | float
             | None,
         ]
-        type StorageDict = Mapping[str, FlextWebTypes.Primitives | None]
+        type StorageDict = Mapping[str, FlextWebTypes.OptionalPrimitive]
         type CacheDict = Mapping[str, FlextWebTypes.Primitives]
         type MetricsDict = Mapping[str, int]
-        type ProtocolConfig = Mapping[str, FlextWebTypes.ContainerValue]
-        type ProtocolMessage = Mapping[str, FlextWebTypes.ContainerValue] | str | bytes
-        type SchemaDefinition = Mapping[str, FlextWebTypes.ContainerValue]
-        type ValidationErrors = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
-        type ServiceConfig = Mapping[str, Mapping[str, FlextWebTypes.Scalar]]
-        type ServiceHealth = Mapping[str, FlextWebTypes.Primitives]
-        type RequestPipeline = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
-        type ResponsePipeline = Sequence[Mapping[str, FlextWebTypes.ContainerValue]]
-        type ProcessingResult = Mapping[str, FlextWebTypes.ContainerValue]
-        type ErrorInfo = Mapping[str, FlextWebTypes.ContainerValue]
-        type ErrorCategory = str
-        type ErrorRecovery = Mapping[str, FlextWebTypes.ContainerValue]
-        type RetryStrategy = Mapping[str, FlextWebTypes.Scalar]
-        type CircuitBreaker = Mapping[str, FlextWebTypes.Primitives]
+        CONTAINER_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValue] = (
+            TypeAdapter(
+                FlextWebTypes.ContainerValue,
+            )
+        )
+        JSON_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.JsonValue] = TypeAdapter(
+            FlextWebTypes.JsonValue,
+        )
+        API_JSON_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.ApiJsonValue] = TypeAdapter(
+            FlextWebTypes.ApiJsonValue,
+        )
+        BINARY_CONTENT_ADAPTER: TypeAdapter[FlextWebTypes.BinaryContent] = TypeAdapter(
+            FlextWebTypes.BinaryContent,
+        )
+        STR_MAPPING_ADAPTER: TypeAdapter[FlextWebTypes.StrMapping] = TypeAdapter(
+            FlextWebTypes.StrMapping,
+        )
+        HOSTNAME_ADAPTER: TypeAdapter[FlextWebTypes.HostnameStr] = TypeAdapter(
+            FlextWebTypes.HostnameStr,
+        )
+        PORT_NUMBER_ADAPTER: TypeAdapter[FlextWebTypes.PortNumber] = TypeAdapter(
+            FlextWebTypes.PortNumber,
+        )
+        STRING_ADAPTER: TypeAdapter[FlextWebTypes.TextValue] = TypeAdapter(
+            FlextWebTypes.TextValue,
+        )
+        INTEGER_ADAPTER: TypeAdapter[FlextWebTypes.IntegerValue] = TypeAdapter(
+            FlextWebTypes.IntegerValue,
+        )
+        FLOAT_ADAPTER: TypeAdapter[FlextWebTypes.FloatValue] = TypeAdapter(
+            FlextWebTypes.FloatValue,
+        )
+        STORAGE_ENTRY_ADAPTER: TypeAdapter[Mapping[str, FlextWebTypes.ApiJsonValue]] = (
+            TypeAdapter(
+                Mapping[str, FlextWebTypes.ApiJsonValue],
+            )
+        )
+        REQUEST_BODY_ADAPTER: TypeAdapter[RequestBody] = TypeAdapter(
+            RequestBody,
+        )
+
+        RESPONSE_BODY_ADAPTER: TypeAdapter[ResponseBody] = TypeAdapter(
+            ResponseBody,
+        )
+        DICT_BODY_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValueMapping] = (
+            TypeAdapter(
+                FlextWebTypes.ContainerValueMapping,
+            )
+        )
+
+        JSON_HEADERS_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValueMapping] = (
+            TypeAdapter(
+                FlextWebTypes.ContainerValueMapping,
+            )
+        )
 
 
 t = FlextApiTypes

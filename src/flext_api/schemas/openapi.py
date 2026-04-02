@@ -236,7 +236,10 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         info = info_result.value
         if "title" not in info:
             return ""
-        return str(info["title"])
+        title_result = parse_string_field(info["title"], "title")
+        if title_result.is_failure:
+            return ""
+        return title_result.value
 
     def _validate_components(
         self,
@@ -374,7 +377,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
 
         """
         for path_key, path_item in paths.items():
-            path = str(path_key)
+            path = path_key
             if not path.startswith("/"):
                 return r[bool].fail(f"Path must start with '/': {path}")
             path_item_result = parse_dict_field(path_item, "path_item")

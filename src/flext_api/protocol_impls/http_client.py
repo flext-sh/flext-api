@@ -118,7 +118,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         if not base_url:
             return r[str].fail("base_url is required when URL is not absolute")
         normalized_base = base_url.rstrip("/")
-        normalized_path = str(url).lstrip("/")
+        normalized_path = url.lstrip("/")
         full_url = (
             f"{normalized_base}/{normalized_path}"
             if normalized_path
@@ -137,7 +137,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
             )
-            return r[m.Api.HttpClientRequestOptions].fail(str(details))
+            return r[m.Api.HttpClientRequestOptions].fail(details)
         return r[m.Api.HttpClientRequestOptions].ok(options)
 
     def _create_response_from_httpx(

@@ -5,102 +5,61 @@ Provides type-safe wrappers for untyped serialization libraries like msgpack.
 
 from __future__ import annotations
 
-import importlib
-from collections.abc import Mapping
-from types import ModuleType
-
+import msgpack
 from flext_core import r
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_api import t
-
-_MESSAGEPACK_RESULT_ADAPTER: TypeAdapter[
-    t.Scalar | t.ContainerValueMapping | t.ContainerValueList | None
-] = TypeAdapter(
-    t.Scalar | t.ContainerValueMapping | t.ContainerValueList | None,
-)
 
 
 class FlextApiSerializers:
     """Serialization utilities for API operations."""
 
-    @staticmethod
-    def _load_msgpack() -> ModuleType | None:
-        """Load msgpack lazily to avoid static typing dependency issues."""
-        try:
-            module = importlib.import_module("msgpack")
-        except ModuleNotFoundError:
-            return None
-        return module
-
     class MessagePack:
         """Type-safe wrappers for msgpack library."""
 
         @staticmethod
-        def packb(
-            obj: Mapping[
-                str,
-                t.Scalar | t.ScalarList | t.ContainerValueMapping | None,
-            ]
-            | t.ApiJsonValue,
-        ) -> bytes:
+        def pack_raw(obj: t.JsonValue) -> object:
+            """Return the raw msgpack payload for explicit runtime narrowing."""
+            return t.Api.BINARY_CONTENT_ADAPTER.validate_python(msgpack.packb(obj))
+
+        @staticmethod
+        def packb(obj: t.JsonValue) -> bytes:
             """Type-safe wrapper for msgpack.packb().
 
             Args:
-                obj: Object to pack (JsonObject or t.NormalizedValue).
+                obj: Object to pack using the canonical `t.JsonValue` contract.
 
             Returns:
                 bytes: Packed binary data.
 
             """
-            module = FlextApiSerializers._load_msgpack()
-            if module is None:
-                return b""
-            packb_fn = getattr(module, "packb", None)
-            if not callable(packb_fn):
-                return b""
-            result = packb_fn(obj)
-            if isinstance(result, bytes | bytearray):
-                return bytes(result)
-            return b""
+            packed = FlextApiSerializers.MessagePack.pack_raw(obj)
+            if isinstance(packed, bytes):
+                return packed
+            if isinstance(packed, bytearray):
+                return bytes(packed)
+            msg = "msgpack.packb returned non-bytes payload"
+            raise TypeError(msg)
 
         @staticmethod
         def unpackb(
             data: bytes,
-        ) -> r[t.Scalar | t.ContainerValueMapping | t.ContainerValueList]:
+        ) -> r[t.JsonValue]:
             """Type-safe wrapper for msgpack.unpackb().
 
             Args:
                 data: Binary data to unpack.
 
             Returns:
-                Result containing unpacked t.NormalizedValue (dict, list, or scalar).
+                Result containing unpacked `t.JsonValue`.
 
             """
-            module = FlextApiSerializers._load_msgpack()
-            if module is None:
-                return r[
-                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
-                ].fail("msgpack module not available")
-            unpackb_fn = getattr(module, "unpackb", None)
-            if unpackb_fn is None:
-                return r[
-                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
-                ].fail("msgpack.unpackb function not found")
             try:
-                result = unpackb_fn(data)
-                validated = _MESSAGEPACK_RESULT_ADAPTER.validate_python(result)
-                if validated is None:
-                    return r[
-                        t.Scalar | t.ContainerValueMapping | t.ContainerValueList
-                    ].fail("msgpack deserialization returned None")
-                non_none_value: (
-                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
-                ) = validated
-                return r[t.Scalar | t.ContainerValueMapping | t.ContainerValueList].ok(
-                    non_none_value,
+                result = msgpack.unpackb(data)
+                validated = t.Api.JSON_VALUE_ADAPTER.validate_python(result)
+                return r[t.JsonValue].ok(
+                    validated,
                 )
-            except (ValidationError, ValueError) as e:
-                return r[
-                    t.Scalar | t.ContainerValueMapping | t.ContainerValueList
-                ].fail(f"msgpack deserialization failed: {e}")
+            except (TypeError, ValidationError, ValueError) as e:
+                return r[t.JsonValue].fail(f"msgpack deserialization failed: {e}")

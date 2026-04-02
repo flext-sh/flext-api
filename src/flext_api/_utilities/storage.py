@@ -25,14 +25,9 @@ from collections.abc import Mapping, MutableMapping, Sequence
 from typing import ClassVar, Self
 
 from flext_core import FlextLogger, r
-from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api import m, t, u
-
-_JSON_VALUE_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
-_STORAGE_ENTRY_ADAPTER: TypeAdapter[Mapping[str, t.ApiJsonValue]] = TypeAdapter(
-    Mapping[str, t.ApiJsonValue],
-)
 
 
 class FlextApiStorage:
@@ -124,7 +119,7 @@ class FlextApiStorage:
                 return r[bool].ok(value=True)
             return r[bool].fail("Some keys could not be deleted")
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(str(e))
+            return r[bool].fail(f"Batch delete failed: {e}")
 
     def batch_get(self, keys: t.StrSequence) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get multiple keys efficiently."""
@@ -137,7 +132,7 @@ class FlextApiStorage:
                     result_dict[key] = unwrapped
             return r[Mapping[str, t.ApiJsonValue]].ok(result_dict)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.ApiJsonValue]].fail(str(e))
+            return r[Mapping[str, t.ApiJsonValue]].fail(f"Batch get failed: {e}")
 
     def batch_set(
         self,
@@ -152,7 +147,14 @@ class FlextApiStorage:
                     return result
             return r[bool].ok(value=True)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(str(e))
+            return r[bool].fail(f"Batch set failed: {e}")
+
+    def _estimate_memory_usage(self) -> int:
+        """Estimate storage payload size using centralized JSON serialization."""
+        normalized_storage = t.Api.CONTAINER_VALUE_ADAPTER.validate_python(
+            self._storage,
+        )
+        return len(t.Api.CONTAINER_VALUE_ADAPTER.dump_json(normalized_storage))
 
     def cleanup_expired(self) -> r[int]:
         """Clean up expired entries (TTL management)."""
@@ -193,7 +195,7 @@ class FlextApiStorage:
     def deserialize_json(self, json_str: str) -> r[t.ContainerValue]:
         """Deserialize from JSON using Pydantic TypeAdapter."""
         return u.try_(
-            lambda: _JSON_VALUE_ADAPTER.validate_json(json_str),
+            lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(json_str),
             catch=(ValueError, TypeError, KeyError, ConnectionError, ValidationError),
         ).map_error(lambda e: f"JSON deserialization failed: {e}")
 
@@ -273,7 +275,7 @@ class FlextApiStorage:
         return u.try_(
             _get_metrics,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(str)
+        ).map_error(lambda e: f"Failed to get metrics: {e}")
 
     def get_storage_statistics(self) -> r[Mapping[str, float]]:
         """Get storage statistics with hit ratio calculation."""
@@ -290,13 +292,13 @@ class FlextApiStorage:
                 "cache_misses": float(self._stats.cache_misses),
                 "hit_ratio": hit_ratio,
                 "storage_size": float(len(self._storage)),
-                "memory_usage": float(len(str(self._storage))),
+                "memory_usage": float(self._estimate_memory_usage()),
             }
 
         return u.try_(
             _get_statistics,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(str)
+        ).map_error(lambda e: f"Failed to get storage statistics: {e}")
 
     def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Perform health check with metrics."""
@@ -313,7 +315,7 @@ class FlextApiStorage:
         return u.try_(
             _check_health,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(str)
+        ).map_error(lambda e: f"Health check failed: {e}")
 
     def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage information using Pydantic model."""
@@ -332,7 +334,7 @@ class FlextApiStorage:
         return u.try_(
             _get_info,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(str)
+        ).map_error(lambda e: f"Failed to get storage info: {e}")
 
     def items(self) -> r[Sequence[t.Pair[str, t.ApiJsonValue]]]:
         """Get all key-value pairs."""
@@ -362,7 +364,7 @@ class FlextApiStorage:
                 cache_misses=self._stats.cache_misses,
                 hit_ratio=hit_ratio,
                 storage_size=len(self._storage),
-                memory_usage=len(str(self._storage)),
+                memory_usage=self._estimate_memory_usage(),
                 namespace=self._stats.namespace,
             )
             stats_dict: Mapping[str, t.ApiJsonValue] = {
@@ -379,14 +381,14 @@ class FlextApiStorage:
         return u.try_(
             _get_metrics,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(str)
+        ).map_error(lambda e: f"Failed to get storage metrics: {e}")
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using Pydantic TypeAdapter."""
         if data is None:
             return r[str].ok("null")
         return u.try_(
-            lambda: _JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
+            lambda: t.Api.API_JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"JSON serialization failed: {e}")
 
@@ -547,8 +549,8 @@ class FlextApiStorage:
         """
         if param_val is not None:
             int_result = u.try_(
-                lambda: int(str(param_val)),
-                catch=(ValueError, TypeError),
+                lambda: t.Api.INTEGER_ADAPTER.validate_python(param_val),
+                catch=(ValidationError,),
             ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
             if int_result.is_failure:
                 return int_result
@@ -562,8 +564,8 @@ class FlextApiStorage:
             config_val = config_dict[config_key]
             if config_val is not None:
                 int_result = u.try_(
-                    lambda: int(str(config_val)),
-                    catch=(ValueError, TypeError),
+                    lambda: t.Api.INTEGER_ADAPTER.validate_python(config_val),
+                    catch=(ValidationError,),
                 ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
                 if int_result.is_failure:
                     return int_result
@@ -701,24 +703,27 @@ class FlextApiStorage:
             if not isinstance(data, dict):
                 return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
             data_dict: Mapping[str, t.ApiJsonValue] = (
-                _STORAGE_ENTRY_ADAPTER.validate_python(data)
+                t.Api.STORAGE_ENTRY_ADAPTER.validate_python(data)
             )
             ttl_value = data_dict.get("ttl")
             ttl_int: int | None = None
             if ttl_value is not None:
                 try:
-                    ttl_int = int(str(ttl_value))
-                except (ValueError, TypeError):
+                    ttl_int = t.Api.INTEGER_ADAPTER.validate_python(ttl_value)
+                except ValidationError:
                     ttl_int = None
             created_at_value = data_dict.get("created_at", 0.0)
             created_at_float = 0.0
             try:
-                created_at_float = float(str(created_at_value))
-            except (ValueError, TypeError):
+                created_at_float = t.Api.FLOAT_ADAPTER.validate_python(
+                    created_at_value,
+                )
+            except ValidationError:
                 created_at_float = 0.0
+            timestamp_value = data_dict.get("timestamp", "")
             metadata = m.Api.Storage.Metadata(
                 value=data_dict.get("value"),
-                timestamp=str(data_dict.get("timestamp", "")),
+                timestamp=t.Api.STRING_ADAPTER.validate_python(timestamp_value),
                 ttl=ttl_int,
                 created_at=created_at_float,
             )
@@ -741,7 +746,7 @@ class FlextApiStorage:
         except ValidationError as e:
             FlextLogger(__name__).error(
                 "Metadata validation failed for storage entry",
-                error=str(e),
+                error=f"{e}",
                 exception_type="ValidationError",
                 key=key,
             )
@@ -751,7 +756,7 @@ class FlextApiStorage:
         except (KeyError, TypeError, AttributeError) as e:
             FlextLogger(__name__).error(
                 "Failed to process namespaced storage entry",
-                error=str(e),
+                error=f"{e}",
                 exception_type=type(e).__name__,
                 key=key,
             )

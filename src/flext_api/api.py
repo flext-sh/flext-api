@@ -16,7 +16,7 @@ from typing import ClassVar, Self, override
 from flext_core import FlextLogger, r, s
 from pydantic import ConfigDict
 
-from flext_api import FlextApiClient, FlextApiSettings, FlextApiUtilities, c, m, t
+from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
 
 
 class FlextApi(s[FlextApiSettings]):
@@ -232,7 +232,7 @@ class FlextApi(s[FlextApiSettings]):
         request_kwargs_dict: Mapping[str, t.ApiJsonValue] | None = (
             dict(request_kwargs.items()) if request_kwargs is not None else None
         )
-        body_result = FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
+        body_result = u.Api.RequestUtils.extract_body_from_kwargs(
             data,
             request_kwargs_dict,
         )
@@ -240,7 +240,7 @@ class FlextApi(s[FlextApiSettings]):
             return r[m.Api.HttpResponse].fail(
                 body_result.error or "Body extraction failed"
             )
-        headers_result = FlextApiUtilities.Api.RequestUtils.merge_headers(
+        headers_result = u.Api.RequestUtils.merge_headers(
             headers,
             request_kwargs_dict,
         )
@@ -248,11 +248,9 @@ class FlextApi(s[FlextApiSettings]):
             return r[m.Api.HttpResponse].fail(
                 headers_result.error or "Header extraction failed",
             )
-        timeout_result = (
-            FlextApiUtilities.Api.RequestUtils.validate_and_extract_timeout(
-                timeout,
-                request_kwargs_dict,
-            )
+        timeout_result = u.Api.RequestUtils.validate_and_extract_timeout(
+            timeout,
+            request_kwargs_dict,
         )
         if timeout_result.is_failure:
             return r[m.Api.HttpResponse].fail(

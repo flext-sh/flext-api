@@ -19,11 +19,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, Sequence
-from typing import ClassVar, override
+from typing import override
 
 from fastapi import FastAPI
 from flext_core import FlextLogger, FlextService, e, r
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_api import c, p, t
 
@@ -39,9 +39,6 @@ class FlextApiServer(FlextService[bool]):
     Uses Flext patterns: Service lifecycle decorator, logging/validation mixins,
     railway pattern results, and dependency injection.
     """
-
-    _hostname_adapter: ClassVar[TypeAdapter[t.HostnameStr]] = TypeAdapter(t.HostnameStr)
-    _port_adapter: ClassVar[TypeAdapter[t.PortNumber]] = TypeAdapter(t.PortNumber)
 
     _protocol_handlers: MutableMapping[str, p.Api.Server.ProtocolHandler]
     _middleware_pipeline: MutableSequence[Callable[..., None]]
@@ -78,7 +75,7 @@ class FlextApiServer(FlextService[bool]):
             path: str,
             handler: Callable[..., t.Api.HttpResponseDict | str | None],
             prefix: str = "",
-            schema: t.Api.SchemaValue | None = None,
+            schema: t.ContainerValueMapping | None = None,
             **options: t.Scalar,
         ) -> r[bool]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
@@ -111,11 +108,7 @@ class FlextApiServer(FlextService[bool]):
                 "options": options_json,
             }
             if schema is not None:
-                match schema:
-                    case str() as schema_str:
-                        route_data["schema"] = schema_str
-                    case _:
-                        route_data["schema"] = str(schema)
+                route_data["schema"] = schema
             self._routes[route_key] = route_data
             self._logger.info(
                 "Endpoint registered",
@@ -156,7 +149,7 @@ class FlextApiServer(FlextService[bool]):
                     self._logger.warning(
                         "Failed to close WebSocket %s",
                         conn_id,
-                        error=str(e),
+                        error=f"{e}",
                     )
             for conn_id, connection in self._sse_connections.items():
                 try:
@@ -167,7 +160,7 @@ class FlextApiServer(FlextService[bool]):
                     self._logger.warning(
                         "Failed to close SSE %s",
                         conn_id,
-                        error=str(e),
+                        error=f"{e}",
                     )
             self._websocket_connections.clear()
             self._sse_connections.clear()
@@ -421,7 +414,7 @@ class FlextApiServer(FlextService[bool]):
     def register_graphql_endpoint(
         self,
         path: str = "/graphql",
-        schema: t.Api.SchemaValue | None = None,
+        schema: t.ContainerValueMapping | None = None,
         **options: t.Scalar,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
@@ -453,8 +446,11 @@ class FlextApiServer(FlextService[bool]):
         if protocol in self._protocol_handlers:
             return r[bool].fail(f"Protocol already registered: {protocol}")
         self._protocol_handlers[protocol] = handler
-        name_value = getattr(handler, "name", "")
-        handler_name = str(name_value)
+        name_value = getattr(handler, "name", None)
+        if isinstance(name_value, str) and name_value:
+            handler_name = name_value
+        else:
+            handler_name = handler.__class__.__name__
         self._lifecycle_manager.logger.info(
             "Protocol handler registered",
             protocol=protocol,
@@ -552,11 +548,11 @@ class FlextApiServer(FlextService[bool]):
     ) -> r[bool]:
         """Validate server configuration using utilities directly."""
         try:
-            self._hostname_adapter.validate_python(host)
+            t.Api.HOSTNAME_ADAPTER.validate_python(host)
         except ValidationError as error:
             return r[bool].fail(f"Host validation failed: {error}")
         try:
-            self._port_adapter.validate_python(port)
+            t.Api.PORT_NUMBER_ADAPTER.validate_python(port)
         except ValidationError as error:
             return r[bool].fail(f"Port validation failed: {error}")
         title_result: r[str]

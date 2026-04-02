@@ -246,7 +246,9 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         title_str = ""
         if "title" in info:
             title_value = info["title"]
-            title_str = str(title_value)
+            title_result = parse_string_field(title_value, "title")
+            if title_result.is_success:
+                title_str = title_result.value
         self.logger.info(
             "AsyncAPI schema validation successful",
             version=version_result.value,

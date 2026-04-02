@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator, Mapping, MutableMapping, Sequence
+from collections.abc import Iterator, Mapping, MutableMapping
 from typing import override
 
 import httpx
@@ -122,7 +122,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         """Send HTTP request with retry logic and error handling."""
         request_general: MutableMapping[str, t.ContainerValue] = {}
         for key, value in request.items():
-            request_general[key] = self._to_general_value(value)
+            request_general[key] = u.Api.RequestUtils.to_json_value(value)
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.is_failure:
             return r[t.ContainerValueMapping].fail(
@@ -130,7 +130,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             )
         http_request = request_result.value
         method = http_request.method.upper()
-        url = str(http_request.url)
+        url = http_request.url
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
             return r[t.ContainerValueMapping].fail(
@@ -161,11 +161,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             on_failure=lambda e: r[t.ContainerValueMapping].fail(
                 e or "Request execution failed",
             ),
-            on_success=lambda response: r[t.ContainerValueMapping].ok({
-                "status_code": response.status_code,
-                "headers": dict(response.headers),
-                "body": str(getattr(response, "text", response.body)),
-            }),
+            on_success=lambda response: r[t.ContainerValueMapping].ok(
+                self._response_to_dict(response),
+            ),
         )
 
     def stream_request(
@@ -176,7 +174,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         """Send streaming HTTP request."""
         self.logger.info(
             "Streaming request",
-            url=str(request.url),
+            url=request.url,
             method=request.method,
             chunk_size=chunk_size,
         )
@@ -188,7 +186,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                 headers_result.error or "Headers extraction failed",
             )
         method = request.method.upper()
-        url = str(request.url)
+        url = request.url
         request_kwargs = self._build_request_kwargs(
             method,
             url,
@@ -299,20 +297,17 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         if body is None:
             return kwargs
         content_type = self._get_content_type(headers)
-        if isinstance(body, dict):
-            try:
-                parsed_mapping = m.Api.MappingBodyModel(body=body)
-                if c.Api.ContentType.FORM in content_type:
-                    kwargs["data"] = str(parsed_mapping.body)
-                else:
-                    kwargs["data"] = str(parsed_mapping.body)
+        if isinstance(body, Mapping):
+            parsed_mapping = m.Api.MappingBodyModel(body=body)
+            if c.Api.ContentType.FORM in content_type:
+                kwargs["data"] = parsed_mapping.body
                 return kwargs
-            except ValidationError:
-                pass
+            kwargs["json_body"] = parsed_mapping.body
+            return kwargs
         if isinstance(body, bytes):
             kwargs["content"] = body
-        else:
-            kwargs["content"] = str(body)
+            return kwargs
+        kwargs["content"] = body.encode("utf-8")
         return kwargs
 
     def _build_response(
@@ -322,16 +317,44 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     ) -> r[m.Api.HttpResponse]:
         """Build FlextApiModels.HttpResponse from httpx.Response."""
         try:
-            content = httpx_response.read()
             response = m.Api.HttpResponse(
                 status_code=httpx_response.status_code,
                 headers=dict(httpx_response.headers),
-                body=content,
+                body=httpx_response.text,
                 request_id="",
             )
             return r[m.Api.HttpResponse].ok(response)
         except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
             return r[m.Api.HttpResponse].fail(f"Failed to build response: {e}")
+
+    def _response_to_dict(
+        self,
+        response: m.Api.HttpResponse,
+    ) -> t.ContainerValueMapping:
+        """Convert HTTP response model to protocol response mapping."""
+        body_value = self._response_body_to_value(response.body)
+        return {
+            "status_code": response.status_code,
+            "headers": response.headers,
+            "body": body_value,
+        }
+
+    def _response_body_to_value(
+        self,
+        body: t.Api.ResponseBody,
+    ) -> t.ContainerValue:
+        """Normalize response body to the protocol's ContainerValue contract."""
+        match body:
+            case None:
+                return ""
+            case str() as body_text:
+                return body_text
+            case bytes() as body_bytes:
+                return body_bytes.decode("utf-8")
+            case Mapping() as body_mapping:
+                return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(body_mapping)
+            case _:
+                return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(body)
 
     def _execute_with_retry(
         self,
@@ -436,19 +459,8 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     ) -> str:
         """Handle request exceptions and return error message."""
         error_msg = f"Unexpected error: {e}"
-        self.logger.error("Unexpected error", url=url, method=method, error=str(e))
+        self.logger.error("Unexpected error", url=url, method=method, error=error_msg)
         return error_msg
-
-    def _to_general_value(self, value: t.ContainerValue) -> t.ContainerValue:
-        if isinstance(value, list):
-            empty_list: Sequence[t.ContainerValue] = []
-            return empty_list
-        if isinstance(value, Mapping):
-            empty_mapping: Mapping[str, t.ContainerValue] = {}
-            return empty_mapping
-        if u.is_primitive(value):
-            return value
-        return str(value)
 
 
 __all__ = ["FlextWebProtocolPlugin"]

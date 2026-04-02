@@ -14,13 +14,9 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping
 
 from flext_core import r
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_api import m, t, u
-
-_JSON_HEADERS_ADAPTER: TypeAdapter[Mapping[str, t.ContainerValue]] = TypeAdapter(
-    t.ContainerValueMapping,
-)
 
 
 class FlextApiSettingsManager:
@@ -111,18 +107,21 @@ class FlextApiSettingsManager:
             return r[t.StrMapping].ok({})
         headers_value = self._config["headers"]
         if isinstance(headers_value, Mapping):
-            config_headers_dict: t.StrMapping = {
-                str(k): str(v) for k, v in headers_value.items()
-            }
-            return r[t.StrMapping].ok(config_headers_dict)
+            try:
+                validated_headers = t.Api.STR_MAPPING_ADAPTER.validate_python(
+                    headers_value,
+                )
+                return r[t.StrMapping].ok(validated_headers)
+            except ValidationError as e:
+                return r[t.StrMapping].fail(
+                    f"Failed to validate headers mapping: {e}",
+                )
         if isinstance(headers_value, str):
             try:
-                parsed_headers = _JSON_HEADERS_ADAPTER.validate_json(headers_value)
-                parsed_headers_dict: t.StrMapping = {
-                    str(key_obj): str(value_obj)
-                    for key_obj, value_obj in parsed_headers.items()
-                }
-                return r[t.StrMapping].ok(parsed_headers_dict)
+                validated_headers = t.Api.STR_MAPPING_ADAPTER.validate_json(
+                    headers_value,
+                )
+                return r[t.StrMapping].ok(validated_headers)
             except (ValidationError, TypeError) as e:
                 return r[t.StrMapping].fail(f"Failed to parse headers JSON: {e}")
         else:

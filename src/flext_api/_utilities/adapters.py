@@ -14,14 +14,9 @@ from collections.abc import Mapping
 
 import cbor2
 from flext_core import r
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_api import FlextApiSerializers, m, t, u
-
-_HEADERS_ADAPTER: TypeAdapter[t.StrMapping] = TypeAdapter(t.StrMapping)
-_HTTP_RESPONSE_BODY_ADAPTER: TypeAdapter[t.Api.ResponseBody] = TypeAdapter(
-    t.Api.ResponseBody,
-)
 
 
 class FlextApiAdapters:
@@ -54,7 +49,9 @@ class FlextApiAdapters:
                         try:
                             body_value = request.body.decode("utf-8")
                         except UnicodeDecodeError:
-                            body_value = "<binary data>"
+                            return r[t.JsonObject | m.Api.HttpRequest].fail(
+                                "Binary request body is not valid UTF-8 for WebSocket JSON transport",
+                            )
                     else:
                         body_value = request.body
                 message_body: t.ContainerValue = (
@@ -63,7 +60,7 @@ class FlextApiAdapters:
                 message: t.JsonObject = {
                     "type": "request",
                     "method": request.method,
-                    "url": str(request.url),
+                    "url": request.url,
                     "headers": dict(request.headers),
                     "body": message_body,
                 }
@@ -93,27 +90,30 @@ class FlextApiAdapters:
             try:
                 headers_raw = message.get("headers")
                 headers: t.StrMapping = {}
-                if isinstance(headers_raw, Mapping):
-                    try:
-                        headers = _HEADERS_ADAPTER.validate_python(headers_raw)
-                    except ValidationError:
-                        headers = {}
+                if headers_raw is not None:
+                    if not isinstance(headers_raw, Mapping):
+                        return r[m.Api.HttpResponse].fail(
+                            "WebSocket response headers must be a mapping",
+                        )
+                    headers = t.Api.STR_MAPPING_ADAPTER.validate_python(headers_raw)
                 status_code = message.get("status", 200)
                 if not isinstance(status_code, int):
                     status_code = 200
                 body = message.get("body")
-                try:
-                    response_body = _HTTP_RESPONSE_BODY_ADAPTER.validate_python(body)
-                except ValidationError:
-                    response_body = str(body) if body else None
-                response = m.Api.HttpResponse(
-                    status_code=status_code,
-                    headers=headers,
-                    body=response_body,
-                    request_id="",
-                )
+                response = m.Api.HttpResponse.model_validate({
+                    "status_code": status_code,
+                    "headers": headers,
+                    "body": body,
+                    "request_id": "",
+                })
                 return r[m.Api.HttpResponse].ok(response)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except (
+                ValidationError,
+                ValueError,
+                TypeError,
+                KeyError,
+                ConnectionError,
+            ) as e:
                 return r[m.Api.HttpResponse].fail(
                     f"WebSocket to HTTP adaptation failed: {e}",
                 )
@@ -178,7 +178,8 @@ class FlextApiAdapters:
         def convert_json_to_messagepack(data: t.JsonObject) -> r[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
-                packed_data = FlextApiSerializers.MessagePack.packb(data)
+                json_data = t.Api.JSON_VALUE_ADAPTER.validate_python(data)
+                packed_data = FlextApiSerializers.MessagePack.packb(json_data)
                 return u.try_(
                     lambda: bytes(packed_data),
                     catch=(TypeError, ValueError),

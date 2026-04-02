@@ -147,7 +147,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             options = m.Api.SendRequestSseOptions.model_validate(kwargs)
         except ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
-            return r[t.ContainerValueMapping].fail(str(details))
+            return r[t.ContainerValueMapping].fail(details)
         url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[t.ContainerValueMapping].fail(
@@ -324,14 +324,20 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         data: t.ContainerValue,
         retry: t.ContainerValue,
     ) -> Mapping[str, t.ContainerValue]:
-        parsed_id = str(event_id) if event_id else ""
-        parsed_type = str(event_type) if event_type else "message"
-        parsed_data = str(data) if data else ""
+        parsed_id = (
+            "" if not event_id else t.Api.STRING_ADAPTER.validate_python(event_id)
+        )
+        parsed_type = (
+            "message"
+            if not event_type
+            else t.Api.STRING_ADAPTER.validate_python(event_type)
+        )
+        parsed_data = "" if not data else t.Api.STRING_ADAPTER.validate_python(data)
         parsed_retry: int | None = None
-        if isinstance(retry, (int, float, str)):
+        if retry not in {None, ""}:
             try:
-                parsed_retry = int(retry)
-            except (TypeError, ValueError):
+                parsed_retry = t.Api.INTEGER_ADAPTER.validate_python(retry)
+            except ValidationError:
                 parsed_retry = None
         event_payload: MutableMapping[str, t.ContainerValue] = {
             "id": parsed_id,

@@ -57,7 +57,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
     def exists(self, key: str) -> r[bool]:
         """Check if key exists."""
         return u.try_(
-            lambda: str(key) in self._storage,
+            lambda: key in self._storage,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Exists check failed: {e}")
 
@@ -98,7 +98,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         def _set() -> bool:
             _ = timeout
             storage_data = dict(self._storage)
-            storage_data[str(key)] = value
+            storage_data[key] = value
             self._storage = storage_data
             self.logger.debug("Stored data with key: %s", key)
             return True

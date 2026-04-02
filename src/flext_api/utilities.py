@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, MutableMapping
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import TypeIs
@@ -115,48 +115,26 @@ class FlextApiUtilities(FlextWebUtilities):
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
                     headers_value = kwargs["headers"]
-                    if isinstance(headers_value, dict):
-                        merged.update({k: str(v) for k, v in headers_value.items()})
+                    if headers_value is not None:
+                        if not isinstance(headers_value, Mapping):
+                            return r[t.StrMapping].fail("Headers must be a mapping")
+                        validated_headers = t.Api.STR_MAPPING_ADAPTER.validate_python(
+                            headers_value,
+                        )
+                        merged.update(validated_headers)
                 return r[t.StrMapping].ok(merged)
 
             @staticmethod
             def to_json_value(value: t.ApiJsonValue) -> t.ContainerValue:
-                """Normalize arbitrary value to ContainerValue (None becomes empty string)."""
+                """Validate arbitrary value as ContainerValue using centralized Pydantic contracts."""
                 if value is None:
                     return ""
-                if isinstance(value, t.PRIMITIVES_TYPES):
-                    return value
-                if isinstance(value, Mapping):
-                    converted: MutableMapping[str, t.ContainerValue] = {}
-                    for key, item in value.items():
-                        converted[str(key)] = (
-                            FlextApiUtilities.Api.RequestUtils.to_json_value(item)
-                        )
-                    return converted
-                if isinstance(value, Sequence) and (not isinstance(value, str | bytes)):
-                    result: Sequence[t.ContainerValue] = [
-                        FlextApiUtilities.Api.RequestUtils.to_json_value(item)
-                        for item in value
-                    ]
-                    return result
-                if isinstance(value, bytes):
-                    return value.decode("utf-8", errors="replace")
-                return str(value)
+                return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(value)
 
             @staticmethod
             def to_request_body(value: t.ContainerValue) -> t.Api.RequestBody:
-                """Convert arbitrary value to RequestBody-compatible payload."""
-                if isinstance(value, str | bytes):
-                    return value
-                if isinstance(value, Mapping):
-                    normalized: MutableMapping[str, t.ContainerValue] = {}
-                    for key, item in value.items():
-                        key_str = str(key)
-                        normalized[key_str] = (
-                            FlextApiUtilities.Api.RequestUtils.to_json_value(item)
-                        )
-                    return normalized
-                return str(value)
+                """Validate arbitrary value as RequestBody using centralized Pydantic contracts."""
+                return t.Api.REQUEST_BODY_ADAPTER.validate_python(value)
 
             @staticmethod
             def validate_and_extract_timeout(

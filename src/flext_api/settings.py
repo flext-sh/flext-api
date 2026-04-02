@@ -13,13 +13,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Annotated
 
-from flext_core import FlextModels
 from pydantic import Field
 
-from flext_api import c, t
+from flext_api import c, m, t
 
 
-class FlextApiSettings(FlextModels.Value):
+class FlextApiSettings(m.Value):
     """Validated settings consumed by API facade and HTTP client."""
 
     base_url: Annotated[

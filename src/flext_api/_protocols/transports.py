@@ -74,7 +74,7 @@ class FlextApiTransports:
         def send(
             self,
             connection: str,
-            data: t.Api.RequestConfig | t.Api.RequestBody,
+            data: t.ContainerValueMapping | t.Api.RequestBody,
         ) -> r[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             try:
@@ -96,21 +96,21 @@ class FlextApiTransports:
                 match request_model.body:
                     case dict() as body_json:
                         response = client.request(
-                            method=str(request_model.method),
+                            method=request_model.method,
                             url=request_model.url,
                             headers=request_model.headers,
                             json=body_json,
                         )
                     case str() as body_text:
                         response = client.request(
-                            method=str(request_model.method),
+                            method=request_model.method,
                             url=request_model.url,
                             headers=request_model.headers,
                             content=body_text,
                         )
                     case bytes() as body_bytes:
                         response = client.request(
-                            method=str(request_model.method),
+                            method=request_model.method,
                             url=request_model.url,
                             headers=request_model.headers,
                             content=body_bytes,
@@ -124,7 +124,7 @@ class FlextApiTransports:
                     "headers": dict(response.headers),
                     "content": response.content,
                     "text": response.text,
-                    "url": str(response.url),
+                    "url": request_model.url,
                 })
             except (
                 ValueError,
@@ -137,7 +137,7 @@ class FlextApiTransports:
 
         def _extract_request_params(
             self,
-            data: t.Api.RequestConfig | t.Api.RequestBody,
+            data: t.ContainerValueMapping | t.Api.RequestBody,
             *,
             connection_url: str,
         ) -> r[m.Api.HttpRequest]:

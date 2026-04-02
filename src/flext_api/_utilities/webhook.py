@@ -16,11 +16,9 @@ from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, 
 from typing import TypeIs, override
 
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, r
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_api import c, p, t, u
-
-_JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
 
 class FlextWebhookHandler(FlextService[bool]):
@@ -59,9 +57,11 @@ class FlextWebhookHandler(FlextService[bool]):
         if FlextWebhookHandler._is_object_mapping(value):
             normalized: MutableMapping[str, t.ContainerValue] = {}
             for key, item in value.items():
-                normalized[str(key)] = FlextWebhookHandler._to_container_value(item)
+                normalized[t.Api.STRING_ADAPTER.validate_python(key)] = (
+                    FlextWebhookHandler._to_container_value(item)
+                )
             return normalized
-        return str(value)
+        return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(value)
 
     def __init__(
         self,
@@ -285,8 +285,8 @@ class FlextWebhookHandler(FlextService[bool]):
         attempts_raw = event.get("attempts")
         if attempts_raw is not None:
             try:
-                return int(str(attempts_raw))
-            except (ValueError, TypeError):
+                return t.Api.INTEGER_ADAPTER.validate_python(attempts_raw)
+            except ValidationError:
                 return 0
         return 0
 
@@ -309,7 +309,7 @@ class FlextWebhookHandler(FlextService[bool]):
                 "Webhook processing failed, added to retry queue",
                 event_id=event_id,
                 event_type=event_type,
-                error=str(process_result.error),
+                error=process_result.error or "Webhook processing failed",
             )
             return r[t.JsonObject].ok({
                 "event_id": event_id,
@@ -327,7 +327,7 @@ class FlextWebhookHandler(FlextService[bool]):
             "Webhook processing failed after max retries",
             event_id=event_id,
             event_type=event_type,
-            error=str(process_result.error),
+            error=process_result.error or "Webhook processing failed",
         )
         return r[t.JsonObject].fail(f"Processing failed: {process_result.error}")
 
@@ -373,14 +373,16 @@ class FlextWebhookHandler(FlextService[bool]):
                 payload_str = payload.decode("utf-8")
             else:
                 payload_str = payload
-            event_data: t.ContainerValue = _JSON_OBJECT_ADAPTER.validate_json(
+            event_data: t.ContainerValue = t.Api.CONTAINER_VALUE_ADAPTER.validate_json(
                 payload_str,
             )
             if not FlextWebhookHandler._is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON t.NormalizedValue")
             json_object: MutableMapping[str, t.ContainerValue] = {}
             for key, value in event_data.items():
-                json_object[str(key)] = FlextWebhookHandler._to_container_value(value)
+                json_object[t.Api.STRING_ADAPTER.validate_python(key)] = (
+                    FlextWebhookHandler._to_container_value(value)
+                )
             return r[t.JsonObject].ok(json_object)
         except (ValueError, TypeError, KeyError, ConnectionError, ValidationError) as e:
             return r[t.JsonObject].fail(f"Failed to parse payload: {e}")
@@ -413,7 +415,10 @@ class FlextWebhookHandler(FlextService[bool]):
             try:
                 result = handler(event_data)
                 if getattr(result, "is_failure", False):
-                    error = str(getattr(result, "error", "handler failed"))
+                    raw_error = getattr(result, "error", None)
+                    if raw_error is None:
+                        return r[bool].fail("handler failed")
+                    error = t.Api.STRING_ADAPTER.validate_python(raw_error)
                     return r[bool].fail(error)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bool].fail(f"Handler execution failed: {e}")
@@ -427,10 +432,11 @@ class FlextWebhookHandler(FlextService[bool]):
         attempts_value = self._get_attempts_count(event)
         event["attempts"] = attempts_value + 1
         delay = self._retry_delay * self._retry_backoff**attempts_value
+        event_id = t.Api.STRING_ADAPTER.validate_python(event["id"])
         FlextLogger(__name__).info(
             "Retrying event",
-            event_id=str(event["id"]),
-            attempt=str(event["attempts"]),
+            event_id=event_id,
+            attempt=event["attempts"],
             delay=delay,
         )
         time.sleep(delay)
