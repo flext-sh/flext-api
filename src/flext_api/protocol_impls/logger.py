@@ -9,9 +9,8 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import override
 
-from flext_core import FlextLogger
-
 from flext_api import t, u
+from flext_core import FlextLogger
 
 
 class FlextApiLoggerProtocolImplementation(t.Api.Logger.Logger):

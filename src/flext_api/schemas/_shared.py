@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import TypeIs
 
 import yaml
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import m, t, u
+from flext_core import r
 
 
 class FlextApiSchemaShared:

@@ -11,8 +11,6 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from flext_api._utilities import (
         adapters,
         app,
@@ -37,8 +35,9 @@ if _TYPE_CHECKING:
     from flext_api._utilities.settings_manager import FlextApiSettingsManager
     from flext_api._utilities.storage import FlextApiStorage
     from flext_api._utilities.webhook import FlextWebhookHandler
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextApiAdapters": "flext_api._utilities.adapters",
     "FlextApiApp": "flext_api._utilities.app",
     "FlextApiClient": "flext_api._utilities.client",

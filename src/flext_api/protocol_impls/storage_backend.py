@@ -10,9 +10,8 @@ from __future__ import annotations
 from collections.abc import MutableMapping, Sequence
 from typing import override
 
-from flext_core import FlextLogger, r
-
 from flext_api import p, t, u
+from flext_core import FlextLogger, r
 
 
 class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):

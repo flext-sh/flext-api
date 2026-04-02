@@ -24,10 +24,10 @@ import time
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import ClassVar, Self
 
-from flext_core import FlextLogger, r
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api import m, t, u
+from flext_core import FlextLogger, r
 
 
 class FlextApiStorage:

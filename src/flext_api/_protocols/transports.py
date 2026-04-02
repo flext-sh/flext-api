@@ -14,9 +14,9 @@ from __future__ import annotations
 from typing import override
 
 import httpx
-from flext_core import r
 
 from flext_api import c, m, p, t
+from flext_core import r
 
 
 class FlextApiTransports:

@@ -15,10 +15,10 @@ from collections import deque
 from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, Sequence
 from typing import TypeIs, override
 
-from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, r
 from pydantic import ValidationError
 
 from flext_api import c, p, t, u
+from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, r
 
 
 class FlextWebhookHandler(FlextService[bool]):

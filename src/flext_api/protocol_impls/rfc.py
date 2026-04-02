@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import FlextApiBaseProtocolImplementation, c, m, t
+from flext_core import r
 
 
 class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
@@ -112,9 +112,9 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             json_data = {}
             for key, value in data.items():
                 json_data[key] = value
-        web_headers: Mapping[str, str | t.StrSequence] | None = None
+        web_headers: t.AttributeMapping | None = None
         if headers is not None:
-            web_headers = dict(headers)
+            web_headers = headers
         success_response: MutableMapping[str, t.ContainerValue] = {
             "status_code": status_code,
         }

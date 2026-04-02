@@ -13,10 +13,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
+from flext_api import c, t
 from flext_core import r
 from flext_web import FlextWebProtocols
-
-from flext_api import c, t
 
 
 class FlextApiProtocols(FlextWebProtocols):

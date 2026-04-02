@@ -19,8 +19,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext_core import r
-
 from flext_api import (
     FlextApiPlugins,
     is_object_mapping,
@@ -31,6 +29,7 @@ from flext_api import (
     t,
     u,
 )
+from flext_core import r
 
 
 class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):

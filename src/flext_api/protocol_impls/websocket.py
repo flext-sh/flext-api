@@ -22,11 +22,11 @@ from collections.abc import Callable, Mapping, MutableMapping, MutableSequence
 from typing import ClassVar, override
 
 import websockets
-from flext_core import r
 from pydantic import ConfigDict, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, t
+from flext_core import r
 
 
 class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):

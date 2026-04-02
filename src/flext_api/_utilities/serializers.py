@@ -6,10 +6,10 @@ Provides type-safe wrappers for untyped serialization libraries like msgpack.
 from __future__ import annotations
 
 import msgpack
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import t
+from flext_core import r
 
 
 class FlextApiSerializers:

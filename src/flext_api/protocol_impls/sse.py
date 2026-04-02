@@ -17,11 +17,11 @@ from collections.abc import (
 from typing import override
 
 import httpx
-from flext_core import r
 from httpx_sse import connect_sse
 from pydantic import ValidationError
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, t
+from flext_core import r
 
 
 class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):

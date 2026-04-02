@@ -12,7 +12,6 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.unit import test_serializers, test_smoke
     from tests.unit.test_serializers import TestMessagePackUnpackb
     from tests.unit.test_smoke import (
@@ -23,7 +22,7 @@ if _TYPE_CHECKING:
         test_package_imports_main_facade,
     )
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "TestConstants": "tests.unit.test_smoke",
     "TestFacadeInheritance": "tests.unit.test_smoke",
     "TestMessagePackUnpackb": "tests.unit.test_serializers",

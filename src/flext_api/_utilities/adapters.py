@@ -13,10 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import cbor2
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import FlextApiSerializers, m, t, u
+from flext_core import r
 
 
 class FlextApiAdapters:

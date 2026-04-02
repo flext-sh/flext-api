@@ -9,11 +9,11 @@ from enum import StrEnum
 from typing import TypeIs
 from urllib.parse import urlparse
 
-from flext_core import r
-from flext_web import FlextWebUtilities
 from pydantic import BeforeValidator
 
 from flext_api import t
+from flext_core import r
+from flext_web import FlextWebUtilities
 
 
 class FlextApiUtilities(FlextWebUtilities):

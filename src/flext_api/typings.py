@@ -14,8 +14,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from flext_web import FlextWebTypes
 from pydantic import TypeAdapter
+
+from flext_web import FlextWebTypes
 
 
 class FlextApiTypes(FlextWebTypes):

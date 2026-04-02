@@ -12,10 +12,10 @@ from types import TracebackType
 from typing import Self, override
 
 import httpx
-from flext_core import FlextLogger, r
 from pydantic import ValidationError
 
 from flext_api import c, m, p, t
+from flext_core import FlextLogger, r
 
 
 class FlextWebClientImplementation(p.Api.Client.HttpClient):

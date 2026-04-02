@@ -13,10 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping
 from typing import ClassVar, Self, override
 
-from flext_core import FlextLogger, r, s
 from pydantic import ConfigDict
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
+from flext_core import FlextLogger, r, s
 
 
 class FlextApi(s[FlextApiSettings]):
@@ -229,9 +229,7 @@ class FlextApi(s[FlextApiSettings]):
         r[HttpResponse]: Response or error.
 
         """
-        request_kwargs_dict: Mapping[str, t.ApiJsonValue] | None = (
-            dict(request_kwargs.items()) if request_kwargs is not None else None
-        )
+        request_kwargs_dict: Mapping[str, t.ApiJsonValue] | None = request_kwargs
         body_result = u.Api.RequestUtils.extract_body_from_kwargs(
             data,
             request_kwargs_dict,

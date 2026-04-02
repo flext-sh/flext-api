@@ -13,9 +13,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import MutableMapping, Sequence
 
-from flext_core import FlextLogger, r
-
 from flext_api import p, t
+from flext_core import FlextLogger, r
 
 
 class _FlextApiPluginBase:

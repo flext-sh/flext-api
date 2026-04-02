@@ -16,7 +16,6 @@ from collections.abc import Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_web import FlextWebModels
 from pydantic import (
     BeforeValidator,
     ConfigDict,
@@ -26,6 +25,7 @@ from pydantic import (
 )
 
 from flext_api import c, t, u
+from flext_web import FlextWebModels
 
 
 class FlextApiModels(FlextWebModels):
@@ -527,10 +527,7 @@ class FlextApiModels(FlextWebModels):
             config_max_retries = (
                 max_retries if max_retries is not None else c.MAX_RETRY_ATTEMPTS
             )
-            if headers is None:
-                config_headers: t.StrMapping = {}
-            else:
-                config_headers = dict(headers.items())
+            config_headers: t.StrMapping = headers if headers is not None else {}
 
             return cls.ClientConfig(
                 base_url=config_base_url,
@@ -566,10 +563,7 @@ class FlextApiModels(FlextWebModels):
             """
             # Use model defaults - body defaults to empty dict, not None
             response_body: t.Api.ResponseBody = body if body is not None else {}
-            if headers is None:
-                response_headers: t.StrMapping = {}
-            else:
-                response_headers = dict(headers.items())
+            response_headers: t.StrMapping = headers if headers is not None else {}
             response_id: str = request_id if request_id is not None else ""
 
             return cls.HttpResponse(

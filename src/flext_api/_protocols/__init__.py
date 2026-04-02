@@ -11,13 +11,12 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from flext_api._protocols import plugins, transports
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.transports import FlextApiTransports
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextApiPlugins": "flext_api._protocols.plugins",
     "FlextApiTransports": "flext_api._protocols.transports",
     "plugins": "flext_api._protocols.plugins",

@@ -22,10 +22,10 @@ from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, 
 from typing import override
 
 from fastapi import FastAPI
-from flext_core import FlextLogger, FlextService, e, r
 from pydantic import ValidationError
 
 from flext_api import c, p, t
+from flext_core import FlextLogger, FlextService, e, r
 
 
 class FlextApiServer(FlextService[bool]):
@@ -95,7 +95,7 @@ class FlextApiServer(FlextService[bool]):
             route_key = f"{prefix}{method}:{path}" if prefix else f"{method}:{path}"
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
-            options_json: t.ConfigurationMapping = dict(options.items())
+            options_json: t.ConfigurationMapping = options
             route_data: MutableMapping[
                 str,
                 t.ContainerValue
@@ -418,7 +418,7 @@ class FlextApiServer(FlextService[bool]):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
-        options_typed: t.ConfigurationMapping = dict(options.items())
+        options_typed: t.ConfigurationMapping = options
         return self._route_registry.register(
             "GRAPHQL",
             path,
@@ -466,7 +466,7 @@ class FlextApiServer(FlextService[bool]):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
-        options_typed: t.ConfigurationMapping = dict(options.items())
+        options_typed: t.ConfigurationMapping = options
         return self._route_registry.register(
             method,
             path,
@@ -483,7 +483,7 @@ class FlextApiServer(FlextService[bool]):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
-        options_typed: t.ConfigurationMapping = dict(options.items())
+        options_typed: t.ConfigurationMapping = options
         return self._route_registry.register(
             "SSE",
             path,
@@ -500,7 +500,7 @@ class FlextApiServer(FlextService[bool]):
         **options: t.Scalar,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
-        options_typed: t.ConfigurationMapping = dict(options.items())
+        options_typed: t.ConfigurationMapping = options
         return self._route_registry.register(
             "WS",
             path,

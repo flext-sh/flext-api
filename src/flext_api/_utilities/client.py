@@ -14,10 +14,10 @@ from __future__ import annotations
 from typing import Self, override
 
 import httpx
-from flext_core import r, s
 from pydantic import ValidationError
 
 from flext_api import FlextApiSettings, c, m, t
+from flext_core import r, s
 
 
 class FlextApiClient(s[FlextApiSettings]):

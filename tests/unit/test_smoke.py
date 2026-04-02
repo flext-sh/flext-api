@@ -22,6 +22,7 @@ from flext_api import (
     FlextApiSerializers,
     c,
     m,
+    t,
 )
 
 
@@ -113,7 +114,7 @@ class TestSerializers:
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """Pack then unpack returns original data."""
-        original: Mapping[str, str | int] = {"hello": "world", "count": 42}
+        original: t.HeaderMapping = {"hello": "world", "count": 42}
         packed = FlextApiSerializers.MessagePack.packb(original)
         result = FlextApiSerializers.MessagePack.unpackb(packed)
         tm.that(result.is_success, eq=True)

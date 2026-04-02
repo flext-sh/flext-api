@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import m, t, u
+from flext_core import r
 
 
 class FlextApiSettingsManager:
@@ -39,7 +39,7 @@ class FlextApiSettingsManager:
 
     def configure(
         self,
-        config: Mapping[str, str | float | bool] | None = None,
+        config: t.ScalarMapping | None = None,
     ) -> r[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
@@ -178,7 +178,7 @@ class FlextApiSettingsManager:
             return r[float].fail(f"{label} must be positive, got: {float_value}")
         return r[float].ok(float_value)
 
-    def _normalize_value(self, key: str, *, value: str | float | bool) -> r[t.Scalar]:
+    def _normalize_value(self, key: str, *, value: t.Scalar) -> r[t.Scalar]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
             timeout_result = u.try_(
@@ -208,7 +208,7 @@ class FlextApiSettingsManager:
 
     def _process_config(
         self,
-        config: Mapping[str, str | float | bool],
+        config: t.ScalarMapping,
     ) -> r[t.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
         processed: MutableMapping[str, t.ContainerValue] = {}

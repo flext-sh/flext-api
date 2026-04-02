@@ -8,8 +8,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
-from flext_core.lazy import install_lazy_exports, merge_lazy_imports
-
 from flext_api.__version__ import (
     __author__,
     __author_email__,
@@ -20,11 +18,9 @@ from flext_api.__version__ import (
     __version__,
     __version_info__,
 )
+from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-    from flext_web import d, e, h, r, s, x
-
     from flext_api import (
         _protocols,
         _utilities,
@@ -115,8 +111,10 @@ if _TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, FlextApiTypes as t
     from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
+    from flext_core import FlextTypes
+    from flext_web import d, e, h, r, s, x
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
     (
         "flext_api._protocols",
         "flext_api._utilities",

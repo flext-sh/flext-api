@@ -21,10 +21,10 @@ from pathlib import Path
 from typing import TypeIs, override
 
 import yaml
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import FlextApiPlugins, t
+from flext_core import r
 
 
 class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):

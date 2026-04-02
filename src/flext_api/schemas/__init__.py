@@ -23,8 +23,6 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from flext_api.schemas import _shared, asyncapi, jsonschema, openapi
     from flext_api.schemas._shared import (
         FlextApiSchemaShared,
@@ -41,8 +39,9 @@ if _TYPE_CHECKING:
     from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
     from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextApiAsyncapiSchemaValidator": "flext_api.schemas.asyncapi",
     "FlextApiJsonschemaValidator": "flext_api.schemas.jsonschema",
     "FlextApiOpenapiSchemaValidator": "flext_api.schemas.openapi",

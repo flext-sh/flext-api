@@ -19,10 +19,10 @@ from collections.abc import Iterator, Mapping, MutableMapping
 from typing import override
 
 import httpx
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_api import FlextApiRfcProtocolImplementation, FlextApiTransports, c, m, t, u
+from flext_core import r
 
 
 class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
