@@ -162,7 +162,7 @@ class FlextApiSettingsManager:
         if key not in self._config:
             return r[float].fail(f"{label} not specified in configuration")
         raw_value = self._config[key]
-        if isinstance(raw_value, t.Numeric):
+        if isinstance(raw_value, t.NUMERIC_TYPES) and not isinstance(raw_value, bool):
             float_value = float(raw_value)
         elif isinstance(raw_value, str):
             timeout_result = u.try_(

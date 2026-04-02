@@ -112,7 +112,12 @@ if _TYPE_CHECKING:
     from flext_api.typings import FlextApiTypes, FlextApiTypes as t
     from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
     from flext_core import FlextTypes
-    from flext_web import d, e, h, r, s, x
+    from flext_core.decorators import FlextDecorators as d
+    from flext_core.exceptions import FlextExceptions as e
+    from flext_core.handlers import FlextHandlers as h
+    from flext_core.mixins import FlextMixins as x
+    from flext_core.result import FlextResult as r
+    from flext_core.service import FlextService as s
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
     (
@@ -136,17 +141,17 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "api": "flext_api.api",
         "c": ("flext_api.constants", "FlextApiConstants"),
         "constants": "flext_api.constants",
-        "d": "flext_web",
-        "e": "flext_web",
+        "d": ("flext_core.decorators", "FlextDecorators"),
+        "e": ("flext_core.exceptions", "FlextExceptions"),
         "errors": "flext_api.errors",
-        "h": "flext_web",
+        "h": ("flext_core.handlers", "FlextHandlers"),
         "m": ("flext_api.models", "FlextApiModels"),
         "models": "flext_api.models",
         "p": ("flext_api.protocols", "FlextApiProtocols"),
         "protocol_impls": "flext_api.protocol_impls",
         "protocols": "flext_api.protocols",
-        "r": "flext_web",
-        "s": "flext_web",
+        "r": ("flext_core.result", "FlextResult"),
+        "s": ("flext_core.service", "FlextService"),
         "schemas": "flext_api.schemas",
         "server": "flext_api.server",
         "settings": "flext_api.settings",
@@ -154,7 +159,7 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "typings": "flext_api.typings",
         "u": ("flext_api.utilities", "FlextApiUtilities"),
         "utilities": "flext_api.utilities",
-        "x": "flext_web",
+        "x": ("flext_core.mixins", "FlextMixins"),
     },
 )
 

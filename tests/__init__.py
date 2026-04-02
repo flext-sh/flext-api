@@ -11,9 +11,13 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _TYPE_CHECKING:
-    from flext_tests import d, e, h, r, s, x
-
     from flext_core import FlextTypes
+    from flext_core.decorators import FlextDecorators as d
+    from flext_core.exceptions import FlextExceptions as e
+    from flext_core.handlers import FlextHandlers as h
+    from flext_core.mixins import FlextMixins as x
+    from flext_core.result import FlextResult as r
+    from flext_core.service import FlextService as s
     from tests import constants, models, protocols, typings, unit, utilities
     from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
     from tests.models import FlextApiTestModels, FlextApiTestModels as m
@@ -41,21 +45,21 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "FlextApiTestUtilities": "tests.utilities",
         "c": ("tests.constants", "FlextApiTestConstants"),
         "constants": "tests.constants",
-        "d": "flext_tests",
-        "e": "flext_tests",
-        "h": "flext_tests",
+        "d": ("flext_core.decorators", "FlextDecorators"),
+        "e": ("flext_core.exceptions", "FlextExceptions"),
+        "h": ("flext_core.handlers", "FlextHandlers"),
         "m": ("tests.models", "FlextApiTestModels"),
         "models": "tests.models",
         "p": ("tests.protocols", "FlextApiTestProtocols"),
         "protocols": "tests.protocols",
-        "r": "flext_tests",
-        "s": "flext_tests",
+        "r": ("flext_core.result", "FlextResult"),
+        "s": ("flext_core.service", "FlextService"),
         "t": ("tests.typings", "FlextApiTestTypes"),
         "typings": "tests.typings",
         "u": ("tests.utilities", "FlextApiTestUtilities"),
         "unit": "tests.unit",
         "utilities": "tests.utilities",
-        "x": "flext_tests",
+        "x": ("flext_core.mixins", "FlextMixins"),
     },
 )
 

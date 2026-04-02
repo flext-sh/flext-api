@@ -9,11 +9,11 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import override
 
-from flext_api import t, u
+from flext_api import p, t, u
 from flext_core import FlextLogger
 
 
-class FlextApiLoggerProtocolImplementation(t.Api.Logger.Logger):
+class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
     """Logger implementation conforming to Logger."""
 
     def __init__(self) -> None:
