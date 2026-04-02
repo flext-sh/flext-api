@@ -9,8 +9,9 @@ SPDX-License-Identifier: Proprietary
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
 from importlib.metadata import metadata
+
+from flext_api import t
 
 _metadata_map: t.MutableStrMapping = {}
 try:

@@ -105,9 +105,7 @@ class FlextWebhookHandler(FlextService[bool]):
             str, MutableSequence[Callable[..., None]]
         ] = {}
         self._event_queue = deque(maxlen=1000)
-        self._delivery_confirmations: MutableMapping[
-            str, t.ContainerValueMapping
-        ] = {}
+        self._delivery_confirmations: MutableMapping[str, t.ContainerValueMapping] = {}
         self._retry_queue = deque(maxlen=500)
 
     @override

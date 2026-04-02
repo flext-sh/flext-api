@@ -20,6 +20,7 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
+from flext_api import t
 from flext_web import FlextWebConstants
 
 
