@@ -14,6 +14,12 @@ from flext_api import FlextApiConstants
 class FlextApiTestConstants(FlextTestsConstants, FlextApiConstants):
     """Test constants for flext-api."""
 
+    class Api(FlextApiConstants.Api):
+        """Api domain test constants."""
+
+        class Tests:
+            """Test-specific constants."""
+
 
 c = FlextApiTestConstants
 __all__ = ["FlextApiTestConstants", "c"]

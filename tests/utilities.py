@@ -14,6 +14,12 @@ from flext_api import FlextApiUtilities
 class FlextApiTestUtilities(FlextTestsUtilities, FlextApiUtilities):
     """Test utilities for flext-api."""
 
+    class Api(FlextApiUtilities.Api):
+        """Api domain test utilities."""
+
+        class Tests:
+            """Test-specific utilities."""
+
 
 u = FlextApiTestUtilities
 __all__ = ["FlextApiTestUtilities", "u"]
