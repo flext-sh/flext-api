@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, MutableMapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TypeIs
 
@@ -43,7 +43,7 @@ class FlextApiSchemaShared:
     @staticmethod
     def is_object_mapping(
         value: t.ContainerValue,
-    ) -> TypeIs[Mapping[str, t.ContainerValue]]:
+    ) -> TypeIs[t.ContainerValueMapping]:
         """Type guard to check if value is a mapping of container values.
 
         Args:
@@ -94,7 +94,7 @@ class FlextApiSchemaShared:
 
     @staticmethod
     def normalize_json_object(
-        value: Mapping[str, t.ContainerValue],
+        value: t.ContainerValueMapping,
     ) -> t.JsonObject:
         """Normalize a mapping to a JSON t.NormalizedValue.
 
@@ -107,7 +107,7 @@ class FlextApiSchemaShared:
             Normalized JSON t.NormalizedValue
 
         """
-        normalized: MutableMapping[str, t.ContainerValue] = {}
+        normalized: t.MutableContainerValueMapping = {}
         for key, item in value.items():
             normalized[key] = FlextApiSchemaShared.to_general_value(item)
         return normalized
@@ -121,7 +121,7 @@ class FlextApiSchemaShared:
     def parse_dict_field(
         value: t.ApiJsonValue,
         field_name: str,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[t.ContainerValueMapping]:
         """Parse and validate a dictionary field.
 
         Args:

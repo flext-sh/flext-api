@@ -222,7 +222,7 @@ class FlextApiPlugins:
 
         def shutdown_all(self) -> r[bool]:
             """Shutdown and unload all plugins."""
-            failed_plugins: Sequence[str] = [
+            failed_plugins: t.StrSequence = [
                 plugin_name
                 for plugin_name in list(self._loaded_plugins.keys())
                 if self.unload_plugin(plugin_name).is_failure

@@ -110,7 +110,7 @@ class FlextApiUtilities(FlextWebUtilities):
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
             ) -> r[t.StrMapping]:
                 """Merge headers from headers dict and kwargs."""
-                merged: MutableMapping[str, str] = {}
+                merged: t.MutableStrMapping = {}
                 if headers:
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
@@ -157,7 +157,7 @@ class FlextApiUtilities(FlextWebUtilities):
                         return r[float].fail(f"Invalid timeout value: {timeout}")
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
-                    if not isinstance(timeout_value, int | float | str):
+                    if not isinstance(timeout_value, t.Numeric | str):
                         return r[float].fail(f"Invalid timeout value: {timeout_value}")
                     try:
                         timeout_float = float(timeout_value)
@@ -178,7 +178,7 @@ class FlextApiUtilities(FlextWebUtilities):
             error_code: str | None = None,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Build error response - returns plain dict."""
-            error_detail: MutableMapping[str, t.ContainerValue] = {
+            error_detail: t.MutableContainerValueMapping = {
                 "message": message,
                 "status_code": status_code,
             }
@@ -246,7 +246,7 @@ class FlextApiUtilities(FlextWebUtilities):
             total_pages = (
                 (total_items + page_size - 1) // page_size if page_size > 0 else 0
             )
-            pagination_info: Mapping[str, t.ContainerValue] = {
+            pagination_info: t.ContainerValueMapping = {
                 "page": page,
                 "page_size": page_size,
                 "total": total_items,
@@ -286,11 +286,11 @@ class FlextApiUtilities(FlextWebUtilities):
             try:
                 page_str = params.get("page", "1")
                 page_size_str = params.get("page_size", "20")
-                if isinstance(page_str, int | float | str):
+                if isinstance(page_str, t.Numeric | str):
                     page = int(page_str)
                 else:
                     return r[t.IntPair].fail("Invalid page parameter")
-                if isinstance(page_size_str, int | float | str):
+                if isinstance(page_size_str, t.Numeric | str):
                     page_size = int(page_size_str)
                 else:
                     return r[t.IntPair].fail("Invalid page_size parameter")

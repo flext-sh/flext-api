@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 import pytest
 from flext_tests import tm
 from pydantic import ValidationError
@@ -107,7 +105,7 @@ class TestSerializers:
 
     def test_packb_produces_bytes(self) -> None:
         """MessagePack.packb returns non-empty bytes for valid input."""
-        payload: Mapping[str, str] = {"key": "value"}
+        payload: t.StrMapping = {"key": "value"}
         packed = FlextApiSerializers.MessagePack.packb(payload)
         assert packed, "packb should return non-empty bytes"
         tm.that(len(packed) > 0, eq=True)

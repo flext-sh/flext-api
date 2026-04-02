@@ -74,7 +74,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         self._strict_mode = strict_mode
         self._validate_examples = validate_examples
         self._validate_responses = validate_responses
-        self._cached_schemas: Mapping[str, Mapping[str, t.ContainerValue]] = {}
+        self._cached_schemas: Mapping[str, t.ContainerValueMapping] = {}
 
     def get_supported_schemas(self) -> t.StrSequence:
         """Get list of supported schema types.
@@ -242,7 +242,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_components(
         self,
-        components: Mapping[str, t.ContainerValue],
+        components: t.ContainerValueMapping,
     ) -> r[bool]:
         """Validate OpenAPI components t.NormalizedValue.
 
@@ -313,7 +313,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_operation(
         self,
-        operation: Mapping[str, t.ContainerValue],
+        operation: t.ContainerValueMapping,
         path: str,
         method: str,
     ) -> r[bool]:
@@ -428,7 +428,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_scheme_type_requirements(
         self,
         scheme_name: str,
-        scheme: Mapping[str, t.ContainerValue],
+        scheme: t.ContainerValueMapping,
         scheme_type: str,
     ) -> r[bool]:
         """Validate type-specific requirements for security schemes."""
@@ -451,7 +451,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_security_schemes(
         self,
-        security_schemes: Mapping[str, t.ContainerValue],
+        security_schemes: t.ContainerValueMapping,
     ) -> r[bool]:
         """Validate OpenAPI security schemes.
 
@@ -479,7 +479,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_security_schemes_structure(
         self,
         security_schemes: t.ContainerValue,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[t.ContainerValueMapping]:
         """Validate basic structure of security schemes."""
         schemes_result = parse_dict_field(security_schemes, "security_schemes")
         return schemes_result.fold(

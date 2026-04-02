@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping
+from collections.abc import Mapping
 from typing import ClassVar, Self, override
 
 from pydantic import ConfigDict
@@ -190,7 +190,7 @@ class FlextApi(s[FlextApiSettings]):
         if not isinstance(params_value, Mapping):
             return r[t.Api.WebParams].fail(f"Invalid params type: {type(params_value)}")
         params_mapping: Mapping[str, t.ApiJsonValue] = params_value
-        params_result: MutableMapping[str, str] = {}
+        params_result: t.MutableStrMapping = {}
         for k, v in params_mapping.items():
             if isinstance(v, str):
                 params_result[k] = v

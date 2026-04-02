@@ -221,7 +221,7 @@ class FlextApiConstants(FlextWebConstants):
         "Default retry count."
         "Rate limit requests per window."
         "Rate limit window in seconds."
-        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
+        VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
             "MAX_URL_LENGTH": MAX_URL_LENGTH,
             "MIN_TIMEOUT": 0.1,
             "MAX_TIMEOUT": 300.0,

@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping
+from collections.abc import MutableMapping
 from typing import ClassVar
 
 from flext_api import FlextApiPlugins, p, t
@@ -93,7 +93,7 @@ class FlextApiRegistry(FlextRegistry):
             return r[FlextApiPlugins.Protocol].fail(result.error)
         return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
 
-    def get_registry_status(self) -> r[Mapping[str, int]]:
+    def get_registry_status(self) -> r[t.IntMapping]:
         """Get current registry status with plugin counts."""
         protocols = self.list_plugins(self.PROTOCOLS).value or []
         schemas = self.list_plugins(self.SCHEMAS).value or []
@@ -109,7 +109,7 @@ class FlextApiRegistry(FlextRegistry):
             + len(transports)
             + len(auth_providers),
         }
-        return r[Mapping[str, int]].ok(status)
+        return r[t.IntMapping].ok(status)
 
     def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name."""

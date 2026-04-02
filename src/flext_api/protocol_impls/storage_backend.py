@@ -75,13 +75,13 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
             return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
     @override
-    def keys(self) -> r[Sequence[str]]:
+    def keys(self) -> r[t.StrSequence]:
         """Get all keys."""
         try:
-            keys_list: Sequence[str] = list(self._storage)
-            return r[Sequence[str]].ok(keys_list)
+            keys_list: t.StrSequence = list(self._storage)
+            return r[t.StrSequence].ok(keys_list)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Sequence[str]].fail(f"Keys operation failed: {e}")
+            return r[t.StrSequence].fail(f"Keys operation failed: {e}")
 
     @override
     def set(

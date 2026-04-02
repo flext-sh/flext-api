@@ -33,9 +33,9 @@ class FlextWebhookHandler(FlextService[bool]):
     _retry_delay: float
     _retry_backoff: float
     _event_handlers: MutableMapping[str, MutableSequence[Callable[..., None]]]
-    _event_queue: deque[MutableMapping[str, t.ContainerValue]]
-    _delivery_confirmations: MutableMapping[str, Mapping[str, t.ContainerValue]]
-    _retry_queue: deque[MutableMapping[str, t.ContainerValue]]
+    _event_queue: deque[t.MutableContainerValueMapping]
+    _delivery_confirmations: MutableMapping[str, t.ContainerValueMapping]
+    _retry_queue: deque[t.MutableContainerValueMapping]
 
     @staticmethod
     @override
@@ -55,7 +55,7 @@ class FlextWebhookHandler(FlextService[bool]):
         if FlextWebhookHandler._is_object_list(value):
             return [FlextWebhookHandler._to_container_value(item) for item in value]
         if FlextWebhookHandler._is_object_mapping(value):
-            normalized: MutableMapping[str, t.ContainerValue] = {}
+            normalized: t.MutableContainerValueMapping = {}
             for key, item in value.items():
                 normalized[t.Api.STRING_ADAPTER.validate_python(key)] = (
                     FlextWebhookHandler._to_container_value(item)
@@ -106,7 +106,7 @@ class FlextWebhookHandler(FlextService[bool]):
         ] = {}
         self._event_queue = deque(maxlen=1000)
         self._delivery_confirmations: MutableMapping[
-            str, Mapping[str, t.ContainerValue]
+            str, t.ContainerValueMapping
         ] = {}
         self._retry_queue = deque(maxlen=500)
 
@@ -210,7 +210,7 @@ class FlextWebhookHandler(FlextService[bool]):
             )
         event_type = event_type_result.value
         event_id = self._extract_event_id(event_data)
-        event: MutableMapping[str, t.ContainerValue] = {
+        event: t.MutableContainerValueMapping = {
             "id": event_id,
             "type": event_type,
             "data": event_data,
@@ -292,7 +292,7 @@ class FlextWebhookHandler(FlextService[bool]):
 
     def _handle_processing_failure(
         self,
-        event: MutableMapping[str, t.ContainerValue],
+        event: t.MutableContainerValueMapping,
         event_id: str,
         event_type: str,
         process_result: r[bool],
@@ -315,7 +315,7 @@ class FlextWebhookHandler(FlextService[bool]):
                 "event_id": event_id,
                 "status": "queued_for_retry",
             })
-        failure_confirmation: MutableMapping[str, t.ContainerValue] = {
+        failure_confirmation: t.MutableContainerValueMapping = {
             "event_type": event_type,
             "timestamp": time.time(),
             "status": "failed",
@@ -378,7 +378,7 @@ class FlextWebhookHandler(FlextService[bool]):
             )
             if not FlextWebhookHandler._is_object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON t.NormalizedValue")
-            json_object: MutableMapping[str, t.ContainerValue] = {}
+            json_object: t.MutableContainerValueMapping = {}
             for key, value in event_data.items():
                 json_object[t.Api.STRING_ADAPTER.validate_python(key)] = (
                     FlextWebhookHandler._to_container_value(value)
@@ -426,7 +426,7 @@ class FlextWebhookHandler(FlextService[bool]):
 
     def _process_single_retry(
         self,
-        event: MutableMapping[str, t.ContainerValue],
+        event: t.MutableContainerValueMapping,
     ) -> t.Pair[bool, bool]:
         """Process a single retry event. Returns (success, should_retry)."""
         attempts_value = self._get_attempts_count(event)

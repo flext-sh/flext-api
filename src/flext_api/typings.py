@@ -83,7 +83,6 @@ class FlextApiTypes(FlextWebTypes):
         ]
         type StorageDict = Mapping[str, FlextWebTypes.OptionalPrimitive]
         type CacheDict = Mapping[str, FlextWebTypes.Primitives]
-        type MetricsDict = Mapping[str, int]
         CONTAINER_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValue] = (
             TypeAdapter(
                 FlextWebTypes.ContainerValue,

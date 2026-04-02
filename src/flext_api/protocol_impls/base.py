@@ -119,9 +119,9 @@ class FlextApiBaseProtocolImplementation:
 
     def send_request(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: t.ContainerValueMapping,
         **kwargs: t.Scalar,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[t.ContainerValueMapping]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -211,8 +211,8 @@ class FlextApiBaseProtocolImplementation:
 
     def _validate_request(
         self,
-        request: Mapping[str, t.ContainerValue],
-    ) -> r[Mapping[str, t.ContainerValue]]:
+        request: t.ContainerValueMapping,
+    ) -> r[t.ContainerValueMapping]:
         """Validate request dictionary.
 
         Args:

@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Annotated
 
 from pydantic import Field
@@ -38,11 +37,11 @@ class FlextApiSettings(m.Value):
         Field(description="Enable TLS certificate check"),
     ] = True
     default_headers: Annotated[
-        Mapping[str, str],
+        t.StrMapping,
         Field(description="Default headers applied to all requests"),
     ] = Field(default_factory=dict)
     headers: Annotated[
-        Mapping[str, str],
+        t.StrMapping,
         Field(description="Compatibility headers bag"),
     ] = Field(default_factory=dict)
     log_requests: Annotated[

@@ -262,10 +262,10 @@ class FlextApiStorage:
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
-    def get_storage_metrics(self) -> r[t.Api.MetricsDict]:
+    def get_storage_metrics(self) -> r[t.IntMapping]:
         """Get complete storage metrics."""
 
-        def _get_metrics() -> t.Api.MetricsDict:
+        def _get_metrics() -> t.IntMapping:
             return {
                 "total_operations": self._operations_count,
                 "cache_hits": self._stats.cache_hits,
@@ -427,7 +427,7 @@ class FlextApiStorage:
             metadata.value if metadata.value is not None else ""
         )
         ttl_json: float = metadata.ttl if metadata.ttl is not None else 0.0
-        metadata_dict: Mapping[str, t.ContainerValue] = {
+        metadata_dict: t.ContainerValueMapping = {
             "value": value_json,
             "timestamp": metadata.timestamp,
             "ttl": ttl_json,

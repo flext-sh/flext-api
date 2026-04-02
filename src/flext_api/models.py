@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
@@ -581,7 +580,7 @@ class FlextApiModels(FlextWebModels):
             """Pydantic model for validating dictionary fields (immutable value t.NormalizedValue)."""
 
             value: Annotated[
-                Mapping[str, t.ContainerValue],
+                t.ContainerValueMapping,
                 Field(description="Dictionary value"),
             ] = Field(default_factory=dict)
 
@@ -637,7 +636,7 @@ class FlextApiModels(FlextWebModels):
             )
 
             body: Annotated[
-                Mapping[str, t.ContainerValue],
+                t.ContainerValueMapping,
                 Field(..., description="Request body as mapping"),
             ]
 
@@ -661,7 +660,7 @@ class FlextApiModels(FlextWebModels):
                 Field(default=None, description="Raw content body"),
             ]
             data: Annotated[
-                Mapping[str, t.ContainerValue] | None,
+                t.ContainerValueMapping | None,
                 Field(default=None, description="Form data"),
             ]
             timeout: Annotated[

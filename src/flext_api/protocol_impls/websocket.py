@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Mapping, MutableMapping, MutableSequence
+from collections.abc import Callable, MutableSequence
 from typing import ClassVar, override
 
 import websockets
@@ -185,7 +185,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         r indicating success or failure
 
         """
-        connect_headers: MutableMapping[str, str] = {}
+        connect_headers: t.MutableStrMapping = {}
         if headers is not None:
             connect_headers.update(headers)
         return self._connect(url, connect_headers)
@@ -280,9 +280,9 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def send_request(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: t.ContainerValueMapping,
         **kwargs: t.Scalar,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[t.ContainerValueMapping]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -321,7 +321,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[t.ContainerValueMapping].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
-        response: Mapping[str, t.ContainerValue] = {
+        response: t.ContainerValueMapping = {
             "status_code": c.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
             "method": "WEBSOCKET",
@@ -394,7 +394,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")
 
-    def _ensure_connected(self, request: Mapping[str, t.ContainerValue]) -> r[bool]:
+    def _ensure_connected(self, request: t.ContainerValueMapping) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
@@ -406,7 +406,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _extract_message(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: t.ContainerValueMapping,
         options: m.Api.SendRequestWsOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""

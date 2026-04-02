@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from importlib.metadata import metadata
 
-_metadata_map: MutableMapping[str, str] = {}
+_metadata_map: t.MutableStrMapping = {}
 try:
     _metadata = metadata("flext_api")
     for key in _metadata:

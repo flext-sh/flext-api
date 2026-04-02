@@ -9,7 +9,6 @@ from __future__ import annotations
 import time
 from collections.abc import (
     Callable,
-    Mapping,
     MutableMapping,
     MutableSequence,
     Sequence,
@@ -134,9 +133,9 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def send_request(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: t.ContainerValueMapping,
         **kwargs: t.Scalar,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[t.ContainerValueMapping]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
@@ -176,7 +175,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             if options.retry_timeout is not None
             else self._retry_timeout
         )
-        events: MutableSequence[Mapping[str, t.ContainerValue]] = []
+        events: MutableSequence[t.ContainerValueMapping] = []
         retry_timeout_ms = base_retry_timeout
         attempts = 0
         while len(events) < max_events:
@@ -213,7 +212,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     )
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
-        response: Mapping[str, t.ContainerValue] = {
+        response: t.ContainerValueMapping = {
             "status_code": 200,
             "url": url_result.value,
             "method": "SSE",
@@ -245,9 +244,9 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         method: str,
         headers: t.StrMapping,
         remaining: int,
-    ) -> t.Pair[Sequence[Mapping[str, t.ContainerValue]], int | None]:
+    ) -> t.Pair[Sequence[t.ContainerValueMapping], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
-        events: MutableSequence[Mapping[str, t.ContainerValue]] = []
+        events: MutableSequence[t.ContainerValueMapping] = []
         retry_timeout: int | None = None
         self._set_connected_state(connected=True)
         self._notify_connect_handlers()
@@ -277,7 +276,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _extract_retry_timeout(
         self,
-        event: Mapping[str, t.ContainerValue],
+        event: t.ContainerValueMapping,
     ) -> int | None:
         retry_value = event.get("retry")
         if isinstance(retry_value, int) and retry_value >= 0:
@@ -305,7 +304,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE error handler error")
 
-    def _notify_event_handlers(self, event: Mapping[str, t.ContainerValue]) -> None:
+    def _notify_event_handlers(self, event: t.ContainerValueMapping) -> None:
         event_type_raw = event.get("event")
         event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
         handlers = [*self._on_event_handlers.get(event_type, [])]
@@ -323,7 +322,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         event_type: t.ContainerValue,
         data: t.ContainerValue,
         retry: t.ContainerValue,
-    ) -> Mapping[str, t.ContainerValue]:
+    ) -> t.ContainerValueMapping:
         parsed_id = (
             "" if not event_id else t.Api.STRING_ADAPTER.validate_python(event_id)
         )
@@ -339,7 +338,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                 parsed_retry = t.Api.INTEGER_ADAPTER.validate_python(retry)
             except ValidationError:
                 parsed_retry = None
-        event_payload: MutableMapping[str, t.ContainerValue] = {
+        event_payload: t.MutableContainerValueMapping = {
             "id": parsed_id,
             "event": parsed_type,
             "data": parsed_data,
@@ -348,7 +347,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             event_payload["retry"] = parsed_retry
         return event_payload
 
-    def _record_event_id(self, event: Mapping[str, t.ContainerValue]) -> None:
+    def _record_event_id(self, event: t.ContainerValueMapping) -> None:
         event_id = event.get("id")
         if isinstance(event_id, str) and event_id:
             self.last_event_id = event_id

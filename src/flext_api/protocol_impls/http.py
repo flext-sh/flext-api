@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator, Mapping, MutableMapping
+from collections.abc import Iterator, Mapping
 from typing import override
 
 import httpx
@@ -116,11 +116,11 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def send_request(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: t.ContainerValueMapping,
         **_kwargs: t.Scalar,
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[t.ContainerValueMapping]:
         """Send HTTP request with retry logic and error handling."""
-        request_general: MutableMapping[str, t.ContainerValue] = {}
+        request_general: t.MutableContainerValueMapping = {}
         for key, value in request.items():
             request_general[key] = u.Api.RequestUtils.to_json_value(value)
         request_result = self._build_http_request_from_dict(request_general)
@@ -241,7 +241,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _build_http_request_from_dict(
         self,
-        request: Mapping[str, t.ContainerValue],
+        request: t.ContainerValueMapping,
     ) -> r[m.Api.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         validation_result = self._validate_request(request)
@@ -284,9 +284,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         params: t.StrMapping,
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> Mapping[str, t.ContainerValue]:
+    ) -> t.ContainerValueMapping:
         """Build request kwargs based on body type."""
-        kwargs: MutableMapping[str, t.ContainerValue] = {
+        kwargs: t.MutableContainerValueMapping = {
             "method": method,
             "url": url,
             "headers": headers,
