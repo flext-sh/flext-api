@@ -14,12 +14,6 @@ from flext_api import FlextApiTypes
 class FlextApiTestTypes(FlextTestsTypes, FlextApiTypes):
     """Test type aliases for flext-api."""
 
-    class Api(FlextApiTypes.Api):
-        """Api domain test types."""
-
-        class Tests:
-            """Test-specific type aliases."""
-
 
 t = FlextApiTestTypes
 __all__ = ["FlextApiTestTypes", "t"]
