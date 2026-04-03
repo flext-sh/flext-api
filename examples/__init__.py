@@ -1,7 +1,7 @@
 # AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
 # Regenerate with: make gen
 #
-"""Unit package."""
+"""Examples package."""
 
 from __future__ import annotations
 
@@ -11,9 +11,6 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_api import test_serializers, test_smoke
-    from flext_api.test_serializers import TestMessagePackUnpackb
-    from flext_api.test_smoke import TestConstants
     from flext_core import FlextTypes
     from flext_core.constants import FlextConstants as c
     from flext_core.decorators import FlextDecorators as d
@@ -28,8 +25,6 @@ if _TYPE_CHECKING:
     from flext_core.utilities import FlextUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "TestConstants": "flext_api.test_smoke",
-    "TestMessagePackUnpackb": "flext_api.test_serializers",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
@@ -39,8 +34,6 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "test_serializers": "flext_api.test_serializers",
-    "test_smoke": "flext_api.test_smoke",
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }

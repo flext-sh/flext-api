@@ -11,6 +11,22 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _TYPE_CHECKING:
+    from flext_api import (
+        constants,
+        models,
+        protocols,
+        test_serializers,
+        test_smoke,
+        typings,
+        unit,
+        utilities,
+    )
+    from flext_api.constants import FlextApiTestConstants, FlextApiTestConstants as c
+    from flext_api.models import FlextApiTestModels, FlextApiTestModels as m
+    from flext_api.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
+    from flext_api.typings import FlextApiTestTypes, FlextApiTestTypes as t
+    from flext_api.unit import TestConstants, TestMessagePackUnpackb
+    from flext_api.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
     from flext_core import FlextTypes
     from flext_core.decorators import FlextDecorators as d
     from flext_core.exceptions import FlextExceptions as e
@@ -18,47 +34,33 @@ if _TYPE_CHECKING:
     from flext_core.mixins import FlextMixins as x
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
-    from tests import constants, models, protocols, typings, unit, utilities
-    from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
-    from tests.models import FlextApiTestModels, FlextApiTestModels as m
-    from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
-    from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
-    from tests.unit import (
-        TestConstants,
-        TestFacadeInheritance,
-        TestMessagePackUnpackb,
-        TestModels,
-        TestSerializers,
-        test_package_imports_main_facade,
-        test_serializers,
-        test_smoke,
-    )
-    from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
-    ("tests.unit",),
+    ("flext_api.unit",),
     {
-        "FlextApiTestConstants": "tests.constants",
-        "FlextApiTestModels": "tests.models",
-        "FlextApiTestProtocols": "tests.protocols",
-        "FlextApiTestTypes": "tests.typings",
-        "FlextApiTestUtilities": "tests.utilities",
-        "c": ("tests.constants", "FlextApiTestConstants"),
-        "constants": "tests.constants",
+        "FlextApiTestConstants": "flext_api.constants",
+        "FlextApiTestModels": "flext_api.models",
+        "FlextApiTestProtocols": "flext_api.protocols",
+        "FlextApiTestTypes": "flext_api.typings",
+        "FlextApiTestUtilities": "flext_api.utilities",
+        "c": ("flext_api.constants", "FlextApiTestConstants"),
+        "constants": "flext_api.constants",
         "d": ("flext_core.decorators", "FlextDecorators"),
         "e": ("flext_core.exceptions", "FlextExceptions"),
         "h": ("flext_core.handlers", "FlextHandlers"),
-        "m": ("tests.models", "FlextApiTestModels"),
-        "models": "tests.models",
-        "p": ("tests.protocols", "FlextApiTestProtocols"),
-        "protocols": "tests.protocols",
+        "m": ("flext_api.models", "FlextApiTestModels"),
+        "models": "flext_api.models",
+        "p": ("flext_api.protocols", "FlextApiTestProtocols"),
+        "protocols": "flext_api.protocols",
         "r": ("flext_core.result", "FlextResult"),
         "s": ("flext_core.service", "FlextService"),
-        "t": ("tests.typings", "FlextApiTestTypes"),
-        "typings": "tests.typings",
-        "u": ("tests.utilities", "FlextApiTestUtilities"),
-        "unit": "tests.unit",
-        "utilities": "tests.utilities",
+        "t": ("flext_api.typings", "FlextApiTestTypes"),
+        "test_serializers": "flext_api.test_serializers",
+        "test_smoke": "flext_api.test_smoke",
+        "typings": "flext_api.typings",
+        "u": ("flext_api.utilities", "FlextApiTestUtilities"),
+        "unit": "flext_api.unit",
+        "utilities": "flext_api.utilities",
         "x": ("flext_core.mixins", "FlextMixins"),
     },
 )
