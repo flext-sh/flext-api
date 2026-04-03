@@ -18,21 +18,18 @@ if _TYPE_CHECKING:
     from flext_core.mixins import FlextMixins as x
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
-    from tests import (
-        constants,
-        models,
-        protocols,
-        typings,
-        unit,
-        utilities,
-    )
+    from tests import constants, models, protocols, typings, unit, utilities
     from tests.constants import FlextApiTestConstants, FlextApiTestConstants as c
     from tests.models import FlextApiTestModels, FlextApiTestModels as m
     from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
     from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
     from tests.unit import (
         TestConstants,
+        TestFacadeInheritance,
         TestMessagePackUnpackb,
+        TestModels,
+        TestSerializers,
+        test_package_imports_main_facade,
         test_serializers,
         test_smoke,
     )
@@ -58,8 +55,6 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "r": ("flext_core.result", "FlextResult"),
         "s": ("flext_core.service", "FlextService"),
         "t": ("tests.typings", "FlextApiTestTypes"),
-        "test_serializers": "tests.unit.test_serializers",
-        "test_smoke": "tests.unit.test_smoke",
         "typings": "tests.typings",
         "u": ("tests.utilities", "FlextApiTestUtilities"),
         "unit": "tests.unit",
