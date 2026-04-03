@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_api._protocols.plugins import FlextApiPlugins
-from flext_api._protocols.transports import FlextApiTransports
 from flext_core.lazy import install_lazy_exports
 
 if _t.TYPE_CHECKING:
@@ -16,15 +14,10 @@ if _t.TYPE_CHECKING:
 
     plugins = _flext_api__protocols_plugins
     import flext_api._protocols.transports as _flext_api__protocols_transports
+    from flext_api._protocols.plugins import FlextApiPlugins
 
     transports = _flext_api__protocols_transports
-
-    _ = (
-        FlextApiPlugins,
-        FlextApiTransports,
-        plugins,
-        transports,
-    )
+    from flext_api._protocols.transports import FlextApiTransports
 _LAZY_IMPORTS = {
     "FlextApiPlugins": "flext_api._protocols.plugins",
     "FlextApiTransports": "flext_api._protocols.transports",
