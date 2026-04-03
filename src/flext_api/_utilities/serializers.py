@@ -15,13 +15,26 @@ from flext_core import r
 class FlextApiSerializers:
     """Serialization utilities for API operations."""
 
+    @staticmethod
+    def _load_msgpack() -> object | None:
+        """Return the msgpack module used by the serializers."""
+        return msgpack
+
     class MessagePack:
         """Type-safe wrappers for msgpack library."""
 
         @staticmethod
         def pack_raw(obj: t.JsonValue) -> object:
             """Return the raw msgpack payload for explicit runtime narrowing."""
-            return t.Api.BINARY_CONTENT_ADAPTER.validate_python(msgpack.packb(obj))
+            module = FlextApiSerializers._load_msgpack()
+            if module is None:
+                msg = "msgpack module not available"
+                raise TypeError(msg)
+            packb = getattr(module, "packb", None)
+            if not callable(packb):
+                msg = "msgpack.packb function not found"
+                raise TypeError(msg)
+            return t.Api.BINARY_CONTENT_ADAPTER.validate_python(packb(obj))
 
         @staticmethod
         def packb(obj: t.JsonValue) -> bytes:
@@ -55,8 +68,14 @@ class FlextApiSerializers:
                 Result containing unpacked `t.JsonValue`.
 
             """
+            module = FlextApiSerializers._load_msgpack()
+            if module is None:
+                return r[t.JsonValue].fail("msgpack module not available")
+            unpackb = getattr(module, "unpackb", None)
+            if not callable(unpackb):
+                return r[t.JsonValue].fail("msgpack.unpackb function not found")
             try:
-                result = msgpack.unpackb(data)
+                result = unpackb(data)
                 validated = t.Api.JSON_VALUE_ADAPTER.validate_python(result)
                 return r[t.JsonValue].ok(
                     validated,

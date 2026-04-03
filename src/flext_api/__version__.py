@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from importlib.metadata import metadata
 
-from flext_api import t
+from flext_core.typings import FlextTypes as t
 
 _metadata_map: t.MutableStrMapping = {}
 try:

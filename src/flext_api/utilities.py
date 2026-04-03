@@ -157,7 +157,7 @@ class FlextApiUtilities(FlextWebUtilities):
                         return r[float].fail(f"Invalid timeout value: {timeout}")
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
-                    if not isinstance(timeout_value, t.Numeric | str):
+                    if not isinstance(timeout_value, (int, float, str)):
                         return r[float].fail(f"Invalid timeout value: {timeout_value}")
                     try:
                         timeout_float = float(timeout_value)
@@ -286,11 +286,11 @@ class FlextApiUtilities(FlextWebUtilities):
             try:
                 page_str = params.get("page", "1")
                 page_size_str = params.get("page_size", "20")
-                if isinstance(page_str, t.Numeric | str):
+                if isinstance(page_str, (int, float, str)):
                     page = int(page_str)
                 else:
                     return r[t.IntPair].fail("Invalid page parameter")
-                if isinstance(page_size_str, t.Numeric | str):
+                if isinstance(page_size_str, (int, float, str)):
                     page_size = int(page_size_str)
                 else:
                     return r[t.IntPair].fail("Invalid page_size parameter")
