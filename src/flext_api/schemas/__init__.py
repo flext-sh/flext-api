@@ -11,10 +11,10 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_api import asyncapi, jsonschema, openapi
-    from flext_api.asyncapi import FlextApiAsyncapiSchemaValidator
-    from flext_api.jsonschema import FlextApiJsonschemaValidator
-    from flext_api.openapi import FlextApiOpenapiSchemaValidator
+    from flext_api.schemas import asyncapi, jsonschema, openapi
+    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
+    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
+    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
     from flext_core import FlextTypes
     from flext_core.constants import FlextConstants as c
     from flext_core.decorators import FlextDecorators as d
@@ -29,17 +29,17 @@ if _TYPE_CHECKING:
     from flext_core.utilities import FlextUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "FlextApiAsyncapiSchemaValidator": "flext_api.asyncapi",
-    "FlextApiJsonschemaValidator": "flext_api.jsonschema",
-    "FlextApiOpenapiSchemaValidator": "flext_api.openapi",
-    "asyncapi": "flext_api.asyncapi",
+    "FlextApiAsyncapiSchemaValidator": "flext_api.schemas.asyncapi",
+    "FlextApiJsonschemaValidator": "flext_api.schemas.jsonschema",
+    "FlextApiOpenapiSchemaValidator": "flext_api.schemas.openapi",
+    "asyncapi": "flext_api.schemas.asyncapi",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "jsonschema": "flext_api.jsonschema",
+    "jsonschema": "flext_api.schemas.jsonschema",
     "m": ("flext_core.models", "FlextModels"),
-    "openapi": "flext_api.openapi",
+    "openapi": "flext_api.schemas.openapi",
     "p": ("flext_core.protocols", "FlextProtocols"),
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
