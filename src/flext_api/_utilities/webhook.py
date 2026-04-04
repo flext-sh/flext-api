@@ -38,14 +38,15 @@ class FlextWebhookHandler(FlextService[bool]):
     _retry_queue: deque[t.MutableContainerValueMapping]
 
     @staticmethod
-    @override
     def _is_object_mapping(
-        value: t.GuardInput,
-    ) -> TypeIs[t.ContainerMapping]:
+        value: t.OptionalContainerValue,
+    ) -> TypeIs[t.ContainerValueMapping]:
         return isinstance(value, Mapping)
 
     @staticmethod
-    def _is_object_list(value: t.ContainerValue) -> TypeIs[Sequence[t.ContainerValue]]:
+    def _is_object_list(
+        value: t.ContainerValue,
+    ) -> TypeIs[t.ContainerValueList]:
         return isinstance(value, list)
 
     @staticmethod

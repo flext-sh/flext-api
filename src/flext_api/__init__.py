@@ -12,16 +12,6 @@ from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _t.TYPE_CHECKING:
     import flext_api._protocols as _flext_api__protocols
-    from flext_api.__version__ import (
-        __author__,
-        __author_email__,
-        __description__,
-        __license__,
-        __title__,
-        __url__,
-        __version__,
-        __version_info__,
-    )
 
     _protocols = _flext_api__protocols
     import flext_api._utilities as _flext_api__utilities
