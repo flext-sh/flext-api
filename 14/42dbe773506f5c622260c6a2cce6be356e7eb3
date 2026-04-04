@@ -1,0 +1,25 @@
+src/flext_api/_utilities/serializers.py
+  e1d2767e43e21b6f 80
+src/flext_api/_utilities/adapters.py
+  e1d2767e43e21b6f 182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.5",
+  "base_commit_sha": "1442dbe773506f5c622260c6a2cce6be356e7eb3",
+  "prompts": {
+    "e1d2767e43e21b6f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b88f5b43-f2ee-4bd5-8e49-f0bc2c3099ed",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 4,
+      "total_deletions": 2,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}
