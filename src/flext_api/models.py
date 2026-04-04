@@ -667,20 +667,23 @@ class FlextApiModels(FlextWebModels):
                 float | None,
                 Field(default=None, description="Request timeout"),
             ]
-            headers: Annotated[
-                t.StrMapping,
-                Field(description="Request headers"),
-            ] = Field(default_factory=dict)
+            headers: t.StrMapping = Field(
+                default_factory=dict, description="Request headers"
+            )
 
         class HeadersRequest(FlextWebModels.Value):
             """Encapsulates RFC header constraint for requests."""
 
-            headers: t.StrMapping = Field(default_factory=dict)
+            headers: t.StrMapping = Field(
+                default_factory=dict, description="HTTP request headers"
+            )
 
         class MethodRequest(FlextWebModels.Value):
             """Encapsulates RFC method constraint for requests."""
 
-            method: Annotated[str, Field(min_length=1)]
+            method: Annotated[
+                str, Field(min_length=1, description="HTTP method (GET, POST, etc.)")
+            ]
 
             @field_validator("method")
             @classmethod
@@ -705,12 +708,17 @@ class FlextApiModels(FlextWebModels):
         class TimeoutRequest(FlextWebModels.Value):
             """Encapsulates timeout constraints for RFC request URLs."""
 
-            timeout: Annotated[t.PositiveTimeout, Field(...)]
+            timeout: Annotated[
+                t.PositiveTimeout,
+                Field(..., description="Request timeout in seconds"),
+            ]
 
         class UrlRequest(FlextWebModels.Value):
             """Encapsulates URL validation constraints for RFC requests."""
 
-            url: Annotated[str, Field(min_length=1)]
+            url: Annotated[
+                str, Field(min_length=1, description="Target URL for the request")
+            ]
 
             @field_validator("url")
             @classmethod
@@ -726,37 +734,61 @@ class FlextApiModels(FlextWebModels):
         class StatusCodeValue(FlextWebModels.Value):
             """Validates status code values according to RFC conventions."""
 
-            status_code: Annotated[t.HttpStatusCode, Field(...)]
+            status_code: Annotated[
+                t.HttpStatusCode,
+                Field(..., description="HTTP response status code"),
+            ]
 
         class SendRequestSseOptions(FlextWebModels.Value):
             """Options for SSE request sending behavior."""
 
-            method: Annotated[str, Field(default="GET", min_length=1)]
-            max_events: Annotated[t.PositiveInt, Field(default=1)]
-            auto_reconnect: Annotated[bool | None, Field(default=None)]
+            method: Annotated[
+                str,
+                Field(default="GET", min_length=1, description="HTTP method for SSE"),
+            ]
+            max_events: Annotated[
+                t.PositiveInt,
+                Field(default=1, description="Maximum SSE events to receive"),
+            ]
+            auto_reconnect: Annotated[
+                bool | None,
+                Field(default=None, description="Enable automatic reconnection"),
+            ]
             reconnect_max_attempts: Annotated[
                 t.NonNegativeInt | None,
-                Field(default=None),
+                Field(default=None, description="Maximum reconnection attempts"),
             ]
             reconnect_backoff_factor: Annotated[
                 t.PositiveFloat | None,
-                Field(default=None),
+                Field(default=None, description="Reconnection backoff multiplier"),
             ]
-            retry_timeout: Annotated[t.NonNegativeInt | None, Field(default=None)]
+            retry_timeout: Annotated[
+                t.NonNegativeInt | None,
+                Field(default=None, description="Retry timeout in seconds"),
+            ]
 
         class SendRequestWsOptions(FlextWebModels.Value):
             """Options for sending a WebSocket message request."""
 
-            message: Annotated[str | bytes | None, Field(default=None)]
+            message: Annotated[
+                str | bytes | None,
+                Field(default=None, description="WebSocket message payload"),
+            ]
             message_type: Annotated[
                 str,
-                Field(default="text", min_length=1),
+                Field(
+                    default="text",
+                    min_length=1,
+                    description="WebSocket message type (text or binary)",
+                ),
             ]
 
         class InboundMessage(FlextWebModels.Value):
             """Model for inbound WebSocket messages."""
 
-            message: str | bytes
+            message: str | bytes = Field(
+                description="Inbound WebSocket message content"
+            )
 
         # =========================================================================
         # STORAGE MODELS
@@ -783,13 +815,27 @@ class FlextApiModels(FlextWebModels):
             class Stats(FlextWebModels.Value):
                 """Storage statistics using Pydantic (automatic validation)."""
 
-                total_operations: int = 0
-                cache_hits: int = 0
-                cache_misses: int = 0
-                hit_ratio: float = 0.0
-                storage_size: int = 0
-                memory_usage: int = 0
-                namespace: str = "flext"
+                total_operations: int = Field(
+                    default=0, description="Total storage operations count"
+                )
+                cache_hits: int = Field(
+                    default=0, description="Number of cache hits"
+                )
+                cache_misses: int = Field(
+                    default=0, description="Number of cache misses"
+                )
+                hit_ratio: float = Field(
+                    default=0.0, description="Cache hit ratio (0.0 to 1.0)"
+                )
+                storage_size: int = Field(
+                    default=0, description="Current storage size in entries"
+                )
+                memory_usage: int = Field(
+                    default=0, description="Estimated memory usage in bytes"
+                )
+                namespace: str = Field(
+                    default="flext", description="Storage namespace identifier"
+                )
 
 
 __all__ = ["FlextApiModels", "m"]
