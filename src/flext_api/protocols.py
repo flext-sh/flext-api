@@ -40,7 +40,8 @@ class FlextApiProtocols(FlextWebProtocols):
     ```
     """
 
-    class Api:
+    @runtime_checkable
+    class Api(Protocol):
         """API-specific protocol namespace.
 
         All API domain-specific protocols are organized here to enable
