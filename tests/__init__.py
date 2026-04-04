@@ -29,20 +29,16 @@ if _t.TYPE_CHECKING:
     from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
 
     unit = _tests_unit
-    import tests.unit.test_serializers as _tests_unit_test_serializers
-
-    test_serializers = _tests_unit_test_serializers
-    import tests.unit.test_smoke as _tests_unit_test_smoke
-    from tests.unit.test_serializers import TestMessagePackUnpackb
-
-    test_smoke = _tests_unit_test_smoke
     import tests.utilities as _tests_utilities
-    from tests.unit.test_smoke import (
+    from tests.unit import (
         TestConstants,
         TestFacadeInheritance,
+        TestMessagePackUnpackb,
         TestModels,
         TestSerializers,
         test_package_imports_main_facade,
+        test_serializers,
+        test_smoke,
     )
 
     utilities = _tests_utilities

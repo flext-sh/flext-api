@@ -88,9 +88,6 @@ class FlextApiTypes(FlextWebTypes):
                 FlextWebTypes.ContainerValue,
             )
         )
-        JSON_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.JsonValue] = TypeAdapter(
-            FlextWebTypes.JsonValue,
-        )
         API_JSON_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.ApiJsonValue] = TypeAdapter(
             FlextWebTypes.ApiJsonValue,
         )

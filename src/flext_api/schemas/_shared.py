@@ -13,7 +13,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TypeIs
 
-import yaml
+from flext_cli import FlextCliUtilities
 from pydantic import ValidationError
 
 from flext_api import m, t, u
@@ -73,24 +73,20 @@ class FlextApiSchemaShared:
             return r[t.ContainerValue].fail(f"Schema file not found: {schema_source}")
         suffix = schema_path.suffix.lower()
         try:
-            with schema_path.open("r", encoding="utf-8") as schema_file:
-                if suffix in {".yaml", ".yml"}:
-                    parsed_yaml = u.try_(lambda: yaml.safe_load(schema_file)).map_error(
-                        lambda e: f"Failed to parse YAML schema: {e}",
-                    )
-                    return parsed_yaml.map(
-                        lambda value: t.Api.CONTAINER_VALUE_ADAPTER.validate_python(
-                            value
-                        ),
-                    )
-                return u.try_(
-                    lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(
-                        schema_file.read()
-                    ),
-                    catch=ValidationError,
-                ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
+            text = schema_path.read_text(encoding="utf-8")
         except OSError as e:
             return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
+        if suffix in {".yaml", ".yml"}:
+            parsed_yaml = FlextCliUtilities.Cli.yaml_parse(text).map_error(
+                lambda e: f"Failed to parse YAML schema: {e}",
+            )
+            return parsed_yaml.map(
+                lambda value: t.Api.CONTAINER_VALUE_ADAPTER.validate_python(value),
+            )
+        return u.try_(
+            lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(text),
+            catch=ValidationError,
+        ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
 
     @staticmethod
     def normalize_json_object(

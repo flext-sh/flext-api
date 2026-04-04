@@ -20,7 +20,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
-import yaml
+from flext_cli import FlextCliUtilities
 from pydantic import ValidationError
 
 from flext_api import FlextApiPlugins, t
@@ -126,32 +126,34 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             )
         suffix = schema_path.suffix.lower()
         try:
-            with schema_path.open("r", encoding="utf-8") as schema_file:
-                if suffix in {".yaml", ".yml"}:
-                    try:
-                        loaded_schema: t.ApiJsonValue = yaml.safe_load(schema_file)
-                    except Exception as e:
-                        return r[t.ContainerValue].fail(
-                            f"Failed to parse YAML schema: {e}",
-                        )
-                else:
-                    try:
-                        loaded_schema_raw = t.Api.CONTAINER_VALUE_ADAPTER.validate_json(
-                            schema_file.read(),
-                        )
-                        if not FlextApiJsonschemaValidator._is_api_json_value(
-                            loaded_schema_raw,
-                        ):
-                            return r[t.ContainerValue].fail(
-                                "JSON schema file must contain JSON-compatible values",
-                            )
-                        loaded_schema = loaded_schema_raw
-                    except ValidationError as e:
-                        return r[t.ContainerValue].fail(
-                            f"Failed to parse JSON schema: {e}",
-                        )
+            text = schema_path.read_text(encoding="utf-8")
         except OSError as e:
             return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
+        if suffix in {".yaml", ".yml"}:
+            parsed_result = FlextCliUtilities.Cli.yaml_parse(text)
+            if parsed_result.is_failure:
+                return r[t.ContainerValue].fail(
+                    f"Failed to parse YAML schema: {parsed_result.error}",
+                )
+            loaded_schema: t.ApiJsonValue = (
+                t.Api.CONTAINER_VALUE_ADAPTER.validate_python(
+                    parsed_result.value,
+                )
+            )
+        else:
+            try:
+                loaded_schema_raw = t.Api.CONTAINER_VALUE_ADAPTER.validate_json(text)
+                if not FlextApiJsonschemaValidator._is_api_json_value(
+                    loaded_schema_raw,
+                ):
+                    return r[t.ContainerValue].fail(
+                        "JSON schema file must contain JSON-compatible values",
+                    )
+                loaded_schema = loaded_schema_raw
+            except ValidationError as e:
+                return r[t.ContainerValue].fail(
+                    f"Failed to parse JSON schema: {e}",
+                )
         if not FlextApiJsonschemaValidator._is_object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
                 "JSON schema file must contain a JSON/YAML t.NormalizedValue",
