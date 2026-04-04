@@ -25,7 +25,7 @@ class FlextApiSerializers:
         """Type-safe wrappers for msgpack library."""
 
         @staticmethod
-        def pack_raw(obj: t.JsonValue) -> object:
+        def pack_raw(obj: t.RecursiveValue) -> object:
             """Return the raw msgpack payload for explicit runtime narrowing."""
             module = FlextApiSerializers._load_msgpack()
             if module is None:
@@ -38,11 +38,11 @@ class FlextApiSerializers:
             return t.Api.BINARY_CONTENT_ADAPTER.validate_python(packb(obj))
 
         @staticmethod
-        def packb(obj: t.JsonValue) -> bytes:
+        def packb(obj: t.RecursiveValue) -> bytes:
             """Type-safe wrapper for msgpack.packb().
 
             Args:
-                obj: Object to pack using the canonical `t.JsonValue` contract.
+                obj: Object to pack using the canonical `t.RecursiveValue` contract.
 
             Returns:
                 bytes: Packed binary data.
@@ -59,27 +59,27 @@ class FlextApiSerializers:
         @staticmethod
         def unpackb(
             data: bytes,
-        ) -> r[t.JsonValue]:
+        ) -> r[t.RecursiveValue]:
             """Type-safe wrapper for msgpack.unpackb().
 
             Args:
                 data: Binary data to unpack.
 
             Returns:
-                Result containing unpacked `t.JsonValue`.
+                Result containing unpacked `t.RecursiveValue`.
 
             """
             module = FlextApiSerializers._load_msgpack()
             if module is None:
-                return r[t.JsonValue].fail("msgpack module not available")
+                return r[t.RecursiveValue].fail("msgpack module not available")
             unpackb = getattr(module, "unpackb", None)
             if not callable(unpackb):
-                return r[t.JsonValue].fail("msgpack.unpackb function not found")
+                return r[t.RecursiveValue].fail("msgpack.unpackb function not found")
             try:
                 result = unpackb(data)
                 validated = FlextCliTypes.Cli.JSON_VALUE_ADAPTER.validate_python(result)
-                return r[t.JsonValue].ok(
+                return r[t.RecursiveValue].ok(
                     validated,
                 )
             except (TypeError, ValidationError, ValueError) as e:
-                return r[t.JsonValue].fail(f"msgpack deserialization failed: {e}")
+                return r[t.RecursiveValue].fail(f"msgpack deserialization failed: {e}")

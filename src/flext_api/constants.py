@@ -47,7 +47,7 @@ class FlextApiConstants(FlextWebConstants):
 
     Usage Patterns:
         # Direct access (recommended)
-        >>> from flext_api import FlextApiConstants as ApiConst
+        >>> from flext_api import ApiConst
         >>> method = ApiConst.Api.Method.GET
         >>> status = ApiConst.Api.Status.SUCCESS
 
