@@ -818,9 +818,7 @@ class FlextApiModels(FlextWebModels):
                 total_operations: int = Field(
                     default=0, description="Total storage operations count"
                 )
-                cache_hits: int = Field(
-                    default=0, description="Number of cache hits"
-                )
+                cache_hits: int = Field(default=0, description="Number of cache hits")
                 cache_misses: int = Field(
                     default=0, description="Number of cache misses"
                 )
