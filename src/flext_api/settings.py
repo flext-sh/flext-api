@@ -1,6 +1,6 @@
-"""Generic HTTP Configuration - Pure Pydantic v2.
+"""Generic HTTP Configuration - FlextSettings-based.
 
-Minimal HTTP configuration using Pydantic v2 with flext-core constants.
+HTTP configuration using FlextSettings with env var support (FLEXT_API_ prefix).
 100% GENERIC - no domain coupling. Single responsibility.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -13,12 +13,17 @@ from __future__ import annotations
 from typing import Annotated
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
-from flext_api import c, m, t
+from flext_api import c, t
+from flext_core.settings import FlextSettings
 
 
-class FlextApiSettings(m.Value):
+@FlextSettings.auto_register("api")
+class FlextApiSettings(FlextSettings):
     """Validated settings consumed by API facade and HTTP client."""
+
+    model_config = SettingsConfigDict(env_prefix="FLEXT_API_", extra="ignore")
 
     base_url: Annotated[
         str,
