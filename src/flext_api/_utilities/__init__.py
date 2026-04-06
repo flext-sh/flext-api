@@ -55,17 +55,26 @@ if _t.TYPE_CHECKING:
     webhook = _flext_api__utilities_webhook
     from flext_api._utilities.webhook import FlextWebhookHandler
 _LAZY_IMPORTS = {
-    "FlextApiAdapters": "flext_api._utilities.adapters",
-    "FlextApiApp": "flext_api._utilities.app",
-    "FlextApiClient": "flext_api._utilities.client",
-    "FlextApiLifecycleManager": "flext_api._utilities.lifecycle_manager",
-    "FlextApiMiddleware": "flext_api._utilities.middleware",
-    "FlextApiRegistry": "flext_api._utilities.registry",
-    "FlextApiSerializers": "flext_api._utilities.serializers",
-    "FlextApiServerFactory": "flext_api._utilities.server_factory",
-    "FlextApiSettingsManager": "flext_api._utilities.settings_manager",
-    "FlextApiStorage": "flext_api._utilities.storage",
-    "FlextWebhookHandler": "flext_api._utilities.webhook",
+    "FlextApiAdapters": ("flext_api._utilities.adapters", "FlextApiAdapters"),
+    "FlextApiApp": ("flext_api._utilities.app", "FlextApiApp"),
+    "FlextApiClient": ("flext_api._utilities.client", "FlextApiClient"),
+    "FlextApiLifecycleManager": (
+        "flext_api._utilities.lifecycle_manager",
+        "FlextApiLifecycleManager",
+    ),
+    "FlextApiMiddleware": ("flext_api._utilities.middleware", "FlextApiMiddleware"),
+    "FlextApiRegistry": ("flext_api._utilities.registry", "FlextApiRegistry"),
+    "FlextApiSerializers": ("flext_api._utilities.serializers", "FlextApiSerializers"),
+    "FlextApiServerFactory": (
+        "flext_api._utilities.server_factory",
+        "FlextApiServerFactory",
+    ),
+    "FlextApiSettingsManager": (
+        "flext_api._utilities.settings_manager",
+        "FlextApiSettingsManager",
+    ),
+    "FlextApiStorage": ("flext_api._utilities.storage", "FlextApiStorage"),
+    "FlextWebhookHandler": ("flext_api._utilities.webhook", "FlextWebhookHandler"),
     "adapters": "flext_api._utilities.adapters",
     "app": "flext_api._utilities.app",
     "client": "flext_api._utilities.client",

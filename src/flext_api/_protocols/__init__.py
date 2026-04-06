@@ -19,8 +19,8 @@ if _t.TYPE_CHECKING:
     transports = _flext_api__protocols_transports
     from flext_api._protocols.transports import FlextApiTransports
 _LAZY_IMPORTS = {
-    "FlextApiPlugins": "flext_api._protocols.plugins",
-    "FlextApiTransports": "flext_api._protocols.transports",
+    "FlextApiPlugins": ("flext_api._protocols.plugins", "FlextApiPlugins"),
+    "FlextApiTransports": ("flext_api._protocols.transports", "FlextApiTransports"),
     "plugins": "flext_api._protocols.plugins",
     "transports": "flext_api._protocols.transports",
 }

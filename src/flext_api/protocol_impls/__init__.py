@@ -56,14 +56,38 @@ if _t.TYPE_CHECKING:
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
 _LAZY_IMPORTS = {
-    "FlextApiBaseProtocolImplementation": "flext_api.protocol_impls.base",
-    "FlextApiLoggerProtocolImplementation": "flext_api.protocol_impls.logger",
-    "FlextApiRfcProtocolImplementation": "flext_api.protocol_impls.rfc",
-    "FlextApiSseProtocolPlugin": "flext_api.protocol_impls.sse",
-    "FlextApiStorageBackendImplementation": "flext_api.protocol_impls.storage_backend",
-    "FlextApiWebsocketProtocolPlugin": "flext_api.protocol_impls.websocket",
-    "FlextWebClientImplementation": "flext_api.protocol_impls.http_client",
-    "FlextWebProtocolPlugin": "flext_api.protocol_impls.http",
+    "FlextApiBaseProtocolImplementation": (
+        "flext_api.protocol_impls.base",
+        "FlextApiBaseProtocolImplementation",
+    ),
+    "FlextApiLoggerProtocolImplementation": (
+        "flext_api.protocol_impls.logger",
+        "FlextApiLoggerProtocolImplementation",
+    ),
+    "FlextApiRfcProtocolImplementation": (
+        "flext_api.protocol_impls.rfc",
+        "FlextApiRfcProtocolImplementation",
+    ),
+    "FlextApiSseProtocolPlugin": (
+        "flext_api.protocol_impls.sse",
+        "FlextApiSseProtocolPlugin",
+    ),
+    "FlextApiStorageBackendImplementation": (
+        "flext_api.protocol_impls.storage_backend",
+        "FlextApiStorageBackendImplementation",
+    ),
+    "FlextApiWebsocketProtocolPlugin": (
+        "flext_api.protocol_impls.websocket",
+        "FlextApiWebsocketProtocolPlugin",
+    ),
+    "FlextWebClientImplementation": (
+        "flext_api.protocol_impls.http_client",
+        "FlextWebClientImplementation",
+    ),
+    "FlextWebProtocolPlugin": (
+        "flext_api.protocol_impls.http",
+        "FlextWebProtocolPlugin",
+    ),
     "base": "flext_api.protocol_impls.base",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),

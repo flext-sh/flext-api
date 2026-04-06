@@ -36,11 +36,11 @@ if _t.TYPE_CHECKING:
         test_package_imports_main_facade,
     )
 _LAZY_IMPORTS = {
-    "TestConstants": "tests.unit.test_smoke",
-    "TestFacadeInheritance": "tests.unit.test_smoke",
-    "TestMessagePackUnpackb": "tests.unit.test_serializers",
-    "TestModels": "tests.unit.test_smoke",
-    "TestSerializers": "tests.unit.test_smoke",
+    "TestConstants": ("tests.unit.test_smoke", "TestConstants"),
+    "TestFacadeInheritance": ("tests.unit.test_smoke", "TestFacadeInheritance"),
+    "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
+    "TestModels": ("tests.unit.test_smoke", "TestModels"),
+    "TestSerializers": ("tests.unit.test_smoke", "TestSerializers"),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
@@ -50,7 +50,10 @@ _LAZY_IMPORTS = {
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "test_package_imports_main_facade": "tests.unit.test_smoke",
+    "test_package_imports_main_facade": (
+        "tests.unit.test_smoke",
+        "test_package_imports_main_facade",
+    ),
     "test_serializers": "tests.unit.test_serializers",
     "test_smoke": "tests.unit.test_smoke",
     "u": ("flext_core.utilities", "FlextUtilities"),
