@@ -14,13 +14,13 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from flext_cli import t as _cli_t
+from flext_cli import t
 from pydantic import TypeAdapter
 
 from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(FlextWebTypes, _cli_t):
+class FlextApiTypes(FlextWebTypes, t):
     """Unified API type definitions extending t with composition."""
 
     class Api:
