@@ -13,14 +13,14 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from flext_cli import FlextCliProtocols
+from flext_cli import p as _cli_p
 
 from flext_api import c, t
 from flext_core import r
 from flext_web import FlextWebProtocols
 
 
-class FlextApiProtocols(FlextWebProtocols, FlextCliProtocols):
+class FlextApiProtocols(FlextWebProtocols, _cli_p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api:

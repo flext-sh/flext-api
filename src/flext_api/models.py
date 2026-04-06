@@ -15,7 +15,7 @@ import time
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_cli import FlextCliModels
+from flext_cli import m as _cli_m
 from pydantic import (
     BeforeValidator,
     ConfigDict,
@@ -28,7 +28,7 @@ from flext_api import c, t, u
 from flext_web import FlextWebModels
 
 
-class FlextApiModels(FlextWebModels, FlextCliModels):
+class FlextApiModels(FlextWebModels, _cli_m):
     """HTTP domain models for flext-api."""
 
     class Api:
