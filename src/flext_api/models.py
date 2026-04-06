@@ -502,7 +502,7 @@ class FlextApiModels(FlextWebModels):
             headers: t.StrMapping | None = None,
             *,
             verify_ssl: bool = True,
-        ) -> FlextApiModels.Api.ClientConfig:
+        ) -> ClientConfig:
             """Create ClientConfig from parameters.
 
             Args:
@@ -547,7 +547,7 @@ class FlextApiModels(FlextWebModels):
             body: t.Api.ResponseBody | None = None,
             headers: t.StrMapping | None = None,
             request_id: str | None = None,
-        ) -> FlextApiModels.Api.HttpResponse:
+        ) -> HttpResponse:
             """Create HttpResponse from parameters.
 
             Args:

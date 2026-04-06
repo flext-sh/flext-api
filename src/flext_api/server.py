@@ -145,22 +145,22 @@ class FlextApiServer(FlextService[bool]):
                     close_method = getattr(connection, "close", None)
                     if callable(close_method):
                         close_method()
-                except (ValueError, TypeError, KeyError, ConnectionError) as e:
+                except (ValueError, TypeError, KeyError, ConnectionError) as exc:
                     self._logger.warning(
                         "Failed to close WebSocket %s",
                         conn_id,
-                        error=f"{e}",
+                        error=f"{exc}",
                     )
             for conn_id, connection in self._sse_connections.items():
                 try:
                     close_method = getattr(connection, "close", None)
                     if callable(close_method):
                         close_method()
-                except (ValueError, TypeError, KeyError, ConnectionError) as e:
+                except (ValueError, TypeError, KeyError, ConnectionError) as exc:
                     self._logger.warning(
                         "Failed to close SSE %s",
                         conn_id,
-                        error=f"{e}",
+                        error=f"{exc}",
                     )
             self._websocket_connections.clear()
             self._sse_connections.clear()
@@ -232,8 +232,8 @@ class FlextApiServer(FlextService[bool]):
                         middleware=middleware.__class__.__name__,
                     )
                 return r[bool].ok(value=True)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[bool].fail(f"Failed to apply middleware: {e}")
+            except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+                return r[bool].fail(f"Failed to apply middleware: {exc}")
 
         def create_app(self) -> r[FastAPI]:
             """Create FastAPI application."""
@@ -246,8 +246,8 @@ class FlextApiServer(FlextService[bool]):
                     openapi_url="/openapi.json",
                 )
                 return r[FastAPI].ok(app)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[FastAPI].fail(f"Failed to create app: {e}")
+            except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+                return r[FastAPI].fail(f"Failed to create app: {exc}")
 
         def register_routes(self, routes: Mapping[str, t.Api.RouteData]) -> r[bool]:
             """Register routes with FastAPI application."""
@@ -290,8 +290,8 @@ class FlextApiServer(FlextService[bool]):
                             app.options(path)(route_handler)
                     self._logger.debug("Route registered", method=method, path=path)
                 return r[bool].ok(value=True)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[bool].fail(f"Failed to register routes: {e}")
+            except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+                return r[bool].fail(f"Failed to register routes: {exc}")
 
         def start(
             self,

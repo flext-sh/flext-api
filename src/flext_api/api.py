@@ -16,7 +16,7 @@ from typing import ClassVar, Self, override
 from pydantic import ConfigDict
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
-from flext_core import FlextLogger, r, s
+from flext_core import r, s
 
 
 class FlextApi(s[FlextApiSettings]):
@@ -90,7 +90,7 @@ class FlextApi(s[FlextApiSettings]):
     def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
         if kwargs:
-            FlextLogger(__name__).info(f"Execute called with kwargs: {kwargs}")
+            self.logger.info(f"Execute called with kwargs: {kwargs}")
         config = self._get_config()
         return r[FlextApiSettings].ok(config)
 
