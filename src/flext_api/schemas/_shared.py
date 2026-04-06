@@ -13,7 +13,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TypeIs
 
-from flext_cli import FlextCliUtilities
+from flext_cli import u as cli_u
 from pydantic import ValidationError
 
 from flext_api import m, t, u
@@ -77,7 +77,7 @@ class FlextApiSchemaShared:
         except OSError as e:
             return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
         if suffix in {".yaml", ".yml"}:
-            parsed_yaml = FlextCliUtilities.Cli.yaml_parse(text).map_error(
+            parsed_yaml = cli_u.Cli.yaml_parse(text).map_error(
                 lambda e: f"Failed to parse YAML schema: {e}",
             )
             return parsed_yaml.map(

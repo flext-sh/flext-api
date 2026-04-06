@@ -20,7 +20,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
-from flext_cli import FlextCliUtilities
+from flext_cli import u
 from pydantic import ValidationError
 
 from flext_api import FlextApiPlugins, t
@@ -130,7 +130,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         except OSError as e:
             return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
         if suffix in {".yaml", ".yml"}:
-            parsed_result = FlextCliUtilities.Cli.yaml_parse(text)
+            parsed_result = u.Cli.yaml_parse(text)
             if parsed_result.is_failure:
                 return r[t.ContainerValue].fail(
                     f"Failed to parse YAML schema: {parsed_result.error}",
