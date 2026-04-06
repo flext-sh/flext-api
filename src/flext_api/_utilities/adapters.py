@@ -13,7 +13,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import cbor2
-from flext_cli import FlextCliTypes
 from pydantic import ValidationError
 
 from flext_api import FlextApiSerializers, m, t, u
@@ -179,7 +178,7 @@ class FlextApiAdapters:
         def convert_json_to_messagepack(data: t.JsonObject) -> r[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
-                json_data = FlextCliTypes.Cli.JSON_VALUE_ADAPTER.validate_python(data)
+                json_data = t.Cli.JSON_VALUE_ADAPTER.validate_python(data)
                 packed_data = FlextApiSerializers.MessagePack.packb(json_data)
                 return u.try_(
                     lambda: bytes(packed_data),

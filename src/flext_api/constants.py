@@ -20,44 +20,14 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
+from flext_cli import FlextCliConstants
+
 from flext_api import t
 from flext_web import FlextWebConstants
 
 
-class FlextApiConstants(FlextWebConstants):
-    """FlextApi domain constants extending FlextConstants.
-
-    Architecture: Layer 1 (Domain Constants - Extends Core)
-    =========================================================
-    Provides domain-specific constants for HTTP operations using advanced patterns:
-    - StrEnum for type-safe enumerations with automatic Pydantic validation
-    - PEP 695 type aliases for strict Literal unions
-    - Nested classes for logical grouping (Methods, Status, ContentType)
-    - TypeIs/TypeGuard methods for advanced type narrowing
-    - Collections.abc for immutable validation sets
-
-    Integration with p:
-    This class provides the constant registry that FlextApiProtocols depend on.
-    Structural typing ensures protocol compliance without explicit inheritance.
-
-    Architecture:
-    - All API constants are organized in the .Api namespace
-    - Direct access via FlextApiConstants.Api.*
-    - No aliases - use namespaces directly following FLEXT architecture patterns
-
-    Usage Patterns:
-        # Direct access (recommended)
-        >>> from flext_api import ApiConst
-        >>> method = ApiConst.Api.Method.GET
-        >>> status = ApiConst.Api.Status.SUCCESS
-
-        # Type-safe validation
-        >>> ApiConst.Api.Method.is_valid_method("GET")  # True
-        >>> ApiConst.Api.Status.is_success_status("success")  # True
-
-        # Literal types for Pydantic models
-        >>> status: ApiConst.Api.StatusLiteral  # Type-safe: "idle" | "pending" | ...
-    """
+class FlextApiConstants(FlextWebConstants, FlextCliConstants):
+    """FlextApi domain constants extending FlextConstants."""
 
     class Api:
         """API domain constants namespace.

@@ -6,7 +6,6 @@ Provides type-safe wrappers for untyped serialization libraries like msgpack.
 from __future__ import annotations
 
 import msgpack
-from flext_cli import FlextCliTypes
 from pydantic import ValidationError
 
 from flext_api import t
@@ -77,7 +76,7 @@ class FlextApiSerializers:
                 return r[t.RecursiveValue].fail("msgpack.unpackb function not found")
             try:
                 result = unpackb(data)
-                validated = FlextCliTypes.Cli.JSON_VALUE_ADAPTER.validate_python(result)
+                validated = t.Cli.JSON_VALUE_ADAPTER.validate_python(result)
                 return r[t.RecursiveValue].ok(
                     validated,
                 )

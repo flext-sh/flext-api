@@ -9,6 +9,7 @@ from enum import StrEnum
 from typing import TypeIs
 from urllib.parse import urlparse
 
+from flext_cli import FlextCliUtilities
 from pydantic import BeforeValidator
 
 from flext_api import t
@@ -16,7 +17,7 @@ from flext_core import r
 from flext_web import FlextWebUtilities
 
 
-class FlextApiUtilities(FlextWebUtilities):
+class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:

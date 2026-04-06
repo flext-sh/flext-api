@@ -13,32 +13,15 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
+from flext_cli import FlextCliProtocols
+
 from flext_api import c, t
 from flext_core import r
 from flext_web import FlextWebProtocols
 
 
-class FlextApiProtocols(FlextWebProtocols):
-    """Single unified HTTP protocols class extending flext-core FlextProtocols.
-
-    Contains all protocol definitions for HTTP operations organized under the .Api namespace.
-    Follows FLEXT namespace class pattern - single class with nested protocol definitions.
-    Domain-agnostic and reusable across any HTTP client implementation.
-
-    **Namespace Structure:**
-    All API-specific protocols are organized under the `.Api` namespace
-    to enable proper namespace separation and access from dependent projects.
-
-    **Usage:**
-    ```python
-    from flext_api import p
-
-    # Access API protocols via .Api namespace
-    client: p.Api.Client.HttpClient
-    storage: p.Api.Storage.StorageBackend
-    logger: p.Api.Logger.Logger
-    ```
-    """
+class FlextApiProtocols(FlextWebProtocols, FlextCliProtocols):
+    """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api:
         """API-specific protocol namespace.

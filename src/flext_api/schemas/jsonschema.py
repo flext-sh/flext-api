@@ -20,10 +20,9 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
-from flext_cli import u
 from pydantic import ValidationError
 
-from flext_api import FlextApiPlugins, t
+from flext_api import FlextApiPlugins, t, u
 from flext_core import r
 
 

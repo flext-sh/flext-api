@@ -14,36 +14,17 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
+from flext_cli import FlextCliTypes
 from pydantic import TypeAdapter
 
 from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(FlextWebTypes):
-    """Unified API type definitions extending t with composition.
-
-    Single namespace containing ALL API types.
-    NO module-level aliases, NO weak types.
-    Python 3.13+ syntax with maximum code reduction.
-    Only TypeVar loose outside class.
-    """
+class FlextApiTypes(FlextWebTypes, FlextCliTypes):
+    """Unified API type definitions extending t with composition."""
 
     class Api:
-        """API types namespace for cross-project access.
-
-        Provides organized access to all API types for other FLEXT projects.
-        Usage: Other projects can reference `FlextWebTypes.Api.RequestData`, `FlextWebTypes.Api.ResponseData`, etc.
-        This enables consistent namespace patterns for cross-project type access.
-
-        Examples:
-            from flext_api import t
-            request_data: FlextWebTypes.Api.RequestData = ...
-            response_data: FlextWebTypes.Api.ResponseData = ...
-
-        Note: Namespace composition via inheritance - no aliases needed.
-        Access parent namespaces directly through inheritance.
-
-        """
+        """API types namespace for cross-project access."""
 
         type WebHeaders = Mapping[str, FlextWebTypes.Scalar | FlextWebTypes.StrSequence]
         type WebParamValue = str | FlextWebTypes.StrSequence

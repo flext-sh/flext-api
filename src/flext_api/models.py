@@ -15,6 +15,7 @@ import time
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
+from flext_cli import FlextCliModels
 from pydantic import (
     BeforeValidator,
     ConfigDict,
@@ -27,15 +28,8 @@ from flext_api import c, t, u
 from flext_web import FlextWebModels
 
 
-class FlextApiModels(FlextWebModels):
-    """HTTP domain models for flext-api.
-
-    Unified namespace class that aggregates all HTTP-specific domain models.
-    Uses nested classes following SOLID principles for maximum maintainability.
-    Provides Pydantic v2 value objects and entities for HTTP operations.
-
-    Fully compatible with Pydantic v2 with strict type safety and validation.
-    """
+class FlextApiModels(FlextWebModels, FlextCliModels):
+    """HTTP domain models for flext-api."""
 
     class Api:
         """Api Models."""
