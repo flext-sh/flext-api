@@ -23,7 +23,7 @@ class FlextApiBaseProtocolImplementation:
     must follow. All protocol implementations extend this class.
 
     This class structurally implements FlextApiPlugins.Protocol without explicit
-    inheritance to avoid MRO conflicts with FlextService[bool]. All required
+    inheritance to avoid MRO conflicts with s[bool]. All required
     Protocol methods are implemented here.
 
     Responsibilities:

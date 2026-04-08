@@ -136,14 +136,14 @@ class TestMessagePackUnpackb:
             tm.that(result.error.lower(), has="validation")
 
     def test_unpackb_returns_result_type(self) -> None:
-        """Test that unpackb returns FlextResult with success/failure semantics."""
+        """Test that unpackb returns r with success/failure semantics."""
         # Arrange
         test_data = b"\x81\xa3key\xa5value"
 
         # Act
         result = FlextApiSerializers.MessagePack.unpackb(test_data)
 
-        # Assert: verify FlextResult semantics (success case)
+        # Assert: verify r semantics (success case)
         tm.that(result.is_success, eq=True)
         tm.that(result.is_failure, eq=False)
         tm.that(result.value, eq={"key": "value"})

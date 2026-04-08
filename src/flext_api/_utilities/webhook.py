@@ -18,10 +18,10 @@ from typing import TypeIs, override
 from pydantic import ValidationError
 
 from flext_api import c, p, t, u
-from flext_core import FlextContainer, FlextContext, FlextLogger, FlextService, r
+from flext_core import FlextContainer, FlextContext, FlextLogger, r, s
 
 
-class FlextWebhookHandler(FlextService[bool]):
+class FlextWebhookHandler(s[bool]):
     """Webhook handler with signature verification and event processing."""
 
     _flext_context: p.Context
@@ -113,7 +113,7 @@ class FlextWebhookHandler(FlextService[bool]):
     def execute(self) -> r[bool]:
         """Execute webhook service lifecycle operations.
 
-        FlextService requires this method for service execution.
+        s requires this method for service execution.
         For webhook handler, this is a no-op as webhook processing is event-driven.
 
         Returns:

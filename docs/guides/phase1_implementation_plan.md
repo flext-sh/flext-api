@@ -381,7 +381,7 @@
 
 ### Internal Dependencies
 
-- **flext-core v0.9.9 RC**: r, FlextService, FlextModels
+- **flext-core v0.9.9 RC**: r, s, FlextModels
 - **Python 3.13+**: Type safety and performance features
 - **httpx**: HTTP protocol implementation (internal only)
 

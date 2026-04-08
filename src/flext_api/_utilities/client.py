@@ -156,7 +156,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
     @override
     def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
-        """Execute FlextService interface - return configuration."""
+        """Execute s interface - return configuration."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")
         return r[FlextApiSettings].ok(self._get_config())

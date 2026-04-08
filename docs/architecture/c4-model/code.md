@@ -152,7 +152,7 @@ package "flext_core" as flext_core {
     class FlextContainer
     class FlextModels
     class FlextLogger
-    class FlextService
+    class s
     class FlextBus
     class FlextContext
 }
@@ -185,8 +185,8 @@ FlextApiClient --> r : uses
 FlextApiClient --> AsyncClient : uses
 FlextApiModels --> BaseModel : extends
 FlextApiSettings --> BaseModel : extends
-FlextApi --> FlextService : extends
-FlextApiClient --> FlextService : extends
+FlextApi --> s : extends
+FlextApiClient --> s : extends
 
 FlextWebncClient : uses
 WebSocketSockeWebSocketClient
@@ -220,7 +220,7 @@ flext_api/
 #### FlextApi (api.py)
 
 ```python
-class FlextApi(FlextService[FlextApiSettings]):
+class FlextApi(s[FlextApiSettings]):
     """Thin facade providing access to all FLEXT-API functionality."""
 
     # Main entry points
@@ -246,7 +246,7 @@ class FlextApi(FlextService[FlextApiSettings]):
 #### FlextApiClient (client.py)
 
 ```python
-class FlextApiClient(FlextService[None]):
+class FlextApiClient(s[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
     # Core HTTP methods

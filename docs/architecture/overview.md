@@ -67,7 +67,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 ┌─────────────────────────────────────────────────────────────┐
 │                    Foundation Layer                          │
 │   (Core patterns from flext-core)                           │
-│   r, FlextContainer, FlextService, FlextModels   │
+│   r, FlextContainer, s, FlextModels   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -93,7 +93,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 **Integration with FLEXT-Core:**
 
-- Extends `FlextService` for domain service patterns
+- Extends `s` for domain service patterns
 - Uses `r[T]` for error handling
 - Integrates with `FlextContainer` for dependency injection
 - Leverages `FlextModels` for entity modeling
@@ -121,7 +121,7 @@ class FlextWebEndpoint(FlextModels.Entity):
     middleware: List[Middleware]
 
 # HTTP-specific domain service
-class EndpointService(FlextService):
+class EndpointService(s):
     """Domain service for HTTP endpoint management."""
 
     def validate_endpoint(self, endpoint: FlextWebEndpoint) -> r[bool]:
@@ -209,9 +209,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -221,7 +221,7 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 

@@ -154,7 +154,7 @@
 ### FLEXT-Core Integration Status
 
 - **r[T]**: ✅ 90% - Comprehensive usage
-- **FlextService**: ✅ 85% - Client extends FlextService
+- **s**: ✅ 85% - Client extends s
 - **FlextModels**: ✅ 80% - HTTP models use patterns
 - **FlextContainer**: ⚠️ 60% - Basic dependency injection
 

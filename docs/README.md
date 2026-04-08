@@ -49,7 +49,7 @@ FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data integrat
 
 ### 🏢 Integration with FLEXT Ecosystem
 
-- **flext-core** → Foundation patterns (r, FlextService, FlextModels)
+- **flext-core** → Foundation patterns (r, s, FlextModels)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
@@ -217,7 +217,7 @@ ______________________________________________________________________
 
 ### 🎯 Production Readiness
 
-- **Enterprise Patterns**: Complete r, FlextService integration
+- **Enterprise Patterns**: Complete r, s integration
 - **Error Handling**: Comprehensive railway-oriented error management
 - **Configuration**: Environment-aware settings with validation
 - **Documentation**: Complete API reference and guides

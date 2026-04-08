@@ -88,7 +88,7 @@ class FlextApi(s[FlextApiSettings]):
 
     @override
     def execute(self, **kwargs: t.Scalar) -> r[FlextApiSettings]:
-        """Execute FlextService interface."""
+        """Execute s interface."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs: {kwargs}")
         config = self._get_config()

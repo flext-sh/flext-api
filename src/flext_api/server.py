@@ -25,10 +25,10 @@ from fastapi import FastAPI
 from pydantic import ValidationError
 
 from flext_api import c, p, t
-from flext_core import FlextLogger, FlextService, e, r
+from flext_core import FlextLogger, e, r, s
 
 
-class FlextApiServer(FlextService[bool]):
+class FlextApiServer(s[bool]):
     """Generic API server with protocol handler support using Clean Architecture.
 
     Single responsibility: Orchestrate server components (RouteRegistry,
@@ -400,7 +400,7 @@ class FlextApiServer(FlextService[bool]):
 
     @override
     def execute(self) -> r[bool]:
-        """Execute server service (required by FlextService)."""
+        """Execute server service (required by s)."""
         return r[bool].ok(True)
 
     def get_app(self) -> r[FastAPI]:

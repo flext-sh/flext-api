@@ -185,7 +185,7 @@ class ProtocolRegistry:
 ### Unified Client Interface
 
 ```python
-class FlextApiClient(FlextService[None]):
+class FlextApiClient(s[None]):
     """Unified client that delegates to protocol implementations."""
 
     def __init__(self, protocol: str = "http", **config):

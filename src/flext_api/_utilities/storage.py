@@ -68,7 +68,7 @@ class FlextApiStorage:
         config: t.ApiJsonValue | None = None,
         **kwargs: t.ApiJsonValue,
     ) -> Self:
-        """Intercept config argument and convert to kwargs for FlextService V2."""
+        """Intercept config argument and convert to kwargs for s V2."""
         instance = super().__new__(cls)
         if config is not None:
             object.__setattr__(instance, "_flext_storage_config", config)
