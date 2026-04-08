@@ -11,21 +11,6 @@ from flext_api.__version__ import *
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _t.TYPE_CHECKING:
-    from flext_api import (
-        _protocols,
-        _utilities,
-        api,
-        constants,
-        errors,
-        models,
-        protocol_impls,
-        protocols,
-        schemas,
-        server,
-        settings,
-        typings,
-        utilities,
-    )
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.transports import FlextApiTransports
     from flext_api._utilities.adapters import FlextApiAdapters
