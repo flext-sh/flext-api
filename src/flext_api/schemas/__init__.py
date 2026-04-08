@@ -5,34 +5,8 @@
 
 from __future__ import annotations
 
-import typing as _t
-
 from flext_core.lazy import install_lazy_exports
 
-if _t.TYPE_CHECKING:
-    import flext_api.schemas.asyncapi as _flext_api_schemas_asyncapi
-
-    asyncapi = _flext_api_schemas_asyncapi
-    import flext_api.schemas.jsonschema as _flext_api_schemas_jsonschema
-    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
-
-    jsonschema = _flext_api_schemas_jsonschema
-    import flext_api.schemas.openapi as _flext_api_schemas_openapi
-    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
-
-    openapi = _flext_api_schemas_openapi
-    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
-    from flext_core.constants import FlextConstants as c
-    from flext_core.decorators import FlextDecorators as d
-    from flext_core.exceptions import FlextExceptions as e
-    from flext_core.handlers import FlextHandlers as h
-    from flext_core.mixins import FlextMixins as x
-    from flext_core.models import FlextModels as m
-    from flext_core.protocols import FlextProtocols as p
-    from flext_core.result import FlextResult as r
-    from flext_core.service import FlextService as s
-    from flext_core.typings import FlextTypes as t
-    from flext_core.utilities import FlextUtilities as u
 _LAZY_IMPORTS = {
     "FlextApiAsyncapiSchemaValidator": (
         "flext_api.schemas.asyncapi",
@@ -46,41 +20,34 @@ _LAZY_IMPORTS = {
         "flext_api.schemas.openapi",
         "FlextApiOpenapiSchemaValidator",
     ),
+    "FlextApiSchemaShared": ("flext_api.schemas._shared", "FlextApiSchemaShared"),
     "asyncapi": "flext_api.schemas.asyncapi",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
+    "is_container_value": ("flext_api.schemas._shared", "is_container_value"),
+    "is_object_mapping": ("flext_api.schemas._shared", "is_object_mapping"),
     "jsonschema": "flext_api.schemas.jsonschema",
+    "load_and_validate_schema_document": (
+        "flext_api.schemas._shared",
+        "load_and_validate_schema_document",
+    ),
+    "load_schema_document": ("flext_api.schemas._shared", "load_schema_document"),
     "m": ("flext_core.models", "FlextModels"),
+    "normalize_json_object": ("flext_api.schemas._shared", "normalize_json_object"),
     "openapi": "flext_api.schemas.openapi",
     "p": ("flext_core.protocols", "FlextProtocols"),
+    "parse_dict_field": ("flext_api.schemas._shared", "parse_dict_field"),
+    "parse_int_field": ("flext_api.schemas._shared", "parse_int_field"),
+    "parse_string_field": ("flext_api.schemas._shared", "parse_string_field"),
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
+    "to_general_value": ("flext_api.schemas._shared", "to_general_value"),
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 
-__all__ = [
-    "FlextApiAsyncapiSchemaValidator",
-    "FlextApiJsonschemaValidator",
-    "FlextApiOpenapiSchemaValidator",
-    "asyncapi",
-    "c",
-    "d",
-    "e",
-    "h",
-    "jsonschema",
-    "m",
-    "openapi",
-    "p",
-    "r",
-    "s",
-    "t",
-    "u",
-    "x",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

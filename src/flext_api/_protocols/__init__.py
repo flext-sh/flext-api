@@ -5,19 +5,8 @@
 
 from __future__ import annotations
 
-import typing as _t
-
 from flext_core.lazy import install_lazy_exports
 
-if _t.TYPE_CHECKING:
-    import flext_api._protocols.plugins as _flext_api__protocols_plugins
-
-    plugins = _flext_api__protocols_plugins
-    import flext_api._protocols.transports as _flext_api__protocols_transports
-    from flext_api._protocols.plugins import FlextApiPlugins
-
-    transports = _flext_api__protocols_transports
-    from flext_api._protocols.transports import FlextApiTransports
 _LAZY_IMPORTS = {
     "FlextApiPlugins": ("flext_api._protocols.plugins", "FlextApiPlugins"),
     "FlextApiTransports": ("flext_api._protocols.transports", "FlextApiTransports"),
@@ -25,12 +14,5 @@ _LAZY_IMPORTS = {
     "transports": "flext_api._protocols.transports",
 }
 
-__all__ = [
-    "FlextApiPlugins",
-    "FlextApiTransports",
-    "plugins",
-    "transports",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
