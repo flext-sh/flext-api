@@ -46,37 +46,33 @@ if _t.TYPE_CHECKING:
     from flext_api.errors import FlextApiErrors
 
     models = _flext_api_models
-    import flext_api.protocols as _flext_api_protocols
+    import flext_api.protocol_impls as _flext_api_protocol_impls
     from flext_api.models import FlextApiModels, FlextApiModels as m
-    from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
-    from flext_api.protocol_impls.http import FlextWebProtocolPlugin
-    from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
-    from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
-    from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
-    from flext_api.protocol_impls.storage_backend import (
+
+    protocol_impls = _flext_api_protocol_impls
+    import flext_api.protocols as _flext_api_protocols
+    from flext_api.protocol_impls import (
+        FlextApiBaseProtocolImplementation,
+        FlextApiLoggerProtocolImplementation,
+        FlextApiRfcProtocolImplementation,
+        FlextApiSseProtocolPlugin,
         FlextApiStorageBackendImplementation,
+        FlextApiWebsocketProtocolPlugin,
+        FlextWebClientImplementation,
+        FlextWebProtocolPlugin,
     )
-    from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
 
     protocols = _flext_api_protocols
-    import flext_api.server as _flext_api_server
+    import flext_api.schemas as _flext_api_schemas
     from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
-    from flext_api.schemas._shared import (
-        FlextApiSchemaShared,
-        is_container_value,
-        is_object_mapping,
-        load_and_validate_schema_document,
-        load_schema_document,
-        normalize_json_object,
-        parse_dict_field,
-        parse_int_field,
-        parse_string_field,
-        to_general_value,
+
+    schemas = _flext_api_schemas
+    import flext_api.server as _flext_api_server
+    from flext_api.schemas import (
+        FlextApiAsyncapiSchemaValidator,
+        FlextApiJsonschemaValidator,
+        FlextApiOpenapiSchemaValidator,
     )
-    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
-    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
-    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
 
     server = _flext_api_server
     import flext_api.settings as _flext_api_settings
@@ -102,62 +98,19 @@ _LAZY_IMPORTS = merge_lazy_imports(
     (
         "flext_api._protocols",
         "flext_api._utilities",
+        "flext_api.protocol_impls",
+        "flext_api.schemas",
     ),
     {
         "FlextApi": ("flext_api.api", "FlextApi"),
-        "FlextApiAsyncapiSchemaValidator": (
-            "flext_api.schemas.asyncapi",
-            "FlextApiAsyncapiSchemaValidator",
-        ),
-        "FlextApiBaseProtocolImplementation": (
-            "flext_api.protocol_impls.base",
-            "FlextApiBaseProtocolImplementation",
-        ),
         "FlextApiConstants": ("flext_api.constants", "FlextApiConstants"),
         "FlextApiErrors": ("flext_api.errors", "FlextApiErrors"),
-        "FlextApiJsonschemaValidator": (
-            "flext_api.schemas.jsonschema",
-            "FlextApiJsonschemaValidator",
-        ),
-        "FlextApiLoggerProtocolImplementation": (
-            "flext_api.protocol_impls.logger",
-            "FlextApiLoggerProtocolImplementation",
-        ),
         "FlextApiModels": ("flext_api.models", "FlextApiModels"),
-        "FlextApiOpenapiSchemaValidator": (
-            "flext_api.schemas.openapi",
-            "FlextApiOpenapiSchemaValidator",
-        ),
         "FlextApiProtocols": ("flext_api.protocols", "FlextApiProtocols"),
-        "FlextApiRfcProtocolImplementation": (
-            "flext_api.protocol_impls.rfc",
-            "FlextApiRfcProtocolImplementation",
-        ),
-        "FlextApiSchemaShared": ("flext_api.schemas._shared", "FlextApiSchemaShared"),
         "FlextApiServer": ("flext_api.server", "FlextApiServer"),
         "FlextApiSettings": ("flext_api.settings", "FlextApiSettings"),
-        "FlextApiSseProtocolPlugin": (
-            "flext_api.protocol_impls.sse",
-            "FlextApiSseProtocolPlugin",
-        ),
-        "FlextApiStorageBackendImplementation": (
-            "flext_api.protocol_impls.storage_backend",
-            "FlextApiStorageBackendImplementation",
-        ),
         "FlextApiTypes": ("flext_api.typings", "FlextApiTypes"),
         "FlextApiUtilities": ("flext_api.utilities", "FlextApiUtilities"),
-        "FlextApiWebsocketProtocolPlugin": (
-            "flext_api.protocol_impls.websocket",
-            "FlextApiWebsocketProtocolPlugin",
-        ),
-        "FlextWebClientImplementation": (
-            "flext_api.protocol_impls.http_client",
-            "FlextWebClientImplementation",
-        ),
-        "FlextWebProtocolPlugin": (
-            "flext_api.protocol_impls.http",
-            "FlextWebProtocolPlugin",
-        ),
         "__author__": ("flext_api.__version__", "__author__"),
         "__author_email__": ("flext_api.__version__", "__author_email__"),
         "__description__": ("flext_api.__version__", "__description__"),
@@ -175,27 +128,17 @@ _LAZY_IMPORTS = merge_lazy_imports(
         "e": ("flext_core.exceptions", "FlextExceptions"),
         "errors": "flext_api.errors",
         "h": ("flext_core.handlers", "FlextHandlers"),
-        "is_container_value": ("flext_api.schemas._shared", "is_container_value"),
-        "is_object_mapping": ("flext_api.schemas._shared", "is_object_mapping"),
-        "load_and_validate_schema_document": (
-            "flext_api.schemas._shared",
-            "load_and_validate_schema_document",
-        ),
-        "load_schema_document": ("flext_api.schemas._shared", "load_schema_document"),
         "m": ("flext_api.models", "FlextApiModels"),
         "models": "flext_api.models",
-        "normalize_json_object": ("flext_api.schemas._shared", "normalize_json_object"),
         "p": ("flext_api.protocols", "FlextApiProtocols"),
-        "parse_dict_field": ("flext_api.schemas._shared", "parse_dict_field"),
-        "parse_int_field": ("flext_api.schemas._shared", "parse_int_field"),
-        "parse_string_field": ("flext_api.schemas._shared", "parse_string_field"),
+        "protocol_impls": "flext_api.protocol_impls",
         "protocols": "flext_api.protocols",
         "r": ("flext_core.result", "FlextResult"),
         "s": ("flext_core.service", "FlextService"),
+        "schemas": "flext_api.schemas",
         "server": "flext_api.server",
         "settings": "flext_api.settings",
         "t": ("flext_api.typings", "FlextApiTypes"),
-        "to_general_value": ("flext_api.schemas._shared", "to_general_value"),
         "typings": "flext_api.typings",
         "u": ("flext_api.utilities", "FlextApiUtilities"),
         "utilities": "flext_api.utilities",
@@ -205,6 +148,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
 _ = _LAZY_IMPORTS.pop("cleanup_submodule_namespace", None)
 _ = _LAZY_IMPORTS.pop("install_lazy_exports", None)
 _ = _LAZY_IMPORTS.pop("lazy_getattr", None)
+_ = _LAZY_IMPORTS.pop("logger", None)
 _ = _LAZY_IMPORTS.pop("merge_lazy_imports", None)
 _ = _LAZY_IMPORTS.pop("output", None)
 _ = _LAZY_IMPORTS.pop("output_reporting", None)
@@ -228,7 +172,6 @@ __all__ = [
     "FlextApiProtocols",
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
-    "FlextApiSchemaShared",
     "FlextApiSerializers",
     "FlextApiServer",
     "FlextApiServerFactory",
@@ -261,24 +204,17 @@ __all__ = [
     "e",
     "errors",
     "h",
-    "is_container_value",
-    "is_object_mapping",
-    "load_and_validate_schema_document",
-    "load_schema_document",
     "m",
     "models",
-    "normalize_json_object",
     "p",
-    "parse_dict_field",
-    "parse_int_field",
-    "parse_string_field",
+    "protocol_impls",
     "protocols",
     "r",
     "s",
+    "schemas",
     "server",
     "settings",
     "t",
-    "to_general_value",
     "typings",
     "u",
     "utilities",

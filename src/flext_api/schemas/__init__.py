@@ -10,22 +10,7 @@ import typing as _t
 from flext_core.lazy import install_lazy_exports
 
 if _t.TYPE_CHECKING:
-    import flext_api.schemas._shared as _flext_api_schemas__shared
-
-    _shared = _flext_api_schemas__shared
     import flext_api.schemas.asyncapi as _flext_api_schemas_asyncapi
-    from flext_api.schemas._shared import (
-        FlextApiSchemaShared,
-        is_container_value,
-        is_object_mapping,
-        load_and_validate_schema_document,
-        load_schema_document,
-        normalize_json_object,
-        parse_dict_field,
-        parse_int_field,
-        parse_string_field,
-        to_general_value,
-    )
 
     asyncapi = _flext_api_schemas_asyncapi
     import flext_api.schemas.jsonschema as _flext_api_schemas_jsonschema
@@ -61,32 +46,18 @@ _LAZY_IMPORTS = {
         "flext_api.schemas.openapi",
         "FlextApiOpenapiSchemaValidator",
     ),
-    "FlextApiSchemaShared": ("flext_api.schemas._shared", "FlextApiSchemaShared"),
-    "_shared": "flext_api.schemas._shared",
     "asyncapi": "flext_api.schemas.asyncapi",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "is_container_value": ("flext_api.schemas._shared", "is_container_value"),
-    "is_object_mapping": ("flext_api.schemas._shared", "is_object_mapping"),
     "jsonschema": "flext_api.schemas.jsonschema",
-    "load_and_validate_schema_document": (
-        "flext_api.schemas._shared",
-        "load_and_validate_schema_document",
-    ),
-    "load_schema_document": ("flext_api.schemas._shared", "load_schema_document"),
     "m": ("flext_core.models", "FlextModels"),
-    "normalize_json_object": ("flext_api.schemas._shared", "normalize_json_object"),
     "openapi": "flext_api.schemas.openapi",
     "p": ("flext_core.protocols", "FlextProtocols"),
-    "parse_dict_field": ("flext_api.schemas._shared", "parse_dict_field"),
-    "parse_int_field": ("flext_api.schemas._shared", "parse_int_field"),
-    "parse_string_field": ("flext_api.schemas._shared", "parse_string_field"),
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "to_general_value": ("flext_api.schemas._shared", "to_general_value"),
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
@@ -95,29 +66,18 @@ __all__ = [
     "FlextApiAsyncapiSchemaValidator",
     "FlextApiJsonschemaValidator",
     "FlextApiOpenapiSchemaValidator",
-    "FlextApiSchemaShared",
-    "_shared",
     "asyncapi",
     "c",
     "d",
     "e",
     "h",
-    "is_container_value",
-    "is_object_mapping",
     "jsonschema",
-    "load_and_validate_schema_document",
-    "load_schema_document",
     "m",
-    "normalize_json_object",
     "openapi",
     "p",
-    "parse_dict_field",
-    "parse_int_field",
-    "parse_string_field",
     "r",
     "s",
     "t",
-    "to_general_value",
     "u",
     "x",
 ]

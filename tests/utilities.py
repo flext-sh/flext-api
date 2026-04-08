@@ -11,7 +11,7 @@ from flext_tests import FlextTestsUtilities
 from flext_api import FlextApiUtilities
 
 
-class FlextApiTestUtilities(FlextTestsUtilities, FlextApiUtilities):
+class TestsFlextApiUtilities(FlextTestsUtilities, FlextApiUtilities):
     """Test utilities for flext-api."""
 
     class Api(FlextApiUtilities.Api):
@@ -21,5 +21,5 @@ class FlextApiTestUtilities(FlextTestsUtilities, FlextApiUtilities):
             """Test-specific utilities."""
 
 
-u = FlextApiTestUtilities
-__all__ = ["FlextApiTestUtilities", "u"]
+u = TestsFlextApiUtilities
+__all__ = ["TestsFlextApiUtilities", "u"]

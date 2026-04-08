@@ -11,7 +11,7 @@ from flext_tests import FlextTestsModels
 from flext_api import FlextApiModels
 
 
-class FlextApiTestModels(FlextTestsModels, FlextApiModels):
+class TestsFlextApiModels(FlextTestsModels, FlextApiModels):
     """Test models for flext-api."""
 
     class Api(FlextApiModels.Api):
@@ -21,5 +21,5 @@ class FlextApiTestModels(FlextTestsModels, FlextApiModels):
             """Test-specific models."""
 
 
-m = FlextApiTestModels
-__all__ = ["FlextApiTestModels", "m"]
+m = TestsFlextApiModels
+__all__ = ["TestsFlextApiModels", "m"]

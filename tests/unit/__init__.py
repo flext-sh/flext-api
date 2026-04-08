@@ -14,7 +14,6 @@ if _t.TYPE_CHECKING:
 
     test_serializers = _tests_unit_test_serializers
     import tests.unit.test_smoke as _tests_unit_test_smoke
-    from tests.unit.test_serializers import TestMessagePackUnpackb
 
     test_smoke = _tests_unit_test_smoke
     from flext_core.constants import FlextConstants as c
@@ -28,19 +27,7 @@ if _t.TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from tests.unit.test_smoke import (
-        TestConstants,
-        TestFacadeInheritance,
-        TestModels,
-        TestSerializers,
-        test_package_imports_main_facade,
-    )
 _LAZY_IMPORTS = {
-    "TestConstants": ("tests.unit.test_smoke", "TestConstants"),
-    "TestFacadeInheritance": ("tests.unit.test_smoke", "TestFacadeInheritance"),
-    "TestMessagePackUnpackb": ("tests.unit.test_serializers", "TestMessagePackUnpackb"),
-    "TestModels": ("tests.unit.test_smoke", "TestModels"),
-    "TestSerializers": ("tests.unit.test_smoke", "TestSerializers"),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
@@ -50,10 +37,6 @@ _LAZY_IMPORTS = {
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "test_package_imports_main_facade": (
-        "tests.unit.test_smoke",
-        "test_package_imports_main_facade",
-    ),
     "test_serializers": "tests.unit.test_serializers",
     "test_smoke": "tests.unit.test_smoke",
     "u": ("flext_core.utilities", "FlextUtilities"),
@@ -61,11 +44,6 @@ _LAZY_IMPORTS = {
 }
 
 __all__ = [
-    "TestConstants",
-    "TestFacadeInheritance",
-    "TestMessagePackUnpackb",
-    "TestModels",
-    "TestSerializers",
     "c",
     "d",
     "e",
@@ -75,7 +53,6 @@ __all__ = [
     "r",
     "s",
     "t",
-    "test_package_imports_main_facade",
     "test_serializers",
     "test_smoke",
     "u",

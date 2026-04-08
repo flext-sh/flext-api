@@ -11,7 +11,7 @@ from flext_tests import FlextTestsProtocols
 from flext_api import FlextApiProtocols
 
 
-class FlextApiTestProtocols(FlextTestsProtocols, FlextApiProtocols):
+class TestsFlextApiProtocols(FlextTestsProtocols, FlextApiProtocols):
     """Test protocols for flext-api."""
 
     class Api(FlextApiProtocols.Api):
@@ -21,5 +21,5 @@ class FlextApiTestProtocols(FlextTestsProtocols, FlextApiProtocols):
             """Test-specific protocols."""
 
 
-p = FlextApiTestProtocols
-__all__ = ["FlextApiTestProtocols", "p"]
+p = TestsFlextApiProtocols
+__all__ = ["TestsFlextApiProtocols", "p"]

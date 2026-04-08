@@ -11,7 +11,7 @@ from flext_tests import FlextTestsConstants
 from flext_api import FlextApiConstants
 
 
-class FlextApiTestConstants(FlextTestsConstants, FlextApiConstants):
+class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):
     """Test constants for flext-api."""
 
     class Api(FlextApiConstants.Api):
@@ -21,5 +21,5 @@ class FlextApiTestConstants(FlextTestsConstants, FlextApiConstants):
             """Test-specific constants."""
 
 
-c = FlextApiTestConstants
-__all__ = ["FlextApiTestConstants", "c"]
+c = TestsFlextApiConstants
+__all__ = ["TestsFlextApiConstants", "c"]
