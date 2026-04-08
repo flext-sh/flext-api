@@ -22,21 +22,21 @@ if _t.TYPE_CHECKING:
     from tests.typings import TestsFlextApiTypes, TestsFlextApiTypes as t
     from tests.utilities import TestsFlextApiUtilities, TestsFlextApiUtilities as u
 _LAZY_IMPORTS = {
-    "TestsFlextApiConstants": ("tests.constants", "TestsFlextApiConstants"),
-    "TestsFlextApiModels": ("tests.models", "TestsFlextApiModels"),
-    "TestsFlextApiProtocols": ("tests.protocols", "TestsFlextApiProtocols"),
-    "TestsFlextApiTypes": ("tests.typings", "TestsFlextApiTypes"),
-    "TestsFlextApiUtilities": ("tests.utilities", "TestsFlextApiUtilities"),
-    "c": ("tests.constants", "TestsFlextApiConstants"),
+    "TestsFlextApiConstants": ".constants",
+    "TestsFlextApiModels": ".models",
+    "TestsFlextApiProtocols": ".protocols",
+    "TestsFlextApiTypes": ".typings",
+    "TestsFlextApiUtilities": ".utilities",
+    "c": (".constants", "TestsFlextApiConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "m": ("tests.models", "TestsFlextApiModels"),
-    "p": ("tests.protocols", "TestsFlextApiProtocols"),
+    "m": (".models", "TestsFlextApiModels"),
+    "p": (".protocols", "TestsFlextApiProtocols"),
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
-    "t": ("tests.typings", "TestsFlextApiTypes"),
-    "u": ("tests.utilities", "TestsFlextApiUtilities"),
+    "t": (".typings", "TestsFlextApiTypes"),
+    "u": (".utilities", "TestsFlextApiUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 

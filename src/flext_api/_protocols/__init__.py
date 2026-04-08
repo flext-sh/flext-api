@@ -8,8 +8,8 @@ from __future__ import annotations
 from flext_core.lazy import install_lazy_exports
 
 _LAZY_IMPORTS = {
-    "FlextApiPlugins": ("flext_api._protocols.plugins", "FlextApiPlugins"),
-    "FlextApiTransports": ("flext_api._protocols.transports", "FlextApiTransports"),
+    "FlextApiPlugins": ".plugins",
+    "FlextApiTransports": ".transports",
 }
 
 
