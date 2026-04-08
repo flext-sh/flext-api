@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_core.lazy import install_lazy_exports, merge_lazy_imports
+from flext_core.lazy import install_lazy_exports
 
 if _t.TYPE_CHECKING:
     from flext_core.decorators import FlextDecorators as d
@@ -21,41 +21,24 @@ if _t.TYPE_CHECKING:
     from tests.protocols import TestsFlextApiProtocols, TestsFlextApiProtocols as p
     from tests.typings import TestsFlextApiTypes, TestsFlextApiTypes as t
     from tests.utilities import TestsFlextApiUtilities, TestsFlextApiUtilities as u
-_LAZY_IMPORTS = merge_lazy_imports(
-    ("tests.unit",),
-    {
-        "TestsFlextApiConstants": ("tests.constants", "TestsFlextApiConstants"),
-        "TestsFlextApiModels": ("tests.models", "TestsFlextApiModels"),
-        "TestsFlextApiProtocols": ("tests.protocols", "TestsFlextApiProtocols"),
-        "TestsFlextApiTypes": ("tests.typings", "TestsFlextApiTypes"),
-        "TestsFlextApiUtilities": ("tests.utilities", "TestsFlextApiUtilities"),
-        "c": ("tests.constants", "TestsFlextApiConstants"),
-        "conftest": "tests.conftest",
-        "constants": "tests.constants",
-        "d": ("flext_core.decorators", "FlextDecorators"),
-        "e": ("flext_core.exceptions", "FlextExceptions"),
-        "h": ("flext_core.handlers", "FlextHandlers"),
-        "m": ("tests.models", "TestsFlextApiModels"),
-        "models": "tests.models",
-        "p": ("tests.protocols", "TestsFlextApiProtocols"),
-        "protocols": "tests.protocols",
-        "r": ("flext_core.result", "FlextResult"),
-        "s": ("flext_core.service", "FlextService"),
-        "t": ("tests.typings", "TestsFlextApiTypes"),
-        "typings": "tests.typings",
-        "u": ("tests.utilities", "TestsFlextApiUtilities"),
-        "unit": "tests.unit",
-        "utilities": "tests.utilities",
-        "x": ("flext_core.mixins", "FlextMixins"),
-    },
-)
-_ = _LAZY_IMPORTS.pop("cleanup_submodule_namespace", None)
-_ = _LAZY_IMPORTS.pop("install_lazy_exports", None)
-_ = _LAZY_IMPORTS.pop("lazy_getattr", None)
-_ = _LAZY_IMPORTS.pop("logger", None)
-_ = _LAZY_IMPORTS.pop("merge_lazy_imports", None)
-_ = _LAZY_IMPORTS.pop("output", None)
-_ = _LAZY_IMPORTS.pop("output_reporting", None)
+_LAZY_IMPORTS = {
+    "TestsFlextApiConstants": ("tests.constants", "TestsFlextApiConstants"),
+    "TestsFlextApiModels": ("tests.models", "TestsFlextApiModels"),
+    "TestsFlextApiProtocols": ("tests.protocols", "TestsFlextApiProtocols"),
+    "TestsFlextApiTypes": ("tests.typings", "TestsFlextApiTypes"),
+    "TestsFlextApiUtilities": ("tests.utilities", "TestsFlextApiUtilities"),
+    "c": ("tests.constants", "TestsFlextApiConstants"),
+    "d": ("flext_core.decorators", "FlextDecorators"),
+    "e": ("flext_core.exceptions", "FlextExceptions"),
+    "h": ("flext_core.handlers", "FlextHandlers"),
+    "m": ("tests.models", "TestsFlextApiModels"),
+    "p": ("tests.protocols", "TestsFlextApiProtocols"),
+    "r": ("flext_core.result", "FlextResult"),
+    "s": ("flext_core.service", "FlextService"),
+    "t": ("tests.typings", "TestsFlextApiTypes"),
+    "u": ("tests.utilities", "TestsFlextApiUtilities"),
+    "x": ("flext_core.mixins", "FlextMixins"),
+}
 
 __all__ = [
     "TestsFlextApiConstants",
@@ -64,22 +47,15 @@ __all__ = [
     "TestsFlextApiTypes",
     "TestsFlextApiUtilities",
     "c",
-    "conftest",
-    "constants",
     "d",
     "e",
     "h",
     "m",
-    "models",
     "p",
-    "protocols",
     "r",
     "s",
     "t",
-    "typings",
     "u",
-    "unit",
-    "utilities",
     "x",
 ]
 

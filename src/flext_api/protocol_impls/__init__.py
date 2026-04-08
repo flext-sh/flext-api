@@ -40,14 +40,6 @@ _LAZY_IMPORTS = {
         "flext_api.protocol_impls.http",
         "FlextWebProtocolPlugin",
     ),
-    "base": "flext_api.protocol_impls.base",
-    "http": "flext_api.protocol_impls.http",
-    "http_client": "flext_api.protocol_impls.http_client",
-    "logger": "flext_api.protocol_impls.logger",
-    "rfc": "flext_api.protocol_impls.rfc",
-    "sse": "flext_api.protocol_impls.sse",
-    "storage_backend": "flext_api.protocol_impls.storage_backend",
-    "websocket": "flext_api.protocol_impls.websocket",
 }
 
 
