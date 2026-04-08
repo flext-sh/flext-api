@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_core.lazy import install_lazy_exports, merge_lazy_imports
+from flext_core.lazy import install_lazy_exports
 
 if _t.TYPE_CHECKING:
     import tests.conftest as _tests_conftest
@@ -29,21 +29,8 @@ if _t.TYPE_CHECKING:
     from tests.protocols import FlextApiTestProtocols, FlextApiTestProtocols as p
 
     typings = _tests_typings
-    import tests.unit as _tests_unit
-    from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
-
-    unit = _tests_unit
     import tests.utilities as _tests_utilities
-    from tests.unit import (
-        TestConstants,
-        TestFacadeInheritance,
-        TestMessagePackUnpackb,
-        TestModels,
-        TestSerializers,
-        test_package_imports_main_facade,
-        test_serializers,
-        test_smoke,
-    )
+    from tests.typings import FlextApiTestTypes, FlextApiTestTypes as t
 
     utilities = _tests_utilities
     from flext_core.decorators import FlextDecorators as d
@@ -53,41 +40,31 @@ if _t.TYPE_CHECKING:
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
     from tests.utilities import FlextApiTestUtilities, FlextApiTestUtilities as u
-_LAZY_IMPORTS = merge_lazy_imports(
-    ("tests.unit",),
-    {
-        "FlextApiTestConstants": ("tests.constants", "FlextApiTestConstants"),
-        "FlextApiTestModels": ("tests.models", "FlextApiTestModels"),
-        "FlextApiTestProtocols": ("tests.protocols", "FlextApiTestProtocols"),
-        "FlextApiTestTypes": ("tests.typings", "FlextApiTestTypes"),
-        "FlextApiTestUtilities": ("tests.utilities", "FlextApiTestUtilities"),
-        "c": ("tests.constants", "FlextApiTestConstants"),
-        "conftest": "tests.conftest",
-        "constants": "tests.constants",
-        "d": ("flext_core.decorators", "FlextDecorators"),
-        "e": ("flext_core.exceptions", "FlextExceptions"),
-        "h": ("flext_core.handlers", "FlextHandlers"),
-        "m": ("tests.models", "FlextApiTestModels"),
-        "models": "tests.models",
-        "p": ("tests.protocols", "FlextApiTestProtocols"),
-        "protocols": "tests.protocols",
-        "pytest_plugins": ("tests.conftest", "pytest_plugins"),
-        "r": ("flext_core.result", "FlextResult"),
-        "s": ("flext_core.service", "FlextService"),
-        "t": ("tests.typings", "FlextApiTestTypes"),
-        "typings": "tests.typings",
-        "u": ("tests.utilities", "FlextApiTestUtilities"),
-        "unit": "tests.unit",
-        "utilities": "tests.utilities",
-        "x": ("flext_core.mixins", "FlextMixins"),
-    },
-)
-_ = _LAZY_IMPORTS.pop("cleanup_submodule_namespace", None)
-_ = _LAZY_IMPORTS.pop("install_lazy_exports", None)
-_ = _LAZY_IMPORTS.pop("lazy_getattr", None)
-_ = _LAZY_IMPORTS.pop("merge_lazy_imports", None)
-_ = _LAZY_IMPORTS.pop("output", None)
-_ = _LAZY_IMPORTS.pop("output_reporting", None)
+_LAZY_IMPORTS = {
+    "FlextApiTestConstants": ("tests.constants", "FlextApiTestConstants"),
+    "FlextApiTestModels": ("tests.models", "FlextApiTestModels"),
+    "FlextApiTestProtocols": ("tests.protocols", "FlextApiTestProtocols"),
+    "FlextApiTestTypes": ("tests.typings", "FlextApiTestTypes"),
+    "FlextApiTestUtilities": ("tests.utilities", "FlextApiTestUtilities"),
+    "c": ("tests.constants", "FlextApiTestConstants"),
+    "conftest": "tests.conftest",
+    "constants": "tests.constants",
+    "d": ("flext_core.decorators", "FlextDecorators"),
+    "e": ("flext_core.exceptions", "FlextExceptions"),
+    "h": ("flext_core.handlers", "FlextHandlers"),
+    "m": ("tests.models", "FlextApiTestModels"),
+    "models": "tests.models",
+    "p": ("tests.protocols", "FlextApiTestProtocols"),
+    "protocols": "tests.protocols",
+    "pytest_plugins": ("tests.conftest", "pytest_plugins"),
+    "r": ("flext_core.result", "FlextResult"),
+    "s": ("flext_core.service", "FlextService"),
+    "t": ("tests.typings", "FlextApiTestTypes"),
+    "typings": "tests.typings",
+    "u": ("tests.utilities", "FlextApiTestUtilities"),
+    "utilities": "tests.utilities",
+    "x": ("flext_core.mixins", "FlextMixins"),
+}
 
 __all__ = [
     "FlextApiTestConstants",
@@ -95,11 +72,6 @@ __all__ = [
     "FlextApiTestProtocols",
     "FlextApiTestTypes",
     "FlextApiTestUtilities",
-    "TestConstants",
-    "TestFacadeInheritance",
-    "TestMessagePackUnpackb",
-    "TestModels",
-    "TestSerializers",
     "c",
     "conftest",
     "constants",
@@ -114,12 +86,8 @@ __all__ = [
     "r",
     "s",
     "t",
-    "test_package_imports_main_facade",
-    "test_serializers",
-    "test_smoke",
     "typings",
     "u",
-    "unit",
     "utilities",
     "x",
 ]
