@@ -3,21 +3,23 @@
 
 from __future__ import annotations
 
-from flext_core.lazy import install_lazy_exports
+from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
-_LAZY_IMPORTS = {
-    "FlextApiAdapters": ".adapters",
-    "FlextApiApp": ".app",
-    "FlextApiClient": ".client",
-    "FlextApiLifecycleManager": ".lifecycle_manager",
-    "FlextApiMiddleware": ".middleware",
-    "FlextApiRegistry": ".registry",
-    "FlextApiSerializers": ".serializers",
-    "FlextApiServerFactory": ".server_factory",
-    "FlextApiSettingsManager": ".settings_manager",
-    "FlextApiStorage": ".storage",
-    "FlextWebhookHandler": ".webhook",
-}
+_LAZY_IMPORTS = build_lazy_import_map(
+    {
+        ".adapters": ("FlextApiAdapters",),
+        ".app": ("FlextApiApp",),
+        ".client": ("FlextApiClient",),
+        ".lifecycle_manager": ("FlextApiLifecycleManager",),
+        ".middleware": ("FlextApiMiddleware",),
+        ".registry": ("FlextApiRegistry",),
+        ".serializers": ("FlextApiSerializers",),
+        ".server_factory": ("FlextApiServerFactory",),
+        ".settings_manager": ("FlextApiSettingsManager",),
+        ".storage": ("FlextApiStorage",),
+        ".webhook": ("FlextWebhookHandler",),
+    },
+)
 
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

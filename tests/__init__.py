@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_core.lazy import install_lazy_exports
+from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if _t.TYPE_CHECKING:
     from flext_core.decorators import FlextDecorators as d
@@ -19,24 +19,28 @@ if _t.TYPE_CHECKING:
     from tests.protocols import TestsFlextApiProtocols, TestsFlextApiProtocols as p
     from tests.typings import TestsFlextApiTypes, TestsFlextApiTypes as t
     from tests.utilities import TestsFlextApiUtilities, TestsFlextApiUtilities as u
-_LAZY_IMPORTS = {
-    "TestsFlextApiConstants": ".constants",
-    "TestsFlextApiModels": ".models",
-    "TestsFlextApiProtocols": ".protocols",
-    "TestsFlextApiTypes": ".typings",
-    "TestsFlextApiUtilities": ".utilities",
-    "c": (".constants", "TestsFlextApiConstants"),
-    "d": ("flext_core.decorators", "FlextDecorators"),
-    "e": ("flext_core.exceptions", "FlextExceptions"),
-    "h": ("flext_core.handlers", "FlextHandlers"),
-    "m": (".models", "TestsFlextApiModels"),
-    "p": (".protocols", "TestsFlextApiProtocols"),
-    "r": ("flext_core.result", "FlextResult"),
-    "s": ("flext_core.service", "FlextService"),
-    "t": (".typings", "TestsFlextApiTypes"),
-    "u": (".utilities", "TestsFlextApiUtilities"),
-    "x": ("flext_core.mixins", "FlextMixins"),
-}
+_LAZY_IMPORTS = build_lazy_import_map(
+    {
+        ".constants": ("TestsFlextApiConstants",),
+        ".models": ("TestsFlextApiModels",),
+        ".protocols": ("TestsFlextApiProtocols",),
+        ".typings": ("TestsFlextApiTypes",),
+        ".utilities": ("TestsFlextApiUtilities",),
+    },
+    alias_groups={
+        ".constants": (("c", "TestsFlextApiConstants"),),
+        ".models": (("m", "TestsFlextApiModels"),),
+        ".protocols": (("p", "TestsFlextApiProtocols"),),
+        ".typings": (("t", "TestsFlextApiTypes"),),
+        ".utilities": (("u", "TestsFlextApiUtilities"),),
+        "flext_core.decorators": (("d", "FlextDecorators"),),
+        "flext_core.exceptions": (("e", "FlextExceptions"),),
+        "flext_core.handlers": (("h", "FlextHandlers"),),
+        "flext_core.mixins": (("x", "FlextMixins"),),
+        "flext_core.result": (("r", "FlextResult"),),
+        "flext_core.service": (("s", "FlextService"),),
+    },
+)
 
 __all__ = [
     "TestsFlextApiConstants",
