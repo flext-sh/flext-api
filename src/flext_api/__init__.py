@@ -41,18 +41,6 @@ if _t.TYPE_CHECKING:
     )
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
     from flext_api.protocols import FlextApiProtocols, p
-    from flext_api.schemas._shared import (
-        FlextApiSchemaShared,
-        is_container_value,
-        is_object_mapping,
-        load_and_validate_schema_document,
-        load_schema_document,
-        normalize_json_object,
-        parse_dict_field,
-        parse_int_field,
-        parse_string_field,
-        to_general_value,
-    )
     from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
     from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
@@ -60,12 +48,7 @@ if _t.TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
-    from flext_core.decorators import d
-    from flext_core.exceptions import e
-    from flext_core.handlers import h
-    from flext_core.mixins import x
-    from flext_core.result import r
-    from flext_core.service import s
+    from flext_web import d, e, h, r, s, x
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",
@@ -109,12 +92,14 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextApiUtilities",
                 "u",
             ),
-            "flext_core.decorators": ("d",),
-            "flext_core.exceptions": ("e",),
-            "flext_core.handlers": ("h",),
-            "flext_core.mixins": ("x",),
-            "flext_core.result": ("r",),
-            "flext_core.service": ("s",),
+            "flext_web": (
+                "d",
+                "e",
+                "h",
+                "r",
+                "s",
+                "x",
+            ),
         },
     ),
     exclude_names=(
@@ -151,7 +136,6 @@ __all__ = [
     "FlextApiProtocols",
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
-    "FlextApiSchemaShared",
     "FlextApiServer",
     "FlextApiServerFactory",
     "FlextApiSettings",
@@ -179,20 +163,11 @@ __all__ = [
     "d",
     "e",
     "h",
-    "is_container_value",
-    "is_object_mapping",
-    "load_and_validate_schema_document",
-    "load_schema_document",
     "m",
-    "normalize_json_object",
     "p",
-    "parse_dict_field",
-    "parse_int_field",
-    "parse_string_field",
     "r",
     "s",
     "t",
-    "to_general_value",
     "u",
     "x",
 ]

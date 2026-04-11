@@ -161,7 +161,7 @@ class FlextApiModels(FlextWebModels, m):
             ]
 
             @computed_field
-            def is_client_error(self) -> bool:
+            def client_error(self) -> bool:
                 """Check if response indicates client error (4xx status code)."""
                 return (
                     c.Api.HTTP_CLIENT_ERROR_MIN
@@ -170,12 +170,12 @@ class FlextApiModels(FlextWebModels, m):
                 )
 
             @computed_field
-            def is_error(self) -> bool:
+            def error(self) -> bool:
                 """Check if response indicates any error (4xx or 5xx status code)."""
                 return self.status_code >= c.Api.HTTP_ERROR_MIN
 
             @computed_field
-            def is_redirect(self) -> bool:
+            def redirect(self) -> bool:
                 """Check if response indicates redirect (3xx status code)."""
                 return (
                     c.Api.HTTP_REDIRECT_MIN
@@ -184,12 +184,12 @@ class FlextApiModels(FlextWebModels, m):
                 )
 
             @computed_field
-            def is_server_error(self) -> bool:
+            def server_error(self) -> bool:
                 """Check if response indicates server error (5xx status code)."""
                 return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
             @computed_field
-            def is_success(self) -> bool:
+            def success(self) -> bool:
                 """Check if response indicates success (2xx status code)."""
                 return (
                     c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX
@@ -225,7 +225,7 @@ class FlextApiModels(FlextWebModels, m):
                 return ""
 
             @computed_field
-            def is_valid(self) -> bool:
+            def valid(self) -> bool:
                 """Check if URL is valid."""
                 scheme_value = self._parsed_url.scheme
                 netloc_value = self._parsed_url.netloc
@@ -312,7 +312,7 @@ class FlextApiModels(FlextWebModels, m):
             ]
 
             @computed_field
-            def is_configured(self) -> bool:
+            def configured(self) -> bool:
                 """Check if configuration is valid."""
                 if not self.base_url:
                     return False
@@ -411,7 +411,7 @@ class FlextApiModels(FlextWebModels, m):
             ]
 
             @computed_field
-            def is_client_error(self) -> bool:
+            def client_error(self) -> bool:
                 """Check if error is client-side (4xx)."""
                 return (
                     c.Api.HTTP_CLIENT_ERROR_MIN
@@ -420,7 +420,7 @@ class FlextApiModels(FlextWebModels, m):
                 )
 
             @computed_field
-            def is_server_error(self) -> bool:
+            def server_error(self) -> bool:
                 """Check if error is server-side (5xx)."""
                 return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
@@ -438,7 +438,7 @@ class FlextApiModels(FlextWebModels, m):
                 ),
             ] = Field(default_factory=dict)
 
-            def get_param(self, name: str) -> t.Api.WebParamValue:
+            def resolve_param(self, name: str) -> t.Api.WebParamValue:
                 """Get query parameter value."""
                 if name in self.params:
                     return self.params[name]
@@ -459,7 +459,7 @@ class FlextApiModels(FlextWebModels, m):
                 ),
             ] = Field(default_factory=dict)
 
-            def get_header(self, name: str) -> str:
+            def resolve_header(self, name: str) -> str:
                 """Get header value (case-insensitive)."""
                 for key, value in self.headers.items():
                     if key.lower() == name.lower():
@@ -799,7 +799,7 @@ class FlextApiModels(FlextWebModels, m):
                 ttl: float | int | None = None
                 created_at: float = Field(default_factory=time.time)
 
-                def is_expired(self) -> bool:
+                def expired(self) -> bool:
                     """Check if entry has expired using Pydantic-validated TTL."""
                     if self.ttl is None:
                         return False

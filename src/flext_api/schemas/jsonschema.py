@@ -98,7 +98,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             "regex",
         ]
 
-    def get_supported_schemas(self) -> t.StrSequence:
+    def supported_schemas(self) -> t.StrSequence:
         """Get list of supported schema types.
 
         Returns:
@@ -130,7 +130,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
         if suffix in {".yaml", ".yml"}:
             parsed_result = u.Cli.yaml_parse(text)
-            if parsed_result.is_failure:
+            if parsed_result.failure:
                 return r[t.ContainerValue].fail(
                     f"Failed to parse YAML schema: {parsed_result.error}",
                 )
@@ -165,7 +165,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                 )
             schema_definition[key] = self._to_container_value(value)
         validation_result = self.validate_schema(schema_definition)
-        if validation_result.is_failure:
+        if validation_result.failure:
             return r[t.ContainerValue].fail(
                 f"Invalid JSON schema: {validation_result.error}",
             )
@@ -200,7 +200,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
 
         """
         schema_validation = self._validate_instance_schema(schema)
-        if schema_validation.is_failure:
+        if schema_validation.failure:
             return r[t.ContainerValueMapping].fail(
                 schema_validation.error or "Schema basic structure validation failed",
             )
@@ -211,7 +211,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             self._validate_array_items(instance, schema),
         ]
         for validation_result in validations:
-            if validation_result.is_failure:
+            if validation_result.failure:
                 return r[t.ContainerValueMapping].fail(
                     validation_result.error or "Schema validation failed",
                 )
@@ -266,7 +266,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         for key, value in schema.items():
             schema_def[key] = self._to_container_value(value)
         schema_result = self.validate_schema(schema_def)
-        if schema_result.is_failure:
+        if schema_result.failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
         payload_typed: t.MutableContainerValueMapping = {}
         for key, value in payload.items():
@@ -291,7 +291,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
 
         """
         schema_dict_result = self._validate_schema_basic_structure(schema)
-        if schema_dict_result.is_failure:
+        if schema_dict_result.failure:
             return r[t.ContainerValueMapping].fail(
                 schema_dict_result.error or "Schema basic structure validation failed",
             )
@@ -305,7 +305,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             self._validate_schema_format(schema_dict),
         ]
         for validation_result in validations:
-            if validation_result.is_failure:
+            if validation_result.failure:
                 return r[t.ContainerValueMapping].fail(
                     validation_result.error or "Schema validation failed",
                 )
@@ -358,7 +358,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                 for i, item in enumerate(instance_list):
                     item_typed = self._to_general_value(item)
                     item_result = self.validate_instance(item_typed, items_field_typed)
-                    if item_result.is_failure:
+                    if item_result.failure:
                         return r[bool].fail(
                             f"Invalid array item[{i}]: {item_result.error}",
                         )
@@ -488,7 +488,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                                     prop_value_typed,
                                     prop_schema_typed,
                                 )
-                                if prop_result.is_failure:
+                                if prop_result.failure:
                                     return r[bool].fail(
                                         f"Invalid property '{prop_name}': {prop_result.error}",
                                     )
@@ -561,14 +561,14 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         match items:
             case dict() as items_schema:
                 items_result = self.validate_schema(items_schema)
-                if items_result.is_failure:
+                if items_result.failure:
                     return r[bool].fail(f"Invalid items schema: {items_result.error}")
             case list() as item_schemas:
                 for i, item_schema in enumerate(item_schemas):
                     match item_schema:
                         case dict() as item_schema_typed:
                             item_result = self.validate_schema(item_schema_typed)
-                            if item_result.is_failure:
+                            if item_result.failure:
                                 return r[bool].fail(
                                     f"Invalid items[{i}] schema: {item_result.error}",
                                 )
@@ -595,7 +595,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             match prop_schema:
                 case dict() as prop_schema_dict:
                     prop_result = self.validate_schema(prop_schema_dict)
-                    if prop_result.is_failure:
+                    if prop_result.failure:
                         return r[bool].fail(
                             f"Invalid property schema '{prop_name}': {prop_result.error}",
                         )

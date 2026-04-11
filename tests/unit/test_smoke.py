@@ -115,7 +115,7 @@ class TestSerializers:
         original: t.HeaderMapping = {"hello": "world", "count": 42}
         packed = FlextApiUtilitiesSerializers.MessagePack.packb(original)
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(packed)
-        tm.that(result.is_success, eq=True)
+        tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
 
 

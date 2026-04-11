@@ -113,7 +113,7 @@ class FlextApiStorage:
             all_deleted = True
             for key in keys:
                 delete_result = self.delete(key)
-                if delete_result.is_failure:
+                if delete_result.failure:
                     all_deleted = False
             if all_deleted:
                 return r[bool].ok(value=True)
@@ -127,7 +127,7 @@ class FlextApiStorage:
             result_dict: MutableMapping[str, t.ApiJsonValue] = {}
             for key in keys:
                 get_result = self.get(key)
-                if get_result.is_success:
+                if get_result.success:
                     unwrapped = get_result.value
                     result_dict[key] = unwrapped
             return r[Mapping[str, t.ApiJsonValue]].ok(result_dict)
@@ -143,7 +143,7 @@ class FlextApiStorage:
         try:
             for key, value in data.items():
                 result = self.set(key, value, ttl=ttl)
-                if result.is_failure:
+                if result.failure:
                     return result
             return r[bool].ok(value=True)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
@@ -233,7 +233,7 @@ class FlextApiStorage:
         namespaced_key = self._key(key)
         if namespaced_key in self._storage:
             result = self._process_namespaced_entry(namespaced_key, key)
-            if result.is_success:
+            if result.success:
                 return result
         self._stats = m.Api.Storage.Stats(
             total_operations=self._stats.total_operations,
@@ -246,7 +246,7 @@ class FlextApiStorage:
         )
         return r[t.ApiJsonValue].fail(f"Key not found: {key}")
 
-    def get_cache_stats(self) -> r[t.Api.CacheDict]:
+    def cache_stats(self) -> r[t.Api.CacheDict]:
         """Get cache statistics using Pydantic validation."""
 
         def _get_stats() -> t.Api.CacheDict:
@@ -262,7 +262,7 @@ class FlextApiStorage:
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
-    def get_storage_metrics(self) -> r[t.IntMapping]:
+    def storage_metrics(self) -> r[t.IntMapping]:
         """Get complete storage metrics."""
 
         def _get_metrics() -> t.IntMapping:
@@ -277,7 +277,7 @@ class FlextApiStorage:
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Failed to get metrics: {e}")
 
-    def get_storage_statistics(self) -> r[Mapping[str, float]]:
+    def storage_statistics(self) -> r[Mapping[str, float]]:
         """Get storage statistics with hit ratio calculation."""
 
         def _get_statistics() -> Mapping[str, float]:
@@ -418,7 +418,7 @@ class FlextApiStorage:
             ),
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Metadata validation failed: {e}")
-        if metadata_result.is_failure:
+        if metadata_result.failure:
             return r[bool].fail(metadata_result.error)
         metadata = metadata_result.value
         json_value = value
@@ -466,24 +466,24 @@ class FlextApiStorage:
     ) -> None:
         """Apply normalized config to instance attributes - no fallbacks."""
         namespace_result = self._extract_namespace(config_dict)
-        if namespace_result.is_failure:
+        if namespace_result.failure:
             error_msg = f"Failed to extract namespace: {namespace_result.error}"
             raise ValueError(error_msg)
         self._namespace = namespace_result.value
         max_size_result = self._extract_max_size(config_dict, max_size_val)
-        if max_size_result.is_failure:
+        if max_size_result.failure:
             error_msg = f"Failed to extract max_size: {max_size_result.error}"
             raise ValueError(error_msg)
         max_size_value = max_size_result.value
         self._max_size = None if max_size_value == -1 else max_size_value
         default_ttl_result = self._extract_default_ttl(config_dict, default_ttl_val)
-        if default_ttl_result.is_failure:
+        if default_ttl_result.failure:
             error_msg = f"Failed to extract default_ttl: {default_ttl_result.error}"
             raise ValueError(error_msg)
         default_ttl_value = default_ttl_result.value
         self._default_ttl = None if default_ttl_value == -1 else default_ttl_value
         backend_result = self._extract_backend(config_dict)
-        if backend_result.is_failure:
+        if backend_result.failure:
             error_msg = f"Failed to extract backend: {backend_result.error}"
             raise ValueError(error_msg)
         self._backend = backend_result.value
@@ -552,7 +552,7 @@ class FlextApiStorage:
                 lambda: t.Api.INTEGER_ADAPTER.validate_python(param_val),
                 catch=(ValidationError,),
             ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
-            if int_result.is_failure:
+            if int_result.failure:
                 return int_result
             int_value = int_result.value
             if int_value > 0:
@@ -567,7 +567,7 @@ class FlextApiStorage:
                     lambda: t.Api.INTEGER_ADAPTER.validate_python(config_val),
                     catch=(ValidationError,),
                 ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
-                if int_result.is_failure:
+                if int_result.failure:
                     return int_result
                 int_value = int_result.value
                 if int_value > 0:
@@ -727,7 +727,7 @@ class FlextApiStorage:
                 ttl=ttl_int,
                 created_at=created_at_float,
             )
-            if not metadata.is_expired():
+            if not metadata.expired():
                 self._stats = m.Api.Storage.Stats(
                     total_operations=self._stats.total_operations,
                     cache_hits=self._stats.cache_hits + 1,

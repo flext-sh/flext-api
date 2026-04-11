@@ -64,10 +64,10 @@ def example_storage_usage() -> None:
         "status_code": 200,
     }
     set_result = storage.set("example_key", cache_value, timeout=300)
-    if set_result.is_success:
+    if set_result.success:
         print("✅ Data stored successfully")
         get_result = storage.get("example_key")
-        if get_result.is_success:
+        if get_result.success:
             print(f"✅ Data retrieved: {get_result.value}")
         else:
             print(f"❌ Data retrieval failed: {get_result.error}")
@@ -81,7 +81,7 @@ def example_utilities_usage() -> None:
     url_result = FlextApiUtilities.FlextWebValidator.validate_url(
         "https://example.com/api/v1",
     )
-    if url_result.is_success:
+    if url_result.success:
         print(f"✅ URL validation successful: {url_result.value}")
     else:
         print(f"❌ URL validation failed: {url_result.error}")
@@ -89,7 +89,7 @@ def example_utilities_usage() -> None:
         data={"users": [{"id": 1, "name": "John"}]},
         message="Users retrieved successfully",
     )
-    if response_result.is_success:
+    if response_result.success:
         print("✅ Response built successfully")
         print(f"   Status: {response_result.value['status']}")
         print(f"   Message: {response_result.value['message']}")
@@ -146,12 +146,12 @@ def example_batch_operations() -> None:
                 key,
                 {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200},
             )
-            if result.is_success:
+            if result.success:
                 print(f"✅ Set {key} successfully")
             else:
                 print(f"❌ Failed to set {key}: {result.error}")
         size_result = storage.size()
-        if size_result.is_success:
+        if size_result.success:
             print(f"✅ Cache size: {size_result.value} items")
         else:
             print(f"❌ Failed to get cache size: {size_result.error}")

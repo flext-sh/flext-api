@@ -170,7 +170,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         self.initialize().tap_error(_log_initialize_error)
 
     @property
-    def is_connected(self) -> bool:
+    def connected(self) -> bool:
         """Check if WebSocket is connected."""
         return self._connected
 
@@ -215,7 +215,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
     @override
-    def get_supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols.
 
         Returns:
@@ -301,23 +301,23 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             )
             return r[t.ContainerValueMapping].fail(details)
         message_result = self._extract_message(request, options)
-        if message_result.is_failure:
+        if message_result.failure:
             return r[t.ContainerValueMapping].fail(
                 message_result.error or "Message extraction failed",
             )
         message_type = self._extract_message_type(options)
         connect_result = self._ensure_connected(request)
-        if connect_result.is_failure:
+        if connect_result.failure:
             return r[t.ContainerValueMapping].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
         send_result = self._send_message(message_result.value, message_type)
-        if send_result.is_failure:
+        if send_result.failure:
             return r[t.ContainerValueMapping].fail(
                 f"WebSocket send failed: {send_result.error}",
             )
         url_result = self._extract_url(request)
-        if url_result.is_failure:
+        if url_result.failure:
             return r[t.ContainerValueMapping].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
@@ -399,7 +399,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         if self._connected:
             return r[bool].ok(value=True)
         url_result = self._extract_url(request)
-        if url_result.is_failure:
+        if url_result.failure:
             return r[bool].fail(url_result.error or "URL extraction failed")
         headers = self._extract_headers(request)
         return self._connect(url_result.value, headers)
@@ -481,7 +481,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             self.logger.info(attempt_msg, delay=delay)
             time.sleep(delay)
             connect_result = self._connect(self._url, self._headers)
-            if connect_result.is_success:
+            if connect_result.success:
                 self.logger.info("WebSocket reconnected successfully")
                 return connect_result
         return r[bool].fail(

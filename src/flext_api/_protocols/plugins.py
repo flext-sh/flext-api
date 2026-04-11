@@ -52,7 +52,7 @@ class FlextApiPlugins:
     class Protocol(_FlextApiPluginBase):
         """Abstract protocol plugin for API protocol implementations."""
 
-        def get_supported_protocols(self) -> t.StrSequence:
+        def supported_protocols(self) -> t.StrSequence:
             """Get list of supported protocols."""
             return []
 
@@ -73,7 +73,7 @@ class FlextApiPlugins:
     class Schema(_FlextApiPluginBase):
         """Abstract schema plugin for schema validation and introspection."""
 
-        def get_schema_version(self) -> str:
+        def schema_version(self) -> str:
             """Get schema specification version."""
             return "unknown"
 
@@ -117,7 +117,7 @@ class FlextApiPlugins:
             """Close connection."""
             ...
 
-        def get_connection_info(self) -> t.JsonObject:
+        def connection_info(self) -> t.JsonObject:
             """Get connection information."""
             return {}
 
@@ -156,7 +156,7 @@ class FlextApiPlugins:
             """Add authentication to request."""
             ...
 
-        def get_auth_scheme(self) -> str:
+        def auth_scheme(self) -> str:
             """Get authentication scheme name."""
             return "Unknown"
 
@@ -184,7 +184,7 @@ class FlextApiPlugins:
             self.logger = FlextLogger(__name__)
             self._loaded_plugins: MutableMapping[str, FlextApiPlugins.Plugin] = {}
 
-        def get_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
+        def resolve_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
             """Get loaded plugin by name."""
             if plugin_name not in self._loaded_plugins:
                 return r[FlextApiPlugins.Plugin].fail(
@@ -192,7 +192,7 @@ class FlextApiPlugins:
                 )
             return r[FlextApiPlugins.Plugin].ok(self._loaded_plugins[plugin_name])
 
-        def get_plugins_by_type(
+        def resolve_plugins_by_type(
             self,
             plugin_type: type[FlextApiPlugins.Plugin],
         ) -> Sequence[FlextApiPlugins.Plugin]:
@@ -212,7 +212,7 @@ class FlextApiPlugins:
             if plugin.name in self._loaded_plugins:
                 return r[bool].fail(f"Plugin '{plugin.name}' already loaded")
             init_result = plugin.initialize()
-            if init_result.is_failure:
+            if init_result.failure:
                 return r[bool].fail(
                     f"Failed to initialize plugin '{plugin.name}': {init_result.error}",
                 )
@@ -225,7 +225,7 @@ class FlextApiPlugins:
             failed_plugins: t.StrSequence = [
                 plugin_name
                 for plugin_name in list(self._loaded_plugins.keys())
-                if self.unload_plugin(plugin_name).is_failure
+                if self.unload_plugin(plugin_name).failure
             ]
             if failed_plugins:
                 return r[bool].fail(

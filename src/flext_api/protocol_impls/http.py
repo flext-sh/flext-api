@@ -44,7 +44,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     Usage:
     plugin = FlextWebProtocolPlugin(http2=True, max_connections=100)
     result = plugin.send_request(request)
-    if result.is_success:
+    if result.success:
     response = result.value
     """
 
@@ -92,9 +92,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
 
     @override
-    def get_protocol_info(self) -> t.JsonObject:
+    def protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information."""
-        base_info = super().get_protocol_info()
+        base_info = super().protocol_info()
         updated_info: t.JsonObject = {
             **base_info,
             "http2_enabled": self._http2,
@@ -107,7 +107,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         return updated_info
 
     @override
-    def get_supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols."""
         if self._http3:
             return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
@@ -124,7 +124,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         for key, value in request.items():
             request_general[key] = u.Api.RequestUtils.to_json_value(value)
         request_result = self._build_http_request_from_dict(request_general)
-        if request_result.is_failure:
+        if request_result.failure:
             return r[t.ContainerValueMapping].fail(
                 request_result.error or "Request building failed",
             )
@@ -132,7 +132,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         method = http_request.method.upper()
         url = http_request.url
         headers_result = self._extract_headers_from_model(http_request)
-        if headers_result.is_failure:
+        if headers_result.failure:
             return r[t.ContainerValueMapping].fail(
                 headers_result.error or "Headers extraction failed",
             )
@@ -143,7 +143,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             url=url,
             follow_redirects=self._follow_redirects,
         )
-        if conn_result.is_failure:
+        if conn_result.failure:
             return r[t.ContainerValueMapping].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
@@ -181,7 +181,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         if chunk_size <= 0:
             return r[Iterator[bytes]].fail("chunk_size must be greater than 0")
         headers_result = self._extract_headers_from_model(request)
-        if headers_result.is_failure:
+        if headers_result.failure:
             return r[Iterator[bytes]].fail(
                 headers_result.error or "Headers extraction failed",
             )
@@ -245,17 +245,17 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     ) -> r[m.Api.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         validation_result = self._validate_request(request)
-        if validation_result.is_failure:
+        if validation_result.failure:
             return r[m.Api.HttpRequest].fail(
                 validation_result.error or "Request validation failed",
             )
         method_result = self._extract_method(request)
-        if method_result.is_failure:
+        if method_result.failure:
             return r[m.Api.HttpRequest].fail(
                 method_result.error or "Method extraction failed",
             )
         url_result = self._extract_url(request)
-        if url_result.is_failure:
+        if url_result.failure:
             return r[m.Api.HttpRequest].fail(
                 url_result.error or "URL extraction failed"
             )

@@ -206,7 +206,7 @@ class FlextApiServer(s[bool]):
             return self._host
 
         @property
-        def is_running(self) -> bool:
+        def running(self) -> bool:
             """Check if server is running."""
             return self._is_running
 
@@ -303,14 +303,14 @@ class FlextApiServer(s[bool]):
             if self._is_running:
                 return r[bool].fail("Server already running")
             app_result = self.create_app()
-            if app_result.is_failure:
+            if app_result.failure:
                 return r[bool].fail(f"Failed to create app: {app_result.error}")
             self._app = app_result.value
             middleware_result = self.apply_middleware(middleware_pipeline)
-            if middleware_result.is_failure:
+            if middleware_result.failure:
                 return middleware_result
             routes_result = self.register_routes(routes)
-            if routes_result.is_failure:
+            if routes_result.failure:
                 return routes_result
             self._is_running = True
             self._logger.info(
@@ -349,7 +349,7 @@ class FlextApiServer(s[bool]):
             title,
             version,
         )
-        if config_validation.is_failure:
+        if config_validation.failure:
             error_msg = f"Invalid server configuration: {config_validation.error}"
             raise e.ConfigurationError(error_msg)
         self._route_registry = self.RouteRegistry(logger)
@@ -370,9 +370,9 @@ class FlextApiServer(s[bool]):
         return self._lifecycle_manager.host
 
     @property
-    def is_running(self) -> bool:
+    def running(self) -> bool:
         """Check if server is running."""
-        return self._lifecycle_manager.is_running
+        return self._lifecycle_manager.running
 
     @property
     def port(self) -> int:
@@ -403,7 +403,7 @@ class FlextApiServer(s[bool]):
         """Execute server service (required by s)."""
         return r[bool].ok(True)
 
-    def get_app(self) -> r[FastAPI]:
+    def fetch_app(self) -> r[FastAPI]:
         """Get FastAPI application instance."""
         app = self._lifecycle_manager.app
         if not app:
@@ -439,7 +439,7 @@ class FlextApiServer(s[bool]):
             protocol_validation = r[str].fail("Protocol cannot be empty")
         else:
             protocol_validation = r[str].ok(protocol)
-        if protocol_validation.is_failure:
+        if protocol_validation.failure:
             return r[bool].fail(
                 protocol_validation.error or "Protocol validation failed",
             )
@@ -560,7 +560,7 @@ class FlextApiServer(s[bool]):
             title_result = r[str].fail("Title cannot be empty")
         else:
             title_result = r[str].ok(title)
-        if title_result.is_failure:
+        if title_result.failure:
             return r[bool].fail(title_result.error or "Title validation failed")
         version_result: r[str]
         if not version.strip():

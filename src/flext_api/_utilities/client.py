@@ -86,24 +86,24 @@ class FlextApiClient(s[FlextApiSettings]):
         content_type = response.headers.get("content-type", "").lower()
         if "application/octet-stream" in content_type or "binary" in content_type:
             bytes_result = FlextApiClient._deserialize_bytes(response)
-            if bytes_result.is_success:
+            if bytes_result.success:
                 return bytes_result.map(lambda v: v)
         if "application/json" in content_type or "application/vnd" in content_type:
             json_result = FlextApiClient._deserialize_json(response)
-            if json_result.is_success:
+            if json_result.success:
                 return json_result.map(lambda v: v)
         json_result = FlextApiClient._deserialize_json(response)
-        if json_result.is_success:
+        if json_result.success:
             return json_result.map(lambda v: v)
         if "text/" in content_type:
             text_result = FlextApiClient._deserialize_text(response)
-            if text_result.is_success:
+            if text_result.success:
                 return text_result.map(lambda v: v)
         text_result = FlextApiClient._deserialize_text(response)
-        if text_result.is_success:
+        if text_result.success:
             return text_result.map(lambda v: v)
         bytes_result = FlextApiClient._deserialize_bytes(response)
-        if bytes_result.is_success:
+        if bytes_result.success:
             return bytes_result.map(lambda v: v)
         return r[t.Api.ResponseBody].fail(
             "Failed to deserialize response body: no valid format found",
@@ -172,12 +172,12 @@ class FlextApiClient(s[FlextApiSettings]):
 
         """
         url_result = self._build_url(request.url)
-        if url_result.is_failure:
+        if url_result.failure:
             return r[m.Api.HttpResponse].fail(
                 url_result.error or "URL validation failed"
             )
         body_result = self._serialize_body(request.body)
-        if body_result.is_failure:
+        if body_result.failure:
             return r[m.Api.HttpResponse].fail(
                 body_result.error or "Body serialization failed",
             )

@@ -92,12 +92,12 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     ) -> r[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
-        if full_url_result.is_failure:
+        if full_url_result.failure:
             return r[t.Api.HttpResponseDict].fail(
                 full_url_result.error or "URL building failed",
             )
         options_result = self._build_request_options(kwargs)
-        if options_result.is_failure:
+        if options_result.failure:
             return r[t.Api.HttpResponseDict].fail(
                 options_result.error or "Invalid request options",
             )

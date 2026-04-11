@@ -26,7 +26,7 @@ from flext_core import r
 class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     """Server-Sent Events protocol plugin implementation."""
 
-    is_connected: bool
+    connected: bool
     last_event_id: str
     _connected: bool
     _on_event_handlers: MutableMapping[str, MutableSequence[Callable[..., None]]]
@@ -56,7 +56,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             version="1.0.0",
             description="Server-Sent Events protocol support with event stream handling",
         )
-        object.__setattr__(self, "is_connected", False)
+        object.__setattr__(self, "connected", False)
         object.__setattr__(self, "_connected", False)
         object.__setattr__(self, "last_event_id", "")
         object.__setattr__(self, "_on_event_handlers", {})
@@ -106,7 +106,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         self.initialize().tap_error(_log_initialize_error)
 
     @override
-    def get_supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols."""
         return [
             c.Api.SSE.Protocol.SSE,
@@ -138,7 +138,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     ) -> r[t.ContainerValueMapping]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
-        if validation_result.is_failure:
+        if validation_result.failure:
             return r[t.ContainerValueMapping].fail(
                 validation_result.error or "Request validation failed",
             )
@@ -148,7 +148,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[t.ContainerValueMapping].fail(details)
         url_result = self._extract_url(request)
-        if url_result.is_failure:
+        if url_result.failure:
             return r[t.ContainerValueMapping].fail(
                 url_result.error or "URL extraction failed",
             )
@@ -354,7 +354,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _set_connected_state(self, *, connected: bool) -> None:
         self._connected = connected
-        self.is_connected = connected
+        self.connected = connected
 
     def _sleep_before_reconnect(
         self,

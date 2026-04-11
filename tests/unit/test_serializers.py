@@ -28,7 +28,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        tm.that(result.is_success, eq=True)
+        tm.that(result.success, eq=True)
         tm.that(result.value, eq={"key": "value"})
 
     def test_unpackb_success_with_list(self) -> None:
@@ -40,7 +40,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        tm.that(result.is_success, eq=True)
+        tm.that(result.success, eq=True)
         tm.that(result.value, eq=[1, 2, 3])
 
     def test_unpackb_success_with_scalar(self) -> None:
@@ -52,7 +52,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        tm.that(result.is_success, eq=True)
+        tm.that(result.success, eq=True)
         tm.that(result.value, eq="hello")
 
     def test_unpackb_success_with_int(self) -> None:
@@ -64,7 +64,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        tm.that(result.is_success, eq=True)
+        tm.that(result.success, eq=True)
         tm.that(result.value, eq=42)
 
     def test_unpackb_failure_msgpack_not_available(self) -> None:
@@ -81,7 +81,7 @@ class TestMessagePackUnpackb:
             result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
             # Assert
-            tm.that(result.is_failure, eq=True)
+            tm.that(result.failure, eq=True)
             assert result.error is not None
             tm.that(result.error, has="msgpack module not available")
 
@@ -100,7 +100,7 @@ class TestMessagePackUnpackb:
             result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
             # Assert
-            tm.that(result.is_failure, eq=True)
+            tm.that(result.failure, eq=True)
             assert result.error is not None
             tm.that(result.error, has="msgpack.unpackb function not found")
 
@@ -113,7 +113,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
-        tm.that(result.is_failure, eq=True)
+        tm.that(result.failure, eq=True)
         assert result.error is not None
         tm.that(result.error, has="msgpack deserialization failed")
 
@@ -135,7 +135,7 @@ class TestMessagePackUnpackb:
             result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
             # Assert
-            tm.that(result.is_failure, eq=True)
+            tm.that(result.failure, eq=True)
             assert result.error is not None
             tm.that(result.error.lower(), has="validation")
 
@@ -148,7 +148,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert: verify r semantics (success case)
-        tm.that(result.is_success, eq=True)
-        tm.that(result.is_failure, eq=False)
+        tm.that(result.success, eq=True)
+        tm.that(result.failure, eq=False)
         tm.that(result.value, eq={"key": "value"})
         tm.that(result.error, eq=None)

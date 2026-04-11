@@ -47,7 +47,7 @@ class FlextApiUtilitiesSettingsManager:
                 self._config = {}
             else:
                 process_result = self._process_config(config)
-                if process_result.is_failure:
+                if process_result.failure:
                     return r[bool].fail(
                         process_result.error or "Configuration processing failed",
                     )
@@ -57,17 +57,17 @@ class FlextApiUtilitiesSettingsManager:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 
-    def get_client_config(self) -> r[m.Api.ClientConfig]:
+    def client_config(self) -> r[m.Api.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._config is None:
             return r[m.Api.ClientConfig].fail("No configuration set")
         headers_result = self._extract_headers()
-        if headers_result.is_failure:
+        if headers_result.failure:
             return r[m.Api.ClientConfig].fail(
                 headers_result.error or "Headers extraction failed",
             )
         base_url_result = self._extract_base_url()
-        if base_url_result.is_failure:
+        if base_url_result.failure:
             return r[m.Api.ClientConfig].fail(
                 base_url_result.error or "Base URL extraction failed",
             )
@@ -145,7 +145,7 @@ class FlextApiUtilitiesSettingsManager:
             ).map_error(
                 lambda _e: f"Max retries must be a valid integer: {max_retries_raw}",
             )
-            if retries_result.is_failure:
+            if retries_result.failure:
                 return retries_result
             max_retries_value = retries_result.value
         else:
@@ -169,7 +169,7 @@ class FlextApiUtilitiesSettingsManager:
                 lambda: float(raw_value),
                 catch=ValueError,
             ).map_error(lambda _e: f"{label} must be a valid number: {raw_value}")
-            if timeout_result.is_failure:
+            if timeout_result.failure:
                 return timeout_result
             float_value = timeout_result.value
         else:
@@ -214,7 +214,7 @@ class FlextApiUtilitiesSettingsManager:
         processed: t.MutableContainerValueMapping = {}
         for key, value in config.items():
             normalize_result = self._normalize_value(key, value=value)
-            if normalize_result.is_failure:
+            if normalize_result.failure:
                 return r[t.JsonObject].fail(
                     normalize_result.error or "Value normalization failed",
                 )
@@ -229,7 +229,7 @@ class FlextApiUtilitiesSettingsManager:
             key="timeout",
             label="Timeout",
         )
-        if timeout_result.is_failure:
+        if timeout_result.failure:
             return r[bool].fail(timeout_result.error or "Timeout extraction failed")
         max_retries_result = self._extract_max_retries()
         return max_retries_result.fold(

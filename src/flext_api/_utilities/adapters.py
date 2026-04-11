@@ -205,7 +205,7 @@ class FlextApiAdapters:
                     result = FlextApiAdapters.Http.adapt_http_request_to_websocket(
                         request,
                     )
-                    if result.is_success:
+                    if result.success:
                         return result
                     return r[t.JsonObject | m.Api.HttpRequest].fail(
                         result.error or "Adaptation failed",

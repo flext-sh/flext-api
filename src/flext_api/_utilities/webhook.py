@@ -87,8 +87,8 @@ class FlextWebhookHandler(s[bool]):
         super().__init__()
         self._container = FlextContainer()
         self._flext_context = FlextContext()
-        dispatcher_result = FlextContainer.get_global().get("command_bus")
-        if dispatcher_result.is_failure:
+        dispatcher_result = FlextContainer.instance().get("command_bus")
+        if dispatcher_result.failure:
             msg = f"Failed to get command_bus: {dispatcher_result.error}"
             raise RuntimeError(msg)
         dispatcher = dispatcher_result.unwrap()
@@ -122,7 +122,7 @@ class FlextWebhookHandler(s[bool]):
         """
         return r[bool].ok(True)
 
-    def get_delivery_status(self, event_id: str) -> r[t.JsonObject]:
+    def resolve_delivery_status(self, event_id: str) -> r[t.JsonObject]:
         """Get delivery status for event.
 
         Args:
@@ -136,7 +136,7 @@ class FlextWebhookHandler(s[bool]):
             return r[t.JsonObject].fail(f"Event not found: {event_id}")
         return r[t.JsonObject].ok(self._delivery_confirmations[event_id])
 
-    def get_queue_stats(self) -> t.JsonObject:
+    def queue_stats(self) -> t.JsonObject:
         """Get event queue statistics.
 
         Returns:
@@ -194,16 +194,16 @@ class FlextWebhookHandler(s[bool]):
         """
         if self._secret:
             signature_result = self._verify_signature(payload, headers)
-            if signature_result.is_failure:
+            if signature_result.failure:
                 return r[t.JsonObject].fail(
                     f"Signature verification failed: {signature_result.error}",
                 )
         parse_result = self._parse_payload(payload)
-        if parse_result.is_failure:
+        if parse_result.failure:
             return parse_result
         event_data = parse_result.value
         event_type_result = self._extract_event_type(event_data)
-        if event_type_result.is_failure:
+        if event_type_result.failure:
             return r[t.JsonObject].fail(
                 event_type_result.error or "Event type extraction failed",
             )
@@ -413,7 +413,7 @@ class FlextWebhookHandler(s[bool]):
         for handler in handlers:
             try:
                 result = handler(event_data)
-                if getattr(result, "is_failure", False):
+                if getattr(result, "failure", False):
                     raw_error = getattr(result, "error", None)
                     if raw_error is None:
                         return r[bool].fail("handler failed")
@@ -440,7 +440,7 @@ class FlextWebhookHandler(s[bool]):
         )
         time.sleep(delay)
         process_result = self._process_event(event)
-        if process_result.is_success:
+        if process_result.success:
             self._handle_successful_retry(event)
             return (True, False)
         should_retry = self._should_retry_event(event)

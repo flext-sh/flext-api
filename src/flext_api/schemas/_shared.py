@@ -198,7 +198,7 @@ class FlextApiSchemaShared:
 
         """
         schema_result = FlextApiSchemaShared.load_schema_document(schema_source)
-        if schema_result.is_failure:
+        if schema_result.failure:
             return r[t.ContainerValue].fail(
                 schema_result.error or f"Failed to load {schema_label} schema",
             )
@@ -209,7 +209,7 @@ class FlextApiSchemaShared:
             )
         normalized_schema = FlextApiSchemaShared.normalize_json_object(loaded_schema)
         validation_result = validate_schema(normalized_schema)
-        if validation_result.is_failure:
+        if validation_result.failure:
             return r[t.ContainerValue].fail(
                 f"Invalid {schema_label} schema: {validation_result.error}",
             )

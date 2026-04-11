@@ -88,7 +88,7 @@ class FlextApiTransports:
                     data,
                     connection_url=connection,
                 )
-                if params_result.is_failure:
+                if params_result.failure:
                     return r[t.Api.HttpResponseDict | str].fail(
                         params_result.error or "Parameter extraction failed",
                     )

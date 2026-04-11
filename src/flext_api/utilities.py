@@ -69,7 +69,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
 
                 def _coerce(v: str | StrEnum) -> StrEnum:
                     result = FlextWebUtilities.parse_enum(enum_cls, v)
-                    if result.is_failure:
+                    if result.failure:
                         msg = result.error or f"Invalid {enum_cls.__name__}: {v!r}"
                         raise ValueError(msg)
                     return enum_cls(v) if not isinstance(v, enum_cls) else v

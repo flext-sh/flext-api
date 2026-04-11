@@ -71,7 +71,7 @@ class FlextApiBaseProtocolImplementation:
         object.__setattr__(self, "_initialized", False)
 
     @property
-    def is_initialized(self) -> bool:
+    def initialized(self) -> bool:
         """Check if protocol is initialized."""
         return self._initialized
 
@@ -85,7 +85,7 @@ class FlextApiBaseProtocolImplementation:
             )
         return r[bool].ok(value=True)
 
-    def get_protocol_info(self) -> t.JsonObject:
+    def protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information.
 
         Returns:
@@ -97,10 +97,10 @@ class FlextApiBaseProtocolImplementation:
             "version": self.version,
             "description": self.description,
             "initialized": self._initialized,
-            "supported_protocols": self.get_supported_protocols(),
+            "supported_protocols": self.supported_protocols(),
         }
 
-    def get_supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols.
 
         Returns:

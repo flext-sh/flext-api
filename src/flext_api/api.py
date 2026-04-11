@@ -234,7 +234,7 @@ class FlextApi(s[FlextApiSettings]):
             data,
             request_kwargs_dict,
         )
-        if body_result.is_failure:
+        if body_result.failure:
             return r[m.Api.HttpResponse].fail(
                 body_result.error or "Body extraction failed"
             )
@@ -242,7 +242,7 @@ class FlextApi(s[FlextApiSettings]):
             headers,
             request_kwargs_dict,
         )
-        if headers_result.is_failure:
+        if headers_result.failure:
             return r[m.Api.HttpResponse].fail(
                 headers_result.error or "Header extraction failed",
             )
@@ -250,12 +250,12 @@ class FlextApi(s[FlextApiSettings]):
             timeout,
             request_kwargs_dict,
         )
-        if timeout_result.is_failure:
+        if timeout_result.failure:
             return r[m.Api.HttpResponse].fail(
                 timeout_result.error or "Timeout extraction failed",
             )
         query_params_result = self._extract_query_params(request_kwargs)
-        if query_params_result.is_failure:
+        if query_params_result.failure:
             return r[m.Api.HttpResponse].fail(
                 query_params_result.error or "Query params extraction failed",
             )

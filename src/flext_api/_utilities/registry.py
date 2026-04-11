@@ -48,7 +48,7 @@ class FlextApiRegistry(FlextRegistry):
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod
-    def get_global(cls) -> FlextApiRegistry:
+    def instance(cls) -> FlextApiRegistry:
         """Get global singleton registry instance."""
         if cls._global_instance is None:
             cls._global_instance = cls()
@@ -73,27 +73,27 @@ class FlextApiRegistry(FlextRegistry):
         self.logger.info("Cleared all registry plugins")
         return r[bool].ok(value=True)
 
-    def get_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
+    def resolve_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name."""
         if name in self._auth_cache:
             return r[FlextApiPlugins.Authentication].ok(self._auth_cache[name])
-        result = self.get_plugin(self.AUTH_PROVIDERS, name)
-        if result.is_failure:
+        result = self.resolve_plugin(self.AUTH_PROVIDERS, name)
+        if result.failure:
             return r[FlextApiPlugins.Authentication].fail(result.error)
         return r[FlextApiPlugins.Authentication].fail(
             "Plugin is not an Authentication type",
         )
 
-    def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
+    def resolve_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
         """Get registered protocol plugin by name."""
         if name in self._protocol_cache:
             return r[FlextApiPlugins.Protocol].ok(self._protocol_cache[name])
-        result = self.get_plugin(self.PROTOCOLS, name)
-        if result.is_failure:
+        result = self.resolve_plugin(self.PROTOCOLS, name)
+        if result.failure:
             return r[FlextApiPlugins.Protocol].fail(result.error)
         return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
 
-    def get_registry_status(self) -> r[t.IntMapping]:
+    def registry_status(self) -> r[t.IntMapping]:
         """Get current registry status with plugin counts."""
         protocols = self.list_plugins(self.PROTOCOLS).value or []
         schemas = self.list_plugins(self.SCHEMAS).value or []
@@ -111,21 +111,21 @@ class FlextApiRegistry(FlextRegistry):
         }
         return r[t.IntMapping].ok(status)
 
-    def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
+    def resolve_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name."""
         if name in self._schema_cache:
             return r[FlextApiPlugins.Schema].ok(self._schema_cache[name])
-        result = self.get_plugin(self.SCHEMAS, name)
-        if result.is_failure:
+        result = self.resolve_plugin(self.SCHEMAS, name)
+        if result.failure:
             return r[FlextApiPlugins.Schema].fail(result.error)
         return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
 
-    def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
+    def resolve_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
         """Get registered transport plugin by name."""
         if name in self._transport_cache:
             return r[FlextApiPlugins.Transport].ok(self._transport_cache[name])
-        result = self.get_plugin(self.TRANSPORTS, name)
-        if result.is_failure:
+        result = self.resolve_plugin(self.TRANSPORTS, name)
+        if result.failure:
             return r[FlextApiPlugins.Transport].fail(result.error)
         return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
 
