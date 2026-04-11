@@ -13,8 +13,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import MutableMapping, Sequence
 
-from flext_api import p, t
-from flext_core import FlextLogger, r
+from flext_api import p, r, t, u
 
 
 class _FlextApiPluginBase:
@@ -34,7 +33,7 @@ class _FlextApiPluginBase:
         self.name = name
         self.version = version
         self.description = description
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def initialize(self) -> r[bool]:
         return r[bool].ok(value=True)
@@ -181,7 +180,7 @@ class FlextApiPlugins:
 
         def __init__(self) -> None:
             """Initialize plugin manager."""
-            self.logger = FlextLogger(__name__)
+            self.logger = u.fetch_logger(__name__)
             self._loaded_plugins: MutableMapping[str, FlextApiPlugins.Plugin] = {}
 
         def resolve_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:

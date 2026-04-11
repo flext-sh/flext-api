@@ -10,7 +10,6 @@ from collections.abc import Mapping, MutableMapping, Sequence
 from typing import override
 
 from flext_api import p, t, u
-from flext_core import FlextLogger
 
 
 class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
@@ -18,7 +17,7 @@ class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
 
     def __init__(self) -> None:
         """Initialize logger protocol implementation."""
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     @override
     def debug(self, message: str, **kwargs: t.ApiJsonValue) -> None:

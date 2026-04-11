@@ -11,7 +11,7 @@ from collections.abc import MutableMapping
 from typing import override
 
 from flext_api import p, t, u
-from flext_core import FlextLogger, r
+from flext_core import r
 
 
 class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
@@ -20,7 +20,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
         self._storage: MutableMapping[str, t.ApiJsonValue] = {}
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     @override
     def clear(self) -> r[bool]:

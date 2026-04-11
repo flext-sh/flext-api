@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 
-from flext_api import t
-from flext_core import FlextLogger, r
+from flext_api import r, t, u
 
 
 class FlextApiBaseProtocolImplementation:
@@ -64,7 +63,7 @@ class FlextApiBaseProtocolImplementation:
         **kwargs: Additional configuration parameters
 
         """
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
         object.__setattr__(self, "name", name)
         object.__setattr__(self, "version", version)
         object.__setattr__(self, "description", description)

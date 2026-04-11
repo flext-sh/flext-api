@@ -155,7 +155,7 @@ class LoggingClient(FlextApiClient):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def _log_request(self, method: str, url: str, **kwargs):
         """Log outgoing request."""

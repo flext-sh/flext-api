@@ -15,7 +15,7 @@ import httpx
 from pydantic import ValidationError
 
 from flext_api import c, m, p, t
-from flext_core import FlextLogger, r
+from flext_core import r
 
 
 class FlextWebClientImplementation(p.Api.Client.HttpClient):
@@ -29,7 +29,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
 
         """
         self._config = client_config
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
         self._client = httpx.Client(
             timeout=httpx.Timeout(
                 timeout=client_config.timeout,

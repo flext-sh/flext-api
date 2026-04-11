@@ -24,8 +24,7 @@ from typing import override
 from fastapi import FastAPI
 from pydantic import ValidationError
 
-from flext_api import c, p, t
-from flext_core import FlextLogger, e, r, s
+from flext_api import c, e, p, r, s, t, u
 
 
 class FlextApiServer(s[bool]):
@@ -340,7 +339,7 @@ class FlextApiServer(s[bool]):
     ) -> None:
         """Initialize API server with Flext patterns."""
         super().__init__()
-        logger = FlextLogger(__name__)
+        logger = u.fetch_logger(__name__)
         server_host = host if host is not None else c.Api.Server.DEFAULT_HOST
         server_port = port if port is not None else c.Api.Server.DEFAULT_PORT
         config_validation = self._validate_server_config(
@@ -514,7 +513,7 @@ class FlextApiServer(s[bool]):
         """Restart server (orchestrate stop/start)."""
 
         def _log_restart(_: t.ContainerValue) -> None:
-            FlextLogger(__name__).info("Server restarted")
+            u.fetch_logger(__name__).info("Server restarted")
 
         return (
             self

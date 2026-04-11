@@ -18,7 +18,7 @@ from typing import TypeIs, override
 from pydantic import ValidationError
 
 from flext_api import c, p, t, u
-from flext_core import FlextContainer, FlextContext, FlextLogger, r, s
+from flext_core import FlextContainer, FlextContext, r, s
 
 
 class FlextWebhookHandler(s[bool]):
@@ -244,7 +244,7 @@ class FlextWebhookHandler(s[bool]):
 
         """
         self._event_handlers.setdefault(event_type, []).append(handler)
-        FlextLogger(__name__).info("Event handler registered", event_type=event_type)
+        u.fetch_logger(__name__).info("Event handler registered", event_type=event_type)
         return r[bool].ok(value=True)
 
     def _extract_event_id(self, event_data: t.JsonObject) -> str:
@@ -304,7 +304,7 @@ class FlextWebhookHandler(s[bool]):
                 attempts_value = attempts_raw
         if attempts_value < self._max_retries:
             self._retry_queue.append(event)
-            FlextLogger(__name__).warning(
+            u.fetch_logger(__name__).warning(
                 "Webhook processing failed, added to retry queue",
                 event_id=event_id,
                 event_type=event_type,
@@ -322,7 +322,7 @@ class FlextWebhookHandler(s[bool]):
         if process_result.error:
             failure_confirmation["error"] = process_result.error
         self._delivery_confirmations[event_id] = failure_confirmation
-        FlextLogger(__name__).error(
+        u.fetch_logger(__name__).error(
             "Webhook processing failed after max retries",
             event_id=event_id,
             event_type=event_type,
@@ -342,7 +342,7 @@ class FlextWebhookHandler(s[bool]):
             "status": "delivered",
         }
         self._delivery_confirmations[event_id] = confirmation
-        FlextLogger(__name__).info(
+        u.fetch_logger(__name__).info(
             "Webhook processed successfully",
             event_id=event_id,
             event_type=event_type,
@@ -405,7 +405,7 @@ class FlextWebhookHandler(s[bool]):
         if event_type in self._event_handlers:
             handlers = self._event_handlers[event_type]
         if not handlers:
-            FlextLogger(__name__).warning(
+            u.fetch_logger(__name__).warning(
                 "No handlers registered for event type",
                 event_type=event_type,
             )
@@ -432,7 +432,7 @@ class FlextWebhookHandler(s[bool]):
         event["attempts"] = attempts_value + 1
         delay = self._retry_delay * self._retry_backoff**attempts_value
         event_id = t.Api.STRING_ADAPTER.validate_python(event["id"])
-        FlextLogger(__name__).info(
+        u.fetch_logger(__name__).info(
             "Retrying event",
             event_id=event_id,
             attempt=event["attempts"],

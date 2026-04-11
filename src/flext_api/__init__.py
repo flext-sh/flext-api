@@ -26,7 +26,7 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
     from flext_api._utilities.storage import FlextApiStorage
     from flext_api._utilities.webhook import FlextWebhookHandler
-    from flext_api.api import FlextApi
+    from flext_api.api import FlextApi, api
     from flext_api.constants import FlextApiConstants, c
     from flext_api.errors import FlextApiErrors
     from flext_api.models import FlextApiModels, m
@@ -68,7 +68,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "__version__",
                 "__version_info__",
             ),
-            ".api": ("FlextApi",),
+            ".api": (
+                "FlextApi",
+                "api",
+            ),
             ".constants": (
                 "FlextApiConstants",
                 "c",
@@ -159,6 +162,7 @@ __all__ = [
     "__url__",
     "__version__",
     "__version_info__",
+    "api",
     "c",
     "d",
     "e",

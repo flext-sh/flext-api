@@ -27,7 +27,7 @@ from typing import ClassVar, Self
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api import m, t, u
-from flext_core import FlextLogger, r
+from flext_core import r
 
 
 class FlextApiStorage:
@@ -82,7 +82,7 @@ class FlextApiStorage:
         **kwargs: t.ApiJsonValue,
     ) -> None:
         """Initialize storage with config using Pydantic."""
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
         storage_kwargs_typed: Mapping[str, t.ApiJsonValue] = dict(storage_kwargs)
@@ -744,7 +744,7 @@ class FlextApiStorage:
                 del self._expiry_times[key]
             return r[t.ApiJsonValue].fail(f"Key expired: {key}")
         except ValidationError as e:
-            FlextLogger(__name__).error(
+            u.fetch_logger(__name__).error(
                 "Metadata validation failed for storage entry",
                 error=f"{e}",
                 exception_type="ValidationError",
@@ -754,7 +754,7 @@ class FlextApiStorage:
                 f"ValidationError processing key '{key}': {e}",
             )
         except (KeyError, TypeError, AttributeError) as e:
-            FlextLogger(__name__).error(
+            u.fetch_logger(__name__).error(
                 "Failed to process namespaced storage entry",
                 error=f"{e}",
                 exception_type=type(e).__name__,
