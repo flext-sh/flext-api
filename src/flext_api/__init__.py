@@ -14,7 +14,9 @@ from flext_core.lazy import (
 
 if _t.TYPE_CHECKING:
     from flext_api._protocols.plugins import FlextApiPlugins
+    from flext_api._protocols.serialization import FlextApiProtocolsSerialization
     from flext_api._protocols.transports import FlextApiTransports
+    from flext_api._typings.serialization import FlextApiTypingsSerialization
     from flext_api._utilities.adapters import FlextApiAdapters
     from flext_api._utilities.app import FlextApiApp
     from flext_api._utilities.client import FlextApiClient
@@ -52,6 +54,7 @@ if _t.TYPE_CHECKING:
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",
+        "._typings",
         "._utilities",
         ".protocol_impls",
         ".schemas",
@@ -137,6 +140,7 @@ __all__ = [
     "FlextApiOpenapiSchemaValidator",
     "FlextApiPlugins",
     "FlextApiProtocols",
+    "FlextApiProtocolsSerialization",
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
     "FlextApiServer",
@@ -147,6 +151,7 @@ __all__ = [
     "FlextApiStorageBackendImplementation",
     "FlextApiTransports",
     "FlextApiTypes",
+    "FlextApiTypingsSerialization",
     "FlextApiUtilities",
     "FlextApiUtilitiesSerializers",
     "FlextApiUtilitiesSettingsManager",

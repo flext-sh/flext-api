@@ -296,7 +296,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             kwargs["timeout"] = timeout
         if body is None:
             return kwargs
-        content_type = self._get_content_type(headers)
+        content_type = self._content_type(headers)
         if isinstance(body, Mapping):
             parsed_mapping = m.Api.MappingBodyModel(body=body)
             if c.Api.ContentType.FORM in content_type:
@@ -391,7 +391,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                     content=call_args.content,
                     timeout=call_args.timeout,
                 )
-                if self._is_success_status(response.status_code):
+                if self._success_status(response.status_code):
                     return self._build_response(response, method)
                 if not self._should_retry(
                     response.status_code,

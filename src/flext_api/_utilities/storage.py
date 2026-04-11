@@ -249,7 +249,7 @@ class FlextApiStorage:
     def cache_stats(self) -> r[t.Api.CacheDict]:
         """Get cache statistics using Pydantic validation."""
 
-        def _get_stats() -> t.Api.CacheDict:
+        def _stats_payload() -> t.Api.CacheDict:
             return {
                 "size": len(self._storage),
                 "backend": self._backend,
@@ -258,14 +258,14 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_stats,
+            _stats_payload,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(str)
 
     def storage_metrics(self) -> r[t.IntMapping]:
         """Get complete storage metrics."""
 
-        def _get_metrics() -> t.IntMapping:
+        def _metrics_payload() -> t.IntMapping:
             return {
                 "total_operations": self._operations_count,
                 "cache_hits": self._stats.cache_hits,
@@ -273,14 +273,14 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_metrics,
+            _metrics_payload,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Failed to get metrics: {e}")
 
     def storage_statistics(self) -> r[Mapping[str, float]]:
         """Get storage statistics with hit ratio calculation."""
 
-        def _get_statistics() -> Mapping[str, float]:
+        def _statistics_payload() -> Mapping[str, float]:
             hit_ratio = (
                 self._stats.cache_hits / self._stats.total_operations
                 if self._stats.total_operations > 0
@@ -296,7 +296,7 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_statistics,
+            _statistics_payload,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Failed to get storage statistics: {e}")
 
@@ -320,7 +320,7 @@ class FlextApiStorage:
     def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage information using Pydantic model."""
 
-        def _get_info() -> Mapping[str, t.ApiJsonValue]:
+        def _info_payload() -> Mapping[str, t.ApiJsonValue]:
             return {
                 "namespace": self._namespace,
                 "backend": self._backend,
@@ -332,7 +332,7 @@ class FlextApiStorage:
             }
 
         return u.try_(
-            _get_info,
+            _info_payload,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Failed to get storage info: {e}")
 
@@ -354,7 +354,7 @@ class FlextApiStorage:
     def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage metrics using Pydantic stats model."""
 
-        def _get_metrics() -> Mapping[str, t.ApiJsonValue]:
+        def _metrics_payload() -> Mapping[str, t.ApiJsonValue]:
             hit_ratio = 0.0
             if self._stats.total_operations > 0:
                 hit_ratio = self._stats.cache_hits / self._stats.total_operations
@@ -379,7 +379,7 @@ class FlextApiStorage:
             return stats_dict
 
         return u.try_(
-            _get_metrics,
+            _metrics_payload,
             catch=(ValueError, TypeError, KeyError, ConnectionError),
         ).map_error(lambda e: f"Failed to get storage metrics: {e}")
 

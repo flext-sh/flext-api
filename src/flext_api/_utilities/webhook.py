@@ -38,24 +38,24 @@ class FlextWebhookHandler(s[bool]):
     _retry_queue: deque[t.MutableContainerValueMapping]
 
     @staticmethod
-    def _is_object_mapping(
+    def _object_mapping(
         value: t.OptionalContainerValue,
     ) -> TypeIs[t.ContainerValueMapping]:
         return isinstance(value, Mapping)
 
     @staticmethod
-    def _is_object_list(
+    def _object_list(
         value: t.ContainerValue,
     ) -> TypeIs[t.ContainerValueList]:
         return isinstance(value, list)
 
     @staticmethod
     def _to_container_value(value: t.ContainerValue) -> t.ContainerValue:
-        if u.is_primitive(value):
+        if u.primitive(value):
             return value
-        if FlextWebhookHandler._is_object_list(value):
+        if FlextWebhookHandler._object_list(value):
             return [FlextWebhookHandler._to_container_value(item) for item in value]
-        if FlextWebhookHandler._is_object_mapping(value):
+        if FlextWebhookHandler._object_mapping(value):
             normalized: t.MutableContainerValueMapping = {}
             for key, item in value.items():
                 normalized[t.Api.STRING_ADAPTER.validate_python(key)] = (
@@ -87,7 +87,7 @@ class FlextWebhookHandler(s[bool]):
         super().__init__()
         self._container = FlextContainer()
         self._flext_context = FlextContext()
-        dispatcher_result = FlextContainer.instance().get("command_bus")
+        dispatcher_result = FlextContainer.fetch_global().get("command_bus")
         if dispatcher_result.failure:
             msg = f"Failed to get command_bus: {dispatcher_result.error}"
             raise RuntimeError(msg)
@@ -279,7 +279,7 @@ class FlextWebhookHandler(s[bool]):
         """
         return str(uuid.uuid4())
 
-    def _get_attempts_count(self, event: t.JsonObject) -> int:
+    def _attempts_count(self, event: t.JsonObject) -> int:
         """Extract attempts count from event with type safety."""
         attempts_raw = event.get("attempts")
         if attempts_raw is not None:
@@ -357,7 +357,7 @@ class FlextWebhookHandler(s[bool]):
             type_value = event.get("type")
             if isinstance(type_value, str):
                 event_type = type_value
-            attempts_count = self._get_attempts_count(event)
+            attempts_count = self._attempts_count(event)
             self._delivery_confirmations[event_id] = {
                 "event_type": event_type,
                 "timestamp": time.time(),
@@ -375,7 +375,7 @@ class FlextWebhookHandler(s[bool]):
             event_data: t.ContainerValue = t.Api.CONTAINER_VALUE_ADAPTER.validate_json(
                 payload_str,
             )
-            if not FlextWebhookHandler._is_object_mapping(event_data):
+            if not FlextWebhookHandler._object_mapping(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON t.NormalizedValue")
             json_object: t.MutableContainerValueMapping = {}
             for key, value in event_data.items():
@@ -428,7 +428,7 @@ class FlextWebhookHandler(s[bool]):
         event: t.MutableContainerValueMapping,
     ) -> t.Pair[bool, bool]:
         """Process a single retry event. Returns (success, should_retry)."""
-        attempts_value = self._get_attempts_count(event)
+        attempts_value = self._attempts_count(event)
         event["attempts"] = attempts_value + 1
         delay = self._retry_delay * self._retry_backoff**attempts_value
         event_id = t.Api.STRING_ADAPTER.validate_python(event["id"])
@@ -450,7 +450,7 @@ class FlextWebhookHandler(s[bool]):
 
     def _should_retry_event(self, event: t.JsonObject) -> bool:
         """Determine if event should be retried."""
-        return self._get_attempts_count(event) < self._max_retries
+        return self._attempts_count(event) < self._max_retries
 
     def _verify_signature(
         self,

@@ -14,7 +14,7 @@ from typing import Self, override
 import httpx
 from pydantic import ValidationError
 
-from flext_api import c, m, p, t
+from flext_api import c, m, p, t, u
 from flext_core import r
 
 

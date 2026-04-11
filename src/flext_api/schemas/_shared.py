@@ -27,7 +27,7 @@ class FlextApiSchemaShared:
     """
 
     @staticmethod
-    def is_container_value(value: t.ContainerValue) -> TypeIs[t.ContainerValue]:
+    def container_value(value: t.ContainerValue) -> TypeIs[t.ContainerValue]:
         """Type guard to check if value is a valid container value.
 
         Args:
@@ -40,7 +40,7 @@ class FlextApiSchemaShared:
         return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
     @staticmethod
-    def is_object_mapping(
+    def object_mapping(
         value: t.ContainerValue,
     ) -> TypeIs[t.ContainerValueMapping]:
         """Type guard to check if value is a mapping of container values.
@@ -203,7 +203,7 @@ class FlextApiSchemaShared:
                 schema_result.error or f"Failed to load {schema_label} schema",
             )
         loaded_schema = schema_result.value
-        if not FlextApiSchemaShared.is_object_mapping(loaded_schema):
+        if not FlextApiSchemaShared.object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
                 f"{schema_label} schema must be a JSON/YAML t.NormalizedValue",
             )
@@ -218,8 +218,8 @@ class FlextApiSchemaShared:
 
 
 # Module-level aliases for pyrefly compatibility (callers do `_shared.parse_dict_field(...)`)
-is_container_value = FlextApiSchemaShared.is_container_value
-is_object_mapping = FlextApiSchemaShared.is_object_mapping
+container_value = FlextApiSchemaShared.container_value
+object_mapping = FlextApiSchemaShared.object_mapping
 load_schema_document = FlextApiSchemaShared.load_schema_document
 normalize_json_object = FlextApiSchemaShared.normalize_json_object
 to_general_value = FlextApiSchemaShared.to_general_value
@@ -232,11 +232,11 @@ load_and_validate_schema_document = (
 
 __all__ = [
     "FlextApiSchemaShared",
-    "is_container_value",
-    "is_object_mapping",
+    "container_value",
     "load_and_validate_schema_document",
     "load_schema_document",
     "normalize_json_object",
+    "object_mapping",
     "parse_dict_field",
     "parse_int_field",
     "parse_string_field",

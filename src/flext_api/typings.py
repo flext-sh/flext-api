@@ -17,13 +17,14 @@ from collections.abc import Callable, Mapping
 from flext_cli import t
 from pydantic import TypeAdapter
 
+from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_web import FlextWebTypes
 
 
 class FlextApiTypes(FlextWebTypes, t):
     """Unified API type definitions extending t with composition."""
 
-    class Api:
+    class Api(FlextApiTypingsSerialization):
         """API types namespace for cross-project access."""
 
         type WebHeaders = Mapping[str, FlextWebTypes.Scalar | FlextWebTypes.StrSequence]

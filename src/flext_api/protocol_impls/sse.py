@@ -248,7 +248,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
         events: MutableSequence[t.ContainerValueMapping] = []
         retry_timeout: int | None = None
-        self._set_connected_state(connected=True)
+        self._update_connected_state(connected=True)
         self._notify_connect_handlers()
         try:
             with (
@@ -270,7 +270,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     if len(events) >= remaining:
                         break
         finally:
-            self._set_connected_state(connected=False)
+            self._update_connected_state(connected=False)
             self._notify_disconnect_handlers()
         return (events, retry_timeout)
 
@@ -352,7 +352,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         if isinstance(event_id, str) and event_id:
             self.last_event_id = event_id
 
-    def _set_connected_state(self, *, connected: bool) -> None:
+    def _update_connected_state(self, *, connected: bool) -> None:
         self._connected = connected
         self.connected = connected
 

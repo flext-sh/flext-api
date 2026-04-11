@@ -104,17 +104,17 @@ class TestSerializers:
     """Validate serializer round-trip works."""
 
     def test_packb_produces_bytes(self) -> None:
-        """MessagePack.packb returns non-empty bytes for valid input."""
+        """Packb returns non-empty bytes for valid input."""
         payload: t.StrMapping = {"key": "value"}
-        packed = FlextApiUtilitiesSerializers.MessagePack.packb(payload)
+        packed = FlextApiUtilitiesSerializers.packb(payload)
         assert packed, "packb should return non-empty bytes"
         tm.that(len(packed) > 0, eq=True)
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """Pack then unpack returns original data."""
         original: t.HeaderMapping = {"hello": "world", "count": 42}
-        packed = FlextApiUtilitiesSerializers.MessagePack.packb(original)
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(packed)
+        packed = FlextApiUtilitiesSerializers.packb(original)
+        result = FlextApiUtilitiesSerializers.unpackb(packed)
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
 

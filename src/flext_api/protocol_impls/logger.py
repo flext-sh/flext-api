@@ -50,7 +50,7 @@ class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
         """Convert kwargs to context dict for logger compatibility."""
         context: MutableMapping[str, t.Container] = {}
         for key, value in kwargs.items():
-            if u.is_container(value):
+            if u.container(value):
                 context[key] = value
                 continue
             if isinstance(value, (Mapping, Sequence)):

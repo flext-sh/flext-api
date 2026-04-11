@@ -221,7 +221,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             return r[str].fail("URL must be a string (RFC 7230)")
         return r[str].ok(parsed.url)
 
-    def _get_content_type(self, headers: t.StrMapping) -> str:
+    def _content_type(self, headers: t.StrMapping) -> str:
         """Extract Content-Type from headers (RFC 7231).
 
         Args:
@@ -236,7 +236,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             return headers[content_type_key]
         return c.Api.ContentType.JSON
 
-    def _is_client_error(self, status_code: int) -> bool:
+    def _client_error(self, status_code: int) -> bool:
         """Check if status code indicates client error (RFC 7231).
 
         Args:
@@ -251,7 +251,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             and status_code < c.Api.HTTP_CLIENT_ERROR_MAX
         )
 
-    def _is_server_error(self, status_code: int) -> bool:
+    def _server_error(self, status_code: int) -> bool:
         """Check if status code indicates server error (RFC 7231).
 
         Args:
@@ -263,7 +263,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         return status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
-    def _is_success_status(self, status_code: int) -> bool:
+    def _success_status(self, status_code: int) -> bool:
         """Check if status code indicates success (RFC 7231).
 
         Args:

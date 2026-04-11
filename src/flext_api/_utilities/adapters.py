@@ -179,7 +179,7 @@ class FlextApiAdapters:
             """Convert JSON data to MessagePack format."""
             try:
                 json_data = t.Cli.JSON_VALUE_ADAPTER.validate_python(data)
-                packed_data = FlextApiUtilitiesSerializers.MessagePack.packb(json_data)
+                packed_data = FlextApiUtilitiesSerializers.packb(json_data)
                 return u.try_(
                     lambda: bytes(packed_data),
                     catch=(TypeError, ValueError),

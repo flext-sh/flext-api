@@ -73,12 +73,12 @@ class FlextApiClient(s[FlextApiSettings]):
     @property
     def base_url(self) -> str:
         """Access base_url from configuration."""
-        return self._get_config().base_url
+        return self._config_model().base_url
 
     @property
     def timeout(self) -> float:
         """Access timeout from configuration."""
-        return self._get_config().timeout
+        return self._config_model().timeout
 
     @staticmethod
     def _deserialize_body(response: httpx.Response) -> r[t.Api.ResponseBody]:
@@ -159,7 +159,7 @@ class FlextApiClient(s[FlextApiSettings]):
         """Execute s interface - return configuration."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")
-        return r[FlextApiSettings].ok(self._get_config())
+        return r[FlextApiSettings].ok(self._config_model())
 
     def request(self, request: m.Api.HttpRequest) -> r[m.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns.
@@ -194,7 +194,7 @@ class FlextApiClient(s[FlextApiSettings]):
         path_stripped = path.strip()
         if not path_stripped:
             return r[str].fail("URL path cannot be empty")
-        api_config = self._get_config()
+        api_config = self._config_model()
         if not api_config.base_url.strip():
             return r[str].ok(path_stripped)
         base = api_config.base_url.strip().rstrip("/")
@@ -210,7 +210,7 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[m.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
-            api_config = self._get_config()
+            api_config = self._config_model()
             headers: t.StrMapping = {
                 **api_config.default_headers,
                 **request.headers,
@@ -256,7 +256,7 @@ class FlextApiClient(s[FlextApiSettings]):
         ) as exc:
             return r[m.Api.HttpResponse].fail(f"HTTP client request failed: {exc}")
 
-    def _get_config(self) -> FlextApiSettings:
+    def _config_model(self) -> FlextApiSettings:
         """Get FlextApiSettings with proper type narrowing."""
         config = self._config
         if isinstance(config, FlextApiSettings):

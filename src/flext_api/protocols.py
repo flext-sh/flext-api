@@ -16,6 +16,7 @@ from typing import Protocol, runtime_checkable
 from flext_cli import p
 
 from flext_api import c, t
+from flext_api._protocols.serialization import FlextApiProtocolsSerialization
 from flext_core import r
 from flext_web import FlextWebProtocols
 
@@ -136,6 +137,8 @@ class FlextApiProtocols(FlextWebProtocols, p):
 
         class Serialization:
             """Serialization protocols."""
+
+            MsgpackModule = FlextApiProtocolsSerialization.MsgpackModule
 
             @runtime_checkable
             class Serializer(Protocol):

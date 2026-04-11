@@ -77,7 +77,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered authentication provider by name."""
         if name in self._auth_cache:
             return r[FlextApiPlugins.Authentication].ok(self._auth_cache[name])
-        result = self.resolve_plugin(self.AUTH_PROVIDERS, name)
+        result = self.fetch_plugin(self.AUTH_PROVIDERS, name)
         if result.failure:
             return r[FlextApiPlugins.Authentication].fail(result.error)
         return r[FlextApiPlugins.Authentication].fail(
@@ -88,7 +88,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered protocol plugin by name."""
         if name in self._protocol_cache:
             return r[FlextApiPlugins.Protocol].ok(self._protocol_cache[name])
-        result = self.resolve_plugin(self.PROTOCOLS, name)
+        result = self.fetch_plugin(self.PROTOCOLS, name)
         if result.failure:
             return r[FlextApiPlugins.Protocol].fail(result.error)
         return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
@@ -115,7 +115,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered schema plugin by name."""
         if name in self._schema_cache:
             return r[FlextApiPlugins.Schema].ok(self._schema_cache[name])
-        result = self.resolve_plugin(self.SCHEMAS, name)
+        result = self.fetch_plugin(self.SCHEMAS, name)
         if result.failure:
             return r[FlextApiPlugins.Schema].fail(result.error)
         return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
@@ -124,7 +124,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered transport plugin by name."""
         if name in self._transport_cache:
             return r[FlextApiPlugins.Transport].ok(self._transport_cache[name])
-        result = self.resolve_plugin(self.TRANSPORTS, name)
+        result = self.fetch_plugin(self.TRANSPORTS, name)
         if result.failure:
             return r[FlextApiPlugins.Transport].fail(result.error)
         return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")

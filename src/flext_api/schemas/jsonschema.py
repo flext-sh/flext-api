@@ -46,11 +46,11 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     """
 
     @staticmethod
-    def _is_api_json_value(value: t.ApiJsonValue) -> TypeIs[t.ApiJsonValue]:
+    def _api_json_value(value: t.ApiJsonValue) -> TypeIs[t.ApiJsonValue]:
         return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
     @staticmethod
-    def _is_object_mapping(
+    def _object_mapping(
         value: t.ApiJsonValue,
     ) -> TypeIs[t.ContainerValueMapping]:
         return isinstance(value, Mapping)
@@ -142,7 +142,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         else:
             try:
                 loaded_schema_raw = t.Api.CONTAINER_VALUE_ADAPTER.validate_json(text)
-                if not FlextApiJsonschemaValidator._is_api_json_value(
+                if not FlextApiJsonschemaValidator._api_json_value(
                     loaded_schema_raw,
                 ):
                     return r[t.ContainerValue].fail(
@@ -153,13 +153,13 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                 return r[t.ContainerValue].fail(
                     f"Failed to parse JSON schema: {e}",
                 )
-        if not FlextApiJsonschemaValidator._is_object_mapping(loaded_schema):
+        if not FlextApiJsonschemaValidator._object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
                 "JSON schema file must contain a JSON/YAML t.NormalizedValue",
             )
         schema_definition: t.MutableContainerValueMapping = {}
         for key, value in loaded_schema.items():
-            if not FlextApiJsonschemaValidator._is_api_json_value(value):
+            if not FlextApiJsonschemaValidator._api_json_value(value):
                 return r[t.ContainerValue].fail(
                     f"Invalid JSON schema field type for key: {key}",
                 )

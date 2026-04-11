@@ -1,7 +1,7 @@
 """Tests for MessagePack serialization utilities.
 
 Tests for flext_api.serializers module, covering success and failure paths
-for the MessagePack.unpackb() function with proper result type handling.
+for the unpackb() function with proper result type handling.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -17,7 +17,7 @@ from flext_api import FlextApiUtilitiesSerializers
 
 
 class TestMessagePackUnpackb:
-    """Tests for MessagePack.unpackb() result type conversion."""
+    """Tests for unpackb() result type conversion."""
 
     def test_unpackb_success_with_dict(self) -> None:
         """Test successful unpacking of msgpack bytes to dict."""
@@ -25,7 +25,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x81\xa3key\xa5value"  # {"key": "value"} in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
         tm.that(result.success, eq=True)
@@ -37,7 +37,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x93\x01\x02\x03"  # [1, 2, 3] in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
         tm.that(result.success, eq=True)
@@ -49,7 +49,7 @@ class TestMessagePackUnpackb:
         test_data = b"\xa5hello"  # "hello" in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
         tm.that(result.success, eq=True)
@@ -61,7 +61,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x2a"  # 42 in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
         tm.that(result.success, eq=True)
@@ -78,7 +78,7 @@ class TestMessagePackUnpackb:
             test_data = b"\x81\xa3key\xa5value"
 
             # Act
-            result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+            result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
             # Assert
             tm.that(result.failure, eq=True)
@@ -97,7 +97,7 @@ class TestMessagePackUnpackb:
             test_data = b"\x81\xa3key\xa5value"
 
             # Act
-            result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+            result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
             # Assert
             tm.that(result.failure, eq=True)
@@ -110,7 +110,7 @@ class TestMessagePackUnpackb:
         test_data = b"\xff\xff\xff\xff"  # Invalid msgpack bytes
 
         # Act
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
         tm.that(result.failure, eq=True)
@@ -132,7 +132,7 @@ class TestMessagePackUnpackb:
             test_data = b"\x00"
 
             # Act
-            result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+            result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
             # Assert
             tm.that(result.failure, eq=True)
@@ -145,7 +145,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x81\xa3key\xa5value"
 
         # Act
-        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert: verify r semantics (success case)
         tm.that(result.success, eq=True)

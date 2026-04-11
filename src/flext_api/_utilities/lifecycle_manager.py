@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from flext_api import p
@@ -25,7 +25,7 @@ class FlextApiLifecycleManager:
     @asynccontextmanager
     async def manage_http_resource(
         resource: p.Api.Lifecycle.HttpResource,
-    ) -> AsyncIterator[p.Api.Lifecycle.HttpResource]:
+    ) -> AsyncGenerator[p.Api.Lifecycle.HttpResource]:
         """Manage HTTP resource lifecycle with proper cleanup."""
         try:
             yield resource

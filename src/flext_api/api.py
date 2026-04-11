@@ -91,7 +91,7 @@ class FlextApi(s[FlextApiSettings]):
         """Execute s interface."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs: {kwargs}")
-        config = self._get_config()
+        config = self._config_model()
         return r[FlextApiSettings].ok(config)
 
     def get(
@@ -200,7 +200,7 @@ class FlextApi(s[FlextApiSettings]):
                 params_result[k] = ""
         return r[t.Api.WebParams].ok(params_result)
 
-    def _get_config(self) -> FlextApiSettings:
+    def _config_model(self) -> FlextApiSettings:
         config = self._config
         if isinstance(config, FlextApiSettings):
             return config
@@ -271,4 +271,6 @@ class FlextApi(s[FlextApiSettings]):
         return self.request(http_request)
 
 
-__all__ = ["FlextApi"]
+api = FlextApi
+
+__all__ = ["FlextApi", "api"]

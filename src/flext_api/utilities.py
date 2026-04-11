@@ -378,7 +378,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
         """Web validation utilities for URLs and HTTP methods."""
 
         @staticmethod
-        def is_valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
+        def valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False
