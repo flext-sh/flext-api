@@ -1,6 +1,6 @@
 """Generic HTTP Config Manager - Domain-agnostic configuration management.
 
-This module provides FlextApiSettingsManager, a generic class for managing
+This module provides FlextApiUtilitiesSettingsManager, a generic class for managing
 HTTP client configuration with flext-core patterns and type safety.
 Completely domain-agnostic and reusable across any HTTP client.
 
@@ -19,7 +19,7 @@ from flext_api import m, t, u
 from flext_core import r
 
 
-class FlextApiSettingsManager:
+class FlextApiUtilitiesSettingsManager:
     """Generic configuration management for HTTP clients with flext-core patterns.
 
     Provides type-safe configuration handling with validation and defaults,

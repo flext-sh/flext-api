@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 from flext_tests import tm
 
-from flext_api import FlextApiSerializers
+from flext_api import FlextApiUtilitiesSerializers
 
 
 class TestMessagePackUnpackb:
@@ -25,7 +25,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x81\xa3key\xa5value"  # {"key": "value"} in msgpack
 
         # Act
-        result = FlextApiSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
         tm.that(result.is_success, eq=True)
@@ -37,7 +37,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x93\x01\x02\x03"  # [1, 2, 3] in msgpack
 
         # Act
-        result = FlextApiSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
         tm.that(result.is_success, eq=True)
@@ -49,7 +49,7 @@ class TestMessagePackUnpackb:
         test_data = b"\xa5hello"  # "hello" in msgpack
 
         # Act
-        result = FlextApiSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
         tm.that(result.is_success, eq=True)
@@ -61,7 +61,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x2a"  # 42 in msgpack
 
         # Act
-        result = FlextApiSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
         tm.that(result.is_success, eq=True)
@@ -70,11 +70,15 @@ class TestMessagePackUnpackb:
     def test_unpackb_failure_msgpack_not_available(self) -> None:
         """Test failure when msgpack module is not available."""
         # Arrange: mock _load_msgpack to return None
-        with patch.object(FlextApiSerializers, "_load_msgpack", return_value=None):
+        with patch.object(
+            FlextApiUtilitiesSerializers,
+            "_load_msgpack",
+            return_value=None,
+        ):
             test_data = b"\x81\xa3key\xa5value"
 
             # Act
-            result = FlextApiSerializers.MessagePack.unpackb(test_data)
+            result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
             # Assert
             tm.that(result.is_failure, eq=True)
@@ -88,12 +92,12 @@ class TestMessagePackUnpackb:
         mock_module.unpackb = None
 
         with patch.object(
-            FlextApiSerializers, "_load_msgpack", return_value=mock_module
+            FlextApiUtilitiesSerializers, "_load_msgpack", return_value=mock_module
         ):
             test_data = b"\x81\xa3key\xa5value"
 
             # Act
-            result = FlextApiSerializers.MessagePack.unpackb(test_data)
+            result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
             # Assert
             tm.that(result.is_failure, eq=True)
@@ -106,7 +110,7 @@ class TestMessagePackUnpackb:
         test_data = b"\xff\xff\xff\xff"  # Invalid msgpack bytes
 
         # Act
-        result = FlextApiSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert
         tm.that(result.is_failure, eq=True)
@@ -123,12 +127,12 @@ class TestMessagePackUnpackb:
         mock_module.unpackb = mock_unpackb
 
         with patch.object(
-            FlextApiSerializers, "_load_msgpack", return_value=mock_module
+            FlextApiUtilitiesSerializers, "_load_msgpack", return_value=mock_module
         ):
             test_data = b"\x00"
 
             # Act
-            result = FlextApiSerializers.MessagePack.unpackb(test_data)
+            result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
             # Assert
             tm.that(result.is_failure, eq=True)
@@ -141,7 +145,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x81\xa3key\xa5value"
 
         # Act
-        result = FlextApiSerializers.MessagePack.unpackb(test_data)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(test_data)
 
         # Assert: verify r semantics (success case)
         tm.that(result.is_success, eq=True)

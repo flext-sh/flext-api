@@ -21,15 +21,15 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.lifecycle_manager import FlextApiLifecycleManager
     from flext_api._utilities.middleware import FlextApiMiddleware
     from flext_api._utilities.registry import FlextApiRegistry
-    from flext_api._utilities.serializers import FlextApiSerializers
+    from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
     from flext_api._utilities.server_factory import FlextApiServerFactory
-    from flext_api._utilities.settings_manager import FlextApiSettingsManager
+    from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
     from flext_api._utilities.storage import FlextApiStorage
     from flext_api._utilities.webhook import FlextWebhookHandler
     from flext_api.api import FlextApi
-    from flext_api.constants import FlextApiConstants, FlextApiConstants as c
+    from flext_api.constants import FlextApiConstants, c
     from flext_api.errors import FlextApiErrors
-    from flext_api.models import FlextApiModels, FlextApiModels as m
+    from flext_api.models import FlextApiModels, m
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
@@ -40,7 +40,7 @@ if _t.TYPE_CHECKING:
         FlextApiStorageBackendImplementation,
     )
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
-    from flext_api.protocols import FlextApiProtocols, FlextApiProtocols as p
+    from flext_api.protocols import FlextApiProtocols, p
     from flext_api.schemas._shared import (
         FlextApiSchemaShared,
         is_container_value,
@@ -58,8 +58,8 @@ if _t.TYPE_CHECKING:
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
     from flext_api.server import FlextApiServer
     from flext_api.settings import FlextApiSettings
-    from flext_api.typings import FlextApiTypes, FlextApiTypes as t
-    from flext_api.utilities import FlextApiUtilities, FlextApiUtilities as u
+    from flext_api.typings import FlextApiTypes, t
+    from flext_api.utilities import FlextApiUtilities, u
     from flext_core.decorators import d
     from flext_core.exceptions import e
     from flext_core.handlers import h
@@ -86,27 +86,35 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "__version_info__",
             ),
             ".api": ("FlextApi",),
-            ".constants": ("FlextApiConstants",),
+            ".constants": (
+                "FlextApiConstants",
+                "c",
+            ),
             ".errors": ("FlextApiErrors",),
-            ".models": ("FlextApiModels",),
-            ".protocols": ("FlextApiProtocols",),
+            ".models": (
+                "FlextApiModels",
+                "m",
+            ),
+            ".protocols": (
+                "FlextApiProtocols",
+                "p",
+            ),
             ".server": ("FlextApiServer",),
             ".settings": ("FlextApiSettings",),
-            ".typings": ("FlextApiTypes",),
-            ".utilities": ("FlextApiUtilities",),
+            ".typings": (
+                "FlextApiTypes",
+                "t",
+            ),
+            ".utilities": (
+                "FlextApiUtilities",
+                "u",
+            ),
             "flext_core.decorators": ("d",),
             "flext_core.exceptions": ("e",),
             "flext_core.handlers": ("h",),
             "flext_core.mixins": ("x",),
             "flext_core.result": ("r",),
             "flext_core.service": ("s",),
-        },
-        alias_groups={
-            ".constants": (("c", "FlextApiConstants"),),
-            ".models": (("m", "FlextApiModels"),),
-            ".protocols": (("p", "FlextApiProtocols"),),
-            ".typings": (("t", "FlextApiTypes"),),
-            ".utilities": (("u", "FlextApiUtilities"),),
         },
     ),
     exclude_names=(
@@ -120,6 +128,9 @@ _LAZY_IMPORTS = merge_lazy_imports(
     ),
     module_name=__name__,
 )
+
+
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__ = [
     "FlextApi",
@@ -141,17 +152,17 @@ __all__ = [
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
     "FlextApiSchemaShared",
-    "FlextApiSerializers",
     "FlextApiServer",
     "FlextApiServerFactory",
     "FlextApiSettings",
-    "FlextApiSettingsManager",
     "FlextApiSseProtocolPlugin",
     "FlextApiStorage",
     "FlextApiStorageBackendImplementation",
     "FlextApiTransports",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "FlextApiUtilitiesSerializers",
+    "FlextApiUtilitiesSettingsManager",
     "FlextApiWebsocketProtocolPlugin",
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
@@ -185,6 +196,3 @@ __all__ = [
     "u",
     "x",
 ]
-
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)

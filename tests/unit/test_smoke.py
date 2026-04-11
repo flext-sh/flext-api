@@ -17,7 +17,7 @@ from flext_api import (
     FlextApi,
     FlextApiConstants,
     FlextApiModels,
-    FlextApiSerializers,
+    FlextApiUtilitiesSerializers,
     c,
     m,
     t,
@@ -106,15 +106,15 @@ class TestSerializers:
     def test_packb_produces_bytes(self) -> None:
         """MessagePack.packb returns non-empty bytes for valid input."""
         payload: t.StrMapping = {"key": "value"}
-        packed = FlextApiSerializers.MessagePack.packb(payload)
+        packed = FlextApiUtilitiesSerializers.MessagePack.packb(payload)
         assert packed, "packb should return non-empty bytes"
         tm.that(len(packed) > 0, eq=True)
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """Pack then unpack returns original data."""
         original: t.HeaderMapping = {"hello": "world", "count": 42}
-        packed = FlextApiSerializers.MessagePack.packb(original)
-        result = FlextApiSerializers.MessagePack.unpackb(packed)
+        packed = FlextApiUtilitiesSerializers.MessagePack.packb(original)
+        result = FlextApiUtilitiesSerializers.MessagePack.unpackb(packed)
         tm.that(result.is_success, eq=True)
         tm.that(result.value, eq=original)
 

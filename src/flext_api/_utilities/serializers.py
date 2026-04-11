@@ -12,7 +12,7 @@ from flext_api import t
 from flext_core import r
 
 
-class FlextApiSerializers:
+class FlextApiUtilitiesSerializers:
     """Serialization utilities for API operations."""
 
     @staticmethod
@@ -26,7 +26,7 @@ class FlextApiSerializers:
         @staticmethod
         def pack_raw(obj: t.RecursiveValue) -> object:
             """Return the raw msgpack payload for explicit runtime narrowing."""
-            module = FlextApiSerializers._load_msgpack()
+            module = FlextApiUtilitiesSerializers._load_msgpack()
             if module is None:
                 msg = "msgpack module not available"
                 raise TypeError(msg)
@@ -47,7 +47,7 @@ class FlextApiSerializers:
                 bytes: Packed binary data.
 
             """
-            packed = FlextApiSerializers.MessagePack.pack_raw(obj)
+            packed = FlextApiUtilitiesSerializers.MessagePack.pack_raw(obj)
             if isinstance(packed, bytes):
                 return packed
             if isinstance(packed, bytearray):
@@ -68,7 +68,7 @@ class FlextApiSerializers:
                 Result containing unpacked `t.RecursiveValue`.
 
             """
-            module = FlextApiSerializers._load_msgpack()
+            module = FlextApiUtilitiesSerializers._load_msgpack()
             if module is None:
                 return r[t.RecursiveValue].fail("msgpack module not available")
             unpackb = getattr(module, "unpackb", None)
