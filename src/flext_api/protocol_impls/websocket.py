@@ -44,7 +44,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     Integration:
     - Uses websockets library for transport
     - r for error handling
-    - FlextLogger for structured logging
+    - `u.fetch_logger(...)` / `p.Logger` for structured logging
     - Event callbacks for message handling
     """
 

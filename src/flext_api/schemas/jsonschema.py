@@ -42,7 +42,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     - Uses jsonschema library for validation
     - Supports custom format checkers
     - r for error handling
-    - FlextLogger for validation logging
+    - `u.fetch_logger(...)` / `p.Logger` for validation logging
     """
 
     @staticmethod
