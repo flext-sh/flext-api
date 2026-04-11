@@ -10,9 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, override
+from typing import Annotated, ClassVar, override
 
-from pydantic import ConfigDict, PrivateAttr
+from pydantic import ConfigDict, Field, PrivateAttr
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
 from flext_core import r, s
@@ -30,38 +30,36 @@ class FlextApi(s[FlextApiSettings]):
     model_config: ClassVar[ConfigDict] = ConfigDict(use_enum_values=True)
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar = m
+    config_type: Annotated[
+        type,
+        Field(default=FlextApiSettings, description="Typed API settings class."),
+    ] = FlextApiSettings
     _client: FlextApiClient | None = PrivateAttr(default=None)
 
     def __init__(
         self,
         *,
-        config: FlextApiSettings | None = None,
+        settings: FlextApiSettings | None = None,
     ) -> None:
-        """Public zero-ceremony bootstrap for the API facade."""
-        super().__init__(config=config)
-
-    @classmethod
-    @override
-    def _get_service_config_type(cls) -> type[FlextApiSettings]:
-        """Bind the API facade to FlextApiSettings by default."""
-        return FlextApiSettings
+        """Public bootstrap surface using the canonical ``settings=`` call form."""
+        super().__init__(settings=settings)
 
     @property
     @override
     def settings(self) -> FlextApiSettings:
         """Return typed API settings for facade operations."""
-        config = self.config
-        if isinstance(config, FlextApiSettings):
-            return config
-        msg = "FlextApi runtime config must be FlextApiSettings"
+        settings = super().settings
+        if isinstance(settings, FlextApiSettings):
+            return settings
+        msg = "FlextApi runtime settings must be FlextApiSettings"
         raise TypeError(msg)
 
     @property
     def client(self) -> FlextApiClient:
-        """Return the lazily created HTTP client bound to this facade config."""
+        """Return the lazily created HTTP client bound to this facade settings."""
         client = self._client
         if client is None:
-            client = FlextApiClient(config=self.settings)
+            client = FlextApiClient(settings=self.settings)
             self._client = client
         return client
 

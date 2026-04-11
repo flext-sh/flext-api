@@ -55,7 +55,7 @@ from flext_core import u
 # Create storage instance
 storage = FlextApiStorage(
     backend="s3",  # or "local", "gcs", "azure"
-    config={
+    settings={
         "bucket": "my-bucket",
         "region": "us-east-1",
         "access_key": "your-access-key",
@@ -93,7 +93,7 @@ else:
 # Local filesystem storage
 local_storage = FlextApiStorage(
     backend="local",
-    config={
+    settings={
         "base_path": "/var/app/uploads",
         "allowed_extensions": [".pdf", ".doc", ".docx"],
         "max_file_size": 10 * 1024 * 1024,  # 10MB
@@ -103,7 +103,7 @@ local_storage = FlextApiStorage(
 # Amazon S3 storage
 s3_storage = FlextApiStorage(
     backend="s3",
-    config={
+    settings={
         "bucket": "my-app-bucket",
         "region": "us-east-1",
         "access_key": os.getenv("AWS_ACCESS_KEY"),
@@ -115,7 +115,7 @@ s3_storage = FlextApiStorage(
 # Google Cloud Storage
 gcs_storage = FlextApiStorage(
     backend="gcs",
-    config={
+    settings={
         "bucket": "my-app-bucket",
         "project_id": "my-gcp-project",
         "credentials_path": "/path/to/credentials.json",
@@ -216,7 +216,7 @@ from flext_api import FlextApiCache
 # Create cache instance
 cache = FlextApiCache(
     backend="redis",  # or "memory", "filesystem"
-    config={"host": "localhost", "port": 6379, "db": 0, "password": "cache_password"},
+    settings={"host": "localhost", "port": 6379, "db": 0, "password": "cache_password"},
 )
 
 
@@ -371,7 +371,7 @@ from flext_api import FileUploadMiddleware
 from fastapi import UploadFile, File, HTTPException
 
 # Initialize storage and processing
-storage = FlextApiStorage(backend="s3", config=s3_config)
+storage = FlextApiStorage(backend="s3", settings=s3_config)
 processor = FlextFileProcessor()
 processor.add_processor(VirusScanner())
 processor.add_processor(ImageOptimizer())
@@ -459,8 +459,8 @@ async def download_file(file_id: str):
 from flext_api import FlextApiStorage, FlextApiCache
 
 # Initialize storage and cache
-storage = FlextApiStorage(backend="s3", config=s3_config)
-cache = FlextApiCache(backend="redis", config=redis_config)
+storage = FlextApiStorage(backend="s3", settings=s3_config)
+cache = FlextApiCache(backend="redis", settings=redis_config)
 
 
 @app.get("/users/{user_id}/avatar")

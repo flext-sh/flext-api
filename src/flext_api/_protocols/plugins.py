@@ -13,7 +13,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import MutableMapping, Sequence
 
-from flext_api import p, r, t, u
+from flext_api import p, t, u
+from flext_core import r
 
 
 class _FlextApiPluginBase:

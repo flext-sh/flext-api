@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiServer, FlextWebhookHandler
+from flext_api import FlextApiServer, FlextWebhookHandler, m
 from flext_core import r
 
 
@@ -64,7 +64,12 @@ class FlextApiServerFactory:
         r containing FlextWebhookHandler instance or error
 
         """
-        handler = FlextWebhookHandler(secret=secret, max_retries=max_retries)
+        handler = FlextWebhookHandler(
+            settings=m.Api.Webhook.Settings(
+                secret=secret,
+                max_retries=max_retries,
+            ),
+        )
         return r[FlextWebhookHandler].ok(handler)
 
 

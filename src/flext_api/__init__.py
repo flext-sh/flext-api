@@ -69,8 +69,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "__license__",
                 "__title__",
                 "__url__",
-                "__version__",
-                "__version_info__",
             ),
             ".api": (
                 "FlextApi",
@@ -166,8 +164,6 @@ __all__ = [
     "__license__",
     "__title__",
     "__url__",
-    "__version__",
-    "__version_info__",
     "api",
     "c",
     "d",

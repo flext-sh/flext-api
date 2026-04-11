@@ -11,10 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
+from typing import Annotated, override
 
 import httpx
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from flext_api import FlextApiSettings, c, m, t, u
 from flext_core import r, s
@@ -30,28 +30,27 @@ class FlextApiClient(s[FlextApiSettings]):
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
 
+    config_type: Annotated[
+        type,
+        Field(default=FlextApiSettings, description="Typed API settings class."),
+    ] = FlextApiSettings
+
     def __init__(
         self,
         *,
-        config: FlextApiSettings | None = None,
+        settings: FlextApiSettings | None = None,
     ) -> None:
-        """Public zero-ceremony bootstrap for the API client."""
-        super().__init__(config=config)
-
-    @classmethod
-    @override
-    def _get_service_config_type(cls) -> type[FlextApiSettings]:
-        """Bind the API client to FlextApiSettings by default."""
-        return FlextApiSettings
+        """Public bootstrap surface using the canonical ``settings=`` call form."""
+        super().__init__(settings=settings)
 
     @property
     @override
     def settings(self) -> FlextApiSettings:
         """Return typed API settings for client operations."""
-        config = self.config
-        if isinstance(config, FlextApiSettings):
-            return config
-        msg = "FlextApiClient runtime config must be FlextApiSettings"
+        settings = super().settings
+        if isinstance(settings, FlextApiSettings):
+            return settings
+        msg = "FlextApiClient runtime settings must be FlextApiSettings"
         raise TypeError(msg)
 
     @property

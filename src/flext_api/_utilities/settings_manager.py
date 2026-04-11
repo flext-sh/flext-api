@@ -33,20 +33,20 @@ class FlextApiUtilitiesSettingsManager:
         self._config = None
 
     @property
-    def config(self) -> t.JsonObject | None:
+    def settings(self) -> t.JsonObject | None:
         """Get current configuration."""
         return self._config
 
     def configure(
         self,
-        config: t.ScalarMapping | None = None,
+        settings: t.ScalarMapping | None = None,
     ) -> r[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
-            if config is None:
+            if settings is None:
                 self._config = {}
             else:
-                process_result = self._process_config(config)
+                process_result = self._process_config(settings)
                 if process_result.failure:
                     return r[bool].fail(
                         process_result.error or "Configuration processing failed",
@@ -89,7 +89,7 @@ class FlextApiUtilitiesSettingsManager:
         )
 
     def _extract_base_url(self) -> r[str]:
-        """Extract base_url from config - no fallbacks."""
+        """Extract base_url from settings - no fallbacks."""
         if self._config is None:
             return r[str].fail("No configuration set")
         if "base_url" not in self._config:
@@ -100,7 +100,7 @@ class FlextApiUtilitiesSettingsManager:
         return r[str].fail(f"Invalid base_url type: {type(base_url_value)}")
 
     def _extract_headers(self) -> r[t.StrMapping]:
-        """Extract headers from config - no fallbacks."""
+        """Extract headers from settings - no fallbacks."""
         if self._config is None:
             return r[t.StrMapping].fail("No configuration set")
         if "headers" not in self._config:
@@ -130,7 +130,7 @@ class FlextApiUtilitiesSettingsManager:
             )
 
     def _extract_max_retries(self) -> r[int]:
-        """Extract and validate max_retries from config - no fallbacks."""
+        """Extract and validate max_retries from settings - no fallbacks."""
         if self._config is None:
             return r[int].fail("No configuration set")
         if "max_retries" not in self._config:
@@ -208,11 +208,11 @@ class FlextApiUtilitiesSettingsManager:
 
     def _process_config(
         self,
-        config: t.ScalarMapping,
+        settings: t.ScalarMapping,
     ) -> r[t.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
         processed: t.MutableContainerValueMapping = {}
-        for key, value in config.items():
+        for key, value in settings.items():
             normalize_result = self._normalize_value(key, value=value)
             if normalize_result.failure:
                 return r[t.JsonObject].fail(

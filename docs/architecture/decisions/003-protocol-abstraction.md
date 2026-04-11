@@ -131,7 +131,7 @@ class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
-    def create_client(self, config: Dict[str, t.NormalizedValue]):
+    def create_client(self, settings: Dict[str, t.NormalizedValue]):
         """Create protocol-specific client instance."""
         pass
 
@@ -188,9 +188,9 @@ class ProtocolRegistry:
 class FlextApiClient(s[None]):
     """Unified client that delegates to protocol implementations."""
 
-    def __init__(self, protocol: str = "http", **config):
+    def __init__(self, protocol: str = "http", **settings):
         super().__init__()
-        self._config = config
+        self._config = settings
 
     async def request(self, method: str, url: str, **kwargs) -> r[t.NormalizedValue]:
         """Unified request method that delegates to protocol."""
@@ -214,13 +214,15 @@ class FlextApiClient(s[None]):
 class FlextWeb(Base):
     """HTTP/REST protocol implementation."""
 
-    def create_client(self, config: Dict[str, t.NormalizedValue]) -> httpx.AsyncClient:
-        return httpx.AsyncClient(**config)
+    def create_client(
+        self, settings: Dict[str, t.NormalizedValue]
+    ) -> httpx.AsyncClient:
+        return httpx.AsyncClient(**settings)
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
     ) -> r[FlextApiModels.HttpResponse]:
-        client = self.create_client(request.config)
+        client = self.create_client(request.settings)
 
         try:
             response = await client.request(
@@ -260,14 +262,14 @@ class FlextWeb(Base):
 class GraphQL(Base):
     """GraphQL protocol implementation."""
 
-    def create_client(self, config: Dict[str, t.NormalizedValue]) -> gql.Client:
-        transport = AIOHTTPTransport(url=config["url"])
+    def create_client(self, settings: Dict[str, t.NormalizedValue]) -> gql.Client:
+        transport = AIOHTTPTransport(url=settings["url"])
         return gql.Client(
-            transport=transport, execute_timeout=config.get("timeout", 30)
+            transport=transport, execute_timeout=settings.get("timeout", 30)
         )
 
     async def execute_request(self, request: GraphQLRequest) -> r[GraphQLResponse]:
-        client = self.create_client(request.config)
+        client = self.create_client(request.settings)
 
         try:
             result = await client.execute_async(
@@ -407,8 +409,8 @@ async def test_protocol_registry_integration():
 
 ```python
 class Custom(Base):
-    def create_client(self, config: Dict[str, t.NormalizedValue]):
-        return CustomClient(**config)
+    def create_client(self, settings: Dict[str, t.NormalizedValue]):
+        return CustomClient(**settings)
 
     async def execute_request(self, request):
         # Custom protocol logic
@@ -428,7 +430,7 @@ registry.register("custom", Custom)
 1. **Use in Client**:
 
 ```python
-client = FlextApiClient(protocol="custom", **config)
+client = FlextApiClient(protocol="custom", **settings)
 ```
 
 ## Monitoring and Observability

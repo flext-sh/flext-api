@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
+from collections.abc import Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
@@ -791,6 +792,28 @@ class FlextApiModels(FlextWebModels, m):
         class Storage:
             """Storage-related models namespace."""
 
+            class Settings(FlextWebModels.Value):
+                """Canonical storage settings."""
+
+                namespace: str = Field(
+                    default="flext_api",
+                    description="Logical namespace for this storage instance",
+                )
+                backend: str = Field(
+                    default="memory",
+                    description="Storage backend identifier",
+                )
+                max_size: int | None = Field(
+                    default=None,
+                    description="Maximum number of entries kept in memory",
+                    gt=0,
+                )
+                default_ttl: int | None = Field(
+                    default=None,
+                    description="Default entry TTL in seconds",
+                    gt=0,
+                )
+
             class Metadata(FlextWebModels.Value):
                 """Internal metadata for stored values (using Pydantic for validation)."""
 
@@ -799,12 +822,40 @@ class FlextApiModels(FlextWebModels, m):
                 ttl: float | int | None = None
                 created_at: float = Field(default_factory=time.time)
 
+                @computed_field
+                @property
                 def expired(self) -> bool:
-                    """Check if entry has expired using Pydantic-validated TTL."""
+                    """Return whether the entry is expired."""
                     if self.ttl is None:
                         return False
                     elapsed = time.time() - self.created_at
                     return elapsed > self.ttl
+
+            class State(m.FlexibleInternalModel):
+                """Mutable storage runtime state kept in one central model."""
+
+                model_config: ClassVar[ConfigDict] = ConfigDict(
+                    extra="forbid",
+                    validate_assignment=True,
+                )
+
+                entries: dict[str, FlextApiModels.Api.Storage.Metadata] = Field(
+                    default_factory=dict,
+                    description="Stored entries keyed by public storage key",
+                )
+                operations_count: int = Field(
+                    default=0,
+                    description="Total operations performed by this storage",
+                )
+                cache_hits: int = Field(default=0, description="Successful cache reads")
+                cache_misses: int = Field(
+                    default=0,
+                    description="Failed cache reads",
+                )
+                created_at: str = Field(
+                    default_factory=u.generate_iso_timestamp,
+                    description="Creation timestamp for this storage instance",
+                )
 
             class Stats(FlextWebModels.Value):
                 """Storage statistics using Pydantic (automatic validation)."""
@@ -816,9 +867,6 @@ class FlextApiModels(FlextWebModels, m):
                 cache_misses: int = Field(
                     default=0, description="Number of cache misses"
                 )
-                hit_ratio: float = Field(
-                    default=0.0, description="Cache hit ratio (0.0 to 1.0)"
-                )
                 storage_size: int = Field(
                     default=0, description="Current storage size in entries"
                 )
@@ -828,6 +876,168 @@ class FlextApiModels(FlextWebModels, m):
                 namespace: str = Field(
                     default="flext", description="Storage namespace identifier"
                 )
+
+                @computed_field
+                @property
+                def hit_ratio(self) -> float:
+                    """Return cache hit ratio."""
+                    if self.total_operations == 0:
+                        return 0.0
+                    return self.cache_hits / self.total_operations
+
+        class Webhook:
+            """Webhook-related models namespace."""
+
+            class Settings(FlextWebModels.Value):
+                """Canonical webhook runtime settings."""
+
+                secret: str | None = Field(
+                    default=None,
+                    description="Shared secret used for signature verification",
+                )
+                signature_header: str = Field(
+                    default="X-Webhook-Signature",
+                    description="Header name containing the webhook signature",
+                    min_length=1,
+                )
+                algorithm: t.Api.WebhookAlgorithm = Field(
+                    default="sha256",
+                    description="Supported HMAC signature algorithm",
+                )
+                max_retries: int = Field(
+                    default=3,
+                    description="Maximum retry attempts per event",
+                    ge=0,
+                )
+                retry_delay: float = Field(
+                    default=1.0,
+                    description="Initial retry delay in seconds",
+                    gt=0,
+                )
+                retry_backoff: float = Field(
+                    default=2.0,
+                    description="Retry backoff multiplier",
+                    gt=0,
+                )
+                queue_limit: int = Field(
+                    default=1000,
+                    description="Maximum number of events kept in the main queue",
+                    gt=0,
+                )
+                retry_queue_limit: int = Field(
+                    default=500,
+                    description="Maximum number of events kept in the retry queue",
+                    gt=0,
+                )
+
+            class Event(FlextWebModels.Value):
+                """Canonical webhook event envelope."""
+
+                id: str = Field(description="Unique event identifier", min_length=1)
+                type: str = Field(description="Canonical event type", min_length=1)
+                data: t.ContainerValueMapping = Field(
+                    description="Normalized event payload",
+                )
+                timestamp: float = Field(
+                    default_factory=time.time,
+                    description="Event creation timestamp",
+                )
+                attempts: int = Field(
+                    default=0,
+                    description="Number of processing attempts",
+                    ge=0,
+                )
+
+            class Delivery(FlextWebModels.Value):
+                """Canonical delivery status for one webhook event."""
+
+                event_type: str = Field(
+                    description="Associated event type",
+                    min_length=1,
+                )
+                timestamp: float = Field(
+                    default_factory=time.time,
+                    description="Delivery status timestamp",
+                )
+                status: t.Api.WebhookDeliveryStatus = Field(
+                    description="Delivery terminal status",
+                )
+                attempts: int | None = Field(
+                    default=None,
+                    description="Attempts performed before reaching this status",
+                    ge=0,
+                )
+                error: str | None = Field(
+                    default=None,
+                    description="Terminal failure message when delivery failed",
+                )
+
+            class State(m.FlexibleInternalModel):
+                """Mutable webhook runtime state centralized in one model."""
+
+                model_config: ClassVar[ConfigDict] = ConfigDict(
+                    extra="forbid",
+                    validate_assignment=True,
+                    arbitrary_types_allowed=True,
+                )
+
+                handlers: Mapping[str, list[t.Api.WebhookHandler]] = Field(
+                    default_factory=dict,
+                    description="Registered handlers grouped by event type",
+                )
+                event_queue: list[FlextApiModels.Api.Webhook.Event] = Field(
+                    default_factory=list,
+                    description="Received events waiting or already processed",
+                )
+                retry_queue: list[FlextApiModels.Api.Webhook.Event] = Field(
+                    default_factory=list,
+                    description="Events pending retry processing",
+                )
+                deliveries: Mapping[
+                    str,
+                    FlextApiModels.Api.Webhook.Delivery,
+                ] = Field(
+                    default_factory=dict,
+                    description="Delivery confirmations keyed by event id",
+                )
+
+                @computed_field
+                @property
+                def event_queue_size(self) -> int:
+                    """Return current main queue length."""
+                    return len(self.event_queue)
+
+                @computed_field
+                @property
+                def retry_queue_size(self) -> int:
+                    """Return current retry queue length."""
+                    return len(self.retry_queue)
+
+                @computed_field
+                @property
+                def total_deliveries(self) -> int:
+                    """Return number of delivery confirmations."""
+                    return len(self.deliveries)
+
+                @computed_field
+                @property
+                def successful_deliveries(self) -> int:
+                    """Return number of successful deliveries."""
+                    return sum(
+                        1
+                        for delivery in self.deliveries.values()
+                        if delivery.status in {"delivered", "delivered_after_retry"}
+                    )
+
+                @computed_field
+                @property
+                def failed_deliveries(self) -> int:
+                    """Return number of failed deliveries."""
+                    return sum(
+                        1
+                        for delivery in self.deliveries.values()
+                        if delivery.status == "failed"
+                    )
 
 
 __all__ = ["FlextApiModels", "m"]

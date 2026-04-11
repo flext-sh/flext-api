@@ -300,7 +300,7 @@ from flext_api import StorageBackend
 # Create storage protocol
 storage_protocol = StorageBackend
     backend_type="s3",  # or "local", "gcs", "azure"
-    config={
+    settings={
         "bucket": "my-bucket",
         "region": "us-east-1",
         "access_key": "...",
@@ -483,10 +483,10 @@ graphql_protocol = registry.get_protocol("graphql")
 
 
 # Configure based on requirements
-def create_api_client(protocol_name: str, config: dict):
+def create_api_client(protocol_name: str, settings: dict):
     """Create API client with specified protocol."""
     protocol_class = registry.get_protocol(protocol_name)
-    return protocol_class(**config)
+    return protocol_class(**settings)
 
 
 # Create clients for different services

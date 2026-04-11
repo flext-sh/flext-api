@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from typing import Literal
 
 from flext_cli import t
 from pydantic import TypeAdapter
@@ -55,6 +56,13 @@ class FlextApiTypes(FlextWebTypes, t):
             | None,
         ]
         "Route registration data structure."
+        type WebhookDeliveryStatus = Literal[
+            "delivered",
+            "delivered_after_retry",
+            "failed",
+        ]
+        type WebhookAlgorithm = Literal["sha256", "sha512"]
+        type WebhookHandler = Callable[[FlextWebTypes.ContainerValueMapping], object]
         type RequestKwargs = Mapping[
             str,
             FlextWebTypes.StrMapping

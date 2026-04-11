@@ -122,17 +122,17 @@ class TestSerializers:
 class TestFacadeContract:
     """Validate public facade behavior only."""
 
-    def test_api_client_uses_keyword_config(self) -> None:
-        """FlextApiClient accepts a settings model through the public config input."""
+    def test_api_client_uses_keyword_settings(self) -> None:
+        """FlextApiClient accepts a settings model through the public settings input."""
         settings = FlextApiSettings(base_url="https://service.example", timeout=9.5)
-        client = FlextApiClient(config=settings)
+        client = FlextApiClient(settings=settings)
         tm.that(client.base_url, eq="https://service.example")
         tm.that(client.timeout, eq=9.5)
 
-    def test_api_facade_uses_keyword_config(self) -> None:
-        """FlextApi accepts a settings model through the public config input."""
+    def test_api_facade_uses_keyword_settings(self) -> None:
+        """FlextApi accepts a settings model through the public settings input."""
         settings = FlextApiSettings(base_url="https://api.example", timeout=4.0)
-        api = FlextApi(config=settings)
+        api = FlextApi(settings=settings)
         result = api.execute()
         tm.that(result.success, eq=True)
         tm.that(result.value.base_url, eq="https://api.example")

@@ -1,396 +1,219 @@
-"""Generic HTTP storage with features using external libraries.
-
-Delegates to:
-- pydantic: data validation and serialization
-- json: JSON handling
-- flext-core: patterns and utilities
-
-Flexible features:
-- Batch operations
-- TTL/expiration management
-- Metrics and statistics
-- Health monitoring
-- Event emission
-- JSON serialization
+"""Storage component backed by centralized Pydantic models.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping, MutableMapping, Sequence
-from typing import ClassVar, Self
-
-from pydantic import BaseModel, ConfigDict, ValidationError
+from collections.abc import Mapping, Sequence
 
 from flext_api import m, t, u
 from flext_core import r
 
 
 class FlextApiStorage:
-    """Generic HTTP storage with features via library delegation.
+    """In-memory storage with centralized settings/state models."""
 
-    Delegates to:
-    - pydantic for data models and validation
-    - json for serialization
-    - flext-core utilities for timestamps
-    - Python built-ins for core storage
-
-    Flexible features:
-    - TTL-based expiration
-    - Batch operations
-    - Metrics collection
-    - Health monitoring
-    - Event tracking
-    """
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(
-        frozen=False,
-        arbitrary_types_allowed=True,
-    )
-    _storage: MutableMapping[str, t.ApiJsonValue]
-    _expiry_times: MutableMapping[str, float]
-    _stats: m.Api.Storage.Stats
-    _operations_count: int
-    _created_at: str
-    _namespace: str
-    _max_size: int | None
-    _default_ttl: float | None
-    _backend: str
-    _flext_storage_config: t.ApiJsonValue | None
-    _flext_storage_kwargs: Mapping[str, t.ApiJsonValue]
-
-    def __new__(
-        cls,
-        config: t.ApiJsonValue | None = None,
-        **kwargs: t.ApiJsonValue,
-    ) -> Self:
-        """Intercept config argument and convert to kwargs for s V2."""
-        instance = super().__new__(cls)
-        if config is not None:
-            object.__setattr__(instance, "_flext_storage_config", config)
-        if kwargs:
-            object.__setattr__(instance, "_flext_storage_kwargs", kwargs)
-        return instance
+    _settings: m.Api.Storage.Settings
+    _state: m.Api.Storage.State
 
     def __init__(
         self,
-        config: t.ApiJsonValue | None = None,
-        **kwargs: t.ApiJsonValue,
+        settings: m.Api.Storage.Settings | Mapping[str, t.ValueOrModel] | None = None,
+        **overrides: t.ValueOrModel,
     ) -> None:
-        """Initialize storage with config using Pydantic."""
-        self.logger = u.fetch_logger(__name__)
-        config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
-        max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
-        storage_kwargs_typed: Mapping[str, t.ApiJsonValue] = dict(storage_kwargs)
-        super().__init__(**storage_kwargs_typed)
-        config_dict = self._normalize_config(config_obj)
-        self._apply_config(config_dict, max_size_val, default_ttl_val)
-        object.__setattr__(self, "_storage", {})
-        object.__setattr__(self, "_expiry_times", {})
-        object.__setattr__(
-            self, "_stats", m.Api.Storage.Stats(namespace=self._namespace)
-        )
-        object.__setattr__(self, "_operations_count", 0)
-        object.__setattr__(self, "_created_at", u.generate_iso_timestamp())
+        """Create one storage instance from the canonical settings model."""
+        self._settings = self._resolve_settings(settings, overrides)
+        self._state = m.Api.Storage.State()
+        self._logger = u.fetch_logger(__name__)
 
     @property
     def backend(self) -> str:
-        """Get backend."""
-        return self._backend
+        """Return configured backend name."""
+        return self._settings.backend
 
     @property
     def namespace(self) -> str:
-        """Get namespace."""
-        return self._namespace
+        """Return configured namespace."""
+        return self._settings.namespace
 
     def batch_delete(self, keys: t.StrSequence) -> r[bool]:
-        """Delete multiple keys efficiently."""
-        try:
-            all_deleted = True
-            for key in keys:
-                delete_result = self.delete(key)
-                if delete_result.failure:
-                    all_deleted = False
-            if all_deleted:
-                return r[bool].ok(value=True)
-            return r[bool].fail("Some keys could not be deleted")
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Batch delete failed: {e}")
+        """Delete multiple keys."""
+        all_deleted = True
+        for key in keys:
+            delete_result = self.delete(key)
+            if delete_result.failure:
+                all_deleted = False
+        if all_deleted:
+            return r[bool].ok(True)
+        return r[bool].fail("Some keys could not be deleted")
 
     def batch_get(self, keys: t.StrSequence) -> r[Mapping[str, t.ApiJsonValue]]:
-        """Get multiple keys efficiently."""
-        try:
-            result_dict: MutableMapping[str, t.ApiJsonValue] = {}
-            for key in keys:
-                get_result = self.get(key)
-                if get_result.success:
-                    unwrapped = get_result.value
-                    result_dict[key] = unwrapped
-            return r[Mapping[str, t.ApiJsonValue]].ok(result_dict)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[Mapping[str, t.ApiJsonValue]].fail(f"Batch get failed: {e}")
+        """Get multiple keys."""
+        collected: dict[str, t.ApiJsonValue] = {}
+        for key in keys:
+            get_result = self.get(key)
+            if get_result.success:
+                collected[key] = get_result.value
+        return r[Mapping[str, t.ApiJsonValue]].ok(collected)
 
     def batch_set(
         self,
         data: Mapping[str, t.ApiJsonValue],
         ttl: int | None = None,
     ) -> r[bool]:
-        """Set multiple keys efficiently using Pydantic validation."""
-        try:
-            for key, value in data.items():
-                result = self.set(key, value, ttl=ttl)
-                if result.failure:
-                    return result
-            return r[bool].ok(value=True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"Batch set failed: {e}")
-
-    def _estimate_memory_usage(self) -> int:
-        """Estimate storage payload size using centralized JSON serialization."""
-        normalized_storage = t.Api.CONTAINER_VALUE_ADAPTER.validate_python(
-            self._storage,
-        )
-        return len(t.Api.CONTAINER_VALUE_ADAPTER.dump_json(normalized_storage))
+        """Set multiple keys."""
+        for key, value in data.items():
+            set_result = self.set(key, value, ttl=ttl)
+            if set_result.failure:
+                return set_result
+        return r[bool].ok(True)
 
     def cleanup_expired(self) -> r[int]:
-        """Clean up expired entries (TTL management)."""
-
-        def _cleanup() -> int:
-            initial_size = len(self._storage)
-            self._cleanup_expired()
-            return initial_size - len(self._storage)
-
-        return u.try_(
-            _cleanup,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Cleanup failed: {e}")
+        """Remove expired entries and return the count."""
+        return r[int].ok(self._cleanup_expired_entries())
 
     def clear(self) -> r[bool]:
-        """Clear all storage."""
-        self._storage.clear()
-        self._expiry_times.clear()
-        self._operations_count = 0
-        return r[bool].ok(value=True)
+        """Clear storage state."""
+        created_at = self._state.created_at
+        self._state = m.Api.Storage.State(created_at=created_at)
+        return r[bool].ok(True)
 
     def delete(self, key: str) -> r[bool]:
-        """Delete key from storage."""
-        key_deleted = key in self._storage
-        namespaced_key = self._key(key)
-        namespaced_deleted = namespaced_key in self._storage
-        if key in self._storage:
-            del self._storage[key]
-        if namespaced_key in self._storage:
-            del self._storage[namespaced_key]
-        if key in self._expiry_times:
-            del self._expiry_times[key]
-        self._operations_count += 1
-        if key_deleted or namespaced_deleted:
-            return r[bool].ok(value=True)
-        return r[bool].fail(f"Key not found: {key}")
+        """Delete one key."""
+        key_result = self._validate_key(key)
+        if key_result.failure:
+            return r[bool].fail(key_result.error)
+        self._cleanup_expired_entries()
+        self._record_operation()
+        normalized_key = key_result.value
+        if normalized_key not in self._state.entries:
+            return r[bool].fail(f"Key not found: {normalized_key}")
+        del self._state.entries[normalized_key]
+        return r[bool].ok(True)
 
     def deserialize_json(self, json_str: str) -> r[t.ContainerValue]:
-        """Deserialize from JSON using Pydantic TypeAdapter."""
+        """Deserialize JSON into the canonical container contract."""
         return u.try_(
             lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(json_str),
-            catch=(ValueError, TypeError, KeyError, ConnectionError, ValidationError),
-        ).map_error(lambda e: f"JSON deserialization failed: {e}")
+            catch=(ValueError, TypeError),
+        ).map_error(lambda error: f"JSON deserialization failed: {error}")
 
     def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
-        """Service lifecycle execution."""
-        return r[bool].ok(value=True)
+        """Lifecycle entrypoint for parity with service-shaped components."""
+        return r[bool].ok(True)
 
     def exists(self, key: str) -> r[bool]:
-        """Check if key exists and not expired."""
-        self._cleanup_expired()
-        direct_exists = key in self._storage
-        if direct_exists:
-            return r[bool].ok(value=True)
-        namespaced_exists = self._key(key) in self._storage
-        return r[bool].ok(namespaced_exists)
+        """Return whether the key exists after expiration cleanup."""
+        key_result = self._validate_key(key)
+        if key_result.failure:
+            return r[bool].fail(key_result.error)
+        self._cleanup_expired_entries()
+        return r[bool].ok(key_result.value in self._state.entries)
 
     def get(self, key: str) -> r[t.ApiJsonValue]:
-        """Retrieve value with expiration checking."""
-        if not key:
-            return r[t.ApiJsonValue].fail("Key must be non-empty string")
-        self._cleanup_expired()
-        self._operations_count += 1
-        if key in self._storage:
-            value = self._storage[key]
-            self._stats = m.Api.Storage.Stats(
-                total_operations=self._stats.total_operations,
-                cache_hits=self._stats.cache_hits + 1,
-                cache_misses=self._stats.cache_misses,
-                hit_ratio=self._stats.hit_ratio,
-                storage_size=self._stats.storage_size,
-                memory_usage=self._stats.memory_usage,
-                namespace=self._stats.namespace,
-            )
-            return r[t.ApiJsonValue].ok(value)
-        namespaced_key = self._key(key)
-        if namespaced_key in self._storage:
-            result = self._process_namespaced_entry(namespaced_key, key)
-            if result.success:
-                return result
-        self._stats = m.Api.Storage.Stats(
-            total_operations=self._stats.total_operations,
-            cache_hits=self._stats.cache_hits,
-            cache_misses=self._stats.cache_misses + 1,
-            hit_ratio=self._stats.hit_ratio,
-            storage_size=self._stats.storage_size,
-            memory_usage=self._stats.memory_usage,
-            namespace=self._stats.namespace,
-        )
-        return r[t.ApiJsonValue].fail(f"Key not found: {key}")
+        """Get one value from storage."""
+        key_result = self._validate_key(key)
+        if key_result.failure:
+            return r[t.ApiJsonValue].fail(key_result.error)
+        self._cleanup_expired_entries()
+        self._record_operation()
+        normalized_key = key_result.value
+        entry = self._state.entries.get(normalized_key)
+        if entry is None:
+            self._state.cache_misses += 1
+            return r[t.ApiJsonValue].fail(f"Key not found: {normalized_key}")
+        self._state.cache_hits += 1
+        return r[t.ApiJsonValue].ok(entry.value)
 
     def cache_stats(self) -> r[t.Api.CacheDict]:
-        """Get cache statistics using Pydantic validation."""
-
-        def _stats_payload() -> t.Api.CacheDict:
-            return {
-                "size": len(self._storage),
-                "backend": self._backend,
-                "hits": self._stats.cache_hits,
-                "misses": self._stats.cache_misses,
-            }
-
-        return u.try_(
-            _stats_payload,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(str)
+        """Return cache counters."""
+        stats = self._stats_model()
+        return r[t.Api.CacheDict].ok({
+            "size": stats.storage_size,
+            "backend": self.backend,
+            "hits": stats.cache_hits,
+            "misses": stats.cache_misses,
+        })
 
     def storage_metrics(self) -> r[t.IntMapping]:
-        """Get complete storage metrics."""
-
-        def _metrics_payload() -> t.IntMapping:
-            return {
-                "total_operations": self._operations_count,
-                "cache_hits": self._stats.cache_hits,
-                "cache_misses": self._stats.cache_misses,
-            }
-
-        return u.try_(
-            _metrics_payload,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Failed to get metrics: {e}")
+        """Return integer storage counters."""
+        stats = self._stats_model()
+        return r[t.IntMapping].ok({
+            "total_operations": stats.total_operations,
+            "cache_hits": stats.cache_hits,
+            "cache_misses": stats.cache_misses,
+        })
 
     def storage_statistics(self) -> r[Mapping[str, float]]:
-        """Get storage statistics with hit ratio calculation."""
-
-        def _statistics_payload() -> Mapping[str, float]:
-            hit_ratio = (
-                self._stats.cache_hits / self._stats.total_operations
-                if self._stats.total_operations > 0
-                else 0.0
-            )
-            return {
-                "total_operations": float(self._operations_count),
-                "cache_hits": float(self._stats.cache_hits),
-                "cache_misses": float(self._stats.cache_misses),
-                "hit_ratio": hit_ratio,
-                "storage_size": float(len(self._storage)),
-                "memory_usage": float(self._estimate_memory_usage()),
-            }
-
-        return u.try_(
-            _statistics_payload,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Failed to get storage statistics: {e}")
+        """Return float-based storage statistics."""
+        stats = self._stats_model()
+        return r[Mapping[str, float]].ok({
+            "total_operations": float(stats.total_operations),
+            "cache_hits": float(stats.cache_hits),
+            "cache_misses": float(stats.cache_misses),
+            "hit_ratio": stats.hit_ratio,
+            "storage_size": float(stats.storage_size),
+            "memory_usage": float(stats.memory_usage),
+        })
 
     def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
-        """Perform health check with metrics."""
-
-        def _check_health() -> Mapping[str, t.ApiJsonValue]:
-            return {
-                "status": "healthy",
-                "timestamp": u.generate_iso_timestamp(),
-                "storage_accessible": True,
-                "size": len(self._storage),
-                "operations_count": self._operations_count,
-            }
-
-        return u.try_(
-            _check_health,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Health check failed: {e}")
+        """Return health information."""
+        return r[Mapping[str, t.ApiJsonValue]].ok({
+            "status": "healthy",
+            "timestamp": u.generate_iso_timestamp(),
+            "storage_accessible": True,
+            "size": len(self._state.entries),
+            "operations_count": self._state.operations_count,
+        })
 
     def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
-        """Get storage information using Pydantic model."""
-
-        def _info_payload() -> Mapping[str, t.ApiJsonValue]:
-            return {
-                "namespace": self._namespace,
-                "backend": self._backend,
-                "size": len(self._storage),
-                "created_at": self._created_at,
-                "max_size": self._max_size,
-                "default_ttl": self._default_ttl,
-                "operations_count": self._operations_count,
-            }
-
-        return u.try_(
-            _info_payload,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Failed to get storage info: {e}")
+        """Return storage configuration and runtime info."""
+        return r[Mapping[str, t.ApiJsonValue]].ok({
+            "namespace": self.namespace,
+            "backend": self.backend,
+            "size": len(self._state.entries),
+            "created_at": self._state.created_at,
+            "max_size": self._settings.max_size,
+            "default_ttl": self._settings.default_ttl,
+            "operations_count": self._state.operations_count,
+        })
 
     def items(self) -> r[Sequence[t.Pair[str, t.ApiJsonValue]]]:
-        """Get all key-value pairs."""
-        self._cleanup_expired()
-        return r[Sequence[t.Pair[str, t.ApiJsonValue]]].ok(list(self._storage.items()))
+        """Return stored key-value pairs."""
+        self._cleanup_expired_entries()
+        return r[Sequence[t.Pair[str, t.ApiJsonValue]]].ok(
+            [(key, entry.value) for key, entry in self._state.entries.items()],
+        )
 
     def keys(self) -> r[t.StrSequence]:
-        """Get all non-namespaced keys."""
-        self._cleanup_expired()
-
-        def key_not_namespaced(k: str) -> bool:
-            return not k.startswith(f"{self._namespace}:")
-
-        filtered_keys = u.filter(list(self._storage.keys()), key_not_namespaced)
-        return r[t.StrSequence].ok(list(filtered_keys))
+        """Return stored keys."""
+        self._cleanup_expired_entries()
+        return r[t.StrSequence].ok(list(self._state.entries.keys()))
 
     def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
-        """Get storage metrics using Pydantic stats model."""
-
-        def _metrics_payload() -> Mapping[str, t.ApiJsonValue]:
-            hit_ratio = 0.0
-            if self._stats.total_operations > 0:
-                hit_ratio = self._stats.cache_hits / self._stats.total_operations
-            self._stats = m.Api.Storage.Stats(
-                total_operations=self._stats.total_operations,
-                cache_hits=self._stats.cache_hits,
-                cache_misses=self._stats.cache_misses,
-                hit_ratio=hit_ratio,
-                storage_size=len(self._storage),
-                memory_usage=self._estimate_memory_usage(),
-                namespace=self._stats.namespace,
-            )
-            stats_dict: Mapping[str, t.ApiJsonValue] = {
-                "total_operations": self._stats.total_operations,
-                "cache_hits": self._stats.cache_hits,
-                "cache_misses": self._stats.cache_misses,
-                "hit_ratio": self._stats.hit_ratio,
-                "storage_size": self._stats.storage_size,
-                "memory_usage": self._stats.memory_usage,
-                "namespace": self._stats.namespace,
-            }
-            return stats_dict
-
-        return u.try_(
-            _metrics_payload,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Failed to get storage metrics: {e}")
+        """Return canonical storage metrics payload."""
+        stats = self._stats_model()
+        return r[Mapping[str, t.ApiJsonValue]].ok({
+            "total_operations": stats.total_operations,
+            "cache_hits": stats.cache_hits,
+            "cache_misses": stats.cache_misses,
+            "hit_ratio": stats.hit_ratio,
+            "storage_size": stats.storage_size,
+            "memory_usage": stats.memory_usage,
+            "namespace": stats.namespace,
+        })
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
-        """Serialize to JSON using Pydantic TypeAdapter."""
+        """Serialize one JSON-compatible value."""
         if data is None:
             return r[str].ok("null")
         return u.try_(
             lambda: t.Api.API_JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"JSON serialization failed: {e}")
+            catch=(ValueError, TypeError),
+        ).map_error(lambda error: f"JSON serialization failed: {error}")
 
     def set(
         self,
@@ -399,370 +222,132 @@ class FlextApiStorage:
         timeout: int | None = None,
         ttl: int | None = None,
     ) -> r[bool]:
-        """Store value with TTL using Pydantic metadata."""
-        if not key:
-            return r[bool].fail("Key must be non-empty string")
-        ttl_val = (
-            timeout
-            if timeout is not None
-            else ttl
-            if ttl is not None
-            else self._default_ttl
+        """Store one value with optional TTL."""
+        key_result = self._validate_key(key)
+        if key_result.failure:
+            return r[bool].fail(key_result.error)
+        ttl_result = self._resolve_ttl(timeout=timeout, ttl=ttl)
+        if ttl_result.failure:
+            return r[bool].fail(ttl_result.error)
+        normalized_key = key_result.value
+        self._cleanup_expired_entries()
+        if (
+            self._settings.max_size is not None
+            and normalized_key not in self._state.entries
+            and len(self._state.entries) >= self._settings.max_size
+        ):
+            return r[bool].fail("Storage is full")
+        metadata_result = u.load(
+            m.Api.Storage.Metadata,
+            {
+                "value": value,
+                "timestamp": u.generate_iso_timestamp(),
+                "ttl": ttl_result.value,
+                "created_at": time.time(),
+            },
         )
-        metadata_result = u.try_(
-            lambda: m.Api.Storage.Metadata(
-                value=value,
-                timestamp=u.generate_iso_timestamp(),
-                ttl=ttl_val,
-                created_at=time.time(),
-            ),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Metadata validation failed: {e}")
         if metadata_result.failure:
-            return r[bool].fail(metadata_result.error)
-        metadata = metadata_result.value
-        json_value = value
-        self._storage[key] = json_value
-        value_json: t.ContainerValue = (
-            metadata.value if metadata.value is not None else ""
-        )
-        ttl_json: float = metadata.ttl if metadata.ttl is not None else 0.0
-        metadata_dict: t.ContainerValueMapping = {
-            "value": value_json,
-            "timestamp": metadata.timestamp,
-            "ttl": ttl_json,
-            "created_at": metadata.created_at,
-        }
-        self._storage[self._key(key)] = metadata_dict
-        if ttl_val is not None:
-            self._expiry_times[key] = time.time() + ttl_val
-        self._operations_count += 1
-        self._stats = m.Api.Storage.Stats(
-            total_operations=self._operations_count,
-            cache_hits=self._stats.cache_hits,
-            cache_misses=self._stats.cache_misses,
-            hit_ratio=self._stats.hit_ratio,
-            storage_size=self._stats.storage_size,
-            memory_usage=self._stats.memory_usage,
-            namespace=self._stats.namespace,
-        )
-        return r[bool].ok(value=True)
+            return r[bool].fail(metadata_result.error or "Metadata validation failed")
+        self._state.entries[normalized_key] = metadata_result.value
+        self._record_operation()
+        return r[bool].ok(True)
 
     def size(self) -> r[int]:
-        """Get storage size with expiration cleanup."""
-        self._cleanup_expired()
-        return r[int].ok(len(self._storage))
+        """Return current storage size."""
+        self._cleanup_expired_entries()
+        return r[int].ok(len(self._state.entries))
 
     def values(self) -> r[Sequence[t.ApiJsonValue]]:
-        """Get all values."""
-        self._cleanup_expired()
-        return r[Sequence[t.ApiJsonValue]].ok(list(self._storage.values()))
+        """Return stored values."""
+        self._cleanup_expired_entries()
+        return r[Sequence[t.ApiJsonValue]].ok(
+            [entry.value for entry in self._state.entries.values()],
+        )
 
-    def _apply_config(
-        self,
-        config_dict: t.Api.StorageDict,
-        max_size_val: t.ApiJsonValue | None,
-        default_ttl_val: t.ApiJsonValue | None,
-    ) -> None:
-        """Apply normalized config to instance attributes - no fallbacks."""
-        namespace_result = self._extract_namespace(config_dict)
-        if namespace_result.failure:
-            error_msg = f"Failed to extract namespace: {namespace_result.error}"
-            raise ValueError(error_msg)
-        self._namespace = namespace_result.value
-        max_size_result = self._extract_max_size(config_dict, max_size_val)
-        if max_size_result.failure:
-            error_msg = f"Failed to extract max_size: {max_size_result.error}"
-            raise ValueError(error_msg)
-        max_size_value = max_size_result.value
-        self._max_size = None if max_size_value == -1 else max_size_value
-        default_ttl_result = self._extract_default_ttl(config_dict, default_ttl_val)
-        if default_ttl_result.failure:
-            error_msg = f"Failed to extract default_ttl: {default_ttl_result.error}"
-            raise ValueError(error_msg)
-        default_ttl_value = default_ttl_result.value
-        self._default_ttl = None if default_ttl_value == -1 else default_ttl_value
-        backend_result = self._extract_backend(config_dict)
-        if backend_result.failure:
-            error_msg = f"Failed to extract backend: {backend_result.error}"
-            raise ValueError(error_msg)
-        self._backend = backend_result.value
+    @staticmethod
+    def _validate_key(key: str) -> r[str]:
+        """Validate a public storage key."""
+        key_result = u.validate_value(t.Api.STRING_ADAPTER, key)
+        if key_result.failure:
+            return r[str].fail(key_result.error or "Invalid storage key")
+        normalized_key = key_result.value.strip()
+        if not normalized_key:
+            return r[str].fail("Key must be non-empty string")
+        return r[str].ok(normalized_key)
 
-    def _cleanup_expired(self) -> None:
-        """Remove expired entries (TTL management)."""
-        current_time = time.time()
+    def _cleanup_expired_entries(self) -> int:
+        """Remove expired entries and return the number removed."""
         expired_keys = [
-            k for k, expiry in self._expiry_times.items() if expiry < current_time
+            key for key, entry in self._state.entries.items() if entry.expired
         ]
-        for k in expired_keys:
-            if k in self._storage:
-                del self._storage[k]
-            if k in self._expiry_times:
-                del self._expiry_times[k]
+        for key in expired_keys:
+            del self._state.entries[key]
+        return len(expired_keys)
 
-    def _extract_backend(self, config_dict: t.Api.StorageDict) -> r[str]:
-        """Extract backend from config with validation - uses default if not specified."""
-        if "backend" in config_dict:
-            backend_val = config_dict["backend"]
-            match backend_val:
-                case str() as s:
-                    if s:
-                        return r[str].ok(s)
-                    return r[str].fail("Backend cannot be empty")
-                case _:
-                    return r[str].fail(f"Invalid backend type: {type(backend_val)}")
-        return r[str].ok("memory")
-
-    def _extract_config_field(
-        self,
-        config_obj: BaseModel,
-        field_name: str,
-        default_value: str,
-    ) -> str:
-        """Extract string field from config t.NormalizedValue."""
-        field_value = config_obj.model_dump().get(field_name)
-        if isinstance(field_value, str):
-            return field_value
-        return default_value
-
-    def _extract_positive_int_parameter(
-        self,
-        param_val: t.ApiJsonValue | None,
-        config_key: str,
-        config_dict: t.Api.StorageDict,
-        param_display_name: str,
-    ) -> r[int]:
-        """Extract positive integer parameter preferring param_val over config.
-
-        Single Responsibility: Handles the common pattern for extracting and validating
-        positive integers from either a parameter or config dictionary.
-
-        Args:
-            param_val: Parameter value (checked first, takes precedence)
-            config_key: Key to check in config_dict if param_val is None
-            config_dict: Configuration dictionary
-            param_display_name: Display name for error messages (e.g., "Default TTL")
-
-        Returns:
-            r[int] with positive integer value, or sentinel (-1) if not specified
-
-        """
-        if param_val is not None:
-            int_result = u.try_(
-                lambda: t.Api.INTEGER_ADAPTER.validate_python(param_val),
-                catch=(ValidationError,),
-            ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
-            if int_result.failure:
-                return int_result
-            int_value = int_result.value
-            if int_value > 0:
-                return r[int].ok(int_value)
-            return r[int].fail(
-                f"{param_display_name} must be positive, got: {int_value}",
-            )
-        if config_key in config_dict:
-            config_val = config_dict[config_key]
-            if config_val is not None:
-                int_result = u.try_(
-                    lambda: t.Api.INTEGER_ADAPTER.validate_python(config_val),
-                    catch=(ValidationError,),
-                ).map_error(lambda e: f"Invalid {param_display_name} value: {e}")
-                if int_result.failure:
-                    return int_result
-                int_value = int_result.value
-                if int_value > 0:
-                    return r[int].ok(int_value)
-                return r[int].fail(
-                    f"{param_display_name} must be positive, got: {int_value}",
-                )
-        return r[int].ok(-1)
-
-    def _extract_default_ttl(
-        self,
-        config_dict: t.Api.StorageDict,
-        default_ttl_val: t.ApiJsonValue | None,
-    ) -> r[int]:
-        """Extract default_ttl preferring parameter over config - no fallbacks.
-
-        Returns r[int] with a sentinel value (-1) when default_ttl is not specified.
-        The caller should check for -1 to determine if default_ttl was not set.
-        """
-        return self._extract_positive_int_parameter(
-            default_ttl_val,
-            "default_ttl",
-            config_dict,
-            "Default TTL",
+    def _estimate_memory_usage(self) -> int:
+        """Estimate in-memory payload size through canonical JSON serialization."""
+        return sum(
+            len(t.Api.STRING_ADAPTER.dump_json(key))
+            + len(t.Api.API_JSON_VALUE_ADAPTER.dump_json(entry.value))
+            for key, entry in self._state.entries.items()
         )
 
-    def _extract_init_params(
-        self,
-        config: t.ApiJsonValue | None,
-        kwargs: Mapping[str, t.ApiJsonValue],
-    ) -> t.Pair[t.ApiJsonValue | None, Mapping[str, t.ApiJsonValue]]:
-        """Extract config and kwargs from __new__ or parameters."""
-        config_obj = getattr(self, "_flext_storage_config", None)
-        if config_obj is None:
-            config_obj = config
-        self._flext_storage_config = None
-        storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
-        if storage_kwargs is None:
-            storage_kwargs = kwargs
-        self._flext_storage_kwargs: Mapping[str, t.ApiJsonValue] = {}
-        return (config_obj, storage_kwargs)
+    def _record_operation(self) -> None:
+        """Increment storage operation count."""
+        self._state.operations_count += 1
 
-    def _extract_max_size(
+    def _resolve_settings(
         self,
-        config_dict: t.Api.StorageDict,
-        max_size_val: t.ApiJsonValue | None,
-    ) -> r[int]:
-        """Extract max_size preferring parameter over config - no fallbacks.
-
-        Returns r[int] with a sentinel value (-1) when max_size is not specified.
-        The caller should check for -1 to determine if max_size was not set.
-        """
-        return self._extract_positive_int_parameter(
-            max_size_val,
-            "max_size",
-            config_dict,
-            "Max size",
+        settings: m.Api.Storage.Settings | Mapping[str, t.ValueOrModel] | None,
+        overrides: Mapping[str, t.ValueOrModel],
+    ) -> m.Api.Storage.Settings:
+        """Resolve one canonical storage settings model."""
+        if isinstance(settings, m.Api.Storage.Settings):
+            return settings.model_copy(update=dict(overrides) or None)
+        payload: dict[str, t.ValueOrModel] = {}
+        if isinstance(settings, Mapping):
+            payload.update(settings)
+        elif settings is not None:
+            msg = "Storage settings must be a mapping or Storage.Settings model"
+            raise TypeError(msg)
+        payload.update(overrides)
+        if not payload:
+            return m.Api.Storage.Settings()
+        settings_result = u.load(
+            m.Api.Storage.Settings,
+            t.ConfigMap(root=payload),
         )
+        if settings_result.failure:
+            msg = settings_result.error or "Storage settings validation failed"
+            raise ValueError(msg)
+        return settings_result.value
 
-    def _extract_namespace(self, config_dict: t.Api.StorageDict) -> r[str]:
-        """Extract namespace from config with validation - uses default if not specified."""
-        if "namespace" in config_dict:
-            namespace_val = config_dict["namespace"]
-            match namespace_val:
-                case str() as s:
-                    if s:
-                        return r[str].ok(s)
-                    return r[str].fail("Namespace cannot be empty")
-                case _:
-                    return r[str].fail(f"Invalid namespace type: {type(namespace_val)}")
-        return r[str].ok("flext_api")
-
-    def _extract_optional_config_field(
+    def _resolve_ttl(
         self,
-        config_obj: BaseModel,
-        field_name: str,
-    ) -> t.ContainerValue | None:
-        """Extract optional field from config t.NormalizedValue."""
-        field_value = config_obj.model_dump().get(field_name)
-        if field_value is not None:
-            return u.Api.RequestUtils.to_json_value(field_value)
-        return None
+        *,
+        timeout: int | None = None,
+        ttl: int | None = None,
+    ) -> r[int | None]:
+        """Resolve one TTL value from public inputs and settings."""
+        resolved = timeout if timeout is not None else ttl
+        if resolved is None:
+            resolved = self._settings.default_ttl
+        if resolved is None:
+            return r[int | None].ok(None)
+        if resolved <= 0:
+            return r[int | None].fail("TTL must be positive")
+        return r[int | None].ok(resolved)
 
-    def _extract_storage_kwargs(
-        self,
-        storage_kwargs: Mapping[str, t.ApiJsonValue],
-    ) -> t.Pair[t.ApiJsonValue | None, t.ApiJsonValue | None]:
-        """Extract storage-specific kwargs before passing to super."""
-        storage_kwargs_dict = dict(storage_kwargs)
-        max_size_val = storage_kwargs_dict.pop("max_size", None)
-        default_ttl_val = storage_kwargs_dict.pop("default_ttl", None)
-        self._flext_storage_kwargs = storage_kwargs_dict
-        return (max_size_val, default_ttl_val)
-
-    def _key(self, key: str) -> str:
-        """Create namespaced key."""
-        return f"{self._namespace}:{key}"
-
-    def _normalize_config(self, config_obj: t.ApiJsonValue | None) -> t.Api.StorageDict:
-        """Normalize config t.NormalizedValue to dictionary."""
-        if config_obj is None:
-            return {}
-        if isinstance(config_obj, dict):
-            return {}
-        if isinstance(config_obj, BaseModel):
-            namespace_str = self._extract_config_field(config_obj, "namespace", "flext")
-            backend_str = self._extract_config_field(config_obj, "backend", "memory")
-            max_size_val = self._extract_optional_config_field(config_obj, "max_size")
-            default_ttl_val = self._extract_optional_config_field(
-                config_obj,
-                "default_ttl",
-            )
-            return {
-                "namespace": namespace_str,
-                "backend": backend_str,
-                "max_size": u.to_int(max_size_val)
-                if max_size_val is not None
-                else None,
-                "default_ttl": u.to_int(default_ttl_val)
-                if default_ttl_val is not None
-                else None,
-            }
-        return {}
-
-    def _process_namespaced_entry(
-        self,
-        namespaced_key: str,
-        key: str,
-    ) -> r[t.ApiJsonValue]:
-        """Process a namespaced storage entry with metadata validation."""
-        data = self._storage[namespaced_key]
-        try:
-            if not isinstance(data, dict):
-                return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
-            data_dict: Mapping[str, t.ApiJsonValue] = (
-                t.Api.STORAGE_ENTRY_ADAPTER.validate_python(data)
-            )
-            ttl_value = data_dict.get("ttl")
-            ttl_int: int | None = None
-            if ttl_value is not None:
-                try:
-                    ttl_int = t.Api.INTEGER_ADAPTER.validate_python(ttl_value)
-                except ValidationError:
-                    ttl_int = None
-            created_at_value = data_dict.get("created_at", 0.0)
-            created_at_float = 0.0
-            try:
-                created_at_float = t.Api.FLOAT_ADAPTER.validate_python(
-                    created_at_value,
-                )
-            except ValidationError:
-                created_at_float = 0.0
-            timestamp_value = data_dict.get("timestamp", "")
-            metadata = m.Api.Storage.Metadata(
-                value=data_dict.get("value"),
-                timestamp=t.Api.STRING_ADAPTER.validate_python(timestamp_value),
-                ttl=ttl_int,
-                created_at=created_at_float,
-            )
-            if not metadata.expired():
-                self._stats = m.Api.Storage.Stats(
-                    total_operations=self._stats.total_operations,
-                    cache_hits=self._stats.cache_hits + 1,
-                    cache_misses=self._stats.cache_misses,
-                    hit_ratio=self._stats.hit_ratio,
-                    storage_size=self._stats.storage_size,
-                    memory_usage=self._stats.memory_usage,
-                    namespace=self._stats.namespace,
-                )
-                return r[t.ApiJsonValue].ok(metadata.value)
-            if namespaced_key in self._storage:
-                del self._storage[namespaced_key]
-            if key in self._expiry_times:
-                del self._expiry_times[key]
-            return r[t.ApiJsonValue].fail(f"Key expired: {key}")
-        except ValidationError as e:
-            u.fetch_logger(__name__).error(
-                "Metadata validation failed for storage entry",
-                error=f"{e}",
-                exception_type="ValidationError",
-                key=key,
-            )
-            return r[t.ApiJsonValue].fail(
-                f"ValidationError processing key '{key}': {e}",
-            )
-        except (KeyError, TypeError, AttributeError) as e:
-            u.fetch_logger(__name__).error(
-                "Failed to process namespaced storage entry",
-                error=f"{e}",
-                exception_type=type(e).__name__,
-                key=key,
-            )
-            return r[t.ApiJsonValue].fail(
-                f"{type(e).__name__} processing key '{key}': {e}",
-            )
+    def _stats_model(self) -> m.Api.Storage.Stats:
+        """Materialize one stats model from centralized runtime state."""
+        return m.Api.Storage.Stats(
+            total_operations=self._state.operations_count,
+            cache_hits=self._state.cache_hits,
+            cache_misses=self._state.cache_misses,
+            storage_size=len(self._state.entries),
+            memory_usage=self._estimate_memory_usage(),
+            namespace=self.namespace,
+        )
 
 
 __all__ = ["FlextApiStorage"]

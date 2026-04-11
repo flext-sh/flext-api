@@ -61,7 +61,7 @@ schema_generator.export_to_file("openapi.yaml")
 # Custom OpenAPI configuration
 from flext_api import OpenApiConfig
 
-config = OpenApiConfig(
+settings = OpenApiConfig(
     title="Enterprise API",
     version="2.0.0",
     description="Enterprise-grade REST API with comprehensive documentation",
@@ -73,7 +73,7 @@ config = OpenApiConfig(
     ],
 )
 
-schema = OpenApiSchema(app, config=config)
+schema = OpenApiSchema(app, settings=settings)
 ```
 
 ## AsyncAPI Schema Generation
@@ -271,7 +271,7 @@ openapi_config = OpenApiConfig(
     ],
 )
 
-openapi_schema = OpenApiSchema(app, config=openapi_config)
+openapi_schema = OpenApiSchema(app, settings=openapi_config)
 openapi_spec = openapi_schema.generate()
 
 # 4. Generate JSON Schema for models

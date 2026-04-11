@@ -35,7 +35,7 @@ def example_client_creation() -> None:
         base_url="https://httpbin.org",
         timeout=c.DEFAULT_TIMEOUT_SECONDS,
     )
-    print(f"✅ Client config created: {client_config.base_url}")
+    print(f"✅ Client settings created: {client_config.base_url}")
     print(f"   Timeout: {client_config.timeout}s")
     print(f"   Max retries: {client_config.max_retries}")
 
@@ -43,13 +43,13 @@ def example_client_creation() -> None:
 def example_direct_client() -> None:
     """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
     print("\n=== Direct Client Example ===")
-    config = FlextApiSettings(
+    settings = FlextApiSettings(
         base_url="https://httpbin.org",
         timeout=c.DEFAULT_TIMEOUT_SECONDS,
     )
-    print(f"✅ Client config: {config.base_url}")
-    print(f"   Timeout: {config.timeout}")
-    print(f"   Default headers: {config.headers}")
+    print(f"✅ Client settings: {settings.base_url}")
+    print(f"   Timeout: {settings.timeout}")
+    print(f"   Default headers: {settings.headers}")
 
 
 def example_storage_usage() -> None:

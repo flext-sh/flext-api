@@ -203,7 +203,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                 headers: t.StrMapping | None = None,
                 request_kwargs: t.Api.RequestKwargs | None = None,
                 timeout: float | str | None = None,
-            ) -> r[Mapping[str, object]]:
+            ) -> r[t.ConfigMap]:
                 """Build one normalized request payload for HttpRequest validation."""
                 body_result = (
                     FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
@@ -212,7 +212,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                     )
                 )
                 if body_result.failure:
-                    return r[Mapping[str, object]].fail(
+                    return r[t.ConfigMap].fail(
                         body_result.error or "Body extraction failed",
                     )
                 headers_result = FlextApiUtilities.Api.RequestUtils.merge_headers(
@@ -220,7 +220,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                     request_kwargs,
                 )
                 if headers_result.failure:
-                    return r[Mapping[str, object]].fail(
+                    return r[t.ConfigMap].fail(
                         headers_result.error or "Header extraction failed",
                     )
                 timeout_result = (
@@ -230,7 +230,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                     )
                 )
                 if timeout_result.failure:
-                    return r[Mapping[str, object]].fail(
+                    return r[t.ConfigMap].fail(
                         timeout_result.error or "Timeout extraction failed",
                     )
                 query_params_result = (
@@ -239,17 +239,21 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                     )
                 )
                 if query_params_result.failure:
-                    return r[Mapping[str, object]].fail(
+                    return r[t.ConfigMap].fail(
                         query_params_result.error or "Query params extraction failed",
                     )
-                return r[Mapping[str, object]].ok({
-                    "method": method,
-                    "url": url,
-                    "body": body_result.value,
-                    "headers": dict(headers_result.value),
-                    "query_params": query_params_result.value,
-                    "timeout": timeout_result.value,
-                })
+                return r[t.ConfigMap].ok(
+                    t.ConfigMap(
+                        root={
+                            "method": method,
+                            "url": url,
+                            "body": body_result.value,
+                            "headers": dict(headers_result.value),
+                            "query_params": query_params_result.value,
+                            "timeout": timeout_result.value,
+                        },
+                    ),
+                )
 
     class ResponseBuilder:
         """Response builder for API responses."""
@@ -385,16 +389,16 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
 
         @staticmethod
         def extract_pagination_config(
-            config: t.ContainerValue,
+            settings: t.ContainerValue,
         ) -> Mapping[str, t.ApiJsonValue]:
-            """Extract pagination configuration from config t.NormalizedValue.
+            """Extract pagination configuration from settings t.NormalizedValue.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
             result: MutableMapping[str, t.ApiJsonValue] = {}
-            default_page_size = getattr(config, "default_page_size", 20)
-            max_page_size = getattr(config, "max_page_size", 1000)
+            default_page_size = getattr(settings, "default_page_size", 20)
+            max_page_size = getattr(settings, "max_page_size", 1000)
             result["default_page_size"] = (
                 FlextApiUtilities.Api.RequestUtils.to_json_value(default_page_size)
             )

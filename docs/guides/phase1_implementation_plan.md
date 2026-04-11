@@ -129,7 +129,7 @@
 ### 4. Configuration Management ✅ 75%
 
 **Status**: Partially Complete
-**Files**: `config.py`, `typings.py`
+**Files**: `settings.py`, `typings.py`
 
 **Completed**:
 

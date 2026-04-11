@@ -144,7 +144,7 @@ from flext_api import create_fastapi_app, FlextApiSettings
 from fastapi import FastAPI
 
 # Create configuration
-config = FlextApiSettings(
+settings = FlextApiSettings(
     title="Enterprise API",
     version="2.0.0",
     description="Enterprise-grade REST API",
@@ -153,7 +153,7 @@ config = FlextApiSettings(
 )
 
 # Create application
-app = create_fastapi_app(config=config)
+app = create_fastapi_app(settings=settings)
 
 
 # Application is now ready for route registration
@@ -302,7 +302,7 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 | `app.py`       | 90%      | ✅ Stable | FastAPI application factory |
 | `models.py`    | 85%      | ✅ Good   | HTTP models and schemas     |
 | `utilities.py` | 92%      | ✅ Stable | HTTP utility functions      |
-| `config.py`    | 88%      | ✅ Good   | Configuration management    |
+| `settings.py`    | 88%      | ✅ Good   | Configuration management    |
 
 ## Usage Examples
 
@@ -412,7 +412,7 @@ from flext_core import u
 from fastapi import HTTPException, Depends
 
 # Configuration
-config = FlextApiSettings(
+settings = FlextApiSettings(
     title="User Management API",
     version="1.0.0",
     description="API for managing users in the system",
@@ -421,7 +421,7 @@ config = FlextApiSettings(
 )
 
 # Create application
-app = create_fastapi_app(config=config)
+app = create_fastapi_app(settings=settings)
 
 
 # Models

@@ -72,7 +72,7 @@ repos: [] # DISABLED BY SCRIPT - All hooks disabled
 #           [
 #             src/,
 #             tests/,
-#             --config-file=pyproject.toml,
+#             --settings-file=pyproject.toml,
 #             --strict,
 #             --warn-unreachable,
 #             --warn-unused-ignores,

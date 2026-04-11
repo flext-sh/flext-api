@@ -193,8 +193,8 @@ client = http_protocol.create_client({"base_url": "https://api.example.com"})
 
 # Add custom protocol
 class Custom
-    def create_client(self, config: dict):
-        return CustomClient(config)
+    def create_client(self, settings: dict):
+        return CustomClient(settings)
 
 
 registry.register("custom", Custom
@@ -230,7 +230,7 @@ class Base
     """Base protocol interface."""
 
     @abstractmethod
-    def create_client(self, config: dict):
+    def create_client(self, settings: dict):
         """Create protocol-specific client."""
         pass
 
@@ -243,8 +243,8 @@ class Base
 class FlextWebBase
     """HTTP protocol implementation."""
 
-    def create_client(self, config: dict) -> FlextApiClient:
-        return FlextApiClient(**config)
+    def create_client(self, settings: dict) -> FlextApiClient:
+        return FlextApiClient(**settings)
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
@@ -314,28 +314,28 @@ async def request_pipeline(request, call_next):
 ### Application Factory Pattern
 
 ```python
-def create_fastapi_app(config: FlextApiSettings = None) -> FastAPI:
+def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
     # 2. Create FastAPI app
     app = FastAPI(
-        title=config.title,
-        version=config.version,
-        description=config.description,
-        docs_url=config.docs_url,
-        redoc_url=config.redoc_url,
+        title=settings.title,
+        version=settings.version,
+        description=settings.description,
+        docs_url=settings.docs_url,
+        redoc_url=settings.redoc_url,
     )
 
     # 3. Configure CORS
-    if config.cors_origins:
+    if settings.cors_origins:
         from fastapi.middleware.cors import CORSMiddleware
 
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=config.cors_origins,
-            allow_credentials=config.cors_credentials,
-            allow_methods=config.cors_methods,
-            allow_headers=config.cors_headers,
+            allow_origins=settings.cors_origins,
+            allow_credentials=settings.cors_credentials,
+            allow_methods=settings.cors_methods,
+            allow_headers=settings.cors_headers,
         )
 
     # 4. Add FLEXT middleware
@@ -445,8 +445,8 @@ class StorageBackend(ABC):
 class S3StorageBackend(StorageBackend):
     """Amazon S3 storage implementation."""
 
-    def __init__(self, config: dict):
-        self.client = boto3.client("s3", **config)
+    def __init__(self, settings: dict):
+        self.client = boto3.client("s3", **settings)
 
     async def upload_file(
         self, file, path: str, metadata: t.ContainerMapping = None
@@ -496,7 +496,7 @@ from flext_api import FlextApiCache
 # Redis cache configuration
 redis_cache = FlextApiCache(
     backend="redis",
-    config={
+    settings={
         "host": "localhost",
         "port": 6379,
         "db": 0,
@@ -508,7 +508,7 @@ redis_cache = FlextApiCache(
 # Memory cache for development
 memory_cache = FlextApiCache(
     backend="memory",
-    config={
+    settings={
         "max_size": 1000,  # Max cached items
         "ttl": 300,  # Default TTL in seconds
     },
@@ -517,7 +517,7 @@ memory_cache = FlextApiCache(
 # File-based cache for persistence
 file_cache = FlextApiCache(
     backend="filesystem",
-    config={
+    settings={
         "cache_dir": "/tmp/flext-cache",
         "max_size": 100 * 1024 * 1024,  # 100MB
         "cleanup_interval": 3600,  # Cleanup every hour
@@ -831,9 +831,9 @@ from flext_api import Base
 class CustomBase
     """Custom protocol implementation."""
 
-    def create_client(self, config: dict):
+    def create_client(self, settings: dict):
         """Create protocol-specific client."""
-        return CustomClient(**config)
+        return CustomClient(**settings)
 
     async def execute_request(self, request) -> r[t.NormalizedValue]:
         """Execute protocol-specific request."""
@@ -933,11 +933,11 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 ```python
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
-def create_app(config: dict) -> FastAPI:
+def create_app(settings: dict) -> FastAPI:
     # Legacy implementation
 
 # New API (introduced in 0.9.x)
-def create_fastapi_app(config: FlextApiSettings = None) -> FastAPI:
+def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
     # New implementation
 ```

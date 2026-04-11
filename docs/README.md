@@ -67,7 +67,7 @@ src/flext_api/
 ├── api.py                   # Main API interface
 ├── app.py                   # FastAPI application factory
 ├── client.py                # HTTP client implementation (605 lines)
-├── config.py                # Configuration management (187 lines)
+├── settings.py                # Configuration management (187 lines)
 ├── constants.py             # Configuration constants
 ├── exceptions.py            # HTTP-specific exceptions
 ├── handlers.py              # Request/response handlers
@@ -154,8 +154,8 @@ from flext_api import FlextApiClient
 from flext_api import FlextApiSettings
 
 # Configure client
-config = FlextApiSettings(base_url="https://api.example.com")
-client = FlextApiClient(config)
+settings = FlextApiSettings(base_url="https://api.example.com")
+client = FlextApiClient(settings)
 
 # Make requests with automatic error handling
 result = client.get("/users")
@@ -174,8 +174,8 @@ from flext_api import create_fastapi_app
 from flext_api import FlextApiSettings
 
 # Create FastAPI application
-config = FlextApiSettings(title="My API", version="1.0.0")
-app = create_fastapi_app(config)
+settings = FlextApiSettings(title="My API", version="1.0.0")
+app = create_fastapi_app(settings)
 
 
 # Add your routes

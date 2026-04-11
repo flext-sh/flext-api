@@ -86,7 +86,7 @@ package "flext_api" as flext_api {
         FlextApiModels --> ApiConfiguration
     }
 
-    package "config.py" as config {
+    package "settings.py" as settings {
         class FlextApiSettings
         class EnvironmentConfig
         class FileConfig
@@ -208,7 +208,7 @@ flext_api/
 ├── client.py           # HTTP client implementation
 ├── app.py              # FastAPI application factory
 ├── models.py           # Data models and validation
-├── config.py           # Configuration management
+├── settings.py           # Configuration management
 ├── constants.py        # Constants and enumerations
 ├── protocols/          # Protocol implementations
 ├── storage.py          # Storage abstractions
@@ -224,10 +224,10 @@ class FlextApi(s[FlextApiSettings]):
     """Thin facade providing access to all FLEXT-API functionality."""
 
     # Main entry points
-    def client(self, **config) -> FlextApiClient:
+    def client(self, **settings) -> FlextApiClient:
         """Create HTTP client with FLEXT integration."""
 
-    def create_fastapi_app(self, **config) -> FastAPI:
+    def create_fastapi_app(self, **settings) -> FastAPI:
         """Create FastAPI application with FLEXT patterns."""
 
     def storage(self) -> FlextApiStorage:
@@ -322,7 +322,7 @@ class Base
     """Abstract base class for all protocols."""
 
     @abstractmethod
-    def create_client(self, config: dict):
+    def create_client(self, settings: dict):
         """Create protocol-specific client."""
         pass
 
@@ -336,9 +336,9 @@ class Base
 class FlextWebBase
     """HTTP/REST protocol implementation."""
 
-    def create_client(self, config: dict) -> FlextApiClient:
+    def create_client(self, settings: dict) -> FlextApiClient:
         """Create HTTP client instance."""
-        return FlextApiClient(**config)
+        return FlextApiClient(**settings)
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
@@ -570,13 +570,13 @@ class StorageBackend(ABC):
 class S3Backend(StorageBackend):
     """Amazon S3 storage backend."""
 
-    def __init__(self, config: Dict[str, t.NormalizedValue]):
-        self.bucket = config["bucket"]
+    def __init__(self, settings: Dict[str, t.NormalizedValue]):
+        self.bucket = settings["bucket"]
         self.client = boto3.client(
             "s3",
-            aws_access_key_id=config.get("access_key"),
-            aws_secret_access_key=config.get("secret_key"),
-            region_name=config.get("region", "us-east-1"),
+            aws_access_key_id=settings.get("access_key"),
+            aws_secret_access_key=settings.get("secret_key"),
+            region_name=settings.get("region", "us-east-1"),
         )
 
     async def upload_file(

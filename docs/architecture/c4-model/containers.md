@@ -90,7 +90,7 @@ Rel(api_client, external_api, "Makes requests", "REST")
 Rel(fastapi_app, api_client, "Uses internally", "library calls")
 Rel(fastapi_app, protocol_layer, "Routes to", "protocol dispatch")
 Rel(fastapi_app, storage_layer, "Handles files", "storage operations")
-Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
+Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 @enduml
 ```
@@ -224,7 +224,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && poetry config virtualenvs.create false
+RUN pip install poetry && poetry settings virtualenvs.create false
 RUN poetry install --only=main --no-dev
 
 # Copy application code

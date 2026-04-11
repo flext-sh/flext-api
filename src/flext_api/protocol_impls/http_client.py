@@ -201,7 +201,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         self,
         options: m.Api.HttpClientRequestOptions,
     ) -> t.StrMapping:
-        """Prepare merged headers from config and request."""
+        """Prepare merged headers from settings and request."""
         headers = dict(self._config.headers)
         headers.update(options.headers)
         return headers

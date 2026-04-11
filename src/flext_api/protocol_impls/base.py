@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 
-from flext_api import r, t, u
+from flext_api import t, u
+from flext_core import r
 
 
 class FlextApiBaseProtocolImplementation:

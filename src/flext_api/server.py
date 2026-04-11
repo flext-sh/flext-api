@@ -24,7 +24,8 @@ from typing import override
 from fastapi import FastAPI
 from pydantic import ValidationError
 
-from flext_api import c, e, p, r, s, t, u
+from flext_api import c, p, t, u
+from flext_core import e, r, s
 
 
 class FlextApiServer(s[bool]):
