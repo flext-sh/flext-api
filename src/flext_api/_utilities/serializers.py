@@ -10,7 +10,7 @@ from typing import TypeIs
 import msgpack
 from pydantic import ValidationError
 
-from flext_api import p, t
+from flext_api import p, t, u
 from flext_core import r
 
 
@@ -79,9 +79,6 @@ class FlextApiUtilitiesSerializers:
             return r[t.RecursiveValue].fail("msgpack module not available")
         try:
             result = module.unpackb(data)
-            validated = t.Cli.JSON_VALUE_ADAPTER.validate_python(result)
-            return r[t.RecursiveValue].ok(
-                validated,
-            )
+            return u.validate_value(t.RecursiveValue, result)
         except (TypeError, ValidationError, ValueError) as e:
             return r[t.RecursiveValue].fail(f"msgpack deserialization failed: {e}")

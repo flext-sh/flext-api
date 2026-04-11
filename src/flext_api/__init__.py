@@ -13,6 +13,8 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
+    from flext_cli import d, e, h, r, s, x
+
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
     from flext_api._protocols.transports import FlextApiTransports
@@ -50,7 +52,6 @@ if _t.TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
-    from flext_web import d, e, h, r, s, x
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",
@@ -98,7 +99,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextApiUtilities",
                 "u",
             ),
-            "flext_web": (
+            "flext_cli": (
                 "d",
                 "e",
                 "h",

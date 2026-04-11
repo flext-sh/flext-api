@@ -15,8 +15,8 @@ from pydantic import ValidationError
 
 from flext_api import (
     FlextApi,
-    FlextApiConstants,
-    FlextApiModels,
+    FlextApiClient,
+    FlextApiSettings,
     FlextApiUtilitiesSerializers,
     c,
     m,
@@ -119,22 +119,24 @@ class TestSerializers:
         tm.that(result.value, eq=original)
 
 
-class TestFacadeInheritance:
-    """Validate MRO chain is intact."""
+class TestFacadeContract:
+    """Validate public facade behavior only."""
 
-    def test_constants_inherits_web(self) -> None:
-        """FlextApiConstants extends FlextWebConstants via MRO."""
-        tm.that(issubclass(FlextApiConstants, FlextApiConstants.__mro__[1]), eq=True)
+    def test_api_client_uses_keyword_config(self) -> None:
+        """FlextApiClient accepts a settings model through the public config input."""
+        settings = FlextApiSettings(base_url="https://service.example", timeout=9.5)
+        client = FlextApiClient(config=settings)
+        tm.that(client.base_url, eq="https://service.example")
+        tm.that(client.timeout, eq=9.5)
 
-    def test_models_has_api_namespace(self) -> None:
-        """FlextApiModels exposes Api inner class."""
-        tm.that(
-            issubclass(
-                FlextApiModels.Api.HttpRequest.__mro__[0],
-                FlextApiModels.Api.HttpRequest,
-            ),
-            eq=True,
-        )
+    def test_api_facade_uses_keyword_config(self) -> None:
+        """FlextApi accepts a settings model through the public config input."""
+        settings = FlextApiSettings(base_url="https://api.example", timeout=4.0)
+        api = FlextApi(config=settings)
+        result = api.execute()
+        tm.that(result.success, eq=True)
+        tm.that(result.value.base_url, eq="https://api.example")
+        tm.that(result.value.timeout, eq=4.0)
 
 
 def test_package_imports_main_facade() -> None:

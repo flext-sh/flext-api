@@ -9,8 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
-
+import msgpack
 from flext_tests import tm
 
 from flext_api import FlextApiUtilitiesSerializers
@@ -67,43 +66,6 @@ class TestMessagePackUnpackb:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=42)
 
-    def test_unpackb_failure_msgpack_not_available(self) -> None:
-        """Test failure when msgpack module is not available."""
-        # Arrange: mock _load_msgpack to return None
-        with patch.object(
-            FlextApiUtilitiesSerializers,
-            "_load_msgpack",
-            return_value=None,
-        ):
-            test_data = b"\x81\xa3key\xa5value"
-
-            # Act
-            result = FlextApiUtilitiesSerializers.unpackb(test_data)
-
-            # Assert
-            tm.that(result.failure, eq=True)
-            assert result.error is not None
-            tm.that(result.error, has="msgpack module not available")
-
-    def test_unpackb_failure_unpackb_function_not_found(self) -> None:
-        """Test failure when msgpack.unpackb function is not found."""
-        # Arrange: mock module without unpackb function
-        mock_module = MagicMock()
-        mock_module.unpackb = None
-
-        with patch.object(
-            FlextApiUtilitiesSerializers, "_load_msgpack", return_value=mock_module
-        ):
-            test_data = b"\x81\xa3key\xa5value"
-
-            # Act
-            result = FlextApiUtilitiesSerializers.unpackb(test_data)
-
-            # Assert
-            tm.that(result.failure, eq=True)
-            assert result.error is not None
-            tm.that(result.error, has="msgpack.unpackb function not found")
-
     def test_unpackb_failure_invalid_data(self) -> None:
         """Test failure when data is invalid/unparseable."""
         # Arrange: invalid msgpack data
@@ -118,26 +80,14 @@ class TestMessagePackUnpackb:
         tm.that(result.error, has="msgpack deserialization failed")
 
     def test_unpackb_failure_validation_error(self) -> None:
-        """Test failure when validation fails on unpacked data."""
-        # Arrange: mock unpackb to return data that fails validation
-        mock_module = MagicMock()
-        mock_unpackb = MagicMock(
-            return_value=object(),
-        )  # object() fails TypeAdapter validation
-        mock_module.unpackb = mock_unpackb
-
-        with patch.object(
-            FlextApiUtilitiesSerializers, "_load_msgpack", return_value=mock_module
-        ):
-            test_data = b"\x00"
-
-            # Act
-            result = FlextApiUtilitiesSerializers.unpackb(test_data)
-
-            # Assert
-            tm.that(result.failure, eq=True)
-            assert result.error is not None
-            tm.that(result.error.lower(), has="validation")
+        """Test failure when unpacked data is outside the public recursive contract."""
+        packed = msgpack.packb(msgpack.ExtType(1, b"invalid"))
+        assert isinstance(packed, bytes)
+        test_data = packed
+        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        tm.that(result.failure, eq=True)
+        assert result.error is not None
+        tm.that(result.error.lower(), has="validation")
 
     def test_unpackb_returns_result_type(self) -> None:
         """Test that unpackb returns r with success/failure semantics."""

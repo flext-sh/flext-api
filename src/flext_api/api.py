@@ -10,10 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import ClassVar, Self, override
+from typing import ClassVar, override
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, PrivateAttr
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
 from flext_core import r, s
@@ -31,46 +30,40 @@ class FlextApi(s[FlextApiSettings]):
     model_config: ClassVar[ConfigDict] = ConfigDict(use_enum_values=True)
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar = m
-
-    def __new__(
-        cls,
-        config: FlextApiSettings | None = None,
-        **_kwargs: t.Scalar,
-    ) -> Self:
-        """Intercept positional config argument and convert to kwargs.
-
-        Args:
-            config: Optional FlextApiSettings (passed to __init__ via attribute).
-
-        """
-        instance = super().__new__(cls)
-        if config is not None:
-            object.__setattr__(instance, "_init_config", config)
-        return instance
+    _client: FlextApiClient | None = PrivateAttr(default=None)
 
     def __init__(
         self,
+        *,
         config: FlextApiSettings | None = None,
-        **kwargs: t.Scalar,
     ) -> None:
-        """Initialize with optional config.
+        """Public zero-ceremony bootstrap for the API facade."""
+        super().__init__(config=config)
 
-        Args:
-        config: FlextApiSettings model or None for defaults.
-        **kwargs: Additional Pydantic model fields (ignored for this service).
+    @classmethod
+    @override
+    def _get_service_config_type(cls) -> type[FlextApiSettings]:
+        """Bind the API facade to FlextApiSettings by default."""
+        return FlextApiSettings
 
-        """
-        init_config = getattr(self, "_init_config", None)
-        if init_config is not None:
-            api_config = init_config
-        elif config is not None:
-            api_config = config
-        else:
-            api_config = FlextApiSettings.model_validate({})
-        _ = kwargs
-        super().__init__()
-        object.__setattr__(self, "_config", api_config)
-        self._client = FlextApiClient(config=api_config)
+    @property
+    @override
+    def settings(self) -> FlextApiSettings:
+        """Return typed API settings for facade operations."""
+        config = self.config
+        if isinstance(config, FlextApiSettings):
+            return config
+        msg = "FlextApi runtime config must be FlextApiSettings"
+        raise TypeError(msg)
+
+    @property
+    def client(self) -> FlextApiClient:
+        """Return the lazily created HTTP client bound to this facade config."""
+        client = self._client
+        if client is None:
+            client = FlextApiClient(config=self.settings)
+            self._client = client
+        return client
 
     def delete(
         self,
@@ -91,8 +84,7 @@ class FlextApi(s[FlextApiSettings]):
         """Execute s interface."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs: {kwargs}")
-        config = self._config_model()
-        return r[FlextApiSettings].ok(config)
+        return r[FlextApiSettings].ok(self.settings)
 
     def get(
         self,
@@ -166,45 +158,7 @@ class FlextApi(s[FlextApiSettings]):
         r[HttpResponse]: Response or error.
 
         """
-        return self._client.request(request)
-
-    def _extract_query_params(
-        self,
-        request_kwargs: t.Api.RequestKwargs | None,
-    ) -> r[t.Api.WebParams]:
-        """Extract and validate query parameters from request_kwargs.
-
-        Args:
-            request_kwargs: Optional request kwargs containing params.
-
-        Returns:
-            r[WebParams]: Query params dict or error.
-
-        """
-        query_params: t.Api.WebParams = {}
-        if request_kwargs is None or "params" not in request_kwargs:
-            return r[t.Api.WebParams].ok(query_params)
-        params_value = request_kwargs["params"]
-        if params_value is None:
-            return r[t.Api.WebParams].ok(query_params)
-        if not isinstance(params_value, Mapping):
-            return r[t.Api.WebParams].fail(f"Invalid params type: {type(params_value)}")
-        params_mapping: Mapping[str, t.ApiJsonValue] = params_value
-        params_result: t.MutableStrMapping = {}
-        for k, v in params_mapping.items():
-            if isinstance(v, str):
-                params_result[k] = v
-            elif isinstance(v, (int, float, bool)):
-                params_result[k] = f"{v}"
-            else:
-                params_result[k] = ""
-        return r[t.Api.WebParams].ok(params_result)
-
-    def _config_model(self) -> FlextApiSettings:
-        config = self._config
-        if isinstance(config, FlextApiSettings):
-            return config
-        return FlextApiSettings.model_validate({})
+        return self.client.request(request)
 
     def _http_method(
         self,
@@ -229,46 +183,19 @@ class FlextApi(s[FlextApiSettings]):
         r[HttpResponse]: Response or error.
 
         """
-        request_kwargs_dict: Mapping[str, t.ApiJsonValue] | None = request_kwargs
-        body_result = u.Api.RequestUtils.extract_body_from_kwargs(
-            data,
-            request_kwargs_dict,
-        )
-        if body_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                body_result.error or "Body extraction failed"
+        return (
+            u.Api.RequestUtils
+            .build_request_payload(
+                method=method,
+                url=url,
+                data=data,
+                headers=headers,
+                request_kwargs=request_kwargs,
+                timeout=timeout,
             )
-        headers_result = u.Api.RequestUtils.merge_headers(
-            headers,
-            request_kwargs_dict,
+            .flat_map(lambda payload: u.load(m.Api.HttpRequest, payload))
+            .flat_map(self.request)
         )
-        if headers_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                headers_result.error or "Header extraction failed",
-            )
-        timeout_result = u.Api.RequestUtils.validate_and_extract_timeout(
-            timeout,
-            request_kwargs_dict,
-        )
-        if timeout_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                timeout_result.error or "Timeout extraction failed",
-            )
-        query_params_result = self._extract_query_params(request_kwargs)
-        if query_params_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                query_params_result.error or "Query params extraction failed",
-            )
-        body_final = body_result.value
-        http_request = m.Api.HttpRequest(
-            method=method,
-            url=url,
-            body=body_final,
-            headers=dict(headers_result.value),
-            query_params=query_params_result.value,
-            timeout=timeout_result.value,
-        )
-        return self.request(http_request)
 
 
 api = FlextApi

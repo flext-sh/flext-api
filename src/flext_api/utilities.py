@@ -169,6 +169,88 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                         return r[float].fail(f"Invalid timeout value: {timeout_value}")
                 return r[float].ok(30.0)
 
+            @staticmethod
+            def extract_query_params(
+                request_kwargs: t.Api.RequestKwargs | None,
+            ) -> r[t.Api.WebParams]:
+                """Extract and normalize query parameters from request kwargs."""
+                query_params: t.Api.WebParams = {}
+                if request_kwargs is None or "params" not in request_kwargs:
+                    return r[t.Api.WebParams].ok(query_params)
+                params_value = request_kwargs["params"]
+                if params_value is None:
+                    return r[t.Api.WebParams].ok(query_params)
+                if not isinstance(params_value, Mapping):
+                    return r[t.Api.WebParams].fail(
+                        f"Invalid params type: {type(params_value)}",
+                    )
+                params_result: t.MutableStrMapping = {}
+                for key, value in params_value.items():
+                    if isinstance(value, str):
+                        params_result[key] = value
+                    elif isinstance(value, (int, float, bool)):
+                        params_result[key] = f"{value}"
+                    else:
+                        params_result[key] = ""
+                return r[t.Api.WebParams].ok(params_result)
+
+            @staticmethod
+            def build_request_payload(
+                *,
+                method: str,
+                url: str,
+                data: t.Api.RequestBody | None = None,
+                headers: t.StrMapping | None = None,
+                request_kwargs: t.Api.RequestKwargs | None = None,
+                timeout: float | str | None = None,
+            ) -> r[Mapping[str, object]]:
+                """Build one normalized request payload for HttpRequest validation."""
+                body_result = (
+                    FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
+                        data,
+                        request_kwargs,
+                    )
+                )
+                if body_result.failure:
+                    return r[Mapping[str, object]].fail(
+                        body_result.error or "Body extraction failed",
+                    )
+                headers_result = FlextApiUtilities.Api.RequestUtils.merge_headers(
+                    headers,
+                    request_kwargs,
+                )
+                if headers_result.failure:
+                    return r[Mapping[str, object]].fail(
+                        headers_result.error or "Header extraction failed",
+                    )
+                timeout_result = (
+                    FlextApiUtilities.Api.RequestUtils.validate_and_extract_timeout(
+                        timeout,
+                        request_kwargs,
+                    )
+                )
+                if timeout_result.failure:
+                    return r[Mapping[str, object]].fail(
+                        timeout_result.error or "Timeout extraction failed",
+                    )
+                query_params_result = (
+                    FlextApiUtilities.Api.RequestUtils.extract_query_params(
+                        request_kwargs,
+                    )
+                )
+                if query_params_result.failure:
+                    return r[Mapping[str, object]].fail(
+                        query_params_result.error or "Query params extraction failed",
+                    )
+                return r[Mapping[str, object]].ok({
+                    "method": method,
+                    "url": url,
+                    "body": body_result.value,
+                    "headers": dict(headers_result.value),
+                    "query_params": query_params_result.value,
+                    "timeout": timeout_result.value,
+                })
+
     class ResponseBuilder:
         """Response builder for API responses."""
 
