@@ -693,4 +693,4 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         return self._validate_channel_messages(channel, channel_name)
 
 
-__all__ = ["FlextApiAsyncapiSchemaValidator"]
+__all__: list[str] = ["FlextApiAsyncapiSchemaValidator"]

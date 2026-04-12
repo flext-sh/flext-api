@@ -15,8 +15,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import Literal
 
-from flext_cli import t
-from pydantic import TypeAdapter
+from flext_cli import t, u
 
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_web import FlextWebTypes
@@ -62,7 +61,9 @@ class FlextApiTypes(FlextWebTypes, t):
             "failed",
         ]
         type WebhookAlgorithm = Literal["sha256", "sha512"]
-        type WebhookHandler = Callable[[FlextWebTypes.ContainerValueMapping], object]
+        type WebhookHandler = Callable[
+            [FlextWebTypes.ContainerValueMapping], FlextWebTypes.ContainerValue
+        ]
         type RequestKwargs = Mapping[
             str,
             FlextWebTypes.StrMapping
@@ -73,59 +74,63 @@ class FlextApiTypes(FlextWebTypes, t):
         ]
         type StorageDict = Mapping[str, FlextWebTypes.OptionalPrimitive]
         type CacheDict = Mapping[str, FlextWebTypes.Primitives]
-        CONTAINER_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValue] = (
-            TypeAdapter(
+        CONTAINER_VALUE_ADAPTER: u.TypeAdapter[FlextWebTypes.ContainerValue] = (
+            u.TypeAdapter(
                 FlextWebTypes.ContainerValue,
             )
         )
-        API_JSON_VALUE_ADAPTER: TypeAdapter[FlextWebTypes.ApiJsonValue] = TypeAdapter(
-            FlextWebTypes.ApiJsonValue,
-        )
-        BINARY_CONTENT_ADAPTER: TypeAdapter[FlextWebTypes.BinaryContent] = TypeAdapter(
-            FlextWebTypes.BinaryContent,
-        )
-        STR_MAPPING_ADAPTER: TypeAdapter[FlextWebTypes.StrMapping] = TypeAdapter(
-            FlextWebTypes.StrMapping,
-        )
-        HOSTNAME_ADAPTER: TypeAdapter[FlextWebTypes.HostnameStr] = TypeAdapter(
-            FlextWebTypes.HostnameStr,
-        )
-        PORT_NUMBER_ADAPTER: TypeAdapter[FlextWebTypes.PortNumber] = TypeAdapter(
-            FlextWebTypes.PortNumber,
-        )
-        STRING_ADAPTER: TypeAdapter[FlextWebTypes.TextValue] = TypeAdapter(
-            FlextWebTypes.TextValue,
-        )
-        INTEGER_ADAPTER: TypeAdapter[FlextWebTypes.IntegerValue] = TypeAdapter(
-            FlextWebTypes.IntegerValue,
-        )
-        FLOAT_ADAPTER: TypeAdapter[FlextWebTypes.FloatValue] = TypeAdapter(
-            FlextWebTypes.FloatValue,
-        )
-        STORAGE_ENTRY_ADAPTER: TypeAdapter[Mapping[str, FlextWebTypes.ApiJsonValue]] = (
-            TypeAdapter(
-                Mapping[str, FlextWebTypes.ApiJsonValue],
+        API_JSON_VALUE_ADAPTER: u.TypeAdapter[FlextWebTypes.ApiJsonValue] = (
+            u.TypeAdapter(
+                FlextWebTypes.ApiJsonValue,
             )
         )
-        REQUEST_BODY_ADAPTER: TypeAdapter[RequestBody] = TypeAdapter(
+        BINARY_CONTENT_ADAPTER: u.TypeAdapter[FlextWebTypes.BinaryContent] = (
+            u.TypeAdapter(
+                FlextWebTypes.BinaryContent,
+            )
+        )
+        STR_MAPPING_ADAPTER: u.TypeAdapter[FlextWebTypes.StrMapping] = u.TypeAdapter(
+            FlextWebTypes.StrMapping,
+        )
+        HOSTNAME_ADAPTER: u.TypeAdapter[FlextWebTypes.HostnameStr] = u.TypeAdapter(
+            FlextWebTypes.HostnameStr,
+        )
+        PORT_NUMBER_ADAPTER: u.TypeAdapter[FlextWebTypes.PortNumber] = u.TypeAdapter(
+            FlextWebTypes.PortNumber,
+        )
+        STRING_ADAPTER: u.TypeAdapter[FlextWebTypes.TextValue] = u.TypeAdapter(
+            FlextWebTypes.TextValue,
+        )
+        INTEGER_ADAPTER: u.TypeAdapter[FlextWebTypes.IntegerValue] = u.TypeAdapter(
+            FlextWebTypes.IntegerValue,
+        )
+        FLOAT_ADAPTER: u.TypeAdapter[FlextWebTypes.FloatValue] = u.TypeAdapter(
+            FlextWebTypes.FloatValue,
+        )
+        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[
+            Mapping[str, FlextWebTypes.ApiJsonValue]
+        ] = u.TypeAdapter(
+            Mapping[str, FlextWebTypes.ApiJsonValue],
+        )
+        REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(
             RequestBody,
         )
 
-        RESPONSE_BODY_ADAPTER: TypeAdapter[ResponseBody] = TypeAdapter(
+        RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(
             ResponseBody,
         )
-        DICT_BODY_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValueMapping] = (
-            TypeAdapter(
+        DICT_BODY_ADAPTER: u.TypeAdapter[FlextWebTypes.ContainerValueMapping] = (
+            u.TypeAdapter(
                 FlextWebTypes.ContainerValueMapping,
             )
         )
 
-        JSON_HEADERS_ADAPTER: TypeAdapter[FlextWebTypes.ContainerValueMapping] = (
-            TypeAdapter(
+        JSON_HEADERS_ADAPTER: u.TypeAdapter[FlextWebTypes.ContainerValueMapping] = (
+            u.TypeAdapter(
                 FlextWebTypes.ContainerValueMapping,
             )
         )
 
 
 t = FlextApiTypes
-__all__ = ["FlextApiTypes", "t"]
+__all__: list[str] = ["FlextApiTypes", "t"]

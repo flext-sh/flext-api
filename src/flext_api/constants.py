@@ -357,6 +357,6 @@ class FlextApiConstants(FlextWebConstants, FlextCliConstants):
             """Pagination default values."""
 
 
-__all__ = ["FlextApiConstants", "c"]
+__all__: list[str] = ["FlextApiConstants", "c"]
 
 c = FlextApiConstants

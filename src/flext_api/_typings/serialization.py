@@ -10,4 +10,4 @@ class FlextApiTypingsSerialization:
     """Canonical binary payload produced by msgpack pack operations."""
 
 
-__all__ = ["FlextApiTypingsSerialization"]
+__all__: list[str] = ["FlextApiTypingsSerialization"]

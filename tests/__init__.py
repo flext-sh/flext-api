@@ -76,7 +76,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
-__all__ = [
+__all__: list[str] = [
     "TestsFlextApiConstants",
     "TestsFlextApiModels",
     "TestsFlextApiProtocols",

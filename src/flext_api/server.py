@@ -22,7 +22,6 @@ from collections.abc import Callable, Mapping, MutableMapping, MutableSequence, 
 from typing import override
 
 from fastapi import FastAPI
-from pydantic import ValidationError
 
 from flext_api import c, p, t, u
 from flext_core import e, r, s
@@ -549,11 +548,11 @@ class FlextApiServer(s[bool]):
         """Validate server configuration using utilities directly."""
         try:
             t.Api.HOSTNAME_ADAPTER.validate_python(host)
-        except ValidationError as error:
+        except c.ValidationError as error:
             return r[bool].fail(f"Host validation failed: {error}")
         try:
             t.Api.PORT_NUMBER_ADAPTER.validate_python(port)
-        except ValidationError as error:
+        except c.ValidationError as error:
             return r[bool].fail(f"Port validation failed: {error}")
         title_result: r[str]
         if not title.strip():
@@ -573,4 +572,4 @@ class FlextApiServer(s[bool]):
         )
 
 
-__all__ = ["FlextApiServer"]
+__all__: list[str] = ["FlextApiServer"]

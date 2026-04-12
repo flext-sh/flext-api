@@ -442,4 +442,4 @@ class FlextWebhookHandler(s[bool]):
         return r[bool].ok(True)
 
 
-__all__ = ["FlextWebhookHandler"]
+__all__: list[str] = ["FlextWebhookHandler"]

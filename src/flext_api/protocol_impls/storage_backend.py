@@ -108,4 +108,4 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         ).map_error(lambda e: f"Storage operation failed: {e}")
 
 
-__all__ = ["FlextApiStorageBackendImplementation"]
+__all__: list[str] = ["FlextApiStorageBackendImplementation"]

@@ -13,9 +13,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TypeIs
 
-from pydantic import ValidationError
-
-from flext_api import m, t, u
+from flext_api import c, m, t, u
 from flext_core import r
 
 
@@ -84,7 +82,7 @@ class FlextApiSchemaShared:
             )
         return u.try_(
             lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(text),
-            catch=ValidationError,
+            catch=c.ValidationError,
         ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
 
     @staticmethod
@@ -133,7 +131,7 @@ class FlextApiSchemaShared:
                     f"'{field_name}' field must be a dictionary",
                 )
             parsed = m.Api.DictField(value=dict(value))
-        except ValidationError:
+        except c.ValidationError:
             return r[t.ContainerValueMapping].fail(
                 f"'{field_name}' field must be a dictionary",
             )
@@ -155,7 +153,7 @@ class FlextApiSchemaShared:
             if not isinstance(value, str):
                 return r[str].fail(f"'{field_name}' field must be a string")
             parsed = m.Api.StringField(value=value)
-        except ValidationError:
+        except c.ValidationError:
             return r[str].fail(f"'{field_name}' field must be a string")
         return r[str].ok(parsed.value)
 
@@ -175,7 +173,7 @@ class FlextApiSchemaShared:
             if not isinstance(value, int):
                 return r[int].fail(f"'{field_name}' field must be an integer")
             parsed = m.Api.IntField(value=value)
-        except ValidationError:
+        except c.ValidationError:
             return r[int].fail(f"'{field_name}' field must be an integer")
         return r[int].ok(parsed.value)
 
@@ -230,7 +228,7 @@ load_and_validate_schema_document = (
     FlextApiSchemaShared.load_and_validate_schema_document
 )
 
-__all__ = [
+__all__: list[str] = [
     "FlextApiSchemaShared",
     "container_value",
     "load_and_validate_schema_document",

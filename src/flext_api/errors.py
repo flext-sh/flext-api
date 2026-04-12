@@ -29,4 +29,4 @@ class FlextApiErrors:
         """
 
 
-__all__ = ["FlextApiErrors"]
+__all__: list[str] = ["FlextApiErrors"]

@@ -252,4 +252,4 @@ class FlextApiPlugins:
             return r[bool].ok(value=True)
 
 
-__all__ = ["FlextApiPlugins"]
+__all__: list[str] = ["FlextApiPlugins"]

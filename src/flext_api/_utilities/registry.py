@@ -240,4 +240,4 @@ class FlextApiRegistry:
         )
 
 
-__all__ = ["FlextApiRegistry"]
+__all__: list[str] = ["FlextApiRegistry"]

@@ -227,4 +227,4 @@ class FlextApiBaseProtocolImplementation:
         return r[t.ContainerValueMapping].ok(request)
 
 
-__all__ = ["FlextApiBaseProtocolImplementation"]
+__all__: list[str] = ["FlextApiBaseProtocolImplementation"]

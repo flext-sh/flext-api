@@ -48,4 +48,4 @@ class FlextApiMiddleware:
         return request
 
 
-__all__ = ["FlextApiMiddleware"]
+__all__: list[str] = ["FlextApiMiddleware"]

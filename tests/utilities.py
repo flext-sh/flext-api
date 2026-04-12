@@ -22,4 +22,4 @@ class TestsFlextApiUtilities(FlextTestsUtilities, FlextApiUtilities):
 
 
 u = TestsFlextApiUtilities
-__all__ = ["TestsFlextApiUtilities", "u"]
+__all__: list[str] = ["TestsFlextApiUtilities", "u"]

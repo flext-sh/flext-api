@@ -60,4 +60,4 @@ class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
         return context
 
 
-__all__ = ["FlextApiLoggerProtocolImplementation"]
+__all__: list[str] = ["FlextApiLoggerProtocolImplementation"]

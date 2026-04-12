@@ -14,7 +14,6 @@ from __future__ import annotations
 from typing import Annotated, override
 
 import httpx
-from pydantic import Field, ValidationError
 
 from flext_api import FlextApiSettings, c, m, t, u
 from flext_core import r, s
@@ -32,7 +31,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
     config_type: Annotated[
         type,
-        Field(default=FlextApiSettings, description="Typed API settings class."),
+        u.Field(default=FlextApiSettings, description="Typed API settings class."),
     ] = FlextApiSettings
 
     def __init__(
@@ -110,7 +109,7 @@ class FlextApiClient(s[FlextApiSettings]):
             KeyError,
             httpx.HTTPError,
             ConnectionError,
-            ValidationError,
+            c.ValidationError,
         ) as e:
             return r[t.Api.ResponseBody].fail(f"JSON deserialization failed: {e}")
 
@@ -240,4 +239,4 @@ class FlextApiClient(s[FlextApiSettings]):
             return r[m.Api.HttpResponse].fail(f"HTTP client request failed: {exc}")
 
 
-__all__ = ["FlextApiClient"]
+__all__: list[str] = ["FlextApiClient"]

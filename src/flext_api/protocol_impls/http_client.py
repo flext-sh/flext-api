@@ -12,7 +12,6 @@ from types import TracebackType
 from typing import Self, override
 
 import httpx
-from pydantic import ValidationError
 
 from flext_api import c, m, p, t, u
 from flext_core import r
@@ -133,7 +132,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         """Build typed request options from arbitrary kwargs."""
         try:
             options = m.Api.HttpClientRequestOptions.model_validate(kwargs)
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid request kwargs"
             )

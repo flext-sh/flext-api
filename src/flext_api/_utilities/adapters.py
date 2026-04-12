@@ -13,9 +13,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import cbor2
-from pydantic import ValidationError
 
-from flext_api import FlextApiUtilitiesSerializers, m, t, u
+from flext_api import FlextApiUtilitiesSerializers, c, m, t, u
 from flext_core import r
 
 
@@ -108,7 +107,7 @@ class FlextApiAdapters:
                 })
                 return r[m.Api.HttpResponse].ok(response)
             except (
-                ValidationError,
+                c.ValidationError,
                 ValueError,
                 TypeError,
                 KeyError,
@@ -245,4 +244,4 @@ class FlextApiAdapters:
                 )
 
 
-__all__ = ["FlextApiAdapters"]
+__all__: list[str] = ["FlextApiAdapters"]

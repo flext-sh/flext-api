@@ -11,8 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from pydantic import ValidationError
-
 from flext_api import FlextApiBaseProtocolImplementation, c, m, t
 from flext_core import r
 
@@ -156,7 +154,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             return {}
         try:
             parsed = m.Api.HeadersRequest.model_validate(request)
-        except ValidationError:
+        except c.ValidationError:
             return {}
         normalized_headers: t.MutableStrMapping = {}
         for key, value in parsed.headers.items():
@@ -175,7 +173,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         try:
             parsed = m.Api.MethodRequest.model_validate(request)
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid HTTP method"
             return r[str].fail(details)
         except (ValueError, TypeError, KeyError, ConnectionError):
@@ -196,7 +194,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             try:
                 parsed = m.Api.TimeoutRequest.model_validate(request)
                 return parsed.timeout
-            except ValidationError:
+            except c.ValidationError:
                 return float(c.Api.DEFAULT_TIMEOUT)
         return float(c.Api.DEFAULT_TIMEOUT)
 
@@ -214,7 +212,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             return r[str].fail("URL is required in request (RFC 7230)")
         try:
             parsed = m.Api.UrlRequest.model_validate(request)
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid URL"
             return r[str].fail(details)
         except (ValueError, TypeError, KeyError, ConnectionError):
@@ -318,11 +316,11 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         try:
             parsed = m.Api.StatusCodeValue(status_code=status_code)
-        except ValidationError:
+        except c.ValidationError:
             return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
             )
         return r[int].ok(parsed.status_code)
 
 
-__all__ = ["FlextApiRfcProtocolImplementation"]
+__all__: list[str] = ["FlextApiRfcProtocolImplementation"]

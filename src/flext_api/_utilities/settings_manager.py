@@ -13,9 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from pydantic import ValidationError
-
-from flext_api import m, t, u
+from flext_api import c, m, t, u
 from flext_core import r
 
 
@@ -112,7 +110,7 @@ class FlextApiUtilitiesSettingsManager:
                     headers_value,
                 )
                 return r[t.StrMapping].ok(validated_headers)
-            except ValidationError as e:
+            except c.ValidationError as e:
                 return r[t.StrMapping].fail(
                     f"Failed to validate headers mapping: {e}",
                 )
@@ -122,7 +120,7 @@ class FlextApiUtilitiesSettingsManager:
                     headers_value,
                 )
                 return r[t.StrMapping].ok(validated_headers)
-            except (ValidationError, TypeError) as e:
+            except (c.ValidationError, TypeError) as e:
                 return r[t.StrMapping].fail(f"Failed to parse headers JSON: {e}")
         else:
             return r[t.StrMapping].fail(

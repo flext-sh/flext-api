@@ -10,10 +10,9 @@ from typing import TypeIs
 from urllib.parse import urlparse
 
 from flext_cli import FlextCliUtilities
-from pydantic import BeforeValidator
 
 from flext_api import t
-from flext_core import r
+from flext_core import r, u as core_u
 from flext_web import FlextWebUtilities
 
 
@@ -60,7 +59,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             @staticmethod
             def coerced_enum_validator(
                 enum_cls: type[StrEnum],
-            ) -> BeforeValidator:
+            ) -> core_u.BeforeValidator:
                 """Create a BeforeValidator for automatic enum coercion.
 
                 Usage in Pydantic models:
@@ -74,7 +73,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                         raise ValueError(msg)
                     return enum_cls(v) if not isinstance(v, enum_cls) else v
 
-                return BeforeValidator(_coerce)
+                return core_u.BeforeValidator(_coerce)
 
         class RequestUtils:
             """Request utilities for extracting and validating HTTP request components."""
@@ -525,6 +524,6 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                 return r[str].fail(f"Invalid URL: {e}")
 
 
-__all__ = ["FlextApiUtilities", "u"]
+__all__: list[str] = ["FlextApiUtilities", "u"]
 
 u = FlextApiUtilities

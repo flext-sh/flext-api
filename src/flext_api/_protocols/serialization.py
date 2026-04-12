@@ -24,4 +24,4 @@ class FlextApiProtocolsSerialization(Protocol):
             ...
 
 
-__all__ = ["FlextApiProtocolsSerialization"]
+__all__: list[str] = ["FlextApiProtocolsSerialization"]

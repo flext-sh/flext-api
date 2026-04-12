@@ -17,7 +17,6 @@ from typing import override
 
 import httpx
 from httpx_sse import connect_sse
-from pydantic import ValidationError
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, t
 from flext_core import r
@@ -144,7 +143,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             )
         try:
             options = m.Api.SendRequestSseOptions.model_validate(kwargs)
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
             return r[t.ContainerValueMapping].fail(details)
         url_result = self._extract_url(request)
@@ -336,7 +335,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         if retry not in {None, ""}:
             try:
                 parsed_retry = t.Api.INTEGER_ADAPTER.validate_python(retry)
-            except ValidationError:
+            except c.ValidationError:
                 parsed_retry = None
         event_payload: t.MutableContainerValueMapping = {
             "id": parsed_id,
@@ -369,4 +368,4 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             time.sleep(delay_seconds)
 
 
-__all__ = ["FlextApiSseProtocolPlugin"]
+__all__: list[str] = ["FlextApiSseProtocolPlugin"]

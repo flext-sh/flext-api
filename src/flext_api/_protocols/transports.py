@@ -29,19 +29,33 @@ class FlextApiTransports:
             """Initialize HTTP transport."""
             self._client: httpx.Client | None = None
 
-        @property
-        def client(self) -> httpx.Client | None:
-            """Expose the active HTTP client instance."""
-            return self._client
-
         @override
         def connect(self, url: str, **options: t.ApiJsonValue) -> r[str]:
             """Connect to HTTP endpoint."""
             try:
                 if not url:
                     return r[str].fail("URL is required for HTTP connection")
-                _ = options
-                self._client = httpx.Client()
+                raw_timeout = options.get("timeout")
+                timeout = (
+                    float(raw_timeout)
+                    if isinstance(raw_timeout, (int, float))
+                    else float(c.Api.DEFAULT_TIMEOUT)
+                )
+                raw_follow_redirects = options.get("follow_redirects")
+                follow_redirects = (
+                    raw_follow_redirects
+                    if isinstance(raw_follow_redirects, bool)
+                    else True
+                )
+                raw_max_redirects = options.get("max_redirects")
+                max_redirects = (
+                    raw_max_redirects if isinstance(raw_max_redirects, int) else 20
+                )
+                self._client = httpx.Client(
+                    timeout=timeout,
+                    follow_redirects=follow_redirects,
+                    max_redirects=max_redirects,
+                )
                 return r[str].ok(url)
             except (
                 ValueError,
@@ -77,63 +91,22 @@ class FlextApiTransports:
             data: t.ContainerValueMapping | t.Api.RequestBody,
         ) -> r[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
-            try:
-                _ = connection
-                client = self._client
-                if client is None:
-                    return r[t.Api.HttpResponseDict | str].fail(
-                        "HTTP client is not connected",
-                    )
-                params_result = self._extract_request_params(
-                    data,
-                    connection_url=connection,
+            params_result = self._extract_request_params(
+                data,
+                connection_url=connection,
+            )
+            if params_result.failure:
+                return r[t.Api.HttpResponseDict | str].fail(
+                    params_result.error or "Parameter extraction failed",
                 )
-                if params_result.failure:
-                    return r[t.Api.HttpResponseDict | str].fail(
-                        params_result.error or "Parameter extraction failed",
-                    )
-                request_model = params_result.value
-                match request_model.body:
-                    case dict() as body_json:
-                        response = client.request(
-                            method=request_model.method,
-                            url=request_model.url,
-                            headers=request_model.headers,
-                            json=body_json,
-                        )
-                    case str() as body_text:
-                        response = client.request(
-                            method=request_model.method,
-                            url=request_model.url,
-                            headers=request_model.headers,
-                            content=body_text,
-                        )
-                    case bytes() as body_bytes:
-                        response = client.request(
-                            method=request_model.method,
-                            url=request_model.url,
-                            headers=request_model.headers,
-                            content=body_bytes,
-                        )
-                    case _:
-                        return r[t.Api.HttpResponseDict | str].fail(
-                            "Unsupported HTTP request body type",
-                        )
-                return r[t.Api.HttpResponseDict | str].ok({
-                    "status_code": response.status_code,
-                    "headers": dict(response.headers),
-                    "content": response.content,
-                    "text": response.text,
-                    "url": request_model.url,
-                })
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as e:
-                return r[t.Api.HttpResponseDict | str].fail(f"HTTP send failed: {e}")
+            response_result = self._request_model(params_result.value)
+            if response_result.failure:
+                return r[t.Api.HttpResponseDict | str].fail(
+                    response_result.error or "HTTP send failed",
+                )
+            return r[t.Api.HttpResponseDict | str].ok(
+                self._response_mapping(response_result.value),
+            )
 
         def _extract_request_params(
             self,
@@ -145,25 +118,14 @@ class FlextApiTransports:
             try:
                 match data:
                     case dict() as payload:
-                        request_model = m.Api.HttpRequest.model_validate(payload)
-                    case str() as body_text:
-                        request_model = m.Api.HttpRequest(
-                            method=c.Api.Method.GET,
-                            url=connection_url,
-                            body=body_text,
-                            headers={},
-                            query_params={},
-                            timeout=float(c.Api.DEFAULT_TIMEOUT),
+                        request_model = m.Api.HttpRequest.model_validate(
+                            {"url": connection_url, **payload},
                         )
-                    case bytes() as body_bytes:
-                        request_model = m.Api.HttpRequest(
-                            method=c.Api.Method.GET,
-                            url=connection_url,
-                            body=body_bytes,
-                            headers={},
-                            query_params={},
-                            timeout=float(c.Api.DEFAULT_TIMEOUT),
-                        )
+                    case str() | bytes():
+                        request_model = m.Api.HttpRequest.model_validate({
+                            "url": connection_url,
+                            "body": data,
+                        })
                     case _:
                         return r[m.Api.HttpRequest].fail(
                             "Unsupported HTTP request payload type",
@@ -178,5 +140,76 @@ class FlextApiTransports:
             ) as e:
                 return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
+        def _request_model(
+            self,
+            request: m.Api.HttpRequest,
+        ) -> r[m.Api.HttpResponse]:
+            """Execute one validated HTTP request model through the active transport."""
+            try:
+                client = self._client
+                if client is None:
+                    return r[m.Api.HttpResponse].fail("HTTP client is not connected")
+                match request.body:
+                    case dict() as body_json:
+                        response = client.request(
+                            method=request.method,
+                            url=request.url,
+                            headers=request.headers,
+                            params=request.query_params,
+                            json=body_json,
+                            timeout=request.timeout,
+                        )
+                    case str() as body_text:
+                        response = client.request(
+                            method=request.method,
+                            url=request.url,
+                            headers=request.headers,
+                            params=request.query_params,
+                            content=body_text,
+                            timeout=request.timeout,
+                        )
+                    case bytes() as body_bytes:
+                        response = client.request(
+                            method=request.method,
+                            url=request.url,
+                            headers=request.headers,
+                            params=request.query_params,
+                            content=body_bytes,
+                            timeout=request.timeout,
+                        )
+                    case _:
+                        return r[m.Api.HttpResponse].fail(
+                            "Unsupported HTTP request body type",
+                        )
+                return r[m.Api.HttpResponse].ok(self._response_model(response))
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                httpx.HTTPError,
+                ConnectionError,
+            ) as e:
+                return r[m.Api.HttpResponse].fail(f"HTTP request failed: {e}")
 
-__all__ = ["FlextApiTransports"]
+        @staticmethod
+        def _response_model(response: httpx.Response) -> m.Api.HttpResponse:
+            """Convert the concrete httpx response into the central API response model."""
+            return m.Api.create_response(
+                status_code=response.status_code,
+                body=response.content,
+                headers=dict(response.headers),
+                request_id="",
+            )
+
+        @staticmethod
+        def _response_mapping(response: m.Api.HttpResponse) -> t.Api.HttpResponseDict:
+            """Convert the central response model to the public mapping contract."""
+            return {
+                "status_code": response.status_code,
+                "headers": response.headers,
+                "body": response.body,
+                "request_id": response.request_id,
+            }
+
+
+__all__: list[str] = ["FlextApiTransports"]

@@ -31,7 +31,7 @@ __author__ = _metadata_map.get("Author", "")
 __author_email__ = _metadata_map.get("Author-Email", "")
 __license__ = _metadata_map.get("License", "")
 __url__ = _metadata_map.get("Home-Page", "")
-__all__ = [
+__all__: list[str] = [
     "__author__",
     "__author_email__",
     "__description__",

@@ -12,8 +12,6 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar, override
 
-from pydantic import ConfigDict, Field, PrivateAttr
-
 from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
 from flext_core import r, s
 
@@ -27,14 +25,14 @@ class FlextApi(s[FlextApiSettings]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(use_enum_values=True)
+    model_config: ClassVar[c.ConfigDict] = c.ConfigDict(use_enum_values=True)
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar = m
     config_type: Annotated[
         type,
-        Field(default=FlextApiSettings, description="Typed API settings class."),
+        u.Field(default=FlextApiSettings, description="Typed API settings class."),
     ] = FlextApiSettings
-    _client: FlextApiClient | None = PrivateAttr(default=None)
+    _client: FlextApiClient | None = u.PrivateAttr(default=None)
 
     def __init__(
         self,
@@ -198,4 +196,4 @@ class FlextApi(s[FlextApiSettings]):
 
 api = FlextApi
 
-__all__ = ["FlextApi", "api"]
+__all__: list[str] = ["FlextApi", "api"]

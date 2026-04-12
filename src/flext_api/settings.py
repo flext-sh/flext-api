@@ -12,10 +12,7 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic import Field
-from pydantic_settings import SettingsConfigDict
-
-from flext_api import c, t
+from flext_api import c, t, u
 from flext_core import FlextSettings
 
 
@@ -23,43 +20,43 @@ from flext_core import FlextSettings
 class FlextApiSettings(FlextSettings):
     """Validated settings consumed by API facade and HTTP client."""
 
-    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+    model_config: ClassVar[c.SettingsConfigDict] = c.SettingsConfigDict(
         env_prefix="FLEXT_API_",
         extra="ignore",
     )
 
     base_url: Annotated[
         str,
-        Field(description="Base URL for relative requests"),
+        u.Field(description="Base URL for relative requests"),
     ] = c.Api.DEFAULT_BASE_URL
     timeout: Annotated[
         t.PositiveTimeout,
-        Field(description="Default request timeout in seconds"),
+        u.Field(description="Default request timeout in seconds"),
     ] = c.Api.DEFAULT_TIMEOUT
     max_retries: Annotated[
         t.RetryCount,
-        Field(description="Maximum retry attempts"),
+        u.Field(description="Maximum retry attempts"),
     ] = c.MAX_RETRY_ATTEMPTS
     verify_ssl: Annotated[
         bool,
-        Field(description="Enable TLS certificate check"),
+        u.Field(description="Enable TLS certificate check"),
     ] = True
     default_headers: Annotated[
         t.StrMapping,
-        Field(description="Default headers applied to all requests"),
-    ] = Field(default_factory=dict)
+        u.Field(description="Default headers applied to all requests"),
+    ] = u.Field(default_factory=dict)
     headers: Annotated[
         t.StrMapping,
-        Field(description="Compatibility headers bag"),
-    ] = Field(default_factory=dict)
+        u.Field(description="Compatibility headers bag"),
+    ] = u.Field(default_factory=dict)
     log_requests: Annotated[
         bool,
-        Field(description="Log outbound requests"),
+        u.Field(description="Log outbound requests"),
     ] = False
     log_responses: Annotated[
         bool,
-        Field(description="Log inbound responses"),
+        u.Field(description="Log inbound responses"),
     ] = False
 
 
-__all__ = ["FlextApiSettings"]
+__all__: list[str] = ["FlextApiSettings"]

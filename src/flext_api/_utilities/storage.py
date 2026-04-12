@@ -350,4 +350,4 @@ class FlextApiStorage:
         )
 
 
-__all__ = ["FlextApiStorage"]
+__all__: list[str] = ["FlextApiStorage"]

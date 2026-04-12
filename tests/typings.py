@@ -22,4 +22,4 @@ class TestsFlextApiTypes(FlextTestsTypes, FlextApiTypes):
 
 
 t = TestsFlextApiTypes
-__all__ = ["TestsFlextApiTypes", "t"]
+__all__: list[str] = ["TestsFlextApiTypes", "t"]

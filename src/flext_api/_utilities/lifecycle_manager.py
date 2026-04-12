@@ -43,4 +43,4 @@ class FlextApiLifecycleManager:
             resource.close()
 
 
-__all__ = ["FlextApiLifecycleManager"]
+__all__: list[str] = ["FlextApiLifecycleManager"]

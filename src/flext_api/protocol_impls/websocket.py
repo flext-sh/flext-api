@@ -22,7 +22,6 @@ from collections.abc import Callable, MutableSequence
 from typing import ClassVar, override
 
 import websockets
-from pydantic import ConfigDict, ValidationError
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, t
@@ -48,7 +47,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     - Event callbacks for message handling
     """
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(
+    model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
         frozen=False,
         arbitrary_types_allowed=True,
     )
@@ -295,7 +294,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         """
         try:
             options = m.Api.SendRequestWsOptions.model_validate(kwargs)
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
@@ -418,11 +417,11 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 try:
                     parsed = m.Api.InboundMessage(message=body)
                     return r[str | bytes].ok(parsed.message)
-                except ValidationError:
+                except c.ValidationError:
                     return r[str | bytes].ok(body)
             try:
                 serialized_body = t.Api.CONTAINER_VALUE_ADAPTER.dump_json(body)
-            except ValidationError:
+            except c.ValidationError:
                 return r[str | bytes].fail("Unsupported WebSocket body type")
             return r[str | bytes].ok(serialized_body.decode("utf-8"))
         return r[str | bytes].fail("Message or body is required")
@@ -449,7 +448,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 message = self._connection.recv()
                 try:
                     inbound = m.Api.InboundMessage(message=message)
-                except ValidationError:
+                except c.ValidationError:
                     pass
                 else:
                     for handler in self._on_message_handlers:
@@ -526,4 +525,4 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[bool].fail(f"WebSocket send error: {e}")
 
 
-__all__ = ["FlextApiWebsocketProtocolPlugin"]
+__all__: list[str] = ["FlextApiWebsocketProtocolPlugin"]

@@ -534,4 +534,4 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         return self._validate_scheme_type_requirements(scheme_name, scheme, scheme_type)
 
 
-__all__ = ["FlextApiOpenapiSchemaValidator"]
+__all__: list[str] = ["FlextApiOpenapiSchemaValidator"]

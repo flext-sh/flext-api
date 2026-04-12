@@ -8,9 +8,8 @@ from __future__ import annotations
 from typing import TypeIs
 
 import msgpack
-from pydantic import ValidationError
 
-from flext_api import p, t, u
+from flext_api import c, p, t, u
 from flext_core import r
 
 
@@ -80,5 +79,5 @@ class FlextApiUtilitiesSerializers:
         try:
             result = module.unpackb(data)
             return u.validate_value(t.RecursiveValue, result)
-        except (TypeError, ValidationError, ValueError) as e:
+        except (TypeError, c.ValidationError, ValueError) as e:
             return r[t.RecursiveValue].fail(f"msgpack deserialization failed: {e}")

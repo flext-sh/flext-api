@@ -73,4 +73,4 @@ class FlextApiServerFactory:
         return r[FlextWebhookHandler].ok(handler)
 
 
-__all__ = ["FlextApiServerFactory"]
+__all__: list[str] = ["FlextApiServerFactory"]

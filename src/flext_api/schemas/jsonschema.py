@@ -20,9 +20,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
-from pydantic import ValidationError
-
-from flext_api import FlextApiPlugins, t, u
+from flext_api import FlextApiPlugins, c, t, u
 from flext_core import r
 
 
@@ -149,7 +147,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                         "JSON schema file must contain JSON-compatible values",
                     )
                 loaded_schema = loaded_schema_raw
-            except ValidationError as e:
+            except c.ValidationError as e:
                 return r[t.ContainerValue].fail(
                     f"Failed to parse JSON schema: {e}",
                 )
@@ -730,4 +728,4 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         )
 
 
-__all__ = ["FlextApiJsonschemaValidator"]
+__all__: list[str] = ["FlextApiJsonschemaValidator"]

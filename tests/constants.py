@@ -22,4 +22,4 @@ class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):
 
 
 c = TestsFlextApiConstants
-__all__ = ["TestsFlextApiConstants", "c"]
+__all__: list[str] = ["TestsFlextApiConstants", "c"]

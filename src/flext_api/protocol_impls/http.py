@@ -19,7 +19,6 @@ from collections.abc import Iterator, Mapping
 from typing import override
 
 import httpx
-from pydantic import ValidationError
 
 from flext_api import FlextApiRfcProtocolImplementation, FlextApiTransports, c, m, t, u
 from flext_core import r
@@ -197,7 +196,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
         try:
             call_args = m.Api.HttpRequestCallArgs.model_validate(request_kwargs)
-        except ValidationError as e:
+        except c.ValidationError as e:
             return r[Iterator[bytes]].fail(f"Invalid streaming request arguments: {e}")
 
         def _iter_stream_chunks() -> Iterator[bytes]:
@@ -370,36 +369,34 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         last_error = "Unknown error"
         for attempt in range(self._max_retries + 1):
             try:
-                request_kwargs = self._build_request_kwargs(
-                    method,
-                    url,
-                    headers,
-                    params,
-                    timeout,
-                    body,
+                request_model = m.Api.HttpRequest.model_validate(
+                    {
+                        "method": method,
+                        "url": url,
+                        "headers": headers,
+                        "query_params": params,
+                        "body": {} if body is None else body,
+                        **({"timeout": timeout} if timeout is not None else {}),
+                    },
                 )
-                call_args = m.Api.HttpRequestCallArgs.model_validate(request_kwargs)
-                client = self._transport.client
-                if client is None:
-                    return r[m.Api.HttpResponse].fail("HTTP client is not connected")
-                response = client.request(
-                    method=call_args.method,
-                    url=call_args.url,
-                    headers=call_args.headers,
-                    params=call_args.params,
-                    json=call_args.json_body,
-                    content=call_args.content,
-                    timeout=call_args.timeout,
-                )
+                response_result = self._transport._request_model(request_model)
+                if response_result.failure:
+                    last_error = response_result.error or "HTTP request failed"
+                    if attempt < self._max_retries:
+                        backoff_time = self._retry_backoff_factor * 2**attempt
+                        time.sleep(backoff_time)
+                        continue
+                    return r[m.Api.HttpResponse].fail(last_error)
+                response = response_result.value
                 if self._success_status(response.status_code):
-                    return self._build_response(response, method)
+                    return r[m.Api.HttpResponse].ok(response)
                 if not self._should_retry(
                     response.status_code,
                     attempt,
                     self._max_retries,
                 ):
                     return r[m.Api.HttpResponse].fail(
-                        f"HTTP {response.status_code}: {response.text}",
+                        f"HTTP {response.status_code}: {response.body}",
                     )
             except httpx.TimeoutException as e:
                 last_error = f"Request timeout: {e}"
@@ -425,7 +422,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                     method=method,
                     attempt=attempt + 1,
                 )
-            except ValidationError as e:
+            except c.ValidationError as e:
                 last_error = f"Invalid request argument type: {e}"
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 last_error = self._handle_request_exception(
@@ -463,4 +460,4 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         return error_msg
 
 
-__all__ = ["FlextWebProtocolPlugin"]
+__all__: list[str] = ["FlextWebProtocolPlugin"]

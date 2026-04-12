@@ -58,4 +58,4 @@ class FlextApiApp:
         )
 
 
-__all__ = ["FlextApiApp"]
+__all__: list[str] = ["FlextApiApp"]
