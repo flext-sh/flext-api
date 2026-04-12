@@ -404,7 +404,7 @@ class FlextWebhookHandler(s[bool]):
             return m.Api.Webhook.Settings()
         settings_result = u.load(
             m.Api.Webhook.Settings,
-            t.SettingsMap(root=payload),
+            t.ConfigMap(root=payload),
         )
         if settings_result.failure:
             msg = settings_result.error or "Webhook settings validation failed"
