@@ -1,7 +1,4 @@
-"""Plugin Registry for flext-api.
-
-Centralized registry system for protocols, schemas, transports, and authentication providers.
-Extends FlextRegistry from flext-core for consistency.
+"""Plugin registry for flext-api over the canonical core registry DSL.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,30 +6,23 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
+from collections.abc import Callable, MutableMapping
 from typing import ClassVar
 
-from flext_api import FlextApiPlugins, p, t
-from flext_core import FlextRegistry, r
+from flext_api import FlextApiPlugins, c, p, t, u
+from flext_core import r
 
 
-class FlextApiRegistry(FlextRegistry):
-    """Central registry for API plugins, protocols, schemas, and transports.
-
-    Extends FlextRegistry to provide domain-specific registration for:
-    - Protocol plugins (HTTP, WebSocket, GraphQL, gRPC, SSE)
-    - Schema plugins (OpenAPI, API, JSON Schema, Protobuf, GraphQL Schema)
-    - Transport plugins (httpx, websockets, gql, grpcio)
-    - Authentication plugins (via FlextAuth integration)
-
-    Uses the generic plugin API from FlextRegistry for consistent patterns.
-    """
+class FlextApiRegistry:
+    """Central registry for API plugins backed by `p.Registry`."""
 
     PROTOCOLS: ClassVar[str] = "protocols"
     SCHEMAS: ClassVar[str] = "schemas"
     TRANSPORTS: ClassVar[str] = "transports"
     AUTH_PROVIDERS: ClassVar[str] = "auth_providers"
     _global_instance: ClassVar[FlextApiRegistry | None] = None
+
+    _registry: p.Registry
     _protocol_cache: MutableMapping[str, FlextApiPlugins.Protocol]
     _schema_cache: MutableMapping[str, FlextApiPlugins.Schema]
     _transport_cache: MutableMapping[str, FlextApiPlugins.Transport]
@@ -40,12 +30,17 @@ class FlextApiRegistry(FlextRegistry):
 
     def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
         """Initialize API registry."""
-        super().__init__(dispatcher=dispatcher)
-        self._protocol_cache: MutableMapping[str, FlextApiPlugins.Protocol] = {}
-        self._schema_cache: MutableMapping[str, FlextApiPlugins.Schema] = {}
-        self._transport_cache: MutableMapping[str, FlextApiPlugins.Transport] = {}
-        self._auth_cache: MutableMapping[str, FlextApiPlugins.Authentication] = {}
-        self.logger.debug("FlextApiRegistry initialized")
+        self._registry = u.build_registry(dispatcher=dispatcher)
+        self._protocol_cache = {}
+        self._schema_cache = {}
+        self._transport_cache = {}
+        self._auth_cache = {}
+        u.fetch_logger(__name__).debug("FlextApiRegistry initialized")
+
+    @property
+    def registry(self) -> p.Registry:
+        """Underlying canonical registry instance."""
+        return self._registry
 
     @classmethod
     def instance(cls) -> FlextApiRegistry:
@@ -70,7 +65,7 @@ class FlextApiRegistry(FlextRegistry):
             plugins = self.list_plugins(category).value or []
             for name in plugins:
                 self.unregister_plugin(category, name)
-        self.logger.info("Cleared all registry plugins")
+        u.fetch_logger(__name__).info("Cleared all registry plugins")
         return r[bool].ok(value=True)
 
     def resolve_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
@@ -188,6 +183,61 @@ class FlextApiRegistry(FlextRegistry):
     def unregister_transport(self, name: str) -> r[bool]:
         """Unregister a transport plugin."""
         return self.unregister_plugin(self.TRANSPORTS, name)
+
+    def fetch_plugin(
+        self,
+        category: str,
+        name: str,
+        *,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[t.RuntimeAtomic | None]:
+        """Delegate plugin lookup to the canonical registry."""
+        return r[t.RuntimeAtomic | None].from_result(
+            self._registry.fetch_plugin(category, name, scope=scope),
+        )
+
+    def list_plugins(
+        self,
+        category: str,
+        *,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[t.StrSequence]:
+        """Delegate plugin listing to the canonical registry."""
+        return r[t.StrSequence].from_result(
+            self._registry.list_plugins(category, scope=scope),
+        )
+
+    def register_plugin(
+        self,
+        category: str,
+        name: str,
+        plugin: t.RegistrablePlugin,
+        *,
+        validate: Callable[[t.RegistrablePlugin], r[bool]] | None = None,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[bool]:
+        """Delegate plugin registration to the canonical registry."""
+        return r[bool].from_result(
+            self._registry.register_plugin(
+                category,
+                name,
+                plugin,
+                validate=validate,
+                scope=scope,
+            ),
+        )
+
+    def unregister_plugin(
+        self,
+        category: str,
+        name: str,
+        *,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[bool]:
+        """Delegate plugin removal to the canonical registry."""
+        return r[bool].from_result(
+            self._registry.unregister_plugin(category, name, scope=scope),
+        )
 
 
 __all__ = ["FlextApiRegistry"]
