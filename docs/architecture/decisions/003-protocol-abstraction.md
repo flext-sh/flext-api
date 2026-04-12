@@ -131,12 +131,12 @@ class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
-    def create_client(self, settings: Dict[str, t.NormalizedValue]):
+    def create_client(self, settings: Dict[str, t.RecursiveContainer]):
         """Create protocol-specific client instance."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> r[t.NormalizedValue]:
+    async def execute_request(self, request) -> r[t.RecursiveContainer]:
         """Execute request using protocol-specific logic."""
         pass
 
@@ -192,7 +192,7 @@ class FlextApiClient(s[None]):
         super().__init__()
         self._config = settings
 
-    async def request(self, method: str, url: str, **kwargs) -> r[t.NormalizedValue]:
+    async def request(self, method: str, url: str, **kwargs) -> r[t.RecursiveContainer]:
         """Unified request method that delegates to protocol."""
         protocol = await self._get_protocol_instance()
 
@@ -215,7 +215,7 @@ class FlextWeb(Base):
     """HTTP/REST protocol implementation."""
 
     def create_client(
-        self, settings: Dict[str, t.NormalizedValue]
+        self, settings: Dict[str, t.RecursiveContainer]
     ) -> httpx.AsyncClient:
         return httpx.AsyncClient(**settings)
 
@@ -262,7 +262,7 @@ class FlextWeb(Base):
 class GraphQL(Base):
     """GraphQL protocol implementation."""
 
-    def create_client(self, settings: Dict[str, t.NormalizedValue]) -> gql.Client:
+    def create_client(self, settings: Dict[str, t.RecursiveContainer]) -> gql.Client:
         transport = AIOHTTPTransport(url=settings["url"])
         return gql.Client(
             transport=transport, execute_timeout=settings.get("timeout", 30)
@@ -409,7 +409,7 @@ async def test_protocol_registry_integration():
 
 ```python
 class Custom(Base):
-    def create_client(self, settings: Dict[str, t.NormalizedValue]):
+    def create_client(self, settings: Dict[str, t.RecursiveContainer]):
         return CustomClient(**settings)
 
     async def execute_request(self, request):

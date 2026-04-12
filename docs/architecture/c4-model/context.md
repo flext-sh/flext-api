@@ -109,7 +109,7 @@ Rel(flext_api, external_api, "Makes HTTP requests", "REST/GraphQL")
 
 #### Storage Systems
 
-- **Purpose**: File and t.NormalizedValue storage
+- **Purpose**: File and t.RecursiveContainer storage
 - **Relationship**: Handles large file uploads, downloads, and streaming
 - **Integration**: Multi-cloud storage support (AWS S3, GCS, Azure)
 

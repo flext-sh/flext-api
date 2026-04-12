@@ -144,7 +144,7 @@ print(f"Properties: {list(json_schema.properties.keys())}")
 - Automatic schema generation from Pydantic models
 - Support for all JSON Schema data types
 - Validation constraint inclusion
-- Nested t.NormalizedValue support
+- Nested t.RecursiveContainer support
 - Array and enum handling
 
 ### Schema Validation

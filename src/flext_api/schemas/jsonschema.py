@@ -153,7 +153,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                 )
         if not FlextApiJsonschemaValidator._object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
-                "JSON schema file must contain a JSON/YAML t.NormalizedValue",
+                "JSON schema file must contain a JSON/YAML t.RecursiveContainer",
             )
         schema_definition: t.MutableContainerValueMapping = {}
         for key, value in loaded_schema.items():
@@ -411,7 +411,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                     return True
                 case ["boolean", bool()]:
                     return True
-                case ["t.NormalizedValue", dict()]:
+                case ["t.RecursiveContainer", dict()]:
                     return True
                 case ["array", list()]:
                     return True

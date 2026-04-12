@@ -100,7 +100,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         loaded_schema = schema_result.value
         if not FlextApiSchemaShared.object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
-                "OpenAPI schema must be a JSON/YAML t.NormalizedValue",
+                "OpenAPI schema must be a JSON/YAML t.RecursiveContainer",
             )
         normalized_schema = FlextApiSchemaShared.normalize_json_object(loaded_schema)
         validation_result = self.validate_schema(normalized_schema)
@@ -216,14 +216,14 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         })
 
     def _extract_paths_keys(self, paths_value: t.ApiJsonValue) -> t.StrSequence:
-        """Extract path keys from validated paths t.NormalizedValue."""
+        """Extract path keys from validated paths t.RecursiveContainer."""
         paths_result = FlextApiSchemaShared.parse_dict_field(paths_value, "paths")
         if paths_result.failure:
             return ()
         return tuple(paths_result.value.keys())
 
     def _extract_title(self, info_value: t.ApiJsonValue) -> str:
-        """Extract title from validated info t.NormalizedValue."""
+        """Extract title from validated info t.RecursiveContainer."""
         info_result = FlextApiSchemaShared.parse_dict_field(info_value, "info")
         if info_result.failure:
             return ""
@@ -239,7 +239,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         components: t.ContainerValueMapping,
     ) -> r[bool]:
-        """Validate OpenAPI components t.NormalizedValue.
+        """Validate OpenAPI components t.RecursiveContainer.
 
         Args:
         components: Components dictionary from OpenAPI schema
@@ -318,7 +318,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         path: str,
         method: str,
     ) -> r[bool]:
-        """Validate OpenAPI operation t.NormalizedValue.
+        """Validate OpenAPI operation t.RecursiveContainer.
 
         Args:
         operation: Operation dictionary
@@ -373,7 +373,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _validate_paths(self, paths: Mapping[str, t.ApiJsonValue]) -> r[bool]:
-        """Validate OpenAPI paths t.NormalizedValue.
+        """Validate OpenAPI paths t.RecursiveContainer.
 
         Args:
         paths: Paths dictionary from OpenAPI schema

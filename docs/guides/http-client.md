@@ -394,7 +394,7 @@ result = client.post(
 ### Response Processing
 
 ```python
-# Get response t.NormalizedValue
+# Get response t.RecursiveContainer
 result = client.get("/users/123")
 if result.is_success:
     response = result.unwrap()
@@ -665,15 +665,15 @@ client = FlextApiClient(
 ### Request Batching
 
 ```python
-from typing import List, Dict, t.NormalizedValue
+from typing import List, Dict, t.RecursiveContainer
 
-def batch_requests(requests: List[t.Dict]) -> List[r[t.NormalizedValue]]:
+def batch_requests(requests: List[t.Dict]) -> List[r[t.RecursiveContainer]]:
     """Execute multiple HTTP requests efficiently."""
 
     async def execute_batch():
         import asyncio
 
-        async def execute_request(req_data: t.Dict) -> r[t.NormalizedValue]:
+        async def execute_request(req_data: t.Dict) -> r[t.RecursiveContainer]:
             method = req_data.get("method", "GET")
             url = req_data["url"]
             **kwargs = req_data.get("kwargs", {})
@@ -728,7 +728,7 @@ client = FlextApiClient(
 ```python
 # Avoid logging sensitive data
 class SecureClient(FlextApiClient):
-    def _prepare_request_data(self, data: dict) -> t.ContainerMapping:
+    def _prepare_request_data(self, data: dict) -> t.RecursiveContainerMapping:
         """Remove sensitive fields before logging."""
         sensitive_fields = ["password", "token", "secret", "key"]
 

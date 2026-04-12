@@ -390,7 +390,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
         def extract_pagination_config(
             settings: t.ContainerValue,
         ) -> Mapping[str, t.ApiJsonValue]:
-            """Extract pagination configuration from settings t.NormalizedValue.
+            """Extract pagination configuration from settings t.RecursiveContainer.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.

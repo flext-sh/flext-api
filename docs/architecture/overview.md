@@ -234,7 +234,7 @@ class Base
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> r[t.NormalizedValue]:
+    async def execute_request(self, request) -> r[t.RecursiveContainer]:
         """Execute protocol-specific request."""
         pass
 
@@ -360,7 +360,7 @@ def register_api_routes(app: FastAPI):
     async def list_users(
         limit: int = 10,
         offset: int = 0,
-        current_user: t.ContainerMapping = Depends(get_current_user),
+        current_user: t.RecursiveContainerMapping = Depends(get_current_user),
     ) -> List[UserResponse]:
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
@@ -420,7 +420,7 @@ class StorageBackend(ABC):
 
     @abstractmethod
     async def upload_file(
-        self, file, path: str, metadata: t.ContainerMapping = None
+        self, file, path: str, metadata: t.RecursiveContainerMapping = None
     ) -> r[str]:
         """Upload file to storage."""
         pass
@@ -448,7 +448,7 @@ class S3StorageBackend(StorageBackend):
         self.client = boto3.client("s3", **settings)
 
     async def upload_file(
-        self, file, path: str, metadata: t.ContainerMapping = None
+        self, file, path: str, metadata: t.RecursiveContainerMapping = None
     ) -> r[str]:
         """Upload file to S3."""
         try:
@@ -834,7 +834,7 @@ class CustomBase
         """Create protocol-specific client."""
         return CustomClient(**settings)
 
-    async def execute_request(self, request) -> r[t.NormalizedValue]:
+    async def execute_request(self, request) -> r[t.RecursiveContainer]:
         """Execute protocol-specific request."""
         # Custom protocol implementation
         pass

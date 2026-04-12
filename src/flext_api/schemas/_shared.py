@@ -89,7 +89,7 @@ class FlextApiSchemaShared:
     def normalize_json_object(
         value: t.ContainerValueMapping,
     ) -> t.JsonObject:
-        """Normalize a mapping to a JSON t.NormalizedValue.
+        """Normalize a mapping to a JSON t.RecursiveContainer.
 
         Recursively converts values to valid JSON types.
 
@@ -97,7 +97,7 @@ class FlextApiSchemaShared:
             value: Mapping to normalize
 
         Returns:
-            Normalized JSON t.NormalizedValue
+            Normalized JSON t.RecursiveContainer
 
         """
         normalized: t.MutableContainerValueMapping = {}
@@ -203,7 +203,7 @@ class FlextApiSchemaShared:
         loaded_schema = schema_result.value
         if not FlextApiSchemaShared.object_mapping(loaded_schema):
             return r[t.ContainerValue].fail(
-                f"{schema_label} schema must be a JSON/YAML t.NormalizedValue",
+                f"{schema_label} schema must be a JSON/YAML t.RecursiveContainer",
             )
         normalized_schema = FlextApiSchemaShared.normalize_json_object(loaded_schema)
         validation_result = validate_schema(normalized_schema)

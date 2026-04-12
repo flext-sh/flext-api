@@ -69,7 +69,7 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[t.NormalizedValue references to external documents, issues, or discussions]
+[t.RecursiveContainer references to external documents, issues, or discussions]
 ```
 
 ## Current ADRs

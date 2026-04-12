@@ -212,7 +212,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         info_result = self._validate_info_object(schema)
         if info_result.failure:
             return r[t.ContainerValueMapping].fail(
-                info_result.error or "Info t.NormalizedValue validation failed",
+                info_result.error or "Info t.RecursiveContainer validation failed",
             )
         info = info_result.value
         if "channels" not in schema:
@@ -453,7 +453,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         schema: t.ContainerValueMapping,
     ) -> r[t.ContainerValueMapping]:
-        """Validate info t.NormalizedValue and return it."""
+        """Validate info t.RecursiveContainer and return it."""
         if "info" not in schema:
             return r[t.ContainerValueMapping].fail(
                 "Missing 'info' field in schema",
@@ -502,7 +502,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         messages: t.ContainerValueMapping,
         channel_name: str,
     ) -> r[bool]:
-        """Validate AsyncAPI messages t.NormalizedValue.
+        """Validate AsyncAPI messages t.RecursiveContainer.
 
         Args:
         messages: Messages dictionary
