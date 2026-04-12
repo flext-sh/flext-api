@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, ClassVar
 
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
@@ -23,7 +23,10 @@ from flext_core import FlextSettings
 class FlextApiSettings(FlextSettings):
     """Validated settings consumed by API facade and HTTP client."""
 
-    model_config = SettingsConfigDict(env_prefix="FLEXT_API_", extra="ignore")
+    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+        env_prefix="FLEXT_API_",
+        extra="ignore",
+    )
 
     base_url: Annotated[
         str,

@@ -416,7 +416,7 @@ class FlextWebhookHandler(s[bool]):
         payload: bytes | str,
         headers: t.StrMapping,
     ) -> r[bool]:
-        """Verify webhook signature against the settingsured secret."""
+        """Verify webhook signature against the configured secret."""
         signature_value = headers.get(self._settings.signature_header)
         signature_result = self._string_value(signature_value)
         if signature_result.failure:
@@ -428,7 +428,7 @@ class FlextWebhookHandler(s[bool]):
         )
         secret = self._settings.secret
         if secret is None:
-            return r[bool].fail("Webhook secret is not settingsured")
+            return r[bool].fail("Webhook secret is not configured")
         digest = (
             hashlib.sha256 if self._settings.algorithm == "sha256" else hashlib.sha512
         )
