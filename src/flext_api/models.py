@@ -74,7 +74,7 @@ class FlextApiModels(FlextCliModels, m):
             body: Annotated[
                 Annotated[
                     t.Api.RequestBody,
-                    m.BeforeValidator(
+                    m.m.BeforeValidator(
                         lambda v: FlextApiModels.Api._normalize_request_body(v)
                     ),
                 ],
@@ -128,7 +128,7 @@ class FlextApiModels(FlextCliModels, m):
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
-                    m.BeforeValidator(
+                    m.m.BeforeValidator(
                         lambda v: FlextApiModels.Api._normalize_response_body(v)
                     ),
                 ],
