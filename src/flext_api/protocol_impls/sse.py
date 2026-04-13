@@ -18,8 +18,7 @@ from typing import override
 import httpx
 from httpx_sse import connect_sse
 
-from flext_api import FlextApiRfcProtocolImplementation, c, m, t
-from flext_core import p, r
+from flext_api import FlextApiRfcProtocolImplementation, c, m, p, r, t
 
 
 class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):

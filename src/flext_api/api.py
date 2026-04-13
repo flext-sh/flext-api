@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar, override
 
-from flext_api import FlextApiClient, FlextApiSettings, c, m, t, u
-from flext_core import p, r, s
+from flext_api import FlextApiClient, FlextApiSettings, c, m, p, r, s, t, u
 
 
 class FlextApi(s[FlextApiSettings]):
@@ -32,7 +31,7 @@ class FlextApi(s[FlextApiSettings]):
         type,
         u.Field(default=FlextApiSettings, description="Typed API settings class."),
     ] = FlextApiSettings
-    _client: FlextApiClient | None = u.PrivateAttr(default=None)
+    _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
     def __init__(
         self,

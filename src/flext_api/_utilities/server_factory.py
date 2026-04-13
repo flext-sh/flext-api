@@ -10,8 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiServer, FlextWebhookHandler, m
-from flext_core import p, r
+from flext_api import FlextApiServer, FlextWebhookHandler, m, p, r
 
 
 class FlextApiServerFactory:

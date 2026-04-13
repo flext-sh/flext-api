@@ -9,8 +9,7 @@ from typing import TypeIs
 
 import msgpack
 
-from flext_api import c, p, t, u
-from flext_core import p, r
+from flext_api import c, p, r, t, u
 
 
 class FlextApiUtilitiesSerializers:

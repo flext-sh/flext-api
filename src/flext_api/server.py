@@ -23,8 +23,7 @@ from typing import override
 
 from fastapi import FastAPI
 
-from flext_api import c, p, t, u
-from flext_core import e, p, r, s
+from flext_api import c, e, p, r, s, t, u
 
 
 class FlextApiServer(s[bool]):

@@ -11,8 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiBaseProtocolImplementation, c, m, t
-from flext_core import p, r
+from flext_api import FlextApiBaseProtocolImplementation, c, m, p, r, t
 
 
 class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):

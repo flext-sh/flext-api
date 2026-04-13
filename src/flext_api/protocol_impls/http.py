@@ -20,8 +20,16 @@ from typing import override
 
 import httpx
 
-from flext_api import FlextApiRfcProtocolImplementation, FlextApiTransports, c, m, t, u
-from flext_core import p, r
+from flext_api import (
+    FlextApiRfcProtocolImplementation,
+    FlextApiTransports,
+    c,
+    m,
+    p,
+    r,
+    t,
+    u,
+)
 
 
 class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):

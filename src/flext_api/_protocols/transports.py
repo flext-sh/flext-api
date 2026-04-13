@@ -15,8 +15,7 @@ from typing import override
 
 import httpx
 
-from flext_api import c, m, p, t
-from flext_core import p, r
+from flext_api import c, m, p, r, t
 
 
 class FlextApiTransports:

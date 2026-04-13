@@ -13,8 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_api import c, m, t, u
-from flext_core import p, r
+from flext_api import c, m, p, r, t, u
 
 
 class FlextApiUtilitiesSettingsManager:

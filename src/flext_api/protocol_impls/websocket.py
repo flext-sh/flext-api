@@ -24,8 +24,7 @@ from typing import ClassVar, override
 import websockets
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
-from flext_api import FlextApiRfcProtocolImplementation, c, m, t
-from flext_core import p, r
+from flext_api import FlextApiRfcProtocolImplementation, c, m, p, r, t
 
 
 class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
