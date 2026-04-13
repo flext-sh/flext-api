@@ -181,7 +181,7 @@ class FlextApiSchemaShared:
         schema_source: str,
         *,
         schema_label: str,
-        validate_schema: Callable[[t.JsonObject], r[TValidation]],
+        validate_schema: Callable[[t.JsonObject], p.Result[TValidation]],
     ) -> p.Result[t.ContainerValue]:
         """Load and validate a schema document.
 

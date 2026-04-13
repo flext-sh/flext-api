@@ -12,7 +12,10 @@ from urllib.parse import urlparse
 from flext_cli import FlextCliUtilities
 
 from flext_api import p, r, t
+from flext_core import m
 from flext_web import u
+
+BeforeValidator = m.BeforeValidator
 
 
 class FlextApiUtilities(u, FlextCliUtilities):
@@ -58,7 +61,7 @@ class FlextApiUtilities(u, FlextCliUtilities):
             @staticmethod
             def coerced_enum_validator(
                 enum_cls: type[StrEnum],
-            ) -> u.BeforeValidator:
+            ) -> m.BeforeValidator:
                 """Create a BeforeValidator for automatic enum coercion.
 
                 Usage in Pydantic models:
@@ -66,13 +69,13 @@ class FlextApiUtilities(u, FlextCliUtilities):
                 """
 
                 def _coerce(v: str | StrEnum) -> StrEnum:
-                    result = u.parse_enum(enum_cls, v)
+                    result = u.parse(v, enum_cls)
                     if result.failure:
                         msg = result.error or f"Invalid {enum_cls.__name__}: {v!r}"
                         raise ValueError(msg)
                     return enum_cls(v) if not isinstance(v, enum_cls) else v
 
-                return u.BeforeValidator(_coerce)
+                return m.BeforeValidator(_coerce)
 
         class RequestUtils:
             """Request utilities for extracting and validating HTTP request components."""

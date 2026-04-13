@@ -64,34 +64,26 @@ class FlextApiModels(FlextCliModels, m):
             url: Annotated[
                 t.NonEmptyStr,
                 u.Field(
-                    ...,
-                    max_length=c.Api.MAX_URL_LENGTH,
-                    description="Request URL",
+                    ..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"
                 ),
             ]
             headers: Annotated[
                 t.StrMapping,
-                u.Field(
-                    description="HTTP request headers",
-                ),
+                u.Field(description="HTTP request headers"),
             ] = u.Field(default_factory=dict)
             body: Annotated[
                 Annotated[
                     t.Api.RequestBody,
-                    u.BeforeValidator(
-                        lambda v: FlextApiModels.Api._normalize_request_body(v),
+                    m.BeforeValidator(
+                        lambda v: FlextApiModels.Api._normalize_request_body(v)
                     ),
                 ],
-                u.Field(
-                    description="Request body",
-                ),
+                u.Field(description="Request body"),
             ] = u.Field(default_factory=dict)
 
             query_params: Annotated[
                 t.Api.WebParams,
-                u.Field(
-                    description="Query parameters",
-                ),
+                u.Field(description="Query parameters"),
             ] = u.Field(default_factory=dict)
             timeout: Annotated[
                 t.PositiveTimeout,
@@ -101,7 +93,8 @@ class FlextApiModels(FlextCliModels, m):
                 ),
             ]
 
-            @u.computed_field
+            @u.computed_field(return_type=str)
+            @property
             def content_type(self) -> str:
                 """Get content type from headers."""
                 # Check Content-Type header (case-insensitive)
@@ -130,31 +123,27 @@ class FlextApiModels(FlextCliModels, m):
             ]
             headers: Annotated[
                 t.StrMapping,
-                u.Field(
-                    description="HTTP response headers",
-                ),
+                u.Field(description="HTTP response headers"),
             ] = u.Field(default_factory=dict)
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
-                    u.BeforeValidator(
-                        lambda v: FlextApiModels.Api._normalize_response_body(v),
+                    m.BeforeValidator(
+                        lambda v: FlextApiModels.Api._normalize_response_body(v)
                     ),
                 ],
                 u.Field(
-                    description="Response body (empty dict by default, None allowed for 204)",
+                    description="Response body (empty dict by default, None allowed for 204)"
                 ),
             ] = u.Field(default_factory=dict)
 
             request_id: Annotated[
                 str,
-                u.Field(
-                    default="",
-                    description="Associated request ID for tracking",
-                ),
+                u.Field(default="", description="Associated request ID for tracking"),
             ]
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def client_error(self) -> bool:
                 """Check if response indicates client error (4xx status code)."""
                 return (
@@ -163,12 +152,14 @@ class FlextApiModels(FlextCliModels, m):
                     < c.Api.HTTP_CLIENT_ERROR_MAX
                 )
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def error(self) -> bool:
                 """Check if response indicates any error (4xx or 5xx status code)."""
                 return self.status_code >= c.Api.HTTP_ERROR_MIN
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def redirect(self) -> bool:
                 """Check if response indicates redirect (3xx status code)."""
                 return (
@@ -177,12 +168,14 @@ class FlextApiModels(FlextCliModels, m):
                     < c.Api.HTTP_REDIRECT_MAX
                 )
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def server_error(self) -> bool:
                 """Check if response indicates server error (5xx status code)."""
                 return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def success(self) -> bool:
                 """Check if response indicates success (2xx status code)."""
                 return (
@@ -199,9 +192,7 @@ class FlextApiModels(FlextCliModels, m):
             url: Annotated[
                 t.NonEmptyStr,
                 u.Field(
-                    ...,
-                    max_length=c.Api.MAX_URL_LENGTH,
-                    description="Full URL string",
+                    ..., max_length=c.Api.MAX_URL_LENGTH, description="Full URL string"
                 ),
             ]
 
@@ -210,7 +201,8 @@ class FlextApiModels(FlextCliModels, m):
                 """Parse URL on demand (immutable, no caching needed)."""
                 return urlparse(self.url)
 
-            @u.computed_field
+            @u.computed_field(return_type=str)
+            @property
             def fragment(self) -> str:
                 """Get URL fragment."""
                 parsed_fragment = self._parsed_url.fragment
@@ -218,14 +210,16 @@ class FlextApiModels(FlextCliModels, m):
                     return parsed_fragment
                 return ""
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def valid(self) -> bool:
                 """Check if URL is valid."""
                 scheme_value = self._parsed_url.scheme
                 netloc_value = self._parsed_url.netloc
                 return bool(scheme_value and netloc_value)
 
-            @u.computed_field
+            @u.computed_field(return_type=str)
+            @property
             def netloc(self) -> str:
                 """Get network location (host:port)."""
                 parsed_netloc = self._parsed_url.netloc
@@ -233,12 +227,14 @@ class FlextApiModels(FlextCliModels, m):
                     return parsed_netloc
                 return f"{c.Api.Server.DEFAULT_HOST}:{c.Api.Server.DEFAULT_PORT}"
 
-            @u.computed_field
+            @u.computed_field(return_type=ParseResult)
+            @property
             def parsed(self) -> ParseResult:
                 """Parse the URL."""
                 return self._parsed_url
 
-            @u.computed_field
+            @u.computed_field(return_type=str)
+            @property
             def path(self) -> str:
                 """Get URL path."""
                 parsed_path = self._parsed_url.path
@@ -246,7 +242,8 @@ class FlextApiModels(FlextCliModels, m):
                     return parsed_path
                 return "/"
 
-            @u.computed_field
+            @u.computed_field(return_type=str)
+            @property
             def query(self) -> str:
                 """Get URL query string."""
                 parsed_query = self._parsed_url.query
@@ -254,7 +251,8 @@ class FlextApiModels(FlextCliModels, m):
                     return parsed_query
                 return ""
 
-            @u.computed_field
+            @u.computed_field(return_type=str)
+            @property
             def scheme(self) -> str:
                 """Get URL scheme (http, https, etc.)."""
                 parsed_scheme = self._parsed_url.scheme
@@ -287,25 +285,20 @@ class FlextApiModels(FlextCliModels, m):
             max_retries: Annotated[
                 t.RetryCount,
                 u.Field(
-                    default=c.MAX_RETRY_ATTEMPTS,
-                    description="Maximum retry attempts",
+                    default=c.MAX_RETRY_ATTEMPTS, description="Maximum retry attempts"
                 ),
             ]
             headers: Annotated[
                 t.StrMapping,
-                u.Field(
-                    description="Default headers for all requests",
-                ),
+                u.Field(description="Default headers for all requests"),
             ] = u.Field(default_factory=dict)
             verify_ssl: Annotated[
                 bool,
-                u.Field(
-                    default=True,
-                    description="Verify SSL certificates",
-                ),
+                u.Field(default=True, description="Verify SSL certificates"),
             ]
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def configured(self) -> bool:
                 """Check if configuration is valid."""
                 if not self.base_url:
@@ -321,46 +314,37 @@ class FlextApiModels(FlextCliModels, m):
 
             page: Annotated[
                 t.PositiveInt,
-                u.Field(
-                    default=1,
-                    description="Current page number (1-based)",
-                ),
+                u.Field(default=1, description="Current page number (1-based)"),
             ]
             page_size: Annotated[
                 t.BatchSize,
-                u.Field(
-                    default=c.DEFAULT_PAGE_SIZE,
-                    description="Items per page",
-                ),
+                u.Field(default=c.DEFAULT_PAGE_SIZE, description="Items per page"),
             ]
             total_items: Annotated[
                 t.NonNegativeInt,
-                u.Field(
-                    default=0,
-                    description="Total number of items",
-                ),
+                u.Field(default=0, description="Total number of items"),
             ]
             total_pages: Annotated[
                 t.NonNegativeInt,
-                u.Field(
-                    default=0,
-                    description="Total number of pages",
-                ),
+                u.Field(default=0, description="Total number of pages"),
             ]
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def has_next(self) -> bool:
                 """Check if there are more pages."""
                 if self.total_pages == 0:
                     return False
                 return self.page < self.total_pages
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def has_previous(self) -> bool:
                 """Check if there are previous pages."""
                 return self.page > 1
 
-            @u.computed_field
+            @u.computed_field(return_type=int)
+            @property
             def offset(self) -> int:
                 """Calculate offset for database queries."""
                 return (self.page - 1) * self.page_size
@@ -378,33 +362,25 @@ class FlextApiModels(FlextCliModels, m):
             ]
             error_code: Annotated[
                 str,
-                u.Field(
-                    default="",
-                    description="Machine-readable error code",
-                ),
+                u.Field(default="", description="Machine-readable error code"),
             ]
             status_code: Annotated[
                 t.HttpStatusCode,
                 u.Field(
-                    default=c.Api.HTTP_SERVER_ERROR_MIN,
-                    description="HTTP status code",
+                    default=c.Api.HTTP_SERVER_ERROR_MIN, description="HTTP status code"
                 ),
             ]
             details: Annotated[
                 t.JsonObject,
-                u.Field(
-                    description="Additional error details",
-                ),
+                u.Field(description="Additional error details"),
             ] = u.Field(default_factory=dict)
             request_id: Annotated[
                 str,
-                u.Field(
-                    default="",
-                    description="Associated request ID for tracking",
-                ),
+                u.Field(default="", description="Associated request ID for tracking"),
             ]
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def client_error(self) -> bool:
                 """Check if error is client-side (4xx)."""
                 return (
@@ -413,7 +389,8 @@ class FlextApiModels(FlextCliModels, m):
                     < c.Api.HTTP_CLIENT_ERROR_MAX
                 )
 
-            @u.computed_field
+            @u.computed_field(return_type=bool)
+            @property
             def server_error(self) -> bool:
                 """Check if error is server-side (5xx)."""
                 return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
@@ -427,9 +404,7 @@ class FlextApiModels(FlextCliModels, m):
 
             params: Annotated[
                 t.Api.WebParams,
-                u.Field(
-                    description="Query parameters",
-                ),
+                u.Field(description="Query parameters"),
             ] = u.Field(default_factory=dict)
 
             def resolve_param(self, name: str) -> t.Api.WebParamValue:
@@ -448,9 +423,7 @@ class FlextApiModels(FlextCliModels, m):
 
             headers: Annotated[
                 t.StrMapping,
-                u.Field(
-                    description="HTTP headers",
-                ),
+                u.Field(description="HTTP headers"),
             ] = u.Field(default_factory=dict)
 
             def resolve_header(self, name: str) -> str:
@@ -791,20 +764,24 @@ class FlextApiModels(FlextCliModels, m):
                 namespace: str = u.Field(
                     "flext_api",
                     description="Logical namespace for this storage instance",
+                    validate_default=True,
                 )
                 backend: str = u.Field(
                     "memory",
                     description="Storage backend identifier",
+                    validate_default=True,
                 )
                 max_size: int | None = u.Field(
                     None,
                     description="Maximum number of entries kept in memory",
                     gt=0,
+                    validate_default=True,
                 )
                 default_ttl: int | None = u.Field(
                     None,
                     description="Default entry TTL in seconds",
                     gt=0,
+                    validate_default=True,
                 )
 
             class Metadata(m.Value):
@@ -838,11 +815,13 @@ class FlextApiModels(FlextCliModels, m):
                 operations_count: int = u.Field(
                     0,
                     description="Total operations performed by this storage",
+                    validate_default=True,
                 )
-                cache_hits: int = u.Field(0, description="Successful cache reads")
+                cache_hits: int = u.Field(
+                    0, description="Successful cache reads", validate_default=True
+                )
                 cache_misses: int = u.Field(
-                    0,
-                    description="Failed cache reads",
+                    0, description="Failed cache reads", validate_default=True
                 )
                 created_at: str = u.Field(
                     default_factory=u.generate_iso_timestamp,
@@ -853,18 +832,30 @@ class FlextApiModels(FlextCliModels, m):
                 """Storage statistics using Pydantic (automatic validation)."""
 
                 total_operations: int = u.Field(
-                    0, description="Total storage operations count"
+                    0,
+                    description="Total storage operations count",
+                    validate_default=True,
                 )
-                cache_hits: int = u.Field(0, description="Number of cache hits")
-                cache_misses: int = u.Field(0, description="Number of cache misses")
+                cache_hits: int = u.Field(
+                    0, description="Number of cache hits", validate_default=True
+                )
+                cache_misses: int = u.Field(
+                    0, description="Number of cache misses", validate_default=True
+                )
                 storage_size: int = u.Field(
-                    0, description="Current storage size in entries"
+                    0,
+                    description="Current storage size in entries",
+                    validate_default=True,
                 )
                 memory_usage: int = u.Field(
-                    0, description="Estimated memory usage in bytes"
+                    0,
+                    description="Estimated memory usage in bytes",
+                    validate_default=True,
                 )
                 namespace: str = u.Field(
-                    "flext", description="Storage namespace identifier"
+                    "flext",
+                    description="Storage namespace identifier",
+                    validate_default=True,
                 )
 
                 @property
@@ -897,34 +888,19 @@ class FlextApiModels(FlextCliModels, m):
                 ] = "X-Webhook-Signature"
                 algorithm: Annotated[
                     t.Api.WebhookAlgorithm,
-                    u.Field(
-                        "sha256",
-                        description="Supported HMAC signature algorithm",
-                    ),
+                    u.Field("sha256", description="Supported HMAC signature algorithm"),
                 ] = "sha256"
                 max_retries: Annotated[
                     int,
-                    u.Field(
-                        3,
-                        description="Maximum retry attempts per event",
-                        ge=0,
-                    ),
+                    u.Field(3, description="Maximum retry attempts per event", ge=0),
                 ] = 3
                 retry_delay: Annotated[
                     float,
-                    u.Field(
-                        1.0,
-                        description="Initial retry delay in seconds",
-                        gt=0,
-                    ),
+                    u.Field(1.0, description="Initial retry delay in seconds", gt=0),
                 ] = 1.0
                 retry_backoff: Annotated[
                     float,
-                    u.Field(
-                        2.0,
-                        description="Retry backoff multiplier",
-                        gt=0,
-                    ),
+                    u.Field(2.0, description="Retry backoff multiplier", gt=0),
                 ] = 2.0
                 queue_limit: Annotated[
                     int,
@@ -949,34 +925,27 @@ class FlextApiModels(FlextCliModels, m):
                 id: str = u.Field(description="Unique event identifier", min_length=1)
                 type: str = u.Field(description="Canonical event type", min_length=1)
                 data: t.ContainerValueMapping = u.Field(
-                    description="Normalized event payload",
+                    description="Normalized event payload"
                 )
                 timestamp: float = u.Field(
-                    default_factory=time.time,
-                    description="Event creation timestamp",
+                    default_factory=time.time, description="Event creation timestamp"
                 )
                 attempts: Annotated[
                     int,
-                    u.Field(
-                        0,
-                        description="Number of processing attempts",
-                        ge=0,
-                    ),
+                    u.Field(0, description="Number of processing attempts", ge=0),
                 ] = 0
 
             class Delivery(m.Value):
                 """Canonical delivery status for one webhook event."""
 
                 event_type: str = u.Field(
-                    description="Associated event type",
-                    min_length=1,
+                    description="Associated event type", min_length=1
                 )
                 timestamp: float = u.Field(
-                    default_factory=time.time,
-                    description="Delivery status timestamp",
+                    default_factory=time.time, description="Delivery status timestamp"
                 )
                 status: t.Api.WebhookDeliveryStatus = u.Field(
-                    description="Delivery terminal status",
+                    description="Delivery terminal status"
                 )
                 attempts: Annotated[
                     int | None,
@@ -1012,8 +981,7 @@ class FlextApiModels(FlextCliModels, m):
                     description="Received events waiting or already processed",
                 )
                 retry_queue: list[FlextApiModels.Api.Webhook.Event] = u.Field(
-                    default_factory=list,
-                    description="Events pending retry processing",
+                    default_factory=list, description="Events pending retry processing"
                 )
                 deliveries: Mapping[
                     str,

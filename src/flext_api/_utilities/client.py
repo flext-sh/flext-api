@@ -15,7 +15,8 @@ from typing import Annotated, override
 
 import httpx
 
-from flext_api import FlextApiSettings, c, m, p, r, s, t, u
+from flext_api import FlextApiSettings, c, m, p, r, t, u
+from flext_core import s
 
 
 class FlextApiClient(s[FlextApiSettings]):

@@ -221,7 +221,7 @@ class FlextWebhookHandler(s[bool]):
     def _handle_processing_failure(
         self,
         event: m.Api.Webhook.Event,
-        process_result: r[bool],
+        process_result: p.Result[bool],
     ) -> p.Result[t.JsonObject]:
         """Handle one failed event processing attempt."""
         if event.attempts < self._settings.max_retries:
