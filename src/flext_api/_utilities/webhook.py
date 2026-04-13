@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from typing import override
 
 from flext_api import m, p, t, u
-from flext_core import r, s
+from flext_core import p, r, s
 
 
 class FlextWebhookHandler(s[bool]):
@@ -39,11 +39,11 @@ class FlextWebhookHandler(s[bool]):
         return self._settings
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Execute webhook lifecycle parity with other FLEXT services."""
         return r[bool].ok(True)
 
-    def resolve_delivery_status(self, event_id: str) -> r[t.JsonObject]:
+    def resolve_delivery_status(self, event_id: str) -> p.Result[t.JsonObject]:
         """Return one delivery status payload."""
         key_result = self._string_value(event_id)
         if key_result.failure:
@@ -63,7 +63,7 @@ class FlextWebhookHandler(s[bool]):
             "failed_deliveries": self._state.failed_deliveries,
         }
 
-    def process_retry_queue(self) -> r[t.JsonObject]:
+    def process_retry_queue(self) -> p.Result[t.JsonObject]:
         """Process all queued retries and report counts."""
         processed = 0
         failed = 0
@@ -80,7 +80,7 @@ class FlextWebhookHandler(s[bool]):
         self,
         payload: bytes | str,
         headers: t.StrMapping,
-    ) -> r[t.JsonObject]:
+    ) -> p.Result[t.JsonObject]:
         """Receive and process one webhook request."""
         if self._settings.secret is not None:
             signature_result = self._verify_signature(payload, headers)
@@ -111,7 +111,7 @@ class FlextWebhookHandler(s[bool]):
         self,
         event_type: str,
         handler: t.Api.WebhookHandler,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Register one handler for one event type."""
         event_type_result = self._string_value(event_type)
         if event_type_result.failure:
@@ -165,7 +165,7 @@ class FlextWebhookHandler(s[bool]):
     def _build_event(
         self,
         event_data: t.ContainerValueMapping,
-    ) -> r[m.Api.Webhook.Event]:
+    ) -> p.Result[m.Api.Webhook.Event]:
         """Build one canonical webhook event model."""
         event_type_result = self._resolve_event_type(event_data)
         if event_type_result.failure:
@@ -208,7 +208,7 @@ class FlextWebhookHandler(s[bool]):
         return delivery_result.value
 
     @staticmethod
-    def _string_value(value: t.ValueOrModel | None) -> r[str]:
+    def _string_value(value: t.ValueOrModel | None) -> p.Result[str]:
         """Validate and normalize one string input."""
         value_result = u.validate_value(t.Api.STRING_ADAPTER, value)
         if value_result.failure:
@@ -222,7 +222,7 @@ class FlextWebhookHandler(s[bool]):
         self,
         event: m.Api.Webhook.Event,
         process_result: r[bool],
-    ) -> r[t.JsonObject]:
+    ) -> p.Result[t.JsonObject]:
         """Handle one failed event processing attempt."""
         if event.attempts < self._settings.max_retries:
             self._append_limited(
@@ -262,7 +262,7 @@ class FlextWebhookHandler(s[bool]):
     def _handle_processing_success(
         self,
         event: m.Api.Webhook.Event,
-    ) -> r[t.JsonObject]:
+    ) -> p.Result[t.JsonObject]:
         """Handle one successful event processing attempt."""
         self._record_delivery(
             event.id,
@@ -289,7 +289,7 @@ class FlextWebhookHandler(s[bool]):
             ),
         )
 
-    def _parse_payload(self, payload: bytes | str) -> r[t.JsonObject]:
+    def _parse_payload(self, payload: bytes | str) -> p.Result[t.JsonObject]:
         """Parse and normalize one webhook payload."""
         payload_text = (
             payload.decode("utf-8") if isinstance(payload, bytes) else payload
@@ -311,7 +311,7 @@ class FlextWebhookHandler(s[bool]):
             return r[t.JsonObject].fail("Payload must be a JSON object")
         return r[t.JsonObject].ok(dict(mapping_result.value))
 
-    def _process_event(self, event: m.Api.Webhook.Event) -> r[bool]:
+    def _process_event(self, event: m.Api.Webhook.Event) -> p.Result[bool]:
         """Dispatch one event to registered handlers."""
         handlers = self._state.handlers.get(event.type, [])
         if not handlers:
@@ -377,7 +377,7 @@ class FlextWebhookHandler(s[bool]):
     def _resolve_event_type(
         self,
         event_data: t.ContainerValueMapping,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Resolve canonical event type from supported payload fields."""
         for key in ("type", "event_type"):
             event_type_result = self._string_value(event_data.get(key))
@@ -415,7 +415,7 @@ class FlextWebhookHandler(s[bool]):
         self,
         payload: bytes | str,
         headers: t.StrMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Verify webhook signature against the configured secret."""
         signature_value = headers.get(self._settings.signature_header)
         signature_result = self._string_value(signature_value)

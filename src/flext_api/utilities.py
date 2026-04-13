@@ -11,12 +11,11 @@ from urllib.parse import urlparse
 
 from flext_cli import FlextCliUtilities
 
-from flext_api import t
-from flext_core import r, u as core_u
-from flext_web import FlextWebUtilities
+from flext_api import p, r, t
+from flext_web import u
 
 
-class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
+class FlextApiUtilities(u, FlextCliUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
@@ -59,7 +58,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             @staticmethod
             def coerced_enum_validator(
                 enum_cls: type[StrEnum],
-            ) -> core_u.BeforeValidator:
+            ) -> u.BeforeValidator:
                 """Create a BeforeValidator for automatic enum coercion.
 
                 Usage in Pydantic models:
@@ -67,13 +66,13 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                 """
 
                 def _coerce(v: str | StrEnum) -> StrEnum:
-                    result = FlextWebUtilities.parse_enum(enum_cls, v)
+                    result = u.parse_enum(enum_cls, v)
                     if result.failure:
                         msg = result.error or f"Invalid {enum_cls.__name__}: {v!r}"
                         raise ValueError(msg)
                     return enum_cls(v) if not isinstance(v, enum_cls) else v
 
-                return core_u.BeforeValidator(_coerce)
+                return u.BeforeValidator(_coerce)
 
         class RequestUtils:
             """Request utilities for extracting and validating HTTP request components."""
@@ -82,7 +81,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             def extract_body_from_kwargs(
                 data: t.Api.RequestBody | None,
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
-            ) -> r[t.Api.RequestBody]:
+            ) -> p.Result[t.Api.RequestBody]:
                 """Extract body from data or kwargs - returns empty dict if no body found."""
                 if data is not None:
                     return r[t.Api.RequestBody].ok(data)
@@ -108,7 +107,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             def merge_headers(
                 headers: t.StrMapping | None,
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
-            ) -> r[t.StrMapping]:
+            ) -> p.Result[t.StrMapping]:
                 """Merge headers from headers dict and kwargs."""
                 merged: t.MutableStrMapping = {}
                 if headers:
@@ -140,7 +139,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             def validate_and_extract_timeout(
                 timeout: float | str | None,
                 kwargs: Mapping[str, t.ApiJsonValue] | None,
-            ) -> r[float]:
+            ) -> p.Result[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
                 Returns default timeout of 30.0 if not specified.
@@ -171,7 +170,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             @staticmethod
             def extract_query_params(
                 request_kwargs: t.Api.RequestKwargs | None,
-            ) -> r[t.Api.WebParams]:
+            ) -> p.Result[t.Api.WebParams]:
                 """Extract and normalize query parameters from request kwargs."""
                 query_params: t.Api.WebParams = {}
                 if request_kwargs is None or "params" not in request_kwargs:
@@ -202,7 +201,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
                 headers: t.StrMapping | None = None,
                 request_kwargs: t.Api.RequestKwargs | None = None,
                 timeout: float | str | None = None,
-            ) -> r[t.ConfigMap]:
+            ) -> p.Result[t.ConfigMap]:
                 """Build one normalized request payload for HttpRequest validation."""
                 body_result = (
                     FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
@@ -282,7 +281,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             status_code: int = 400,
             data: t.ApiJsonValue | None = None,
             headers: t.StrMapping | None = None,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
+        ) -> p.Result[Mapping[str, t.ApiJsonValue]]:
             """Build error result - returns r with error response."""
             response: MutableMapping[str, t.ApiJsonValue] = {
                 "error": error,
@@ -300,7 +299,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             message: str = "Success",
             status_code: int = 200,
             headers: t.StrMapping | None = None,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
+        ) -> p.Result[Mapping[str, t.ApiJsonValue]]:
             """Build success response with optional data and message."""
             response: MutableMapping[str, t.ApiJsonValue] = {
                 "status": "success",
@@ -322,7 +321,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             page: int,
             page_size: int,
             total: int | None = None,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
+        ) -> p.Result[Mapping[str, t.ApiJsonValue]]:
             """Build paginated response."""
             if page < 1:
                 return r[Mapping[str, t.ApiJsonValue]].fail("Page must be >= 1")
@@ -348,7 +347,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
         @staticmethod
         def build_pagination_response(
             pagination_data: t.ContainerValueMapping,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
+        ) -> p.Result[Mapping[str, t.ApiJsonValue]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
                 return r[Mapping[str, t.ApiJsonValue]].fail(
@@ -363,7 +362,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
         @staticmethod
         def extract_page_params(
             params: Mapping[str, t.ApiJsonValue],
-        ) -> r[t.IntPair]:
+        ) -> p.Result[t.IntPair]:
             """Extract and validate page and page_size from params dict.
 
             Returns tuple of (page, page_size).
@@ -412,7 +411,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             total: int,
             page: int,
             page_size: int,
-        ) -> r[Mapping[str, t.ApiJsonValue]]:
+        ) -> p.Result[Mapping[str, t.ApiJsonValue]]:
             """Prepare pagination metadata for response.
 
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
@@ -444,7 +443,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             page: int,
             page_size: int,
             max_page_size: int = 1000,
-        ) -> r[t.IntPair]:
+        ) -> p.Result[t.IntPair]:
             """Validate pagination parameters.
 
             Returns tuple of (page, page_size) if valid.
@@ -479,7 +478,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             return url
 
         @staticmethod
-        def validate_hostname(host: str) -> r[str]:
+        def validate_hostname(host: str) -> p.Result[str]:
             """Validate hostname format."""
             if not host or not host.strip():
                 return r[str].fail("Hostname cannot be empty")
@@ -496,7 +495,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             return method.upper() in FlextApiUtilities.VALID_HTTP_METHODS
 
         @staticmethod
-        def validate_port_number(port: int) -> r[int]:
+        def validate_port_number(port: int) -> p.Result[int]:
             """Validate port number range."""
             if port < 1 or port > FlextApiUtilities.MAX_PORT:
                 return r[int].fail(
@@ -505,7 +504,7 @@ class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
             return r[int].ok(port)
 
         @staticmethod
-        def validate_url(url: str) -> r[str]:
+        def validate_url(url: str) -> p.Result[str]:
             """Validate URL format and structure."""
             if not url or not url.strip():
                 return r[str].fail("URL cannot be empty")

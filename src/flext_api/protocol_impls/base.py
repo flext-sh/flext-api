@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping
 
 from flext_api import t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiBaseProtocolImplementation:
@@ -75,7 +75,7 @@ class FlextApiBaseProtocolImplementation:
         """Check if protocol is initialized."""
         return self._initialized
 
-    def execute(self, **kwargs: t.Scalar) -> r[bool]:
+    def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
         """Execute protocol - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
@@ -109,7 +109,7 @@ class FlextApiBaseProtocolImplementation:
         """
         return []
 
-    def initialize(self) -> r[bool]:
+    def initialize(self) -> p.Result[bool]:
         """Initialize protocol resources."""
         if self._initialized:
             return r[bool].fail(f"Protocol '{self.name}' already initialized")
@@ -121,7 +121,7 @@ class FlextApiBaseProtocolImplementation:
         self,
         request: t.ContainerValueMapping,
         **kwargs: t.Scalar,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -141,7 +141,7 @@ class FlextApiBaseProtocolImplementation:
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
-    def shutdown(self) -> r[bool]:
+    def shutdown(self) -> p.Result[bool]:
         """Shutdown protocol and release resources."""
         if not self._initialized:
             return r[bool].fail(f"Protocol '{self.name}' not initialized")
@@ -212,7 +212,7 @@ class FlextApiBaseProtocolImplementation:
     def _validate_request(
         self,
         request: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate request dictionary.
 
         Args:

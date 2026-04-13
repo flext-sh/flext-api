@@ -124,7 +124,7 @@ class FlextWebEndpoint(FlextModels.Entity):
 class EndpointService(s):
     """Domain service for HTTP endpoint management."""
 
-    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> r[bool]:
+    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> p.Result[bool]:
         """Validate HTTP endpoint configuration."""
         if not endpoint.path.startswith("/"):
             return r[bool].fail("Path must start with /")
@@ -218,7 +218,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -234,7 +234,7 @@ class Base
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> r[t.RecursiveContainer]:
+    async def execute_request(self, request) -> p.Result[t.RecursiveContainer]:
         """Execute protocol-specific request."""
         pass
 
@@ -247,7 +247,7 @@ class FlextWebBase
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         # HTTP-specific implementation
         pass
 ```
@@ -421,22 +421,22 @@ class StorageBackend(ABC):
     @abstractmethod
     async def upload_file(
         self, file, path: str, metadata: t.RecursiveContainerMapping = None
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Upload file to storage."""
         pass
 
     @abstractmethod
-    async def download_file(self, path: str) -> r[bytes]:
+    async def download_file(self, path: str) -> p.Result[bytes]:
         """Download file from storage."""
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> r[bool]:
+    async def delete_file(self, path: str) -> p.Result[bool]:
         """Delete file from storage."""
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> r[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> p.Result[List[FileInfo]]:
         """List files in storage."""
         pass
 
@@ -449,7 +449,7 @@ class S3StorageBackend(StorageBackend):
 
     async def upload_file(
         self, file, path: str, metadata: t.RecursiveContainerMapping = None
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Upload file to S3."""
         try:
             # S3 upload implementation
@@ -564,7 +564,7 @@ from flext_api import SecurityMiddleware
 class ComprehensiveSecurityMiddleware(SecurityMiddleware):
     """Comprehensive security middleware."""
 
-    async def process_request(self, request) -> r[dict]:
+    async def process_request(self, request) -> p.Result[dict]:
         """Apply security checks to request."""
 
         # 1. Rate limiting
@@ -589,7 +589,7 @@ class ComprehensiveSecurityMiddleware(SecurityMiddleware):
 
         return r[dict].ok({})
 
-    async def check_rate_limit(self, request) -> r[dict]:
+    async def check_rate_limit(self, request) -> p.Result[dict]:
         """Check rate limiting."""
         client_ip = self.get_client_ip(request)
         endpoint = f"{request.method} {request.path}"
@@ -602,7 +602,7 @@ class ComprehensiveSecurityMiddleware(SecurityMiddleware):
 
         return r[dict].ok({})
 
-    async def validate_request(self, request) -> r[dict]:
+    async def validate_request(self, request) -> p.Result[dict]:
         """Validate request data."""
         # Validate request size
         if self.get_request_size(request) > self.max_request_size:
@@ -659,7 +659,7 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
     def __init__(self, metrics_client):
         self.metrics_client = metrics_client
 
-    async def process_request(self, request) -> r[dict]:
+    async def process_request(self, request) -> p.Result[dict]:
         """Start performance monitoring."""
         request.start_time = time.time()
         request.request_id = str(uuid.uuid4())
@@ -674,7 +674,7 @@ class DetailedPerformanceMiddleware(PerformanceMonitoringMiddleware):
 
         return r[dict].ok({})
 
-    async def process_response(self, request, response) -> r[dict]:
+    async def process_response(self, request, response) -> p.Result[dict]:
         """Record performance metrics."""
         duration_ms = (time.time() - request.start_time) * 1000
 
@@ -834,7 +834,7 @@ class CustomBase
         """Create protocol-specific client."""
         return CustomClient(**settings)
 
-    async def execute_request(self, request) -> r[t.RecursiveContainer]:
+    async def execute_request(self, request) -> p.Result[t.RecursiveContainer]:
         """Execute protocol-specific request."""
         # Custom protocol implementation
         pass
@@ -854,7 +854,7 @@ from flext_api import FlextApiMiddleware
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""
 
-    async def process_request(self, request) -> r[dict]:
+    async def process_request(self, request) -> p.Result[dict]:
         """Add business context to request."""
         # Add business-specific headers
         request.business_context = {

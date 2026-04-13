@@ -14,7 +14,7 @@ from typing import Self, override
 import httpx
 
 from flext_api import c, m, p, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextWebClientImplementation(p.Api.Client.HttpClient):
@@ -63,22 +63,30 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         self._client.close()
 
     @override
-    def delete(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
+    def delete(
+        self, url: str, **kwargs: t.ApiJsonValue
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP DELETE request."""
         return self.request(c.Api.Method.DELETE, url, **kwargs)
 
     @override
-    def get(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
+    def get(
+        self, url: str, **kwargs: t.ApiJsonValue
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP GET request."""
         return self.request(c.Api.Method.GET, url, **kwargs)
 
     @override
-    def post(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
+    def post(
+        self, url: str, **kwargs: t.ApiJsonValue
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP POST request."""
         return self.request(c.Api.Method.POST, url, **kwargs)
 
     @override
-    def put(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
+    def put(
+        self, url: str, **kwargs: t.ApiJsonValue
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP PUT request."""
         return self.request(c.Api.Method.PUT, url, **kwargs)
 
@@ -88,7 +96,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         method: c.Api.Method | str,
         url: str,
         **kwargs: t.ApiJsonValue,
-    ) -> r[t.Api.HttpResponseDict]:
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
         if full_url_result.failure:
@@ -109,7 +117,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
             options,
         )
 
-    def _build_full_url(self, url: str) -> r[str]:
+    def _build_full_url(self, url: str) -> p.Result[str]:
         """Build full URL from configuration base_url and provided path."""
         if url.startswith(("http://", "https://")):
             return r[str].ok(url)
@@ -128,7 +136,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
     def _build_request_options(
         self,
         kwargs: Mapping[str, t.ApiJsonValue],
-    ) -> r[m.Api.HttpClientRequestOptions]:
+    ) -> p.Result[m.Api.HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
             options = m.Api.HttpClientRequestOptions.model_validate(kwargs)
@@ -157,7 +165,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         full_url: str,
         headers: t.StrMapping,
         options: m.Api.HttpClientRequestOptions,
-    ) -> r[t.Api.HttpResponseDict]:
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute request using typed options."""
         try:
             httpx_response = self._client.request(

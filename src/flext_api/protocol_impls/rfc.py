@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import FlextApiBaseProtocolImplementation, c, m, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
@@ -91,7 +91,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         data: t.ContainerValueMapping | None = None,
         status_code: int = 200,
         headers: t.StrMapping | None = None,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -161,7 +161,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             normalized_headers[key.lower()] = value
         return normalized_headers
 
-    def _extract_method(self, request: t.ContainerValueMapping) -> r[str]:
+    def _extract_method(self, request: t.ContainerValueMapping) -> p.Result[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
 
         Args:
@@ -198,7 +198,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
                 return float(c.Api.DEFAULT_TIMEOUT)
         return float(c.Api.DEFAULT_TIMEOUT)
 
-    def _extract_url(self, request: t.ContainerValueMapping) -> r[str]:
+    def _extract_url(self, request: t.ContainerValueMapping) -> p.Result[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
 
         Args:
@@ -304,7 +304,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
             return False
         return status_code in c.Api.HTTPRetry.RETRYABLE_STATUS_CODES
 
-    def _validate_status_code(self, status_code: int) -> r[int]:
+    def _validate_status_code(self, status_code: int) -> p.Result[int]:
         """Validate HTTP status code (RFC 7231).
 
         Args:

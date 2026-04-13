@@ -16,7 +16,7 @@ from typing import override
 import httpx
 
 from flext_api import c, m, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiTransports:
@@ -30,7 +30,7 @@ class FlextApiTransports:
             self._client: httpx.Client | None = None
 
         @override
-        def connect(self, url: str, **options: t.ApiJsonValue) -> r[str]:
+        def connect(self, url: str, **options: t.ApiJsonValue) -> p.Result[str]:
             """Connect to HTTP endpoint."""
             try:
                 if not url:
@@ -67,7 +67,7 @@ class FlextApiTransports:
                 return r[str].fail(f"HTTP connect failed: {e}")
 
         @override
-        def disconnect(self, connection: str) -> r[bool]:
+        def disconnect(self, connection: str) -> p.Result[bool]:
             """Disconnect HTTP connection."""
             try:
                 _ = connection
@@ -89,7 +89,7 @@ class FlextApiTransports:
             self,
             connection: str,
             data: t.ContainerValueMapping | t.Api.RequestBody,
-        ) -> r[t.Api.HttpResponseDict | str]:
+        ) -> p.Result[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             params_result = self._extract_request_params(
                 data,
@@ -113,7 +113,7 @@ class FlextApiTransports:
             data: t.ContainerValueMapping | t.Api.RequestBody,
             *,
             connection_url: str,
-        ) -> r[m.Api.HttpRequest]:
+        ) -> p.Result[m.Api.HttpRequest]:
             """Extract and validate request parameters from data."""
             try:
                 match data:
@@ -143,7 +143,7 @@ class FlextApiTransports:
         def _request_model(
             self,
             request: m.Api.HttpRequest,
-        ) -> r[m.Api.HttpResponse]:
+        ) -> p.Result[m.Api.HttpResponse]:
             """Execute one validated HTTP request model through the active transport."""
             try:
                 client = self._client

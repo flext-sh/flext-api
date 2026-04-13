@@ -61,7 +61,7 @@
 ```python
 # Missing method causing failures
 @classmethod
-def create_validated_http_url(cls, url: str) -> r[str]:
+def create_validated_http_url(cls, url: str) -> p.Result[str]:
     """Validate and normalize HTTP URL."""
     # Implementation needed
 ```

@@ -56,7 +56,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -141,7 +141,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -247,7 +247,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -443,7 +443,7 @@ async def batch_create_users(users: List[dict]) -> List[r[dict]]:
     """Create multiple users in parallel."""
     import asyncio
 
-    async def create_user(user_data: dict) -> r[dict]:
+    async def create_user(user_data: dict) -> p.Result[dict]:
         return client.post("/users", json=user_data)
 
     # Execute requests concurrently
@@ -521,7 +521,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -673,7 +673,7 @@ def batch_requests(requests: List[t.Dict]) -> List[r[t.RecursiveContainer]]:
     async def execute_batch():
         import asyncio
 
-        async def execute_request(req_data: t.Dict) -> r[t.RecursiveContainer]:
+        async def execute_request(req_data: t.Dict) -> p.Result[t.RecursiveContainer]:
             method = req_data.get("method", "GET")
             url = req_data["url"]
             **kwargs = req_data.get("kwargs", {})

@@ -10,7 +10,7 @@ import time
 from collections.abc import Mapping, Sequence
 
 from flext_api import m, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiStorage:
@@ -39,7 +39,7 @@ class FlextApiStorage:
         """Return configured namespace."""
         return self._settings.namespace
 
-    def batch_delete(self, keys: t.StrSequence) -> r[bool]:
+    def batch_delete(self, keys: t.StrSequence) -> p.Result[bool]:
         """Delete multiple keys."""
         all_deleted = True
         for key in keys:
@@ -50,7 +50,7 @@ class FlextApiStorage:
             return r[bool].ok(True)
         return r[bool].fail("Some keys could not be deleted")
 
-    def batch_get(self, keys: t.StrSequence) -> r[Mapping[str, t.ApiJsonValue]]:
+    def batch_get(self, keys: t.StrSequence) -> p.Result[Mapping[str, t.ApiJsonValue]]:
         """Get multiple keys."""
         collected: dict[str, t.ApiJsonValue] = {}
         for key in keys:
@@ -63,7 +63,7 @@ class FlextApiStorage:
         self,
         data: Mapping[str, t.ApiJsonValue],
         ttl: int | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Set multiple keys."""
         for key, value in data.items():
             set_result = self.set(key, value, ttl=ttl)
@@ -71,17 +71,17 @@ class FlextApiStorage:
                 return set_result
         return r[bool].ok(True)
 
-    def cleanup_expired(self) -> r[int]:
+    def cleanup_expired(self) -> p.Result[int]:
         """Remove expired entries and return the count."""
         return r[int].ok(self._cleanup_expired_entries())
 
-    def clear(self) -> r[bool]:
+    def clear(self) -> p.Result[bool]:
         """Clear storage state."""
         created_at = self._state.created_at
         self._state = m.Api.Storage.State(created_at=created_at)
         return r[bool].ok(True)
 
-    def delete(self, key: str) -> r[bool]:
+    def delete(self, key: str) -> p.Result[bool]:
         """Delete one key."""
         key_result = self._validate_key(key)
         if key_result.failure:
@@ -94,18 +94,20 @@ class FlextApiStorage:
         del self._state.entries[normalized_key]
         return r[bool].ok(True)
 
-    def deserialize_json(self, json_str: str) -> r[t.ContainerValue]:
+    def deserialize_json(self, json_str: str) -> p.Result[t.ContainerValue]:
         """Deserialize JSON into the canonical container contract."""
         return u.try_(
             lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(json_str),
             catch=(ValueError, TypeError),
         ).map_error(lambda error: f"JSON deserialization failed: {error}")
 
-    def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
+    def execute(
+        self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue
+    ) -> p.Result[bool]:
         """Lifecycle entrypoint for parity with service-shaped components."""
         return r[bool].ok(True)
 
-    def exists(self, key: str) -> r[bool]:
+    def exists(self, key: str) -> p.Result[bool]:
         """Return whether the key exists after expiration cleanup."""
         key_result = self._validate_key(key)
         if key_result.failure:
@@ -113,7 +115,7 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         return r[bool].ok(key_result.value in self._state.entries)
 
-    def get(self, key: str) -> r[t.ApiJsonValue]:
+    def get(self, key: str) -> p.Result[t.ApiJsonValue]:
         """Get one value from storage."""
         key_result = self._validate_key(key)
         if key_result.failure:
@@ -128,7 +130,7 @@ class FlextApiStorage:
         self._state.cache_hits += 1
         return r[t.ApiJsonValue].ok(entry.value)
 
-    def cache_stats(self) -> r[t.Api.CacheDict]:
+    def cache_stats(self) -> p.Result[t.Api.CacheDict]:
         """Return cache counters."""
         stats = self._stats_model()
         return r[t.Api.CacheDict].ok({
@@ -138,7 +140,7 @@ class FlextApiStorage:
             "misses": stats.cache_misses,
         })
 
-    def storage_metrics(self) -> r[t.IntMapping]:
+    def storage_metrics(self) -> p.Result[t.IntMapping]:
         """Return integer storage counters."""
         stats = self._stats_model()
         return r[t.IntMapping].ok({
@@ -147,7 +149,7 @@ class FlextApiStorage:
             "cache_misses": stats.cache_misses,
         })
 
-    def storage_statistics(self) -> r[Mapping[str, float]]:
+    def storage_statistics(self) -> p.Result[Mapping[str, float]]:
         """Return float-based storage statistics."""
         stats = self._stats_model()
         return r[Mapping[str, float]].ok({
@@ -159,7 +161,7 @@ class FlextApiStorage:
             "memory_usage": float(stats.memory_usage),
         })
 
-    def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
+    def health_check(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
         """Return health information."""
         return r[Mapping[str, t.ApiJsonValue]].ok({
             "status": "healthy",
@@ -169,7 +171,7 @@ class FlextApiStorage:
             "operations_count": self._state.operations_count,
         })
 
-    def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
+    def info(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
         """Return storage configuration and runtime info."""
         return r[Mapping[str, t.ApiJsonValue]].ok({
             "namespace": self.namespace,
@@ -181,19 +183,19 @@ class FlextApiStorage:
             "operations_count": self._state.operations_count,
         })
 
-    def items(self) -> r[Sequence[t.Pair[str, t.ApiJsonValue]]]:
+    def items(self) -> p.Result[Sequence[t.Pair[str, t.ApiJsonValue]]]:
         """Return stored key-value pairs."""
         self._cleanup_expired_entries()
         return r[Sequence[t.Pair[str, t.ApiJsonValue]]].ok(
             [(key, entry.value) for key, entry in self._state.entries.items()],
         )
 
-    def keys(self) -> r[t.StrSequence]:
+    def keys(self) -> p.Result[t.StrSequence]:
         """Return stored keys."""
         self._cleanup_expired_entries()
         return r[t.StrSequence].ok(list(self._state.entries.keys()))
 
-    def metrics(self) -> r[Mapping[str, t.ApiJsonValue]]:
+    def metrics(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
         """Return canonical storage metrics payload."""
         stats = self._stats_model()
         return r[Mapping[str, t.ApiJsonValue]].ok({
@@ -206,7 +208,7 @@ class FlextApiStorage:
             "namespace": stats.namespace,
         })
 
-    def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
+    def serialize_json(self, data: t.ApiJsonValue) -> p.Result[str]:
         """Serialize one JSON-compatible value."""
         if data is None:
             return r[str].ok("null")
@@ -221,7 +223,7 @@ class FlextApiStorage:
         value: t.ApiJsonValue,
         timeout: int | None = None,
         ttl: int | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Store one value with optional TTL."""
         key_result = self._validate_key(key)
         if key_result.failure:
@@ -252,12 +254,12 @@ class FlextApiStorage:
         self._record_operation()
         return r[bool].ok(True)
 
-    def size(self) -> r[int]:
+    def size(self) -> p.Result[int]:
         """Return current storage size."""
         self._cleanup_expired_entries()
         return r[int].ok(len(self._state.entries))
 
-    def values(self) -> r[Sequence[t.ApiJsonValue]]:
+    def values(self) -> p.Result[Sequence[t.ApiJsonValue]]:
         """Return stored values."""
         self._cleanup_expired_entries()
         return r[Sequence[t.ApiJsonValue]].ok(
@@ -265,7 +267,7 @@ class FlextApiStorage:
         )
 
     @staticmethod
-    def _validate_key(key: str) -> r[str]:
+    def _validate_key(key: str) -> p.Result[str]:
         """Validate a public storage key."""
         key_result = u.validate_value(t.Api.STRING_ADAPTER, key)
         if key_result.failure:
@@ -327,7 +329,7 @@ class FlextApiStorage:
         *,
         timeout: int | None = None,
         ttl: int | None = None,
-    ) -> r[int | None]:
+    ) -> p.Result[int | None]:
         """Resolve one TTL value from public inputs and settings."""
         resolved = timeout if timeout is not None else ttl
         if resolved is None:

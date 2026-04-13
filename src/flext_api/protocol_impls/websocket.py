@@ -25,7 +25,7 @@ import websockets
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
@@ -173,7 +173,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         """Check if WebSocket is connected."""
         return self._connected
 
-    def connect(self, url: str, headers: t.StrMapping | None = None) -> r[bool]:
+    def connect(self, url: str, headers: t.StrMapping | None = None) -> p.Result[bool]:
         """Connect to WebSocket server.
 
         Args:
@@ -189,7 +189,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             connect_headers.update(headers)
         return self._connect(url, connect_headers)
 
-    def disconnect(self) -> r[bool]:
+    def disconnect(self) -> p.Result[bool]:
         """Disconnect from WebSocket server.
 
         Returns:
@@ -263,7 +263,9 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         """
         self._on_message_handlers.append(handler)
 
-    def send_message(self, message: str | bytes, message_type: str = "text") -> r[bool]:
+    def send_message(
+        self, message: str | bytes, message_type: str = "text"
+    ) -> p.Result[bool]:
         """Send message over WebSocket.
 
         Args:
@@ -281,7 +283,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         self,
         request: t.ContainerValueMapping,
         **kwargs: t.Scalar,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -346,7 +348,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             c.Api.WebSocket.Protocol.WSS,
         }
 
-    def _connect(self, url: str, headers: t.StrMapping) -> r[bool]:
+    def _connect(self, url: str, headers: t.StrMapping) -> p.Result[bool]:
         """Internal connection implementation.
 
         Args:
@@ -393,7 +395,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")
 
-    def _ensure_connected(self, request: t.ContainerValueMapping) -> r[bool]:
+    def _ensure_connected(self, request: t.ContainerValueMapping) -> p.Result[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
@@ -407,7 +409,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         self,
         request: t.ContainerValueMapping,
         options: m.Api.SendRequestWsOptions,
-    ) -> r[str | bytes]:
+    ) -> p.Result[str | bytes]:
         """Extract message from request or kwargs."""
         if options.message is not None:
             return r[str | bytes].ok(options.message)
@@ -467,7 +469,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                     self._reconnect()
                 break
 
-    def _reconnect(self) -> r[bool]:
+    def _reconnect(self) -> p.Result[bool]:
         """Attempt to reconnect with exponential backoff.
 
         Returns:
@@ -487,7 +489,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             f"Failed to reconnect after {self._reconnect_max_attempts} attempts",
         )
 
-    def _send_message(self, message: str | bytes, message_type: str) -> r[bool]:
+    def _send_message(self, message: str | bytes, message_type: str) -> p.Result[bool]:
         """Internal send message implementation.
 
         Args:

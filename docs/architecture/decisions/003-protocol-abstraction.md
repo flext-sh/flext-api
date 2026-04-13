@@ -136,7 +136,7 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> r[t.RecursiveContainer]:
+    async def execute_request(self, request) -> p.Result[t.RecursiveContainer]:
         """Execute request using protocol-specific logic."""
         pass
 
@@ -146,7 +146,7 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    async def health_check(self) -> r[bool]:
+    async def health_check(self) -> p.Result[bool]:
         """Check protocol connectivity and health."""
         pass
 ```
@@ -192,7 +192,9 @@ class FlextApiClient(s[None]):
         super().__init__()
         self._config = settings
 
-    async def request(self, method: str, url: str, **kwargs) -> r[t.RecursiveContainer]:
+    async def request(
+        self, method: str, url: str, **kwargs
+    ) -> p.Result[t.RecursiveContainer]:
         """Unified request method that delegates to protocol."""
         protocol = await self._get_protocol_instance()
 
@@ -221,7 +223,7 @@ class FlextWeb(Base):
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         client = self.create_client(request.settings)
 
         try:
@@ -268,7 +270,9 @@ class GraphQL(Base):
             transport=transport, execute_timeout=settings.get("timeout", 30)
         )
 
-    async def execute_request(self, request: GraphQLRequest) -> r[GraphQLResponse]:
+    async def execute_request(
+        self, request: GraphQLRequest
+    ) -> p.Result[GraphQLResponse]:
         client = self.create_client(request.settings)
 
         try:

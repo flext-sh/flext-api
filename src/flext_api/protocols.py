@@ -17,7 +17,6 @@ from flext_cli import p
 
 from flext_api import c, t
 from flext_api._protocols.serialization import FlextApiProtocolsSerialization
-from flext_core import r
 from flext_web import FlextWebProtocols
 
 
@@ -43,7 +42,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     self,
                     url: str,
                     **kwargs: t.ApiJsonValue,
-                ) -> r[t.Api.HttpResponseDict]:
+                ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
 
@@ -51,7 +50,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     self,
                     url: str,
                     **kwargs: t.ApiJsonValue,
-                ) -> r[t.Api.HttpResponseDict]:
+                ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
@@ -59,7 +58,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     self,
                     url: str,
                     **kwargs: t.ApiJsonValue,
-                ) -> r[t.Api.HttpResponseDict]:
+                ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
@@ -67,7 +66,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     self,
                     url: str,
                     **kwargs: t.ApiJsonValue,
-                ) -> r[t.Api.HttpResponseDict]:
+                ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
 
@@ -76,7 +75,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     method: c.Api.Method | str,
                     url: str,
                     **kwargs: t.ApiJsonValue,
-                ) -> r[t.Api.HttpResponseDict]:
+                ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute an HTTP request."""
                     ...
 
@@ -87,23 +86,23 @@ class FlextApiProtocols(FlextWebProtocols, p):
             class StorageBackend(Protocol):
                 """Protocol for generic storage backend implementations."""
 
-                def clear(self) -> r[bool]:
+                def clear(self) -> p.Result[bool]:
                     """Clear all stored values."""
                     ...
 
-                def delete(self, key: str) -> r[bool]:
+                def delete(self, key: str) -> p.Result[bool]:
                     """Delete value by key."""
                     ...
 
-                def exists(self, key: str) -> r[bool]:
+                def exists(self, key: str) -> p.Result[bool]:
                     """Check if key exists."""
                     ...
 
-                def get(self, key: str) -> r[t.ApiJsonValue]:
+                def get(self, key: str) -> p.Result[t.ApiJsonValue]:
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
-                def keys(self) -> r[t.StrSequence]:
+                def keys(self) -> p.Result[t.StrSequence]:
                     """Get all keys."""
                     ...
 
@@ -112,7 +111,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     key: str,
                     value: t.ApiJsonValue,
                     timeout: int | None = None,
-                ) -> r[bool]:
+                ) -> p.Result[bool]:
                     """Store value with optional timeout."""
                     ...
 
@@ -202,11 +201,11 @@ class FlextApiProtocols(FlextWebProtocols, p):
                 including HTTP, WebSocket, SSE, GraphQL, and gRPC.
                 """
 
-                def connect(self, url: str, **options: t.ApiJsonValue) -> r[str]:
+                def connect(self, url: str, **options: t.ApiJsonValue) -> p.Result[str]:
                     """Connect to endpoint."""
                     ...
 
-                def disconnect(self, connection: str) -> r[bool]:
+                def disconnect(self, connection: str) -> p.Result[bool]:
                     """Disconnect from endpoint."""
                     ...
 
@@ -214,7 +213,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     self,
                     connection: str,
                     data: t.ContainerValueMapping | t.Api.RequestBody,
-                ) -> r[t.Api.HttpResponseDict | str]:
+                ) -> p.Result[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...
 
@@ -240,7 +239,9 @@ class FlextApiProtocols(FlextWebProtocols, p):
                 implement when flext-grpc is integrated.
                 """
 
-                def handle_request(self, request: t.ApiJsonValue) -> r[t.ApiJsonValue]:
+                def handle_request(
+                    self, request: t.ApiJsonValue
+                ) -> p.Result[t.ApiJsonValue]:
                     """Handle gRPC request.
 
                     Args:
@@ -272,7 +273,7 @@ class FlextApiProtocols(FlextWebProtocols, p):
                 when flext-grpc is integrated.
                 """
 
-                def resolve_request_schema(self, method: str) -> r[t.JsonObject]:
+                def resolve_request_schema(self, method: str) -> p.Result[t.JsonObject]:
                     """Get request schema for method.
 
                     Args:
@@ -284,7 +285,9 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     """
                     ...
 
-                def resolve_response_schema(self, method: str) -> r[t.JsonObject]:
+                def resolve_response_schema(
+                    self, method: str
+                ) -> p.Result[t.JsonObject]:
                     """Get response schema for method.
 
                     Args:

@@ -14,8 +14,7 @@ from collections.abc import Mapping
 
 import cbor2
 
-from flext_api import FlextApiUtilitiesSerializers, c, m, t, u
-from flext_core import r
+from flext_api import FlextApiUtilitiesSerializers, c, m, p, r, t, u
 
 
 class FlextApiAdapters:
@@ -31,7 +30,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_http_request_to_websocket(
             request: m.Api.HttpRequest,
-        ) -> r[t.JsonObject | m.Api.HttpRequest]:
+        ) -> p.Result[t.JsonObject | m.Api.HttpRequest]:
             """Convert HTTP request to WebSocket message format.
 
             Args:
@@ -72,7 +71,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_websocket_message_to_http_response(
             message: t.JsonObject,
-        ) -> r[m.Api.HttpResponse]:
+        ) -> p.Result[m.Api.HttpResponse]:
             """Adapt WebSocket message to HTTP response.
 
             Args:
@@ -127,7 +126,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_openapi_to_graphql_schema(
             _openapi_spec: t.JsonObject,
-        ) -> r[t.JsonObject]:
+        ) -> p.Result[t.JsonObject]:
             """Convert OpenAPI specification to GraphQL schema.
 
             Args:
@@ -157,7 +156,7 @@ class FlextApiAdapters:
         """
 
         @staticmethod
-        def convert_json_to_cbor(data: t.JsonObject) -> r[bytes]:
+        def convert_json_to_cbor(data: t.JsonObject) -> p.Result[bytes]:
             """Convert JSON data to CBOR format.
 
             Args:
@@ -174,7 +173,7 @@ class FlextApiAdapters:
                 return r[bytes].fail(f"JSON to CBOR conversion failed: {e}")
 
         @staticmethod
-        def convert_json_to_messagepack(data: t.JsonObject) -> r[bytes]:
+        def convert_json_to_messagepack(data: t.JsonObject) -> p.Result[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
                 json_data = t.Cli.JSON_VALUE_ADAPTER.validate_python(data)
@@ -197,7 +196,7 @@ class FlextApiAdapters:
         def transform_request_for_protocol(
             request: m.Api.HttpRequest,
             target_protocol: str,
-        ) -> r[t.JsonObject | m.Api.HttpRequest]:
+        ) -> p.Result[t.JsonObject | m.Api.HttpRequest]:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
@@ -219,7 +218,7 @@ class FlextApiAdapters:
         def transform_response_for_protocol(
             response: t.JsonObject | m.Api.HttpResponse,
             source_protocol: str,
-        ) -> r[m.Api.HttpResponse]:
+        ) -> p.Result[m.Api.HttpResponse]:
             """Transform response for specific protocol.
 
             Returns HttpResponse Model for all protocols - consistent return type.

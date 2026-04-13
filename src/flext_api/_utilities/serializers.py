@@ -10,7 +10,7 @@ from typing import TypeIs
 import msgpack
 
 from flext_api import c, p, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiUtilitiesSerializers:
@@ -63,7 +63,7 @@ class FlextApiUtilitiesSerializers:
     @staticmethod
     def unpackb(
         data: bytes,
-    ) -> r[t.RecursiveValue]:
+    ) -> p.Result[t.RecursiveValue]:
         """Type-safe wrapper for msgpack.unpackb().
 
         Args:

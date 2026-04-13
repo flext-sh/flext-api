@@ -18,13 +18,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import (
-    FlextApiPlugins,
-    t,
-    u,
-)
+from flext_api import FlextApiPlugins, p, r, t, u
 from flext_api.schemas._shared import FlextApiSchemaShared
-from flext_core import r
 
 
 class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
@@ -92,7 +87,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         return ["asyncapi", "async-api", "asyncapi2", "asyncapi3"]
 
     @override
-    def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
+    def load_schema(self, schema_source: str) -> p.Result[t.ContainerValue]:
         """Load AsyncAPI schema from source.
 
         Args:
@@ -126,7 +121,9 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         }
 
     @override
-    def validate_request(self, request: t.JsonObject, schema: t.JsonObject) -> r[bool]:
+    def validate_request(
+        self, request: t.JsonObject, schema: t.JsonObject
+    ) -> p.Result[bool]:
         """Validate request against AsyncAPI schema.
 
         Args:
@@ -162,7 +159,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         response: t.JsonObject,
         schema: t.JsonObject,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate response against AsyncAPI schema.
 
         Args:
@@ -189,7 +186,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
     def validate_schema(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate AsyncAPI schema against AsyncAPI specification.
 
         Args:
@@ -270,7 +267,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         channel: t.ContainerValueMapping,
         channel_name: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI 2.x publish/subscribe operations."""
         if "publish" in channel:
             publish_value = channel["publish"]
@@ -312,7 +309,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         channel: t.ContainerValueMapping,
         channel_name: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI 3.x channel structure."""
         if "address" not in channel and self._strict_mode:
             return r[bool].fail(f"Missing 'address' in channel: {channel_name}")
@@ -321,7 +318,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_asyncapi_version(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Validate AsyncAPI version field."""
         if "asyncapi" not in schema:
             return r[str].fail("Missing 'asyncapi' version field")
@@ -341,7 +338,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         channel: t.ContainerValueMapping,
         channel_name: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate channel messages if present."""
         if self._validate_messages and "messages" in channel:
             messages_value = channel["messages"]
@@ -365,7 +362,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         channel_name: str,
         channel: t.ContainerValue,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate basic channel structure."""
         channel_result = FlextApiSchemaShared.parse_dict_field(channel, "channel")
         return channel_result.fold(
@@ -379,7 +376,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         channels: t.ContainerValueMapping,
         version: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI channels.
 
         Args:
@@ -413,7 +410,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_components(
         self,
         components: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI components.
 
         Args:
@@ -452,7 +449,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_info_object(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate info t.RecursiveContainer and return it."""
         if "info" not in schema:
             return r[t.ContainerValueMapping].fail(
@@ -476,7 +473,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         message: t.ContainerValueMapping,
         channel_name: str,
         op_type: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI message.
 
         Args:
@@ -501,7 +498,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         messages: t.ContainerValueMapping,
         channel_name: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI messages t.RecursiveContainer.
 
         Args:
@@ -532,7 +529,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         operation: t.ContainerValueMapping,
         channel_name: str,
         op_type: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate AsyncAPI operation (publish/subscribe).
 
         Args:
@@ -563,7 +560,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_optional_components(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate optional components like servers and components."""
         if "servers" in schema:
             servers_value = schema["servers"]
@@ -597,7 +594,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         schema: t.ContainerValueMapping,
         version: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate required fields based on AsyncAPI version."""
         required_fields = ["info"]
         if version.startswith(("2.", "3.")):
@@ -610,7 +607,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
         return r[bool].ok(value=True)
 
-    def _validate_response_channels(self, schema: t.JsonObject) -> r[bool]:
+    def _validate_response_channels(self, schema: t.JsonObject) -> p.Result[bool]:
         """Validate channels in schema for response validation."""
         if "channels" not in schema:
             return r[bool].ok(value=True)
@@ -625,7 +622,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
             return r[bool].ok(value=True)
         return r[bool].ok(value=True)
 
-    def _validate_response_status_code(self, response: t.JsonObject) -> r[bool]:
+    def _validate_response_status_code(self, response: t.JsonObject) -> p.Result[bool]:
         """Validate status code in response."""
         if "status_code" not in response:
             return r[bool].ok(value=True)
@@ -642,7 +639,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail("Invalid status code")
         return r[bool].ok(value=True)
 
-    def _validate_servers(self, servers: t.ContainerValueMapping) -> r[bool]:
+    def _validate_servers(self, servers: t.ContainerValueMapping) -> p.Result[bool]:
         """Validate AsyncAPI servers.
 
         Args:
@@ -680,7 +677,7 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         channel_name: str,
         channel: t.ContainerValueMapping,
         version: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate a single channel."""
         if version.startswith("2."):
             ops_result = self._validate_asyncapi_2_operations(channel, channel_name)

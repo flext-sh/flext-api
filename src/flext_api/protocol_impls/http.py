@@ -21,7 +21,7 @@ from typing import override
 import httpx
 
 from flext_api import FlextApiRfcProtocolImplementation, FlextApiTransports, c, m, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
@@ -117,7 +117,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         self,
         request: t.ContainerValueMapping,
         **_kwargs: t.Scalar,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Send HTTP request with retry logic and error handling."""
         request_general: t.MutableContainerValueMapping = {}
         for key, value in request.items():
@@ -169,7 +169,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         self,
         request: m.Api.HttpRequest,
         chunk_size: int = 8192,
-    ) -> r[Iterator[bytes]]:
+    ) -> p.Result[Iterator[bytes]]:
         """Send streaming HTTP request."""
         self.logger.info(
             "Streaming request",
@@ -241,7 +241,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _build_http_request_from_dict(
         self,
         request: t.ContainerValueMapping,
-    ) -> r[m.Api.HttpRequest]:
+    ) -> p.Result[m.Api.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         validation_result = self._validate_request(request)
         if validation_result.failure:
@@ -313,7 +313,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         self,
         httpx_response: httpx.Response,
         _method: str,
-    ) -> r[m.Api.HttpResponse]:
+    ) -> p.Result[m.Api.HttpResponse]:
         """Build FlextApiModels.HttpResponse from httpx.Response."""
         try:
             response = m.Api.HttpResponse(
@@ -364,7 +364,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         params: t.StrMapping,
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> r[m.Api.HttpResponse]:
+    ) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request with retry logic."""
         last_error = "Unknown error"
         for attempt in range(self._max_retries + 1):
@@ -442,7 +442,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _extract_headers_from_model(
         self,
         request: m.Api.HttpRequest,
-    ) -> r[t.StrMapping]:
+    ) -> p.Result[t.StrMapping]:
         """Extract headers from HttpRequest model without fallback."""
         return r[t.StrMapping].ok(dict(request.headers))
 

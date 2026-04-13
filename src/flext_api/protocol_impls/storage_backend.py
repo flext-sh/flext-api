@@ -11,7 +11,7 @@ from collections.abc import MutableMapping
 from typing import override
 
 from flext_api import p, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
@@ -23,7 +23,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         self.logger = u.fetch_logger(__name__)
 
     @override
-    def clear(self) -> r[bool]:
+    def clear(self) -> p.Result[bool]:
         """Clear all stored values."""
 
         def _clear() -> bool:
@@ -37,7 +37,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         ).map_error(lambda e: f"Clear operation failed: {e}")
 
     @override
-    def delete(self, key: str) -> r[bool]:
+    def delete(self, key: str) -> p.Result[bool]:
         """Delete value by key."""
         try:
             if not key:
@@ -53,7 +53,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
             return r[bool].fail(f"Delete operation failed: {e}")
 
     @override
-    def exists(self, key: str) -> r[bool]:
+    def exists(self, key: str) -> p.Result[bool]:
         """Check if key exists."""
         return u.try_(
             lambda: key in self._storage,
@@ -61,7 +61,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         ).map_error(lambda e: f"Exists check failed: {e}")
 
     @override
-    def get(self, key: str) -> r[t.ApiJsonValue]:
+    def get(self, key: str) -> p.Result[t.ApiJsonValue]:
         """Retrieve value by key."""
         try:
             if not key:
@@ -75,7 +75,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
             return r[t.ApiJsonValue].fail(f"Retrieval operation failed: {e}")
 
     @override
-    def keys(self) -> r[t.StrSequence]:
+    def keys(self) -> p.Result[t.StrSequence]:
         """Get all keys."""
         try:
             keys_list: t.StrSequence = list(self._storage)
@@ -89,7 +89,7 @@ class FlextApiStorageBackendImplementation(p.Api.Storage.StorageBackend):
         key: str,
         value: t.ApiJsonValue,
         timeout: int | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Store value with optional timeout."""
         if not key:
             return r[bool].fail("Storage key cannot be empty")

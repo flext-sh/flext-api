@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from flext_tests import tm
 
-from flext_api import FlextWebhookHandler, m
-from flext_core import r
+from flext_api import FlextWebhookHandler, m, p, r
 
 
 class TestWebhookContract:
@@ -59,7 +58,7 @@ class TestWebhookContract:
             settings=m.Api.Webhook.Settings(max_retries=0),
         )
 
-        def on_failed(_payload: object) -> r[bool]:
+        def on_failed(_payload: object) -> p.Result[bool]:
             return r[bool].fail("boom")
 
         handler.register_event_handler("job.failed", on_failed)
@@ -85,7 +84,7 @@ class TestWebhookContract:
             ),
         )
 
-        def flaky(_payload: object) -> r[bool]:
+        def flaky(_payload: object) -> p.Result[bool]:
             attempts["count"] += 1
             if attempts["count"] == 1:
                 return r[bool].fail("retry once")

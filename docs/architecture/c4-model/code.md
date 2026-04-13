@@ -250,27 +250,31 @@ class FlextApiClient(s[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
     # Core HTTP methods
-    def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
+    def get(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
         """HTTP GET request."""
 
-    def post(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
+    def post(
+        self, url: str, data=None, **kwargs
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         """HTTP POST request."""
 
-    def put(self, url: str, data=None, **kwargs) -> r[FlextApiModels.HttpResponse]:
+    def put(
+        self, url: str, data=None, **kwargs
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         """HTTP PUT request."""
 
-    def delete(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
+    def delete(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
         """HTTP DELETE request."""
 
     # Advanced features
     def request(
         self, request: FlextApiModels.HttpRequest
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         """Generic HTTP request."""
 
     async def arequest(
         self, request: FlextApiModels.HttpRequest
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         """Async HTTP request."""
 ```
 
@@ -327,7 +331,7 @@ class Base
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> r[t.RecursiveContainer]:
+    async def execute_request(self, request) -> p.Result[t.RecursiveContainer]:
         """Execute protocol-specific request."""
         pass
 
@@ -342,7 +346,7 @@ class FlextWebBase
 
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> r[FlextApiModels.HttpResponse]:
+    ) -> p.Result[FlextApiModels.HttpResponse]:
         """Execute HTTP request with error handling."""
         try:
             # HTTP-specific implementation
@@ -431,7 +435,7 @@ store = storage.unwrap()
 
 ```python
 # All public methods return r[T]
-def get(self, url: str, **kwargs) -> r[FlextApiModels.HttpResponse]:
+def get(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
 
     # Input validation
@@ -541,27 +545,27 @@ class StorageBackend(ABC):
     @abstractmethod
     async def upload_file(
         self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Upload file to storage."""
         pass
 
     @abstractmethod
-    async def download_file(self, path: str) -> r[bytes]:
+    async def download_file(self, path: str) -> p.Result[bytes]:
         """Download file from storage."""
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> r[bool]:
+    async def delete_file(self, path: str) -> p.Result[bool]:
         """Delete file from storage."""
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> r[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> p.Result[List[FileInfo]]:
         """List files in storage."""
         pass
 
     @abstractmethod
-    async def get_file_info(self, path: str) -> r[FileInfo]:
+    async def get_file_info(self, path: str) -> p.Result[FileInfo]:
         """Get file information."""
         pass
 
@@ -581,7 +585,7 @@ class S3Backend(StorageBackend):
 
     async def upload_file(
         self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Upload file to S3."""
         try:
             self.client.upload_fileobj(
@@ -733,7 +737,7 @@ class AuthenticationManager:
 
     async def authenticate_request(
         self, request: FlextApiModels.HttpRequest, credentials: AuthCredentials
-    ) -> r[FlextApiModels.HttpRequest]:
+    ) -> p.Result[FlextApiModels.HttpRequest]:
         """Add authentication to request."""
         handler = self.get_handler(credentials.scheme)
 

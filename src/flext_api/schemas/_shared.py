@@ -13,8 +13,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TypeIs
 
-from flext_api import c, m, t, u
-from flext_core import r
+from flext_api import c, m, p, r, t, u
 
 
 class FlextApiSchemaShared:
@@ -53,7 +52,7 @@ class FlextApiSchemaShared:
         return isinstance(value, Mapping)
 
     @staticmethod
-    def load_schema_document(schema_source: str) -> r[t.ContainerValue]:
+    def load_schema_document(schema_source: str) -> p.Result[t.ContainerValue]:
         """Load OpenAPI/AsyncAPI schema from file source.
 
         Supports both JSON and YAML formats.
@@ -114,7 +113,7 @@ class FlextApiSchemaShared:
     def parse_dict_field(
         value: t.ApiJsonValue,
         field_name: str,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Parse and validate a dictionary field.
 
         Args:
@@ -138,7 +137,7 @@ class FlextApiSchemaShared:
         return r[t.ContainerValueMapping].ok(parsed.value)
 
     @staticmethod
-    def parse_string_field(value: t.ApiJsonValue, field_name: str) -> r[str]:
+    def parse_string_field(value: t.ApiJsonValue, field_name: str) -> p.Result[str]:
         """Parse and validate a string field.
 
         Args:
@@ -158,7 +157,7 @@ class FlextApiSchemaShared:
         return r[str].ok(parsed.value)
 
     @staticmethod
-    def parse_int_field(value: t.ApiJsonValue, field_name: str) -> r[int]:
+    def parse_int_field(value: t.ApiJsonValue, field_name: str) -> p.Result[int]:
         """Parse and validate an integer field.
 
         Args:
@@ -183,7 +182,7 @@ class FlextApiSchemaShared:
         *,
         schema_label: str,
         validate_schema: Callable[[t.JsonObject], r[TValidation]],
-    ) -> r[t.ContainerValue]:
+    ) -> p.Result[t.ContainerValue]:
         """Load and validate a schema document.
 
         Args:

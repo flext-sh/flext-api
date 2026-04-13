@@ -14,7 +14,7 @@ from abc import abstractmethod
 from collections.abc import MutableMapping, Sequence
 
 from flext_api import p, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class _FlextApiPluginBase:
@@ -36,10 +36,10 @@ class _FlextApiPluginBase:
         self.description = description
         self.logger = u.fetch_logger(__name__)
 
-    def initialize(self) -> r[bool]:
+    def initialize(self) -> p.Result[bool]:
         return r[bool].ok(value=True)
 
-    def shutdown(self) -> r[bool]:
+    def shutdown(self) -> p.Result[bool]:
         return r[bool].ok(value=True)
 
 
@@ -61,7 +61,7 @@ class FlextApiPlugins:
             self,
             request: t.JsonObject,
             **kwargs: t.Scalar,
-        ) -> r[t.JsonObject]:
+        ) -> p.Result[t.JsonObject]:
             """Send request using this protocol."""
             ...
 
@@ -78,7 +78,7 @@ class FlextApiPlugins:
             return "unknown"
 
         @abstractmethod
-        def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
+        def load_schema(self, schema_source: str) -> p.Result[t.ContainerValue]:
             """Load schema from source."""
             ...
 
@@ -91,7 +91,7 @@ class FlextApiPlugins:
             self,
             request: t.JsonObject,
             schema: t.JsonObject,
-        ) -> r[bool]:
+        ) -> p.Result[bool]:
             """Validate request against schema."""
             ...
 
@@ -100,7 +100,7 @@ class FlextApiPlugins:
             self,
             response: t.JsonObject,
             schema: t.JsonObject,
-        ) -> r[bool]:
+        ) -> p.Result[bool]:
             """Validate response against schema."""
             ...
 
@@ -108,12 +108,12 @@ class FlextApiPlugins:
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
-        def connect(self, url: str, **options: t.Scalar) -> r[bool]:
+        def connect(self, url: str, **options: t.Scalar) -> p.Result[bool]:
             """Establish connection to endpoint."""
             ...
 
         @abstractmethod
-        def disconnect(self, connection: t.ContainerValue) -> r[bool]:
+        def disconnect(self, connection: t.ContainerValue) -> p.Result[bool]:
             """Close connection."""
             ...
 
@@ -126,7 +126,7 @@ class FlextApiPlugins:
             self,
             connection: t.ContainerValue,
             **options: t.Scalar,
-        ) -> r[t.JsonObject | str | bytes]:
+        ) -> p.Result[t.JsonObject | str | bytes]:
             """Receive data from connection."""
             ...
 
@@ -136,7 +136,7 @@ class FlextApiPlugins:
             connection: t.ContainerValue,
             data: t.JsonObject | str | bytes,
             **options: t.Scalar,
-        ) -> r[bool]:
+        ) -> p.Result[bool]:
             """Send data through connection."""
             ...
 
@@ -152,7 +152,7 @@ class FlextApiPlugins:
             self,
             request: t.JsonObject,
             credentials: t.JsonObject,
-        ) -> r[t.JsonObject]:
+        ) -> p.Result[t.JsonObject]:
             """Add authentication to request."""
             ...
 
@@ -160,7 +160,9 @@ class FlextApiPlugins:
             """Get authentication scheme name."""
             return "Unknown"
 
-        def refresh_credentials(self, credentials: t.JsonObject) -> r[t.JsonObject]:
+        def refresh_credentials(
+            self, credentials: t.JsonObject
+        ) -> p.Result[t.JsonObject]:
             """Refresh authentication credentials."""
             _ = credentials
             return r[t.JsonObject].fail("Refresh not supported by this plugin")
@@ -170,7 +172,7 @@ class FlextApiPlugins:
             return False
 
         @abstractmethod
-        def validate_credentials(self, credentials: t.JsonObject) -> r[bool]:
+        def validate_credentials(self, credentials: t.JsonObject) -> p.Result[bool]:
             """Validate authentication credentials."""
             ...
 
@@ -184,7 +186,7 @@ class FlextApiPlugins:
             self.logger = u.fetch_logger(__name__)
             self._loaded_plugins: MutableMapping[str, FlextApiPlugins.Plugin] = {}
 
-        def resolve_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
+        def resolve_plugin(self, plugin_name: str) -> p.Result[FlextApiPlugins.Plugin]:
             """Get loaded plugin by name."""
             if plugin_name not in self._loaded_plugins:
                 return r[FlextApiPlugins.Plugin].fail(
@@ -207,7 +209,7 @@ class FlextApiPlugins:
             """Get list of loaded plugin names."""
             return list(self._loaded_plugins.keys())
 
-        def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> r[bool]:
+        def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> p.Result[bool]:
             """Load and initialize a plugin."""
             if plugin.name in self._loaded_plugins:
                 return r[bool].fail(f"Plugin '{plugin.name}' already loaded")
@@ -220,7 +222,7 @@ class FlextApiPlugins:
             self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
             return r[bool].ok(value=True)
 
-        def shutdown_all(self) -> r[bool]:
+        def shutdown_all(self) -> p.Result[bool]:
             """Shutdown and unload all plugins."""
             failed_plugins: t.StrSequence = [
                 plugin_name
@@ -233,7 +235,7 @@ class FlextApiPlugins:
                 )
             return r[bool].ok(value=True)
 
-        def unload_plugin(self, plugin_name: str) -> r[bool]:
+        def unload_plugin(self, plugin_name: str) -> p.Result[bool]:
             """Unload and shutdown a plugin."""
             if plugin_name not in self._loaded_plugins:
                 return r[bool].fail(f"Plugin '{plugin_name}' not loaded")

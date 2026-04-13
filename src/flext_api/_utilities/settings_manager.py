@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from flext_api import c, m, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiUtilitiesSettingsManager:
@@ -38,7 +38,7 @@ class FlextApiUtilitiesSettingsManager:
     def configure(
         self,
         settings: t.ScalarMapping | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
             if settings is None:
@@ -55,7 +55,7 @@ class FlextApiUtilitiesSettingsManager:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 
-    def client_config(self) -> r[m.Api.ClientConfig]:
+    def client_config(self) -> p.Result[m.Api.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._config is None:
             return r[m.Api.ClientConfig].fail("No configuration set")
@@ -86,7 +86,7 @@ class FlextApiUtilitiesSettingsManager:
             ),
         )
 
-    def _extract_base_url(self) -> r[str]:
+    def _extract_base_url(self) -> p.Result[str]:
         """Extract base_url from settings - no fallbacks."""
         if self._config is None:
             return r[str].fail("No configuration set")
@@ -97,7 +97,7 @@ class FlextApiUtilitiesSettingsManager:
             return r[str].ok(base_url_value)
         return r[str].fail(f"Invalid base_url type: {type(base_url_value)}")
 
-    def _extract_headers(self) -> r[t.StrMapping]:
+    def _extract_headers(self) -> p.Result[t.StrMapping]:
         """Extract headers from settings - no fallbacks."""
         if self._config is None:
             return r[t.StrMapping].fail("No configuration set")
@@ -127,7 +127,7 @@ class FlextApiUtilitiesSettingsManager:
                 f"Invalid headers type: {type(headers_value)}",
             )
 
-    def _extract_max_retries(self) -> r[int]:
+    def _extract_max_retries(self) -> p.Result[int]:
         """Extract and validate max_retries from settings - no fallbacks."""
         if self._config is None:
             return r[int].fail("No configuration set")
@@ -154,7 +154,9 @@ class FlextApiUtilitiesSettingsManager:
             )
         return r[int].ok(max_retries_value)
 
-    def _extract_positive_float_setting(self, *, key: str, label: str) -> r[float]:
+    def _extract_positive_float_setting(
+        self, *, key: str, label: str
+    ) -> p.Result[float]:
         if self._config is None:
             return r[float].fail("No configuration set")
         if key not in self._config:
@@ -176,7 +178,7 @@ class FlextApiUtilitiesSettingsManager:
             return r[float].fail(f"{label} must be positive, got: {float_value}")
         return r[float].ok(float_value)
 
-    def _normalize_value(self, key: str, *, value: t.Scalar) -> r[t.Scalar]:
+    def _normalize_value(self, key: str, *, value: t.Scalar) -> p.Result[t.Scalar]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
             timeout_result = u.try_(
@@ -207,7 +209,7 @@ class FlextApiUtilitiesSettingsManager:
     def _process_config(
         self,
         settings: t.ScalarMapping,
-    ) -> r[t.JsonObject]:
+    ) -> p.Result[t.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
         processed: t.MutableContainerValueMapping = {}
         for key, value in settings.items():
@@ -219,7 +221,7 @@ class FlextApiUtilitiesSettingsManager:
             processed[key] = normalize_result.value
         return r[t.JsonObject].ok(processed)
 
-    def _validate_configuration(self) -> r[bool]:
+    def _validate_configuration(self) -> p.Result[bool]:
         """Validate current configuration with complete checks."""
         if self._config is None:
             return r[bool].fail("No configuration set")

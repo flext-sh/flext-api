@@ -19,7 +19,7 @@ import httpx
 from httpx_sse import connect_sse
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
@@ -134,7 +134,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         self,
         request: t.ContainerValueMapping,
         **kwargs: t.Scalar,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.failure:

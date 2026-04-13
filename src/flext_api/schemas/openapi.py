@@ -21,11 +21,12 @@ from typing import override
 
 from flext_api import (
     FlextApiPlugins,
+    p,
+    r,
     t,
     u,
 )
 from flext_api.schemas._shared import FlextApiSchemaShared
-from flext_core import r
 
 
 class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
@@ -82,7 +83,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         return ["openapi", "openapi3", "openapi-3"]
 
     @override
-    def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
+    def load_schema(self, schema_source: str) -> p.Result[t.ContainerValue]:
         """Load OpenAPI schema from source.
 
         Args:
@@ -124,7 +125,9 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         return schema_type.lower() in {"openapi", "openapi3", "openapi-3"}
 
     @override
-    def validate_request(self, request: t.JsonObject, schema: t.JsonObject) -> r[bool]:
+    def validate_request(
+        self, request: t.JsonObject, schema: t.JsonObject
+    ) -> p.Result[bool]:
         """Validate request against OpenAPI schema.
 
         Args:
@@ -146,7 +149,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         response: t.JsonObject,
         schema: t.JsonObject,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate response against OpenAPI schema.
 
         Args:
@@ -163,7 +166,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             on_success=lambda _v: r[bool].ok(value=True),
         )
 
-    def validate_schema(self, schema: t.JsonObject) -> r[t.JsonObject]:
+    def validate_schema(self, schema: t.JsonObject) -> p.Result[t.JsonObject]:
         """Validate OpenAPI schema against OpenAPI specification.
 
         Args:
@@ -238,7 +241,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_components(
         self,
         components: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate OpenAPI components t.RecursiveContainer.
 
         Args:
@@ -272,7 +275,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                 )
         return r[bool].ok(value=True)
 
-    def _validate_info_field(self, schema: t.JsonObject) -> r[bool]:
+    def _validate_info_field(self, schema: t.JsonObject) -> p.Result[bool]:
         """Validate info field exists and has required fields.
 
         Single Responsibility: Only validates, does not extract or transform data.
@@ -296,7 +299,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             )
         return r[bool].ok(value=True)
 
-    def _validate_openapi_version(self, schema: t.JsonObject) -> r[str]:
+    def _validate_openapi_version(self, schema: t.JsonObject) -> p.Result[str]:
         """Validate OpenAPI version field."""
         if "openapi" not in schema:
             return r[str].fail("Missing 'openapi' version field")
@@ -317,7 +320,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         operation: t.ContainerValueMapping,
         path: str,
         method: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate OpenAPI operation t.RecursiveContainer.
 
         Args:
@@ -344,7 +347,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                 return r[bool].fail(f"Responses cannot be empty: {method} {path}")
         return r[bool].ok(value=True)
 
-    def _validate_optional_components(self, schema: t.JsonObject) -> r[bool]:
+    def _validate_optional_components(self, schema: t.JsonObject) -> p.Result[bool]:
         """Validate optional components and security schemes."""
         if "components" not in schema:
             return r[bool].ok(value=True)
@@ -372,7 +375,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                 return security_result
         return r[bool].ok(value=True)
 
-    def _validate_paths(self, paths: Mapping[str, t.ApiJsonValue]) -> r[bool]:
+    def _validate_paths(self, paths: Mapping[str, t.ApiJsonValue]) -> p.Result[bool]:
         """Validate OpenAPI paths t.RecursiveContainer.
 
         Args:
@@ -423,7 +426,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                         return operation_result
         return r[bool].ok(value=True)
 
-    def _validate_paths_field(self, schema: t.JsonObject) -> r[bool]:
+    def _validate_paths_field(self, schema: t.JsonObject) -> p.Result[bool]:
         """Validate paths field exists and contains valid path definitions.
 
         Single Responsibility: Only validates, does not extract or transform data.
@@ -443,7 +446,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         scheme_name: str,
         scheme: t.ContainerValueMapping,
         scheme_type: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate type-specific requirements for security schemes."""
         if scheme_type == "apiKey":
             if "name" not in scheme or "in" not in scheme:
@@ -465,7 +468,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_security_schemes(
         self,
         security_schemes: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate OpenAPI security schemes.
 
         Args:
@@ -492,7 +495,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
     def _validate_security_schemes_structure(
         self,
         security_schemes: t.ContainerValue,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate basic structure of security schemes."""
         schemes_result = FlextApiSchemaShared.parse_dict_field(
             security_schemes,
@@ -509,7 +512,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         self,
         scheme_name: str,
         scheme: t.ContainerValue,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate a single security scheme."""
         scheme_result = FlextApiSchemaShared.parse_dict_field(scheme, "scheme")
         if scheme_result.failure:

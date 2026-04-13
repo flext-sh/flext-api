@@ -119,7 +119,7 @@ class Result:
 ### Basic HTTP Operation
 
 ```python
-def get_user(user_id: int) -> r[User]:
+def get_user(user_id: int) -> p.Result[User]:
     """Get user with railway error handling."""
     return (
         FlextApiClient()

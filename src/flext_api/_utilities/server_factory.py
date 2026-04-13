@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import FlextApiServer, FlextWebhookHandler, m
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextApiServerFactory:
@@ -27,7 +27,7 @@ class FlextApiServerFactory:
         port: int = 8000,
         title: str = "Flext API Server",
         version: str = "1.0.0",
-    ) -> r[FlextApiServer]:
+    ) -> p.Result[FlextApiServer]:
         """Create FlextApiServer instance with protocol handler support.
 
         Single responsibility: create server instances.
@@ -50,7 +50,7 @@ class FlextApiServerFactory:
     def create_webhook_handler(
         secret: str | None = None,
         max_retries: int = 3,
-    ) -> r[FlextWebhookHandler]:
+    ) -> p.Result[FlextWebhookHandler]:
         """Create FlextWebhookHandler instance.
 
         Single responsibility: create webhook handler instances.

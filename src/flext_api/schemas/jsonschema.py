@@ -20,8 +20,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TypeIs, override
 
-from flext_api import FlextApiPlugins, c, t, u
-from flext_core import r
+from flext_api import FlextApiPlugins, c, p, r, t, u
 
 
 class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
@@ -106,7 +105,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         return ["json-schema", "jsonschema", "json"]
 
     @override
-    def load_schema(self, schema_source: str) -> r[t.ContainerValue]:
+    def load_schema(self, schema_source: str) -> p.Result[t.ContainerValue]:
         """Load JSON Schema from source.
 
         Args:
@@ -186,7 +185,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         instance: t.ApiJsonValue,
         schema: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate instance against JSON Schema.
 
         Args:
@@ -223,7 +222,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         request: t.JsonObject,
         schema: t.JsonObject,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate request against JSON Schema.
 
         Args:
@@ -241,7 +240,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         response: t.JsonObject,
         schema: t.JsonObject,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate response against JSON Schema.
 
         Args:
@@ -259,7 +258,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         *,
         payload: t.JsonObject,
         schema: t.JsonObject,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         schema_def: t.MutableContainerValueMapping = {}
         for key, value in schema.items():
             schema_def[key] = self._to_container_value(value)
@@ -278,7 +277,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     def validate_schema(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate JSON Schema against meta-schema.
 
         Args:
@@ -347,7 +346,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         instance: t.ApiJsonValue,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate array items."""
         if "items" not in schema:
             return r[bool].ok(value=True)
@@ -364,7 +363,9 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                 return r[bool].ok(value=True)
         return r[bool].ok(value=True)
 
-    def _validate_instance_schema(self, schema: t.ContainerValueMapping) -> r[bool]:
+    def _validate_instance_schema(
+        self, schema: t.ContainerValueMapping
+    ) -> p.Result[bool]:
         """Validate that the schema itself is valid."""
         schema_result = self.validate_schema(schema)
         return schema_result.fold(
@@ -376,7 +377,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         instance: t.ApiJsonValue,
         type_value: t.ApiJsonValue,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate instance against type constraint.
 
         Args:
@@ -454,7 +455,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         instance: t.ApiJsonValue,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate properties for mapping instances."""
         if "properties" not in schema:
             return r[bool].ok(value=True)
@@ -500,7 +501,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         instance: t.ApiJsonValue,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate required properties for mapping instances."""
         if "required" not in schema:
             return r[bool].ok(value=True)
@@ -523,7 +524,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     def _validate_schema_basic_structure(
         self,
         schema: t.JsonObject,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Validate basic schema structure."""
         schema_dict: t.MutableContainerValueMapping = {}
         for key, value in schema.items():
@@ -537,7 +538,9 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                     continue
         return r[t.ContainerValueMapping].ok(schema_dict)
 
-    def _validate_schema_format(self, schema: t.ContainerValueMapping) -> r[bool]:
+    def _validate_schema_format(
+        self, schema: t.ContainerValueMapping
+    ) -> p.Result[bool]:
         """Validate format field if present."""
         if "format" not in schema or not self._validate_formats:
             return r[bool].ok(value=True)
@@ -551,7 +554,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(f"Unsupported format: {format_text}")
         return r[bool].ok(value=True)
 
-    def _validate_schema_items(self, schema: t.ContainerValueMapping) -> r[bool]:
+    def _validate_schema_items(self, schema: t.ContainerValueMapping) -> p.Result[bool]:
         """Validate items field for arrays."""
         if "items" not in schema:
             return r[bool].ok(value=True)
@@ -579,7 +582,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     def _validate_schema_properties(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate properties field and nested schemas."""
         if "properties" not in schema:
             return r[bool].ok(value=True)
@@ -601,7 +604,9 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
                     continue
         return r[bool].ok(value=True)
 
-    def _validate_schema_required(self, schema: t.ContainerValueMapping) -> r[bool]:
+    def _validate_schema_required(
+        self, schema: t.ContainerValueMapping
+    ) -> p.Result[bool]:
         """Validate required field."""
         if "required" not in schema:
             return r[bool].ok(value=True)
@@ -621,7 +626,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
     def _validate_schema_type_field(
         self,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate type field if present."""
         if "type" not in schema:
             return r[bool].ok(value=True)
@@ -631,7 +636,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             on_success=lambda _: r[bool].ok(value=True),
         )
 
-    def _validate_schema_uri(self, schema_uri: str) -> r[bool]:
+    def _validate_schema_uri(self, schema_uri: str) -> p.Result[bool]:
         """Validate $schema URI.
 
         Args:
@@ -651,7 +656,9 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(f"Unsupported schema URI: {schema_uri}")
         return r[bool].ok(value=True)
 
-    def _validate_schema_uri_field(self, schema: t.ContainerValueMapping) -> r[bool]:
+    def _validate_schema_uri_field(
+        self, schema: t.ContainerValueMapping
+    ) -> p.Result[bool]:
         """Validate $schema URI field if present."""
         if "$schema" not in schema:
             return r[bool].ok(value=True)
@@ -666,7 +673,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             on_success=lambda _: r[bool].ok(value=True),
         )
 
-    def _validate_type_field(self, type_value: t.ApiJsonValue) -> r[bool]:
+    def _validate_type_field(self, type_value: t.ApiJsonValue) -> p.Result[bool]:
         """Validate type field value.
 
         Args:
@@ -717,7 +724,7 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         self,
         instance: t.ApiJsonValue,
         schema: t.ContainerValueMapping,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate instance type if specified in schema."""
         if "type" not in schema:
             return r[bool].ok(value=True)

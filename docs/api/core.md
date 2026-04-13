@@ -42,7 +42,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -323,7 +323,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -340,23 +340,23 @@ class UserApiClient(FlextApiClient):
             headers={"User-Agent": "FLEXT-API-Example/0.9.9"},
         )
 
-    def get_users(self, limit: int = 10) -> r[list]:
+    def get_users(self, limit: int = 10) -> p.Result[list]:
         """Get list of users with pagination."""
         return self.get("/users", params={"_limit": limit})
 
-    def get_user(self, user_id: int) -> r[dict]:
+    def get_user(self, user_id: int) -> p.Result[dict]:
         """Get single user by ID."""
         return self.get(f"/users/{user_id}")
 
-    def create_user(self, user_data: dict) -> r[dict]:
+    def create_user(self, user_data: dict) -> p.Result[dict]:
         """Create new user."""
         return self.post("/users", json=user_data)
 
-    def update_user(self, user_id: int, user_data: dict) -> r[dict]:
+    def update_user(self, user_id: int, user_data: dict) -> p.Result[dict]:
         """Update existing user."""
         return self.put(f"/users/{user_id}", json=user_data)
 
-    def delete_user(self, user_id: int) -> r[bool]:
+    def delete_user(self, user_id: int) -> p.Result[bool]:
         """Delete user."""
         return self.delete(f"/users/{user_id}")
 
@@ -401,7 +401,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
