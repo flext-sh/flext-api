@@ -24,10 +24,12 @@ class FlextApiUtilitiesSettingsManager:
     """
 
     _config: t.JsonObject | None
+    _client_config: m.Api.ClientConfig | None
 
     def __init__(self) -> None:
         """Initialize configuration manager."""
         self._config = None
+        self._client_config = None
 
     @property
     def settings(self) -> t.JsonObject | None:
@@ -40,170 +42,72 @@ class FlextApiUtilitiesSettingsManager:
     ) -> p.Result[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
-            if settings is None:
-                self._config = {}
-            else:
-                process_result = self._process_config(settings)
-                if process_result.failure:
-                    return r[bool].fail(
-                        process_result.error or "Configuration processing failed",
-                    )
-                self._config = process_result.value
-            return self._validate_configuration()
+            processed_result = self._process_config(
+                {} if settings is None else settings
+            )
+            if processed_result.failure:
+                self._client_config = None
+                return r[bool].fail(
+                    processed_result.error or "Configuration processing failed",
+                )
+            self._config = processed_result.value
+            client_config_result = self._build_client_config()
+            if client_config_result.failure:
+                self._client_config = None
+                return r[bool].fail(
+                    client_config_result.error or "Configuration validation failed",
+                )
+            self._client_config = client_config_result.value
+            self._config = {
+                **self._config,
+                "base_url": self._client_config.base_url,
+                "timeout": self._client_config.timeout,
+                "max_retries": self._client_config.max_retries,
+                "headers": self._client_config.headers,
+                "verify_ssl": self._client_config.verify_ssl,
+            }
+            return r[bool].ok(True)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 
     def client_config(self) -> p.Result[m.Api.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
+        if self._client_config is not None:
+            return r[m.Api.ClientConfig].ok(self._client_config)
         if self._config is None:
             return r[m.Api.ClientConfig].fail("No configuration set")
-        headers_result = self._extract_headers()
-        if headers_result.failure:
+        client_config_result = self._build_client_config()
+        if client_config_result.failure:
             return r[m.Api.ClientConfig].fail(
-                headers_result.error or "Headers extraction failed",
+                client_config_result.error or "Configuration validation failed",
             )
-        base_url_result = self._extract_base_url()
-        if base_url_result.failure:
-            return r[m.Api.ClientConfig].fail(
-                base_url_result.error or "Base URL extraction failed",
-            )
-        timeout_result = self._extract_positive_float_setting(
-            key="timeout",
-            label="Timeout",
-        )
-        return timeout_result.fold(
-            on_failure=lambda e: r[m.Api.ClientConfig].fail(
-                e or "Timeout extraction failed",
-            ),
-            on_success=lambda timeout: r[m.Api.ClientConfig].ok(
-                m.Api.create_config(
-                    base_url=base_url_result.value,
-                    timeout=timeout,
-                    headers=headers_result.value,
-                ),
-            ),
-        )
+        self._client_config = client_config_result.value
+        return r[m.Api.ClientConfig].ok(self._client_config)
 
-    def _extract_base_url(self) -> p.Result[str]:
-        """Extract base_url from settings - no fallbacks."""
-        if self._config is None:
-            return r[str].fail("No configuration set")
-        if "base_url" not in self._config:
-            return r[str].ok("")
-        base_url_value = self._config["base_url"]
-        if isinstance(base_url_value, str):
-            return r[str].ok(base_url_value)
-        return r[str].fail(f"Invalid base_url type: {type(base_url_value)}")
-
-    def _extract_headers(self) -> p.Result[t.StrMapping]:
-        """Extract headers from settings - no fallbacks."""
-        if self._config is None:
-            return r[t.StrMapping].fail("No configuration set")
-        if "headers" not in self._config:
-            return r[t.StrMapping].ok({})
-        headers_value = self._config["headers"]
-        if isinstance(headers_value, Mapping):
-            try:
-                validated_headers = t.Api.STR_MAPPING_ADAPTER.validate_python(
-                    headers_value,
-                )
-                return r[t.StrMapping].ok(validated_headers)
-            except c.ValidationError as e:
-                return r[t.StrMapping].fail(
-                    f"Failed to validate headers mapping: {e}",
-                )
-        if isinstance(headers_value, str):
-            try:
-                validated_headers = t.Api.STR_MAPPING_ADAPTER.validate_json(
-                    headers_value,
-                )
-                return r[t.StrMapping].ok(validated_headers)
-            except (c.ValidationError, TypeError) as e:
-                return r[t.StrMapping].fail(f"Failed to parse headers JSON: {e}")
-        else:
-            return r[t.StrMapping].fail(
-                f"Invalid headers type: {type(headers_value)}",
-            )
-
-    def _extract_max_retries(self) -> p.Result[int]:
-        """Extract and validate max_retries from settings - no fallbacks."""
-        if self._config is None:
-            return r[int].fail("No configuration set")
-        if "max_retries" not in self._config:
-            return r[int].fail("Max retries not specified in configuration")
-        max_retries_raw = self._config["max_retries"]
-        if isinstance(max_retries_raw, int):
-            max_retries_value = max_retries_raw
-        elif isinstance(max_retries_raw, float | str):
-            retries_result = u.try_(
-                lambda: int(max_retries_raw),
-                catch=(ValueError, TypeError),
-            ).map_error(
-                lambda _e: f"Max retries must be a valid integer: {max_retries_raw}",
-            )
-            if retries_result.failure:
-                return retries_result
-            max_retries_value = retries_result.value
-        else:
-            return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
-        if max_retries_value < 0:
-            return r[int].fail(
-                f"Max retries cannot be negative, got: {max_retries_value}",
-            )
-        return r[int].ok(max_retries_value)
-
-    def _extract_positive_float_setting(
-        self, *, key: str, label: str
-    ) -> p.Result[float]:
-        if self._config is None:
-            return r[float].fail("No configuration set")
-        if key not in self._config:
-            return r[float].fail(f"{label} not specified in configuration")
-        raw_value = self._config[key]
-        if isinstance(raw_value, t.NUMERIC_TYPES) and not isinstance(raw_value, bool):
-            float_value = float(raw_value)
-        elif isinstance(raw_value, str):
-            timeout_result = u.try_(
-                lambda: float(raw_value),
-                catch=ValueError,
-            ).map_error(lambda _e: f"{label} must be a valid number: {raw_value}")
-            if timeout_result.failure:
-                return timeout_result
-            float_value = timeout_result.value
-        else:
-            return r[float].fail(f"Invalid {key} type: {type(raw_value)}")
-        if float_value <= 0:
-            return r[float].fail(f"{label} must be positive, got: {float_value}")
-        return r[float].ok(float_value)
-
-    def _normalize_value(self, key: str, *, value: t.Scalar) -> p.Result[t.Scalar]:
+    def _normalize_value(
+        self,
+        key: str,
+        *,
+        value: t.Scalar,
+    ) -> p.Result[t.ContainerValue]:
         """Normalize configuration value based on key type - no fallbacks."""
-        if key == "timeout" and isinstance(value, str):
-            timeout_result = u.try_(
-                lambda: float(value),
-                catch=ValueError,
-            ).map_error(lambda _e: f"Invalid timeout value: {value}")
-            return timeout_result.fold(
-                on_failure=lambda e: r[t.Scalar].fail(
-                    e or f"Invalid timeout value: {value}",
-                ),
-                on_success=lambda v: r[t.Scalar].ok(v),
-            )
-        if key == "max_retries" and isinstance(value, str):
-            retries_result = u.try_(
-                lambda: int(value),
-                catch=ValueError,
-            ).map_error(lambda _e: f"Invalid max_retries value: {value}")
-            return retries_result.fold(
-                on_failure=lambda e: r[t.Scalar].fail(
-                    e or f"Invalid max_retries value: {value}",
-                ),
-                on_success=lambda v: r[t.Scalar].ok(v),
-            )
-        if key in {"log_requests", "log_responses"}:
-            return r[t.Scalar].ok(bool(value))
-        return r[t.Scalar].ok(value)
+        if key == "headers" and isinstance(value, Mapping):
+            return u.try_(
+                lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(value),
+                catch=(c.ValidationError, TypeError, ValueError),
+            ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
+        if key == "headers" and isinstance(value, str):
+            return u.try_(
+                lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),
+                catch=(c.ValidationError, TypeError, ValueError),
+            ).map_error(lambda e: f"Failed to parse headers JSON: {e}")
+        if key in {"log_requests", "log_responses", "verify_ssl"}:
+            return u.try_(
+                lambda: t.bool_adapter().validate_python(value),
+                catch=(c.ValidationError, TypeError, ValueError),
+            ).map_error(lambda e: f"Invalid {key} value: {e}")
+        return r[t.ContainerValue].ok(value)
 
     def _process_config(
         self,
@@ -220,18 +124,31 @@ class FlextApiUtilitiesSettingsManager:
             processed[key] = normalize_result.value
         return r[t.JsonObject].ok(processed)
 
-    def _validate_configuration(self) -> p.Result[bool]:
-        """Validate current configuration with complete checks."""
+    def _build_client_config(self) -> p.Result[m.Api.ClientConfig]:
+        """Build validated client configuration from the normalized config bag."""
         if self._config is None:
-            return r[bool].fail("No configuration set")
-        timeout_result = self._extract_positive_float_setting(
-            key="timeout",
-            label="Timeout",
-        )
-        if timeout_result.failure:
-            return r[bool].fail(timeout_result.error or "Timeout extraction failed")
-        max_retries_result = self._extract_max_retries()
-        return max_retries_result.fold(
-            on_failure=lambda e: r[bool].fail(e or "Max retries extraction failed"),
-            on_success=lambda _: r[bool].ok(value=True),
+            return r[m.Api.ClientConfig].fail("No configuration set")
+        if "timeout" not in self._config:
+            return r[m.Api.ClientConfig].fail("Timeout not specified in configuration")
+        if "max_retries" not in self._config:
+            return r[m.Api.ClientConfig].fail(
+                "Max retries not specified in configuration",
+            )
+        headers_value = self._config.get("headers", {})
+        if not isinstance(headers_value, Mapping):
+            return r[m.Api.ClientConfig].fail(
+                f"Invalid headers type: {type(headers_value)}",
+            )
+        client_config_payload: t.JsonObject = {
+            "base_url": self._config.get("base_url", ""),
+            "timeout": self._config["timeout"],
+            "max_retries": self._config["max_retries"],
+            "headers": headers_value,
+            "verify_ssl": self._config.get("verify_ssl", True),
+        }
+        return u.try_(
+            lambda: m.Api.ClientConfig.model_validate(client_config_payload),
+            catch=(c.ValidationError, TypeError, ValueError),
+        ).map_error(
+            lambda e: f"Client configuration validation failed: {e}",
         )

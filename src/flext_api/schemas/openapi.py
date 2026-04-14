@@ -140,8 +140,8 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         """
         _ = (request, schema)
         return self.validate_schema(schema).fold(
-            on_failure=lambda e: r[bool].fail(f"Invalid schema: {e}"),
-            on_success=lambda _v: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(f"Invalid schema: {e}"),
+            on_success=lambda _v: p.Result[bool].ok(value=True),
         )
 
     @override
@@ -162,8 +162,8 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         """
         _ = (response, schema)
         return self.validate_schema(schema).fold(
-            on_failure=lambda e: r[bool].fail(f"Invalid schema: {e}"),
-            on_success=lambda _v: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(f"Invalid schema: {e}"),
+            on_success=lambda _v: p.Result[bool].ok(value=True),
         )
 
     def validate_schema(self, schema: t.JsonObject) -> p.Result[t.JsonObject]:
@@ -437,7 +437,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         paths_value = schema["paths"]
         paths_result = FlextApiSchemaShared.parse_dict_field(paths_value, "paths")
         return paths_result.fold(
-            on_failure=lambda e: r[bool].fail(e),
+            on_failure=lambda e: p.Result[bool].fail(e),
             on_success=lambda v: self._validate_paths(v),
         )
 
@@ -502,10 +502,10 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
             "security_schemes",
         )
         return schemes_result.fold(
-            on_failure=lambda _: r[t.ContainerValueMapping].fail(
+            on_failure=lambda _: p.Result[t.ContainerValueMapping].fail(
                 "Security schemes must be a dictionary",
             ),
-            on_success=lambda v: r[t.ContainerValueMapping].ok(v),
+            on_success=lambda v: p.Result[t.ContainerValueMapping].ok(v),
         )
 
     def _validate_single_security_scheme(

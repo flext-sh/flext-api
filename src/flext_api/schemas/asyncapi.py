@@ -366,10 +366,10 @@ class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
         """Validate basic channel structure."""
         channel_result = FlextApiSchemaShared.parse_dict_field(channel, "channel")
         return channel_result.fold(
-            on_failure=lambda _: r[t.ContainerValueMapping].fail(
+            on_failure=lambda _: p.Result[t.ContainerValueMapping].fail(
                 f"Channel must be a dictionary: {channel_name}",
             ),
-            on_success=lambda v: r[t.ContainerValueMapping].ok(v),
+            on_success=lambda v: p.Result[t.ContainerValueMapping].ok(v),
         )
 
     def _validate_channels(

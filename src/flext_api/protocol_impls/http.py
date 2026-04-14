@@ -165,10 +165,10 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             body,
         )
         return result.fold(
-            on_failure=lambda e: r[t.ContainerValueMapping].fail(
+            on_failure=lambda e: p.Result[t.ContainerValueMapping].fail(
                 e or "Request execution failed",
             ),
-            on_success=lambda response: r[t.ContainerValueMapping].ok(
+            on_success=lambda response: p.Result[t.ContainerValueMapping].ok(
                 self._response_to_dict(response),
             ),
         )

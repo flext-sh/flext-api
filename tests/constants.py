@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsConstants
 
-from flext_api import FlextApiConstants
+from flext_api import c
 
 
-class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):
+class TestsFlextApiConstants(FlextTestsConstants, c):
     """Test constants for flext-api."""
 
-    class Api(FlextApiConstants.Api):
+    class Api(c.Api):
         """Api domain test constants."""
 
         class Tests:

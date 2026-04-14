@@ -325,7 +325,7 @@ class FlextWebhookHandler(s[bool]):
                 outcome = handler(event.data)
             except (TypeError, ValueError, KeyError, AttributeError) as exc:
                 return r[bool].fail(f"Handler execution failed: {exc}")
-            if isinstance(outcome, p.Result) and outcome.failure:
+            if isinstance(outcome, p.ResultLike) and outcome.failure:
                 return r[bool].fail(outcome.error or "handler failed")
         return r[bool].ok(True)
 

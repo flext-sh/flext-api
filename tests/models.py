@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsModels
 
-from flext_api import FlextApiModels
+from flext_api import m
 
 
-class TestsFlextApiModels(FlextTestsModels, FlextApiModels):
+class TestsFlextApiModels(FlextTestsModels, m):
     """Test models for flext-api."""
 
-    class Api(FlextApiModels.Api):
+    class Api(m.Api):
         """Api domain test models."""
 
         class Tests:

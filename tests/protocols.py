@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsProtocols
 
-from flext_api import FlextApiProtocols
+from flext_api import p
 
 
-class TestsFlextApiProtocols(FlextTestsProtocols, FlextApiProtocols):
+class TestsFlextApiProtocols(FlextTestsProtocols, p):
     """Test protocols for flext-api."""
 
-    class Api(FlextApiProtocols.Api):
+    class Api(p.Api):
         """Api domain test protocols."""
 
         class Tests:
@@ -22,4 +22,5 @@ class TestsFlextApiProtocols(FlextTestsProtocols, FlextApiProtocols):
 
 
 p = TestsFlextApiProtocols
+
 __all__: list[str] = ["TestsFlextApiProtocols", "p"]

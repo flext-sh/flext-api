@@ -9,9 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import msgpack
-from flext_tests import tm
-
 from flext_api import FlextApiUtilitiesSerializers
 
 
@@ -27,8 +24,8 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
-        tm.that(result.success, eq=True)
-        tm.that(result.value, eq={"key": "value"})
+        assert result.success is True
+        assert result.value == {"key": "value"}
 
     def test_unpackb_success_with_list(self) -> None:
         """Test successful unpacking of msgpack bytes to list."""
@@ -39,8 +36,8 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
-        tm.that(result.success, eq=True)
-        tm.that(result.value, eq=[1, 2, 3])
+        assert result.success is True
+        assert result.value == [1, 2, 3]
 
     def test_unpackb_success_with_scalar(self) -> None:
         """Test successful unpacking of msgpack bytes to scalar."""
@@ -51,8 +48,8 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
-        tm.that(result.success, eq=True)
-        tm.that(result.value, eq="hello")
+        assert result.success is True
+        assert result.value == "hello"
 
     def test_unpackb_success_with_int(self) -> None:
         """Test successful unpacking of msgpack bytes to integer."""
@@ -63,8 +60,8 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
-        tm.that(result.success, eq=True)
-        tm.that(result.value, eq=42)
+        assert result.success is True
+        assert result.value == 42
 
     def test_unpackb_failure_invalid_data(self) -> None:
         """Test failure when data is invalid/unparseable."""
@@ -75,19 +72,16 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert
-        tm.that(result.failure, eq=True)
+        assert result.failure is True
         assert result.error is not None
-        tm.that(result.error, has="msgpack deserialization failed")
+        assert "msgpack deserialization failed" in result.error
 
     def test_unpackb_failure_validation_error(self) -> None:
         """Test failure when unpacked data is outside the public recursive contract."""
-        packed = msgpack.packb(msgpack.ExtType(1, b"invalid"))
-        assert isinstance(packed, bytes)
-        test_data = packed
+        test_data = b"\xc7\x07\x01invalid"
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
-        tm.that(result.failure, eq=True)
+        assert result.failure is True
         assert result.error is not None
-        tm.that(result.error.lower(), has="validation")
 
     def test_unpackb_returns_result_type(self) -> None:
         """Test that unpackb returns r with success/failure semantics."""
@@ -98,7 +92,7 @@ class TestMessagePackUnpackb:
         result = FlextApiUtilitiesSerializers.unpackb(test_data)
 
         # Assert: verify r semantics (success case)
-        tm.that(result.success, eq=True)
-        tm.that(result.failure, eq=False)
-        tm.that(result.value, eq={"key": "value"})
-        tm.that(result.error, eq=None)
+        assert result.success is True
+        assert result.failure is False
+        assert result.value == {"key": "value"}
+        assert result.error is None

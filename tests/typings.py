@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsTypes
 
-from flext_api import FlextApiTypes
+from flext_api import t
 
 
-class TestsFlextApiTypes(FlextTestsTypes, FlextApiTypes):
+class TestsFlextApiTypes(FlextTestsTypes, t):
     """Test type aliases for flext-api."""
 
-    class Api(FlextApiTypes.Api):
+    class Api(t.Api):
         """Api domain test types."""
 
         class Tests:
@@ -22,4 +22,5 @@ class TestsFlextApiTypes(FlextTestsTypes, FlextApiTypes):
 
 
 t = TestsFlextApiTypes
+
 __all__: list[str] = ["TestsFlextApiTypes", "t"]

@@ -19,10 +19,10 @@ from urllib.parse import ParseResult, urlparse
 from flext_cli import FlextCliModels
 
 from flext_api import c, t, u
-from flext_web import m
+from flext_web import FlextWebModels, m
 
 
-class FlextApiModels(FlextCliModels, m):
+class FlextApiModels(FlextCliModels, FlextWebModels):
     """HTTP domain models for flext-api."""
 
     class Api:
@@ -74,7 +74,7 @@ class FlextApiModels(FlextCliModels, m):
             body: Annotated[
                 Annotated[
                     t.Api.RequestBody,
-                    m.m.BeforeValidator(
+                    u.BeforeValidator(
                         lambda v: FlextApiModels.Api._normalize_request_body(v)
                     ),
                 ],
@@ -128,7 +128,7 @@ class FlextApiModels(FlextCliModels, m):
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
-                    m.m.BeforeValidator(
+                    u.BeforeValidator(
                         lambda v: FlextApiModels.Api._normalize_response_body(v)
                     ),
                 ],

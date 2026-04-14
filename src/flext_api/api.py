@@ -10,10 +10,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Annotated, ClassVar, override
+from typing import ClassVar, override
 
-from flext_api import FlextApiClient, FlextApiSettings, c, p, r, u
+from flext_api import FlextApiClient, FlextApiSettings, c, r, u
 from flext_api.models import FlextApiModels
+from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
 from flext_core import s, u as core_u
 
@@ -21,7 +22,7 @@ Field = core_u.Field
 PrivateAttr = core_u.PrivateAttr
 
 
-class FlextApi(s[FlextApiSettings]):
+class FlextApi(s):
     """Unified HTTP API facade - pure delegation pattern.
 
     Single responsibility: Delegate HTTP operations to FlextApiClient.
@@ -32,11 +33,8 @@ class FlextApi(s[FlextApiSettings]):
 
     model_config: ClassVar[c.ConfigDict] = c.ConfigDict(use_enum_values=True)
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
-    Models: ClassVar = FlextApiModels
-    config_type: Annotated[
-        type,
-        Field(default=FlextApiSettings, description="Typed API settings class."),
-    ] = FlextApiSettings
+    Models: ClassVar[type[FlextApiModels]] = FlextApiModels
+    config_type: ClassVar[type[FlextApiSettings]] = FlextApiSettings
     _client: FlextApiClient | None = PrivateAttr(default_factory=lambda: None)
 
     def __init__(
@@ -71,7 +69,7 @@ class FlextApi(s[FlextApiSettings]):
         url: str,
         headers: FlextApiTypes.StrMapping | None = None,
         request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.DELETE,
@@ -81,7 +79,10 @@ class FlextApi(s[FlextApiSettings]):
         )
 
     @override
-    def execute(self, **kwargs: FlextApiTypes.Scalar) -> p.Result[FlextApiSettings]:
+    def execute(
+        self,
+        **kwargs: FlextApiTypes.Scalar,
+    ) -> FlextApiProtocols.Result[FlextApiSettings]:
         """Execute s interface."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs: {kwargs}")
@@ -92,7 +93,7 @@ class FlextApi(s[FlextApiSettings]):
         url: str,
         headers: FlextApiTypes.StrMapping | None = None,
         request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.GET,
@@ -107,7 +108,7 @@ class FlextApi(s[FlextApiSettings]):
         data: FlextApiTypes.Api.RequestBody | None = None,
         headers: FlextApiTypes.StrMapping | None = None,
         request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.PATCH,
@@ -123,7 +124,7 @@ class FlextApi(s[FlextApiSettings]):
         data: FlextApiTypes.Api.RequestBody | None = None,
         headers: FlextApiTypes.StrMapping | None = None,
         request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.POST,
@@ -139,7 +140,7 @@ class FlextApi(s[FlextApiSettings]):
         data: FlextApiTypes.Api.RequestBody | None = None,
         headers: FlextApiTypes.StrMapping | None = None,
         request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.PUT,
@@ -152,7 +153,7 @@ class FlextApi(s[FlextApiSettings]):
     def request(
         self,
         request: FlextApiModels.Api.HttpRequest,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
         Args:
@@ -166,13 +167,13 @@ class FlextApi(s[FlextApiSettings]):
 
     def _http_method(
         self,
-        method: str,
+        method: c.Api.Method | str,
         url: str,
         data: FlextApiTypes.Api.RequestBody | None = None,
         headers: FlextApiTypes.StrMapping | None = None,
         request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
         timeout: float | None = None,
-    ) -> p.Result[FlextApiModels.Api.HttpResponse]:
+    ) -> FlextApiProtocols.Result[FlextApiModels.Api.HttpResponse]:
         """Generic HTTP method executor using monadic patterns - no fallbacks.
 
         Args:

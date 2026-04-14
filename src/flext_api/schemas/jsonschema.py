@@ -270,8 +270,8 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             payload_typed[key] = self._to_container_value(value)
         instance_result = self.validate_instance(payload_typed, schema_def)
         return instance_result.fold(
-            on_failure=lambda e: r[bool].fail(e or "Schema validation failed"),
-            on_success=lambda _: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(e or "Schema validation failed"),
+            on_success=lambda _: p.Result[bool].ok(value=True),
         )
 
     def validate_schema(
@@ -369,8 +369,8 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
         """Validate that the schema itself is valid."""
         schema_result = self.validate_schema(schema)
         return schema_result.fold(
-            on_failure=lambda e: r[bool].fail(f"Invalid schema: {e}"),
-            on_success=lambda _: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(f"Invalid schema: {e}"),
+            on_success=lambda _: p.Result[bool].ok(value=True),
         )
 
     def _validate_instance_type(
@@ -632,8 +632,8 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             return r[bool].ok(value=True)
         type_result = self._validate_type_field(schema["type"])
         return type_result.fold(
-            on_failure=lambda e: r[bool].fail(f"Invalid type field: {e}"),
-            on_success=lambda _: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(f"Invalid type field: {e}"),
+            on_success=lambda _: p.Result[bool].ok(value=True),
         )
 
     def _validate_schema_uri(self, schema_uri: str) -> p.Result[bool]:
@@ -669,8 +669,10 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             case _:
                 return r[bool].fail("$schema must be a string")
         return draft_result.fold(
-            on_failure=lambda e: r[bool].fail(e or "Schema URI validation failed"),
-            on_success=lambda _: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(
+                e or "Schema URI validation failed"
+            ),
+            on_success=lambda _: p.Result[bool].ok(value=True),
         )
 
     def _validate_type_field(self, type_value: t.ApiJsonValue) -> p.Result[bool]:
@@ -730,8 +732,8 @@ class FlextApiJsonschemaValidator(FlextApiPlugins.Schema):
             return r[bool].ok(value=True)
         type_result = self._validate_instance_type(instance, schema["type"])
         return type_result.fold(
-            on_failure=lambda e: r[bool].fail(e or "Type validation failed"),
-            on_success=lambda _: r[bool].ok(value=True),
+            on_failure=lambda e: p.Result[bool].fail(e or "Type validation failed"),
+            on_success=lambda _: p.Result[bool].ok(value=True),
         )
 
 

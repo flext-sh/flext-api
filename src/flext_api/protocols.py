@@ -13,14 +13,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from flext_cli import p
-
 from flext_api import c, t
 from flext_api._protocols.serialization import FlextApiProtocolsSerialization
-from flext_web import FlextWebProtocols
+from flext_web import p
 
 
-class FlextApiProtocols(FlextWebProtocols, p):
+class FlextApiProtocols(p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api:
@@ -201,11 +199,18 @@ class FlextApiProtocols(FlextWebProtocols, p):
                 including HTTP, WebSocket, SSE, GraphQL, and gRPC.
                 """
 
-                def connect(self, url: str, **options: t.ApiJsonValue) -> p.Result[str]:
+                def connect(
+                    self,
+                    url: str,
+                    **options: t.ApiJsonValue,
+                ) -> p.Result[str]:
                     """Connect to endpoint."""
                     ...
 
-                def disconnect(self, connection: str) -> p.Result[bool]:
+                def disconnect(
+                    self,
+                    connection: str,
+                ) -> p.Result[bool]:
                     """Disconnect from endpoint."""
                     ...
 
@@ -273,7 +278,10 @@ class FlextApiProtocols(FlextWebProtocols, p):
                 when flext-grpc is integrated.
                 """
 
-                def resolve_request_schema(self, method: str) -> p.Result[t.JsonObject]:
+                def resolve_request_schema(
+                    self,
+                    method: str,
+                ) -> p.Result[t.JsonObject]:
                     """Get request schema for method.
 
                     Args:
@@ -300,6 +308,6 @@ class FlextApiProtocols(FlextWebProtocols, p):
                     ...
 
 
-__all__: list[str] = ["FlextApiProtocols", "p"]
-
 p = FlextApiProtocols
+
+__all__: list[str] = ["FlextApiProtocols", "p"]

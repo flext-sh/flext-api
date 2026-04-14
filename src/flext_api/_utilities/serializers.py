@@ -16,26 +16,19 @@ class FlextApiUtilitiesSerializers:
     """Serialization utilities for API operations."""
 
     @staticmethod
-    def _is_msgpack_module(value: object) -> TypeIs[p.Api.Serialization.MsgpackModule]:
-        """Return whether the value satisfies the msgpack module protocol."""
+    def _is_msgpack_module(
+        value: t.RuntimeModule | p.Api.Serialization.MsgpackModule,
+    ) -> TypeIs[p.Api.Serialization.MsgpackModule]:
+        """Return whether the runtime module satisfies the msgpack contract."""
         return callable(getattr(value, "packb", None)) and callable(
             getattr(value, "unpackb", None),
         )
 
     @staticmethod
-    def _load_msgpack() -> p.Api.Serialization.MsgpackModule | None:
-        """Return the msgpack module used by the serializers."""
-        return (
-            msgpack
-            if FlextApiUtilitiesSerializers._is_msgpack_module(msgpack)
-            else None
-        )
-
-    @staticmethod
     def pack_raw(obj: t.RecursiveValue) -> t.Api.MsgpackBinary:
         """Return the raw msgpack payload for explicit runtime narrowing."""
-        module = FlextApiUtilitiesSerializers._load_msgpack()
-        if module is None:
+        module = msgpack
+        if not FlextApiUtilitiesSerializers._is_msgpack_module(module):
             msg = "msgpack module not available"
             raise TypeError(msg)
         return t.Api.BINARY_CONTENT_ADAPTER.validate_python(module.packb(obj))
@@ -54,10 +47,7 @@ class FlextApiUtilitiesSerializers:
         packed = FlextApiUtilitiesSerializers.pack_raw(obj)
         if isinstance(packed, bytes):
             return packed
-        if isinstance(packed, bytearray):
-            return bytes(packed)
-        msg = "msgpack.packb returned non-bytes payload"
-        raise TypeError(msg)
+        return bytes(packed)
 
     @staticmethod
     def unpackb(
@@ -72,10 +62,10 @@ class FlextApiUtilitiesSerializers:
             Result containing unpacked t.RecursiveValue.
 
         """
-        module = FlextApiUtilitiesSerializers._load_msgpack()
-        if module is None:
-            return r[t.RecursiveValue].fail("msgpack module not available")
         try:
+            module = msgpack
+            if not FlextApiUtilitiesSerializers._is_msgpack_module(module):
+                return r[t.RecursiveValue].fail("msgpack module not available")
             result = module.unpackb(data)
             return u.validate_value(t.RecursiveValue, result)
         except (TypeError, c.ValidationError, ValueError) as e:

@@ -15,13 +15,13 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import Literal
 
-from flext_cli import t, u
+from flext_cli import FlextCliProtocols, FlextCliTypes, u
 
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(FlextWebTypes, t):
+class FlextApiTypes(FlextWebTypes, FlextCliTypes):
     """Unified API type definitions extending t with composition."""
 
     class Api(FlextApiTypingsSerialization):
@@ -62,7 +62,8 @@ class FlextApiTypes(FlextWebTypes, t):
         ]
         type WebhookAlgorithm = Literal["sha256", "sha512"]
         type WebhookHandler = Callable[
-            [FlextWebTypes.ContainerValueMapping], FlextWebTypes.ContainerValue
+            [FlextWebTypes.ContainerValueMapping],
+            FlextWebTypes.ContainerValue | FlextCliProtocols.ResultLike[bool] | None,
         ]
         type RequestKwargs = Mapping[
             str,

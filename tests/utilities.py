@@ -22,4 +22,5 @@ class TestsFlextApiUtilities(FlextTestsUtilities, FlextApiUtilities):
 
 
 u = TestsFlextApiUtilities
+
 __all__: list[str] = ["TestsFlextApiUtilities", "u"]
