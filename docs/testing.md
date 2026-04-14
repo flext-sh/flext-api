@@ -282,7 +282,7 @@ class TestFlextApiClient:
 
         result = http_client.get("/test")
 
-        assert result.is_success
+        assert result.success
         response = result.unwrap()
         assert response.status_code == 200
         assert response.body["data"] == "test"
@@ -296,7 +296,7 @@ class TestFlextApiClient:
 
         result = http_client.get("/not-found")
 
-        assert result.is_failure
+        assert result.failure
         error = result.error
         assert error.status_code == 404
 ```
@@ -309,7 +309,7 @@ class TestHTTPIntegration:
         """Test real HTTP GET with httpbin.org."""
         result = http_client.get("/get")
 
-        assert result.is_success
+        assert result.success
         response = result.unwrap()
         assert response.status_code == 200
         assert "url" in response.body
@@ -319,7 +319,7 @@ class TestHTTPIntegration:
         # Configure slow endpoint
         result = http_client.get("/delay/10", timeout=1.0)
 
-        assert result.is_failure
+        assert result.failure
         assert isinstance(result.error, TimeoutError)
 ```
 
@@ -340,14 +340,14 @@ class TestModelValidation:
 
         for url in valid_urls:
             result = FlextModels.create_validated_http_url(url)
-            assert result.is_success
+            assert result.success
 
         # Invalid URLs
         invalid_urls = ["not-a-url", "ftp://example.com", ""]
 
         for url in invalid_urls:
             result = FlextModels.create_validated_http_url(url)
-            assert result.is_failure
+            assert result.failure
 ```
 
 #### Serialization Testing
@@ -440,7 +440,7 @@ def test_response_time_performance(http_client):
         result = http_client.get("/get")
         end_time = time.time()
 
-        if result.is_success:
+        if result.success:
             response_times.append((end_time - start_time) * 1000)  # ms
 
     # Performance assertions
@@ -467,7 +467,7 @@ async def test_concurrent_requests(http_client):
     tasks = [make_request(i) for i in range(50)]
     results = await asyncio.gather(*tasks)
 
-    successful = [r for r in results if r.is_success]
+    successful = [r for r in results if r.success]
     success_rate = len(successful) / len(results)
 
     assert success_rate > 0.95, f"Success rate too low: {success_rate}"

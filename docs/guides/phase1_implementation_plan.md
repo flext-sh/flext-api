@@ -24,7 +24,7 @@
   - [Week 5-6: Test Coverage Improvement](#week-5-6-test-coverage-improvement)
   - [Week 7-8: API Completeness](#week-7-8-api-completeness)
   - [Week 9-10: Integration Testing](#week-9-10-integration-testing)
-  - [Week 11-12: Documentation & Release Preparation](#week-11-12-documentation-release-preparation)
+  - [Week 11-12: Documentation & Current](#week-11-12-documentation-release-preparation)
 - [Quality Gates](#quality-gates)
   - [Phase 1 Completion Criteria](#phase-1-completion-criteria)
 - [Risk Mitigation](#risk-mitigation)
@@ -304,7 +304,7 @@
 - ✅ Validate error handling patterns
 - ✅ Performance testing baseline
 
-### Week 11-12: Documentation & Release Preparation
+### Week 11-12: Documentation & Current
 
 **Focus**: Production readiness
 
@@ -381,7 +381,7 @@
 
 ### Internal Dependencies
 
-- **flext-core v0.9.9 RC**: r, s, FlextModels
+- **flext-core v0.12.0-dev RC**: r, s, FlextModels
 - **Python 3.13+**: Type safety and performance features
 - **httpx**: HTTP protocol implementation (internal only)
 

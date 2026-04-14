@@ -82,7 +82,7 @@ result = http_protocol.execute_request(
     method="GET", path="/users", params={"limit": 10}
 )
 
-if result.is_success:
+if result.success:
     response = result.unwrap()
     print(f"Status: {response.status_code}")
     print(f"Data: {response.json()}")
@@ -118,7 +118,7 @@ request = FlextApiModels.HttpRequest(
 response = http_protocol.execute(request)
 
 # Access response data
-if response.is_success:
+if response.success:
     data = response.json()
     headers = response.headers
     cookies = response.cookies
@@ -153,7 +153,7 @@ query = """
 variables = {"id": "user_123"}
 result = graphql_protocol.execute_query(query, variables)
 
-if result.is_success:
+if result.success:
     data = result.unwrap()
     user = data["user"]
     print(f"User: {user['name']} ({user['email']})")
@@ -221,7 +221,7 @@ websocket_protocol = WebSocket
 
 # Connect to WebSocket
 connection_result = websocket_protocol.connect()
-if connection_result.is_success:
+if connection_result.success:
     connection = connection_result.unwrap()
 
     # Send message
@@ -231,7 +231,7 @@ if connection_result.is_success:
     # Receive messages
     while True:
         message_result = connection.receive()
-        if message_result.is_success:
+        if message_result.success:
             message = message_result.unwrap()
             print(f"Received: {message}")
 
@@ -264,12 +264,12 @@ sse_protocol = ServerSentEvent
 
 # Connect to event stream
 stream_result = sse_protocol.connect()
-if stream_result.is_success:
+if stream_result.success:
     stream = stream_result.unwrap()
 
     # Listen for events
     for event in stream:
-        if event.is_success:
+        if event.success:
             sse_event = event.unwrap()
             print(f"Event: {sse_event.event_type}")
             print(f"Data: {sse_event.data}")
@@ -312,7 +312,7 @@ upload_result = storage_protocol.upload_file(
     local_path="/path/to/file.txt", remote_path="uploads/file.txt"
 )
 
-if upload_result.is_success:
+if upload_result.success:
     # File uploaded successfully
     remote_url = upload_result.unwrap()
 
@@ -323,7 +323,7 @@ download_result = storage_protocol.download_file(
 
 # List files
 list_result = storage_protocol.list_files("uploads/")
-if list_result.is_success:
+if list_result.success:
     files = list_result.unwrap()
     for file in files:
         print(f"File: {file.name} ({file.size} bytes)")
@@ -362,7 +362,7 @@ response = grpc_stub.call_unary(
     response_type=user_pb2.UserResponse,
 )
 
-if response.is_success:
+if response.success:
     user = response.unwrap()
     print(f"User: {user.name} ({user.email})")
 ```
@@ -420,7 +420,7 @@ class MultiProtocolClient:
     def get_user_http(self, user_id: str) -> t.RecursiveContainerMapping:
         """Get user via REST API."""
         result = self.http.execute_request("GET", f"/users/{user_id}")
-        return result.unwrap().json() if result.is_success else None
+        return result.unwrap().json() if result.success else None
 
     def get_user_graphql(self, user_id: str) -> t.RecursiveContainerMapping:
         """Get user via GraphQL."""
@@ -438,7 +438,7 @@ class MultiProtocolClient:
             }
         """
         result = self.graphql.execute_query(query, {"id": user_id})
-        return result.unwrap() if result.is_success else None
+        return result.unwrap() if result.success else None
 
     def subscribe_to_notifications(self, callback):
         """Subscribe to real-time notifications."""

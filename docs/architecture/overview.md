@@ -32,7 +32,7 @@
   - [Deployment Configuration](#deployment-configuration)
   - [Kubernetes Deployment](#kubernetes-deployment)
 - [Quality Metrics](#quality-metrics)
-  - [Current State (v0.9.9)](#current-state-v099)
+  - [Current State (v0.12.0-dev)](#current-state-v099)
   - [Coverage by Layer](#coverage-by-layer)
 - [Extension Points](#extension-points)
   - [Adding New Protocols](#adding-new-protocols)
@@ -365,7 +365,7 @@ def register_api_routes(app: FastAPI):
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
 
-        if result.is_failure:
+        if result.failure:
             raise HTTPException(status_code=500, detail=result.error)
 
         users = result.unwrap()
@@ -569,22 +569,22 @@ class ComprehensiveSecurityMiddleware(SecurityMiddleware):
 
         # 1. Rate limiting
         rate_limit_result = await self.check_rate_limit(request)
-        if rate_limit_result.is_failure:
+        if rate_limit_result.failure:
             return rate_limit_result
 
         # 2. Input validation
         validation_result = await self.validate_request(request)
-        if validation_result.is_failure:
+        if validation_result.failure:
             return validation_result
 
         # 3. Authentication
         auth_result = await self.authenticate_request(request)
-        if auth_result.is_failure:
+        if auth_result.failure:
             return auth_result
 
         # 4. Authorization
         authz_result = await self.authorize_request(request)
-        if authz_result.is_failure:
+        if authz_result.failure:
             return authz_result
 
         return r[dict].ok({})
@@ -800,7 +800,7 @@ spec:
 
 ## Quality Metrics
 
-### Current State (v0.9.9)
+### Current State (v0.12.0-dev)
 
 | Metric              | Value | Target (1.0.0) | Status         |
 | ------------------- | ----- | -------------- | -------------- |

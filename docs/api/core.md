@@ -63,7 +63,7 @@ put_result = client.put("/users/123", json={"name": "Bob"})
 delete_result = client.delete("/users/123")
 
 # Handle responses
-if get_result.is_success:
+if get_result.success:
     users = get_result.unwrap()
     print(f"Found {len(users)} users")
 else:
@@ -366,20 +366,20 @@ client = UserApiClient()
 
 # Get users
 users_result = client.get_users(limit=5)
-if users_result.is_success:
+if users_result.success:
     users = users_result.unwrap()
     print(f"Retrieved {len(users)} users")
 
 # Create user
 new_user = {"name": "John Doe", "email": "john@example.com"}
 create_result = client.create_user(new_user)
-if create_result.is_success:
+if create_result.success:
     user = create_result.unwrap()
     print(f"Created user: {user['name']}")
 
 # Error handling
 error_result = client.get_user(99999)
-if error_result.is_failure:
+if error_result.failure:
     print(f"User not found: {error_result.error}")
 ```
 
@@ -448,7 +448,7 @@ async def list_users(
     """List users with pagination."""
     result = user_service.get_users(limit=limit, offset=offset)
 
-    if result.is_failure:
+    if result.failure:
         raise HTTPException(status_code=500, detail=result.error)
 
     users = result.unwrap()
@@ -464,7 +464,7 @@ async def create_user(
     """Create new user."""
     result = user_service.create_user(user_data.name, user_data.email)
 
-    if result.is_failure:
+    if result.failure:
         raise HTTPException(status_code=400, detail=result.error)
 
     user = result.unwrap()
@@ -478,7 +478,7 @@ async def get_user(
     """Get user by ID."""
     result = user_service.get_user(user_id)
 
-    if result.is_failure:
+    if result.failure:
         raise HTTPException(status_code=404, detail="User not found")
 
     user = result.unwrap()

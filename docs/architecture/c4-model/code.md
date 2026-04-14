@@ -406,21 +406,21 @@ class ProtocolRegistry:
 container = FlextContainer.get_global()
 
 # Register core services
-container.register("http_client", lambda: FlextApiClient())
-container.register("fastapi_app_factory", lambda: create_fastapi_app)
-container.register("storage_backend", lambda: FlextApiStorage())
-container.register("config_manager", lambda: FlextApiSettings())
+container.bind("http_client", lambda: FlextApiClient())
+container.bind("fastapi_app_factory", lambda: create_fastapi_app)
+container.bind("storage_backend", lambda: FlextApiStorage())
+container.bind("config_manager", lambda: FlextApiSettings())
 
 # Usage in application code
-http_client = container.get("http_client")
-storage = container.get("storage_backend")
+http_client = container.resolve("http_client")
+storage = container.resolve("storage_backend")
 
 # Railway pattern error handling
-if http_client.is_failure:
+if http_client.failure:
     logger.error(f"Failed to get HTTP client: {http_client.error}")
     return
 
-if storage.is_failure:
+if storage.failure:
     logger.error(f"Failed to get storage: {storage.error}")
     return
 
@@ -440,22 +440,22 @@ def get(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
 
     # Input validation
     validation_result = self._validate_url(url)
-    if validation_result.is_failure:
+    if validation_result.failure:
         return r.fail(validation_result.error)
 
     # Request building
     request_result = self._build_request("GET", url, **kwargs)
-    if request_result.is_failure:
+    if request_result.failure:
         return r.fail(f"Request building failed: {request_result.error}")
 
     # HTTP execution
     response_result = await self._execute_request(request_result.unwrap())
-    if response_result.is_failure:
+    if response_result.failure:
         return r.fail(f"HTTP execution failed: {response_result.error}")
 
     # Response processing
     processed_result = self._process_response(response_result.unwrap())
-    if processed_result.is_failure:
+    if processed_result.failure:
         return r.fail(f"Response processing failed: {processed_result.error}")
 
     return processed_result
@@ -472,7 +472,7 @@ user_data = (
     .map_error(lambda err: log_error(f"User fetch failed: {err}"))
 )
 
-if user_data.is_success:
+if user_data.success:
     users = user_data.unwrap()
     print(f"Fetched {len(users)} users")
 ```
@@ -742,7 +742,7 @@ class AuthenticationManager:
         handler = self.get_handler(credentials.scheme)
 
         auth_result = await handler.authenticate(request, credentials)
-        if auth_result.is_failure:
+        if auth_result.failure:
             return r.fail(f"Authentication failed: {auth_result.error}")
 
         authenticated_request = auth_result.unwrap()

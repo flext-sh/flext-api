@@ -93,7 +93,7 @@ All HTTP methods return `r[T]` for type-safe error handling.
 ```python
 # GET request
 result = client.get("/users")
-if result.is_success:
+if result.success:
     users = result.unwrap()
     print(f"Found {len(users)} users")
 
@@ -186,7 +186,7 @@ class LoggingClient(FlextApiClient):
         result = super().get(url, **kwargs)
 
         duration_ms = (time.time() - start_time) * 1000
-        if result.is_success:
+        if result.success:
             self._log_response(result.unwrap(), duration_ms)
 
         return result
@@ -259,7 +259,7 @@ def safe_api_call():
     result = client.get("/users/123")
 
     # Type-safe error handling
-    if result.is_success:
+    if result.success:
         user = result.unwrap()
         return r[dict].ok(user)
     else:
@@ -275,7 +275,7 @@ def safe_api_call():
 
 # Usage
 result = safe_api_call()
-if result.is_success:
+if result.success:
     user = result.unwrap()
     print(f"User: {user['name']}")
 else:
@@ -288,7 +288,7 @@ else:
 # HTTP error responses
 try:
     result = client.get("/users/999")
-    if result.is_failure:
+    if result.failure:
         error = result.error
 
         # Handle specific HTTP errors
@@ -396,7 +396,7 @@ result = client.post(
 ```python
 # Get response t.RecursiveContainer
 result = client.get("/users/123")
-if result.is_success:
+if result.success:
     response = result.unwrap()
 
     # Access response data
@@ -418,13 +418,13 @@ if result.is_success:
 ```python
 # Response timing
 result = client.get("/slow-endpoint")
-if result.is_success:
+if result.success:
     response = result.unwrap()
     print(f"Request took: {response.elapsed.total_seconds()}s")
 
 # Response headers
 result = client.get("/api/data")
-if result.is_success:
+if result.success:
     response = result.unwrap()
     print(f"Content-Type: {response.headers.get('Content-Type')}")
     print(f"Cache-Control: {response.headers.get('Cache-Control')}")
@@ -463,7 +463,7 @@ users = [
 results = await batch_create_users(users)
 
 for i, result in enumerate(results):
-    if result.is_success:
+    if result.success:
         print(f"✅ Created user {i + 1}")
     else:
         print(f"❌ Failed to create user {i + 1}: {result.error}")
@@ -480,7 +480,7 @@ def get_all_users(page_size: int = 50) -> List[dict]:
     while True:
         result = client.get("/users", params={"page": page, "per_page": page_size})
 
-        if result.is_failure:
+        if result.failure:
             break
 
         users = result.unwrap()
@@ -541,7 +541,7 @@ class RetryClient(FlextApiClient):
         for attempt in range(self.max_retries + 1):
             result = super().get(url, **kwargs)
 
-            if result.is_success:
+            if result.success:
                 return result
 
             # Check if error is retryable
@@ -591,7 +591,7 @@ class TestUserAPI:
         """Test GET /users endpoint."""
         result = self.client.get("/users")
 
-        assert result.is_success
+        assert result.success
         response = result.unwrap()
         assert response.status_code == 200
 
@@ -603,7 +603,7 @@ class TestUserAPI:
         user_data = {"name": "Test User", "email": "test@example.com"}
         result = self.client.post("/users", json=user_data)
 
-        assert result.is_success
+        assert result.success
         response = result.unwrap()
         assert response.status_code == 201
 
@@ -615,7 +615,7 @@ class TestUserAPI:
         """Test error response handling."""
         result = self.client.get("/users/99999")
 
-        assert result.is_failure
+        assert result.failure
         error = result.error
         assert error.status_code == 404
         assert "not found" in error.message.lower()
@@ -643,7 +643,7 @@ def test_external_api_call(mock_http_client):
     client = FlextApiClient(base_url="https://api.example.com")
     result = client.get("/users/1")
 
-    assert result.is_success
+    assert result.success
     user = result.unwrap()
     assert user["name"] == "Test User"
 ```
@@ -780,7 +780,7 @@ client = FlextApiClient(base_url="https://api.example.com", ssl_context=ssl_cont
 # Handle rate limit responses
 result = client.get("/api/data")
 
-if result.is_failure and result.error.status_code == 429:
+if result.failure and result.error.status_code == 429:
     retry_after = result.error.headers.get("Retry-After")
     if retry_after:
         wait_time = int(retry_after)

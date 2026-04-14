@@ -532,8 +532,8 @@ class DatabaseMiddleware(FlextApiMiddleware):
 
     async def process_request(self, request) -> p.Result[dict]:
         """Inject database connection into request."""
-        db_result = self.container.get("database")
-        if db_result.is_success:
+        db_result = self.container.resolve("database")
+        if db_result.success:
             request.db = db_result.unwrap()
         return r[dict].ok({})
 
@@ -547,7 +547,7 @@ class DatabaseMiddleware(FlextApiMiddleware):
 
 # Register database service
 container = FlextContainer.get_global()
-container.register("database", DatabaseService())
+container.bind("database", DatabaseService())
 
 # Add middleware
 db_middleware = DatabaseMiddleware()

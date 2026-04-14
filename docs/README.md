@@ -24,13 +24,13 @@
 <!-- TOC END -->
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
+[![Current](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
 [![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](../)
 
 **HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with r patterns and synchronous architecture.
 
-> **✅ STATUS**: Version 0.9.9 - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
+> **✅ STATUS**: Version 0.12.0-dev - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
 
 ______________________________________________________________________
 
@@ -159,7 +159,7 @@ client = FlextApiClient(settings)
 
 # Make requests with automatic error handling
 result = client.get("/users")
-if result.is_success():
+if result.success():
     users = result.unwrap()
     print(f"Found {len(users)} users")
 else:

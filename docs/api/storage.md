@@ -71,7 +71,7 @@ with open("document.pdf", "rb") as file:
         metadata={"author": "John Doe", "category": "documents"},
     )
 
-if upload_result.is_success:
+if upload_result.success:
     file_url = upload_result.unwrap()
     print(f"File uploaded: {file_url}")
 else:
@@ -167,13 +167,13 @@ download_result = storage.download_file(
     remote_path="documents/report.pdf", local_path="/tmp/downloaded_report.pdf"
 )
 
-if download_result.is_success:
+if download_result.success:
     file_path = download_result.unwrap()
     print(f"File downloaded to: {file_path}")
 
 # Download to bytes
 download_result = storage.download_to_bytes("documents/report.pdf")
-if download_result.is_success:
+if download_result.success:
     file_bytes = download_result.unwrap()
     # Process file bytes
     print(f"Downloaded {len(file_bytes)} bytes")
@@ -186,14 +186,14 @@ List, delete, and manage stored files.
 ```python
 # List files in directory
 files_result = storage.list_files("documents/")
-if files_result.is_success:
+if files_result.success:
     files = files_result.unwrap()
     for file_info in files:
         print(f"File: {file_info.name}, Size: {file_info.size} bytes")
 
 # Delete file
 delete_result = storage.delete_file("documents/old_report.pdf")
-if delete_result.is_success:
+if delete_result.success:
     print("File deleted successfully")
 
 # Move/rename file
@@ -298,7 +298,7 @@ upload_result = multi_storage.upload_file(
     file=open("important.pdf", "rb"), filename="important.pdf"
 )
 
-if upload_result.is_success:
+if upload_result.success:
     # File uploaded to primary backend
     file_url = upload_result.unwrap()
 else:
@@ -330,7 +330,7 @@ async def upload_image(file: UploadFile = File(...)):
     # Process file through pipeline
     processed_result = await processor.process_upload(file)
 
-    if processed_result.is_success:
+    if processed_result.success:
         processed_file = processed_result.unwrap()
 
         # Store processed file
@@ -389,7 +389,7 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Process file
     processed_result = await processor.process_upload(file)
-    if processed_result.is_failure:
+    if processed_result.failure:
         raise HTTPException(status_code=400, detail=processed_result.error)
 
     processed_file = processed_result.unwrap()
@@ -413,7 +413,7 @@ async def upload_file(file: UploadFile = File(...)):
         },
     )
 
-    if storage_result.is_failure:
+    if storage_result.failure:
         raise HTTPException(status_code=500, detail="Upload failed")
 
     file_url = storage_result.unwrap()
@@ -438,7 +438,7 @@ async def download_file(file_id: str):
     # Download from storage
     download_result = storage.download_to_bytes(file_info.remote_path)
 
-    if download_result.is_failure:
+    if download_result.failure:
         raise HTTPException(status_code=500, detail="Download failed")
 
     file_bytes = download_result.unwrap()
@@ -478,7 +478,7 @@ async def get_user_avatar(user_id: str):
     avatar_path = f"avatars/{user_id}.jpg"
     download_result = storage.download_to_bytes(avatar_path)
 
-    if download_result.is_success:
+    if download_result.success:
         avatar_bytes = download_result.unwrap()
 
         # Cache for future requests

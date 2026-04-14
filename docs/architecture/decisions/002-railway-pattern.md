@@ -136,12 +136,12 @@ def get_user(user_id: int) -> p.Result[User]:
 ```python
 # Success path
 result = get_user(123)
-if result.is_success:
+if result.success:
     user = result.unwrap()
     print(f"Found user: {user.name}")
 
 # Error handling
-if result.is_failure:
+if result.failure:
     logger.error(result.error)
     return None
 
@@ -166,7 +166,7 @@ def test_get_user_success():
     result = get_user(123)
 
     # Then
-    assert result.is_success
+    assert result.success
     assert result.unwrap().name == "John"
 
 
@@ -178,7 +178,7 @@ def test_get_user_not_found():
     result = get_user(123)
 
     # Then
-    assert result.is_failure
+    assert result.failure
     assert "404" in result.error
 ```
 

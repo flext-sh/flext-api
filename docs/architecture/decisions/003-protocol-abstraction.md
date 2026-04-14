@@ -360,7 +360,7 @@ async def test_http_request_success(http_protocol):
         )
         result = await http_protocol.execute_request(request)
 
-        assert result.is_success
+        assert result.success
         assert result.unwrap().status_code == 200
 ```
 
