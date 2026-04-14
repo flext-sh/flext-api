@@ -65,6 +65,51 @@ class FlextApiConstants(FlextWebConstants, FlextCliConstants):
             TRACE = "TRACE"
 
         @unique
+        class ProtocolMethod(StrEnum):
+            """Protocol route method enumeration for special handlers (WS, SSE, GRAPHQL).
+
+            These are pseudo-HTTP methods used to route requests to protocol-specific
+            handlers. They are NOT standard HTTP methods and require special handling.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use ProtocolMethod.WS.value
+                or ProtocolMethod.WS directly in route registration and dispatching.
+            """
+
+            WS = "WS"
+            SSE = "SSE"
+            GRAPHQL = "GRAPHQL"
+
+        class MethodLiterals:
+            """Lowercase HTTP method literals for case-insensitive comparisons."""
+
+            GET_LOWER: Final[str] = "get"
+            POST_LOWER: Final[str] = "post"
+            PUT_LOWER: Final[str] = "put"
+            DELETE_LOWER: Final[str] = "delete"
+            PATCH_LOWER: Final[str] = "patch"
+            HEAD_LOWER: Final[str] = "head"
+            OPTIONS_LOWER: Final[str] = "options"
+
+        VALID_HTTP_METHODS_LOWER: Final[frozenset[str]] = frozenset({
+            "get",
+            "post",
+            "put",
+            "delete",
+            "patch",
+            "head",
+            "options",
+            "connect",
+            "trace",
+        })
+        "Lowercase HTTP methods for validation."
+
+        VALID_PROTOCOL_METHODS: Final[frozenset[str]] = frozenset({
+            member.value for member in ProtocolMethod.__members__.values()
+        })
+        "Valid protocol route methods (WS, SSE, GRAPHQL)."
+
+        @unique
         class Status(StrEnum):
             """HTTP status enumeration for operations.
 
@@ -80,6 +125,33 @@ class FlextApiConstants(FlextWebConstants, FlextCliConstants):
             FAILED = "failed"
             ERROR = "error"
             SUCCESS = "success"
+
+        @unique
+        class WebhookDeliveryStatus(StrEnum):
+            """Webhook delivery status enumeration (single source of truth).
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use WebhookDeliveryStatus.DELIVERED.value
+                or WebhookDeliveryStatus.DELIVERED directly - no base strings needed.
+
+            This enum defines all possible states for webhook event delivery attempts.
+            """
+
+            DELIVERED = "delivered"
+            DELIVERED_AFTER_RETRY = "delivered_after_retry"
+            FAILED = "failed"
+
+        @unique
+        class WebhookAlgorithm(StrEnum):
+            """HMAC algorithm enumeration for webhook signature verification.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use WebhookAlgorithm.SHA256.value
+                or WebhookAlgorithm.SHA256 directly - no base strings needed.
+            """
+
+            SHA256 = "sha256"
+            SHA512 = "sha512"
 
         @unique
         class ContentType(StrEnum):
@@ -111,6 +183,25 @@ class FlextApiConstants(FlextWebConstants, FlextCliConstants):
             MSGPACK = "msgpack"
             CBOR = "cbor"
             CUSTOM = "custom"
+
+        @unique
+        class OpenApiSecuritySchemeType(StrEnum):
+            """OpenAPI security scheme type enumeration.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use OpenApiSecuritySchemeType.API_KEY.value
+                or OpenApiSecuritySchemeType.API_KEY directly - no base strings needed.
+            """
+
+            API_KEY = "apiKey"
+            HTTP = "http"
+            OAUTH2 = "oauth2"
+            OPEN_ID_CONNECT = "openIdConnect"
+
+        VALID_OPENAPI_SECURITY_SCHEME_TYPES: Final[frozenset[str]] = frozenset({
+            member.value for member in OpenApiSecuritySchemeType.__members__.values()
+        })
+        "Immutable set of valid OpenAPI security scheme types."
 
         ACTIVE_METHODS: Final[frozenset[str]] = frozenset({
             "GET",

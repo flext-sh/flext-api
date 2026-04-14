@@ -271,27 +271,27 @@ class FlextApiServer(s[bool]):
                             route_handler = handler
                         case _:
                             continue
-                    if method == "WS":
+                    if method == c.Api.ProtocolMethod.WS.value:
                         app.websocket(path)(route_handler)
-                    elif method == "SSE":
+                    elif method == c.Api.ProtocolMethod.SSE.value:
                         app.get(path)(route_handler)
-                    elif method == "GRAPHQL":
+                    elif method == c.Api.ProtocolMethod.GRAPHQL.value:
                         app.post(path)(route_handler)
                     else:
                         method_lower = method.lower()
-                        if method_lower == "get":
+                        if method_lower == c.Api.MethodLiterals.GET_LOWER:
                             app.get(path)(route_handler)
-                        elif method_lower == "post":
+                        elif method_lower == c.Api.MethodLiterals.POST_LOWER:
                             app.post(path)(route_handler)
-                        elif method_lower == "put":
+                        elif method_lower == c.Api.MethodLiterals.PUT_LOWER:
                             app.put(path)(route_handler)
-                        elif method_lower == "delete":
+                        elif method_lower == c.Api.MethodLiterals.DELETE_LOWER:
                             app.delete(path)(route_handler)
-                        elif method_lower == "patch":
+                        elif method_lower == c.Api.MethodLiterals.PATCH_LOWER:
                             app.patch(path)(route_handler)
-                        elif method_lower == "head":
+                        elif method_lower == c.Api.MethodLiterals.HEAD_LOWER:
                             app.head(path)(route_handler)
-                        elif method_lower == "options":
+                        elif method_lower == c.Api.MethodLiterals.OPTIONS_LOWER:
                             app.options(path)(route_handler)
                     self._logger.debug("Route registered", method=method, path=path)
                 return r[bool].ok(value=True)

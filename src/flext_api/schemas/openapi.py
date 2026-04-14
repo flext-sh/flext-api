@@ -21,6 +21,7 @@ from typing import override
 
 from flext_api import (
     FlextApiPlugins,
+    c,
     p,
     r,
     t,
@@ -448,18 +449,21 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
         scheme_type: str,
     ) -> p.Result[bool]:
         """Validate type-specific requirements for security schemes."""
-        if scheme_type == "apiKey":
+        if scheme_type == c.Api.OpenApiSecuritySchemeType.API_KEY.value:
             if "name" not in scheme or "in" not in scheme:
                 return r[bool].fail(
                     f"apiKey scheme missing 'name' or 'in': {scheme_name}",
                 )
-        elif scheme_type == "http":
+        elif scheme_type == c.Api.OpenApiSecuritySchemeType.HTTP.value:
             if "scheme" not in scheme:
                 return r[bool].fail(f"http scheme missing 'scheme': {scheme_name}")
-        elif scheme_type == "oauth2":
+        elif scheme_type == c.Api.OpenApiSecuritySchemeType.OAUTH2.value:
             if "flows" not in scheme:
                 return r[bool].fail(f"oauth2 scheme missing 'flows': {scheme_name}")
-        elif scheme_type == "openIdConnect" and "openIdConnectUrl" not in scheme:
+        elif (
+            scheme_type == c.Api.OpenApiSecuritySchemeType.OPEN_ID_CONNECT.value
+            and "openIdConnectUrl" not in scheme
+        ):
             return r[bool].fail(
                 f"openIdConnect scheme missing 'openIdConnectUrl': {scheme_name}",
             )
@@ -529,7 +533,7 @@ class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):
                 f"'type' field must be a string in security scheme: {scheme_name}",
             )
         scheme_type = type_result.value
-        valid_types = ["apiKey", "http", "oauth2", "openIdConnect"]
+        valid_types = c.Api.VALID_OPENAPI_SECURITY_SCHEME_TYPES
         if scheme_type not in valid_types:
             return r[bool].fail(
                 f"Invalid security scheme type '{scheme_type}': {scheme_name}",

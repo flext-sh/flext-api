@@ -13,7 +13,7 @@ import uuid
 from collections.abc import Mapping
 from typing import override
 
-from flext_api import m, p, r, t, u
+from flext_api import c, m, p, r, t, u
 from flext_core import s
 
 
@@ -430,7 +430,9 @@ class FlextWebhookHandler(s[bool]):
         if secret is None:
             return r[bool].fail("Webhook secret is not configured")
         digest = (
-            hashlib.sha256 if self._settings.algorithm == "sha256" else hashlib.sha512
+            hashlib.sha256
+            if self._settings.algorithm == c.Api.WebhookAlgorithm.SHA256.value
+            else hashlib.sha512
         )
         expected = hmac.new(
             secret.encode("utf-8"),

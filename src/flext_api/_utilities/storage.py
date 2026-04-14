@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 from collections.abc import Mapping, Sequence
 
-from flext_api import m, p, r, t, u
+from flext_api import c, m, p, r, t, u
 
 
 class FlextApiStorage:
@@ -163,7 +163,7 @@ class FlextApiStorage:
     def health_check(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
         """Return health information."""
         return r[Mapping[str, t.ApiJsonValue]].ok({
-            "status": "healthy",
+            "status": c.HealthStatus.HEALTHY.value,
             "timestamp": u.generate_iso_timestamp(),
             "storage_accessible": True,
             "size": len(self._state.entries),

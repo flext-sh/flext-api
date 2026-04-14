@@ -1021,10 +1021,10 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
                     return sum(
                         1
                         for delivery in self.deliveries.values()
-                        if delivery.status == "failed"
+                        if delivery.status == c.Api.WebhookDeliveryStatus.FAILED.value
                     )
 
 
-__all__: list[str] = ["FlextApiModels", "m"]
-
 m = FlextApiModels
+
+__all__: list[str] = ["FlextApiModels", "m"]

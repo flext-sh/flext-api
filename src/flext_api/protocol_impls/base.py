@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 
-from flext_api import p, r, t, u
+from flext_api import c, p, r, t, u
 
 
 class FlextApiBaseProtocolImplementation:
@@ -179,7 +179,7 @@ class FlextApiBaseProtocolImplementation:
 
         """
         return {
-            "status": "error",
+            "status": c.Api.Status.ERROR.value,
             "status_code": status_code,
             "error": error,
             "timestamp": None,
@@ -201,7 +201,7 @@ class FlextApiBaseProtocolImplementation:
 
         """
         response: MutableMapping[str, t.ApiJsonValue] = {
-            "status": "success",
+            "status": c.Api.Status.SUCCESS.value,
             "status_code": status_code,
         }
         if data is not None:
