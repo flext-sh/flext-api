@@ -11,6 +11,19 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".test_smoke": ("test_smoke",),
         ".test_storage": ("test_storage",),
         ".test_webhook": ("test_webhook",),
+        "flext_api": (
+            "c",
+            "d",
+            "e",
+            "h",
+            "m",
+            "p",
+            "r",
+            "s",
+            "t",
+            "u",
+            "x",
+        ),
     },
 )
 

@@ -12,14 +12,20 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_api import FlextApiClient, FlextApiSettings, c, r, u
-from flext_api.models import FlextApiModels
-from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
-from flext_core import s, u as core_u
+from flext_api import (
+    FlextApiClient,
+    FlextApiModels,
+    FlextApiProtocols,
+    FlextApiSettings,
+    FlextApiTypes,
+    c,
+    r,
+    u,
+)
+from flext_core import s
 
-Field = core_u.Field
-PrivateAttr = core_u.PrivateAttr
+Field = u.Field
+PrivateAttr = u.PrivateAttr
 
 
 class FlextApi(s):

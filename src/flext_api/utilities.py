@@ -11,9 +11,7 @@ from urllib.parse import urlparse
 
 from flext_cli import FlextCliUtilities
 
-from flext_api import r, t
-from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
+from flext_api import FlextApiProtocols, FlextApiTypes, r, t
 from flext_core import m
 from flext_web import FlextWebUtilities
 

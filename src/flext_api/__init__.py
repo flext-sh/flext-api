@@ -13,8 +13,6 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
-    from flext_cli import d, e, h, r, s, x
-
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
     from flext_api._protocols.transports import FlextApiTransports
@@ -52,6 +50,7 @@ if _t.TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
+    from flext_web import d, e, h, r, s, x
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",
@@ -69,6 +68,8 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "__license__",
                 "__title__",
                 "__url__",
+                "__version__",
+                "__version_info__",
             ),
             ".api": (
                 "FlextApi",
@@ -97,7 +98,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextApiUtilities",
                 "u",
             ),
-            "flext_cli": (
+            "flext_web": (
                 "d",
                 "e",
                 "h",
@@ -108,10 +109,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
         },
     ),
     exclude_names=(
-        "FlextDispatcher",
-        "FlextLogger",
-        "FlextRegistry",
-        "FlextRuntime",
         "cleanup_submodule_namespace",
         "install_lazy_exports",
         "lazy_getattr",
@@ -168,6 +165,8 @@ __all__: list[str] = [
     "__license__",
     "__title__",
     "__url__",
+    "__version__",
+    "__version_info__",
     "api",
     "c",
     "d",

@@ -23,8 +23,7 @@ from typing import override
 
 from fastapi import FastAPI
 
-from flext_api import c, e, p, r, t, u
-from flext_api.protocols import FlextApiProtocols
+from flext_api import FlextApiProtocols, c, e, p, r, t, u
 from flext_core import s
 
 

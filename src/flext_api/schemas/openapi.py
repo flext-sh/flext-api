@@ -21,13 +21,13 @@ from typing import override
 
 from flext_api import (
     FlextApiPlugins,
+    FlextApiSchemaShared,
     c,
     p,
     r,
     t,
     u,
 )
-from flext_api.schemas._shared import FlextApiSchemaShared
 
 
 class FlextApiOpenapiSchemaValidator(FlextApiPlugins.Schema):

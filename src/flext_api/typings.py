@@ -17,7 +17,7 @@ from typing import Literal
 
 from flext_cli import FlextCliProtocols, FlextCliTypes, u
 
-from flext_api._typings.serialization import FlextApiTypingsSerialization
+from flext_api import FlextApiTypingsSerialization
 from flext_web import FlextWebTypes
 
 

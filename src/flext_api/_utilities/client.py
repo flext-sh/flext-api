@@ -15,10 +15,15 @@ from typing import ClassVar, override
 
 import httpx
 
-from flext_api import FlextApiSettings, c, r, u
-from flext_api.models import FlextApiModels
-from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
+from flext_api import (
+    FlextApiModels,
+    FlextApiProtocols,
+    FlextApiSettings,
+    FlextApiTypes,
+    c,
+    r,
+    u,
+)
 from flext_core import s
 
 

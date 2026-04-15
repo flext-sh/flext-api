@@ -18,8 +18,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApiPlugins, p, r, t, u
-from flext_api.schemas._shared import FlextApiSchemaShared
+from flext_api import FlextApiPlugins, FlextApiSchemaShared, p, r, t, u
 
 
 class FlextApiAsyncapiSchemaValidator(FlextApiPlugins.Schema):
