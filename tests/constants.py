@@ -9,9 +9,10 @@ from __future__ import annotations
 from flext_tests import FlextTestsConstants
 
 from flext_api import c
+from flext_web import FlextWebConstants
 
 
-class TestsFlextApiConstants(FlextTestsConstants, c):
+class TestsFlextApiConstants(FlextTestsConstants, c, FlextWebConstants):
     """Test constants for flext-api."""
 
     class Api(c.Api):

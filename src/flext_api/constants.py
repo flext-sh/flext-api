@@ -20,13 +20,11 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
-from flext_cli import FlextCliConstants
-
 from flext_api import t
 from flext_web import FlextWebConstants
 
 
-class FlextApiConstants(FlextWebConstants, FlextCliConstants):
+class FlextApiConstants(FlextWebConstants):
     """FlextApi domain constants extending FlextConstants."""
 
     class Api:

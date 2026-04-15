@@ -14,10 +14,10 @@ from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
 from flext_api import FlextApiProtocolsSerialization, c, t
-from flext_web import p
+from flext_web import FlextWebProtocols, p
 
 
-class FlextApiProtocols(p):
+class FlextApiProtocols(p, FlextApiProtocolsSerialization, FlextWebProtocols):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api:

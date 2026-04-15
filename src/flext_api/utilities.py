@@ -9,6 +9,8 @@ from enum import StrEnum
 from typing import TypeIs
 from urllib.parse import urlparse
 
+from flext_api_utilities_serializers import FlextApiUtilitiesSerializers
+from flext_api_utilities_settings_manager import FlextApiUtilitiesSettingsManager
 from flext_cli import FlextCliUtilities
 
 from flext_api import FlextApiProtocols, FlextApiTypes, r, t
@@ -18,7 +20,12 @@ from flext_web import FlextWebUtilities
 BeforeValidator = m.BeforeValidator
 
 
-class FlextApiUtilities(FlextWebUtilities, FlextCliUtilities):
+class FlextApiUtilities(
+    FlextWebUtilities,
+    FlextCliUtilities,
+    FlextApiUtilitiesSerializers,
+    FlextApiUtilitiesSettingsManager,
+):
     """FlextApi utilities extending FlextUtilities with API-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
