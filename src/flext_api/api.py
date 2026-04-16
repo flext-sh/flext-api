@@ -19,16 +19,18 @@ from flext_api import (
     FlextApiSettings,
     FlextApiTypes,
     c,
+    m,
     r,
+    s,
     u,
 )
-from flext_core import s
+from flext_core import FlextSettings
 
 Field = u.Field
 PrivateAttr = u.PrivateAttr
 
 
-class FlextApi(s):
+class FlextApi(s[bool]):
     """Unified HTTP API facade - pure delegation pattern.
 
     Single responsibility: Delegate HTTP operations to FlextApiClient.
@@ -37,7 +39,7 @@ class FlextApi(s):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[c.ConfigDict] = c.ConfigDict(use_enum_values=True)
+    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar[type[FlextApiModels]] = FlextApiModels
     config_type: ClassVar[type[FlextApiSettings]] = FlextApiSettings
@@ -58,8 +60,7 @@ class FlextApi(s):
         settings = super().settings
         if isinstance(settings, FlextApiSettings):
             return settings
-        msg = "FlextApi runtime settings must be FlextApiSettings"
-        raise TypeError(msg)
+        return FlextSettings.fetch_global().fetch_namespace("api", FlextApiSettings)
 
     @property
     def client(self) -> FlextApiClient:

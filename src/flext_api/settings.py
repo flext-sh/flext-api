@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_api import c, t, u
+from flext_api import c, m, t, u
 from flext_core import FlextSettings
 
 
@@ -20,7 +20,7 @@ from flext_core import FlextSettings
 class FlextApiSettings(FlextSettings):
     """Validated settings consumed by API facade and HTTP client."""
 
-    model_config: ClassVar[c.SettingsConfigDict] = c.SettingsConfigDict(
+    model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
         env_prefix="FLEXT_API_",
         extra="ignore",
     )

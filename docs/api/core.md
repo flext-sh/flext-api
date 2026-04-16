@@ -200,9 +200,9 @@ from pydantic import Field
 class UserCreateRequest(FlextApiModels.BaseRequest):
     """Request model for user creation."""
 
-    name: str = Field(..., min_length=1, max_length=100)
-    email: str = Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
-    age: Optional[int] = Field(None, ge=0, le=150)
+    name: str = m.Field(..., min_length=1, max_length=100)
+    email: str = m.Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
+    age: Optional[int] = m.Field(None, ge=0, le=150)
 
 
 class UserResponse(FlextApiModels.BaseResponse):
@@ -422,12 +422,12 @@ app = create_fastapi_app(settings=settings)
 
 
 # Models
-class UserCreate(BaseModel):
+class UserCreate(m.BaseModel):
     name: str
     email: str
 
 
-class UserResponse(BaseModel):
+class UserResponse(m.BaseModel):
     id: int
     name: str
     email: str

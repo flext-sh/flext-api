@@ -292,11 +292,11 @@ class FlextApiModels(FlextModels):
         body: Optional[t.RecursiveContainer] = None
         timeout: float = 30.0
 
-        @computed_field
+        @u.computed_field
         def full_url(self) -> str:
             """Computed full URL with protocol."""
 
-        @computed_field
+        @u.computed_field
         def request_size(self) -> int:
             """Request body size in bytes."""
 
@@ -307,11 +307,11 @@ class FlextApiModels(FlextModels):
         body
         response_time: float
 
-        @computed_field
+        @u.computed_field
         def is_success(self) -> bool:
             """Check if response indicates success."""
 
-        @computed_field
+        @u.computed_field
         def content_type(self) -> str:
             """Extract content type from headers."""
 ```
@@ -482,16 +482,16 @@ if user_data.success:
 ### Pydantic-based Configuration
 
 ```python
-class FlextApiSettings(BaseModel):
+class FlextApiSettings(m.BaseModel):
     """Configuration model with validation."""
 
     model_config = ConfigDict(validate_assignment=True, extra="forbid")
 
     # HTTP client settings
     base_url: Optional[str] = None
-    timeout: float = Field(default=30.0, gt=0, le=300)
-    max_retries: int = Field(default=3, ge=0, le=10)
-    retry_delay: float = Field(default=1.0, gt=0, le=60)
+    timeout: float = m.Field(default=30.0, gt=0, le=300)
+    max_retries: int = m.Field(default=3, ge=0, le=10)
+    retry_delay: float = m.Field(default=1.0, gt=0, le=60)
 
     # Authentication
     auth_type: AuthType = AuthType.NONE
@@ -506,8 +506,8 @@ class FlextApiSettings(BaseModel):
     ssl_key_path: Optional[str] = None
 
     # Connection settings
-    max_connections: int = Field(default=100, gt=0, le=1000)
-    max_keepalive: int = Field(default=20, gt=0, le=100)
+    max_connections: int = m.Field(default=100, gt=0, le=1000)
+    max_keepalive: int = m.Field(default=20, gt=0, le=100)
 
     @field_validator("base_url")
     @classmethod

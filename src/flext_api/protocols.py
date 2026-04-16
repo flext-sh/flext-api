@@ -13,8 +13,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from flext_api import c, t
-from flext_api._protocols.serialization import FlextApiProtocolsSerialization
+from flext_api import FlextApiProtocolsSerialization, c, t
 from flext_web import p
 
 

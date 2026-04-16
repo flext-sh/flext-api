@@ -247,13 +247,13 @@ app = create_fastapi_app(title="User Management API", version="1.0.0")
 
 
 # 2. Define models
-class UserCreateRequest(BaseModel):
+class UserCreateRequest(m.BaseModel):
     name: str
     email: str
     age: int
 
 
-class UserResponse(BaseModel):
+class UserResponse(m.BaseModel):
     id: str
     name: str
     email: str

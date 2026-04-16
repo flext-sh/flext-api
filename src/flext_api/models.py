@@ -18,7 +18,8 @@ from urllib.parse import ParseResult, urlparse
 
 from flext_cli import FlextCliModels
 
-from flext_api import c, t, u
+from flext_api import c, t
+from flext_core import u
 from flext_web import FlextWebModels, m
 
 
@@ -33,14 +34,14 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             """Normalize body - empty dict is valid."""
             if v is None:
                 return {}
-            return u.Api.RequestUtils.to_request_body(v)
+            return t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
 
         @staticmethod
         def _normalize_response_body(v: t.ApiJsonValue) -> t.Api.ResponseBody:
             """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
-            return u.Api.RequestUtils.to_request_body(v)
+            return t.Api.RESPONSE_BODY_ADAPTER.validate_python(v)
 
         # =========================================================================
         # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
@@ -74,7 +75,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             body: Annotated[
                 Annotated[
                     t.Api.RequestBody,
-                    u.BeforeValidator(
+                    m.BeforeValidator(
                         lambda v: FlextApiModels.Api._normalize_request_body(v)
                     ),
                 ],
@@ -128,7 +129,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
-                    u.BeforeValidator(
+                    m.BeforeValidator(
                         lambda v: FlextApiModels.Api._normalize_response_body(v)
                     ),
                 ],
@@ -562,7 +563,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         class HttpRequestCallArgs(m.Value):
             """Internal model for validating HTTP request call arguments."""
 
-            model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
+            model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
             )
 
@@ -592,7 +593,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         class MappingBodyModel(m.Value):
             """Internal model for wrapping mapping body data."""
 
-            model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
+            model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
             )
 
@@ -604,7 +605,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         class HttpClientRequestOptions(m.Value):
             """Internal model for HTTP client request options."""
 
-            model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
+            model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
             )
 
@@ -803,7 +804,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             class State(m.FlexibleInternalModel):
                 """Mutable storage runtime state kept in one central model."""
 
-                model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
+                model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                     extra="forbid",
                     validate_assignment=True,
                 )
@@ -966,7 +967,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             class State(m.FlexibleInternalModel):
                 """Mutable webhook runtime state centralized in one model."""
 
-                model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
+                model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                     extra="forbid",
                     validate_assignment=True,
                     arbitrary_types_allowed=True,

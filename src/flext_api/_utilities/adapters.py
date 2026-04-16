@@ -130,10 +130,10 @@ class FlextApiAdapters:
             """Convert OpenAPI specification to GraphQL schema.
 
             Args:
-                _openapi_spec: OpenAPI JSON object to translate.
+                _openapi_spec: OpenAPI JSON t.RecursiveContainer to translate.
 
             Returns:
-                r containing GraphQL schema object or failure.
+                r containing GraphQL schema t.RecursiveContainer or failure.
 
             """
             try:

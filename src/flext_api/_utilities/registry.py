@@ -218,7 +218,7 @@ class FlextApiRegistry:
         name: str,
         plugin: t.RegistrablePlugin,
         *,
-        validate: Callable[[t.RegistrablePlugin], r[bool]] | None = None,
+        validate: Callable[[t.RegistrablePlugin], p.Result[bool]] | None = None,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
     ) -> p.Result[bool]:
         """Delegate plugin registration to the canonical registry."""

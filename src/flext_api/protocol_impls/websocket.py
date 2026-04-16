@@ -46,7 +46,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     - Event callbacks for message handling
     """
 
-    model_config: ClassVar[c.ConfigDict] = c.ConfigDict(
+    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
         frozen=False,
         arbitrary_types_allowed=True,
     )
