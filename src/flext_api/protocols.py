@@ -13,14 +13,15 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from flext_api import FlextApiProtocolsSerialization, c, t
-from flext_web import FlextWebProtocols, p
+from flext_api import c, t
+from flext_api._protocols.serialization import FlextApiProtocolsSerialization
+from flext_web import p
 
 
-class FlextApiProtocols(p, FlextApiProtocolsSerialization, FlextWebProtocols):
+class FlextApiProtocols(p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
-    class Api:
+    class Api(FlextApiProtocolsSerialization):
         """API-specific protocol namespace.
 
         All API domain-specific protocols are organized here to enable

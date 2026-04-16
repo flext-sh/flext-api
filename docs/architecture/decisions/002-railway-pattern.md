@@ -230,7 +230,7 @@ r.fail("Something went wrong")  # Not helpful
 ### Performance Considerations
 
 - **Short-Circuiting**: Failed operations don't execute subsequent operations
-- **Memory Efficiency**: No exception t.RecursiveContainer creation for expected errors
+- **Memory Efficiency**: No exception object creation for expected errors
 - **Async Compatibility**: Works seamlessly with async/await
 - **Composable**: Enables efficient pipelining of operations
 

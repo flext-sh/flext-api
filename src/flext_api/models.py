@@ -47,7 +47,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class HttpRequest(m.Value):
-            """Immutable HTTP request value t.RecursiveContainer.
+            """Immutable HTTP request value object.
 
             Represents a complete HTTP request with all necessary parameters.
             Follows Value Object pattern: immutable, compared by value, no identity.
@@ -108,7 +108,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
                 return c.Api.ContentType.JSON
 
         class HttpResponse(m.Value):
-            """Immutable HTTP response value t.RecursiveContainer.
+            """Immutable HTTP response value object.
 
             Represents a complete HTTP response with all returned data.
             Follows Value Object pattern: immutable, compared by value, no identity.
@@ -187,7 +187,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class Url(m.Value):
-            """URL parsing and validation model (immutable value t.RecursiveContainer)."""
+            """URL parsing and validation model (immutable value object)."""
 
             url: Annotated[
                 t.NonEmptyStr,
@@ -265,7 +265,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class ClientConfig(m.Value):
-            """HTTP client configuration model (immutable value t.RecursiveContainer)."""
+            """HTTP client configuration model (immutable value object)."""
 
             base_url: Annotated[
                 str,
@@ -310,7 +310,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class PaginationInfo(m.Value):
-            """Pagination information model for HTTP operations (immutable value t.RecursiveContainer)."""
+            """Pagination information model for HTTP operations (immutable value object)."""
 
             page: Annotated[
                 t.PositiveInt,
@@ -354,7 +354,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class Error(m.Value):
-            """HTTP error response model (immutable value t.RecursiveContainer)."""
+            """HTTP error response model (immutable value object)."""
 
             message: Annotated[
                 str,
@@ -400,7 +400,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class QueryParams(m.Value):
-            """Query parameters model (immutable value t.RecursiveContainer)."""
+            """Query parameters model (immutable value object)."""
 
             params: Annotated[
                 t.Api.WebParams,
@@ -419,7 +419,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
                 return self.model_copy(update={"params": updated_params})
 
         class Headers(m.Value):
-            """HTTP headers model (immutable value t.RecursiveContainer)."""
+            """HTTP headers model (immutable value object)."""
 
             headers: Annotated[
                 t.StrMapping,
@@ -538,7 +538,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
         # =========================================================================
 
         class DictField(m.Value):
-            """Pydantic model for validating dictionary fields (immutable value t.RecursiveContainer)."""
+            """Pydantic model for validating dictionary fields (immutable value object)."""
 
             value: Annotated[
                 t.ContainerValueMapping,
@@ -546,12 +546,12 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             ] = u.Field(default_factory=dict)
 
         class StringField(m.Value):
-            """Pydantic model for validating string fields (immutable value t.RecursiveContainer)."""
+            """Pydantic model for validating string fields (immutable value object)."""
 
             value: Annotated[str, u.Field(..., description="String value")]
 
         class IntField(m.Value):
-            """Pydantic model for validating integer fields (immutable value t.RecursiveContainer)."""
+            """Pydantic model for validating integer fields (immutable value object)."""
 
             value: Annotated[int, u.Field(..., description="Integer value")]
 

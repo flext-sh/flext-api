@@ -9,11 +9,11 @@ from enum import StrEnum
 from typing import TypeIs
 from urllib.parse import urlparse
 
-from flext_api_utilities_serializers import FlextApiUtilitiesSerializers
-from flext_api_utilities_settings_manager import FlextApiUtilitiesSettingsManager
 from flext_cli import FlextCliUtilities
 
 from flext_api import FlextApiProtocols, FlextApiTypes, r, t
+from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
+from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
 from flext_core import m
 from flext_web import FlextWebUtilities
 
