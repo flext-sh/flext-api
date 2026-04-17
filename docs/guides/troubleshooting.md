@@ -590,11 +590,11 @@ def debug_ldif_processing(content: str):
 
 ### FLEXT Core Errors
 
-| Error Code  | Description                     | Solution                                         |
-| ----------- | ------------------------------- | ------------------------------------------------ |
-| `FLEXT_001` | Configuration validation failed | Check environment variables and settings files   |
-| `FLEXT_002` | Dependency injection failed     | Verify service registration in container         |
-| `FLEXT_003` | Type validation failed          | Fix type annotations and data types              |
+| Error Code  | Description                     | Solution                                       |
+| ----------- | ------------------------------- | ---------------------------------------------- |
+| `FLEXT_001` | Configuration validation failed | Check environment variables and settings files |
+| `FLEXT_002` | Dependency injection failed     | Verify service registration in container       |
+| `FLEXT_003` | Type validation failed          | Fix type annotations and data types            |
 
 ### LDIF Processing Errors
 

@@ -353,8 +353,8 @@ async def upload_image(file: UploadFile = File(...)):
 
 ## Quality Metrics
 
-| Module                 | Coverage | Status    | Description                     |
-| ---------------------- | -------- | --------- | ------------------------------- |
+| Module                 | Coverage | Status   | Description                     |
+| ---------------------- | -------- | -------- | ------------------------------- |
 | `storage/__init__.py`  | 92%      | ✅ Stable | Main storage interface          |
 | `storage/cache.py`     | 88%      | ✅ Good   | HTTP response caching           |
 | `storage/backends.py`  | 85%      | ✅ Good   | Storage backend implementations |

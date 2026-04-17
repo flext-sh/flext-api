@@ -417,8 +417,8 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 
 ## Quality Metrics
 
-| Module                         | Coverage | Status    | Description                   |
-| ------------------------------ | -------- | --------- | ----------------------------- |
+| Module                         | Coverage | Status   | Description                   |
+| ------------------------------ | -------- | -------- | ----------------------------- |
 | `middleware/__init__.py`       | 90%      | ✅ Stable | Base middleware classes       |
 | `middleware/auth.py`           | 85%      | ✅ Good   | Authentication middleware     |
 | `middleware/validation.py`     | 88%      | ✅ Good   | Request validation middleware |

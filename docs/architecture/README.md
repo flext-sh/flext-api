@@ -114,8 +114,8 @@ Architecture diagrams using PlantUML:
 
 ### Core Decisions
 
-| Decision                                                                 | Status      | Impact                          |
-| ------------------------------------------------------------------------ | ----------- | ------------------------------- |
+| Decision                                                                 | Status     | Impact                          |
+| ------------------------------------------------------------------------ | ---------- | ------------------------------- |
 | [ADR-001: FLEXT-Core Dependency](decisions/001-flext-core-dependency.md) | ✅ Accepted | Mandatory ecosystem integration |
 | [ADR-002: Railway Pattern](decisions/002-railway-pattern.md)             | ✅ Accepted | Type-safe error handling        |
 | [ADR-003: Protocol Abstraction](decisions/003-protocol-abstraction.md)   | ✅ Accepted | Multi-protocol support          |

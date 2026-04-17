@@ -9,7 +9,8 @@ from __future__ import annotations
 import time
 from collections.abc import Mapping, Sequence
 
-from flext_api import c, m, p, r, t, u
+from flext_api import c, m, p, t
+from flext_core import r, u
 
 
 class FlextApiStorage:

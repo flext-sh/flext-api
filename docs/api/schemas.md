@@ -227,8 +227,8 @@ extended_schema = extension.apply_to_schema(json_schema)
 
 ## Quality Metrics
 
-| Module                  | Coverage | Status  | Description             |
-| ----------------------- | -------- | ------- | ----------------------- |
+| Module                  | Coverage | Status | Description             |
+| ----------------------- | -------- | ------ | ----------------------- |
 | `schemas/openapi.py`    | 85%      | ✅ Good | OpenAPI 3.0 generation  |
 | `schemas/asyncapi.py`   | 80%      | ✅ Good | AsyncAPI 2.0 generation |
 | `schemas/jsonschema.py` | 88%      | ✅ Good | JSON Schema generation  |

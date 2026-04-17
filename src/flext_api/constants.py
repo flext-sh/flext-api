@@ -20,8 +20,7 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
-from flext_api import t
-from flext_web import FlextWebConstants
+from flext_web import FlextWebConstants, t
 
 
 class FlextApiConstants(FlextWebConstants):
@@ -39,7 +38,7 @@ class FlextApiConstants(FlextWebConstants):
             """HTTP method enumeration - automatic Pydantic validation.
 
             PYDANTIC MODELS:
-            model_config: ClassVar[ConfigDict] = ConfigDict(use_enum_values=True)
+            model_config: ClassVar[m.ConfigDict] = ConfigDict(use_enum_values=True)
             method: FlextApiConstants.Api.Method
 
             Result:

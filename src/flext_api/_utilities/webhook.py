@@ -13,8 +13,8 @@ import uuid
 from collections.abc import Mapping
 from typing import override
 
-from flext_api import c, m, p, r, t, u
-from flext_core import s
+from flext_api import c, m, p, t
+from flext_core import r, s, u
 
 
 class FlextWebhookHandler(s[bool]):

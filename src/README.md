@@ -26,7 +26,7 @@ src/flext_api/
 ├── settings.py                # Configuration management
 ├── constants.py             # Project constants
 ├── exceptions.py            # Custom exceptions
-├── fields.py                # Field definitions
+├── fields.py                # u.Field definitions
 ├── main.py                  # Application entry point
 ├── storage.py               # Storage utilities
 ├── types.py
@@ -60,7 +60,7 @@ src/flext_api/
 - **types.py** - Type definitions and generic types
 - **constants.py** - Project constants and enumerations
 - **exceptions.py** - Custom exception classes
-- **fields.py** - Field validation and definitions
+- **fields.py** - u.Field validation and definitions
 
 ### Architecture Layers
 

@@ -16,13 +16,10 @@ from flext_api import (
     FlextApiTypes,
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
-    r,
     t,
 )
-from flext_core import m
+from flext_core import m, r
 from flext_web import FlextWebUtilities
-
-BeforeValidator = m.BeforeValidator
 
 
 class FlextApiUtilities(
@@ -35,7 +32,7 @@ class FlextApiUtilities(
 
     Architecture: Advanced utilities with ZERO code bloat through:
     - TypeIs/TypeGuard for narrowing (PEP 742)
-    - BeforeValidator factories for Pydantic coercion
+    - m.BeforeValidator factories for Pydantic coercion
     - @validated decorators eliminating manual validation
     - Generic parsing utilities for StrEnums (inherited from parent)
     """
@@ -53,7 +50,6 @@ class FlextApiUtilities(
         "CONNECT",
         "TRACE",
     })
-    BeforeValidator = BeforeValidator
 
     class Api:
         """API-specific utility namespace.
@@ -75,7 +71,7 @@ class FlextApiUtilities(
             def coerced_enum_validator(
                 enum_cls: type[StrEnum],
             ) -> m.BeforeValidator:
-                """Create a BeforeValidator for automatic enum coercion.
+                """Create a m.BeforeValidator for automatic enum coercion.
 
                 Usage in Pydantic models:
                     field: Annotated[MyEnum, u.Api.Pydantic.coerced_enum_validator(MyEnum)]

@@ -18,7 +18,8 @@ from urllib.parse import ParseResult, urlparse
 
 from flext_cli import FlextCliModels
 
-from flext_api import c, t
+from flext_api.constants import c
+from flext_api.typings import t
 from flext_core import u
 from flext_web import FlextWebModels, m
 
@@ -535,7 +536,7 @@ class FlextApiModels(FlextCliModels, FlextWebModels):
             )
 
         # =========================================================================
-        # SCHEMA FIELD MODELS - Moved from schemas/_shared.py
+        # SCHEMA u.FIELD MODELS - Moved from schemas/_shared.py
         # =========================================================================
 
         class DictField(m.Value):

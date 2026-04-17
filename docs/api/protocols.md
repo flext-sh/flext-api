@@ -174,7 +174,7 @@ if result.success:
 fragment_query = """
     query GetUserWithPosts($id: ID!) {
         user(id: $id) {
-            ...UserFields
+            ...Useru.Fields
             posts {
                 id
                 title
@@ -182,7 +182,7 @@ fragment_query = """
         }
     }
 
-    fragment UserFields on User {
+    fragment Useru.Fields on User {
         id
         name
         email
@@ -387,15 +387,15 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ## Quality Metrics
 
-| Module                              | Coverage | Status    | Description                       |
-| ----------------------------------- | -------- | --------- | --------------------------------- |
-| `protocol_impls/http.py`            | 90%      | ✅ Stable | HTTP/REST implementation          |
-| `protocol_impls/graphql.py`         | 85%      | ✅ Good   | GraphQL query/mutation support    |
-| `protocol_impls/websocket.py`       | 88%      | ✅ Good   | WebSocket real-time communication |
-| `protocol_impls/sse.py`             | 82%      | ✅ Good   | Server-sent events streaming      |
-| `protocol_impls/storage_backend.py` | 87%      | ✅ Good   | File/t.RecursiveContainer storage abstraction   |
-| `protocol_stubs/grpc_stub.py`       | 80%      | ✅ Good   | gRPC protocol buffer support      |
-| `protocol_stubs/protobuf_stub.py`   | 85%      | ✅ Good   | Binary serialization              |
+| Module                              | Coverage | Status   | Description                                   |
+| ----------------------------------- | -------- | -------- | --------------------------------------------- |
+| `protocol_impls/http.py`            | 90%      | ✅ Stable | HTTP/REST implementation                      |
+| `protocol_impls/graphql.py`         | 85%      | ✅ Good   | GraphQL query/mutation support                |
+| `protocol_impls/websocket.py`       | 88%      | ✅ Good   | WebSocket real-time communication             |
+| `protocol_impls/sse.py`             | 82%      | ✅ Good   | Server-sent events streaming                  |
+| `protocol_impls/storage_backend.py` | 87%      | ✅ Good   | File/t.RecursiveContainer storage abstraction |
+| `protocol_stubs/grpc_stub.py`       | 80%      | ✅ Good   | gRPC protocol buffer support                  |
+| `protocol_stubs/protobuf_stub.py`   | 85%      | ✅ Good   | Binary serialization                          |
 
 ## Usage Examples
 

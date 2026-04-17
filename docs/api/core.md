@@ -194,15 +194,14 @@ Type-safe models for HTTP requests and responses using Pydantic v2.
 ```python
 from flext_api import FlextApiModels
 from typing import Optional
-from pydantic import Field
 
 
 class UserCreateRequest(FlextApiModels.BaseRequest):
     """Request model for user creation."""
 
-    name: str = m.Field(..., min_length=1, max_length=100)
-    email: str = m.Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
-    age: Optional[int] = m.Field(None, ge=0, le=150)
+    name: str = u.Field(..., min_length=1, max_length=100)
+    email: str = u.Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
+    age: Optional[int] = u.Field(None, ge=0, le=150)
 
 
 class UserResponse(FlextApiModels.BaseResponse):
@@ -295,13 +294,13 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ## Quality Metrics
 
-| Module         | Coverage | Status    | Description                 |
-| -------------- | -------- | --------- | --------------------------- |
+| Module         | Coverage | Status   | Description                 |
+| -------------- | -------- | -------- | --------------------------- |
 | `client.py`    | 95%      | ✅ Stable | HTTP client implementation  |
 | `app.py`       | 90%      | ✅ Stable | FastAPI application factory |
 | `models.py`    | 85%      | ✅ Good   | HTTP models and schemas     |
 | `utilities.py` | 92%      | ✅ Stable | HTTP utility functions      |
-| `settings.py`    | 88%      | ✅ Good   | Configuration management    |
+| `settings.py`  | 88%      | ✅ Good   | Configuration management    |
 
 ## Usage Examples
 

@@ -19,15 +19,10 @@ from flext_api import (
     FlextApiSettings,
     FlextApiTypes,
     c,
-    m,
-    r,
-    s,
     u,
 )
-from flext_core import FlextSettings
-
-Field = u.Field
-PrivateAttr = u.PrivateAttr
+from flext_core import FlextSettings, r, s
+from flext_web import m
 
 
 class FlextApi(s[bool]):
@@ -43,7 +38,7 @@ class FlextApi(s[bool]):
     "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar[type[FlextApiModels]] = FlextApiModels
     config_type: ClassVar[type[FlextApiSettings]] = FlextApiSettings
-    _client: FlextApiClient | None = PrivateAttr(default_factory=lambda: None)
+    _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
     def __init__(
         self,
@@ -51,7 +46,9 @@ class FlextApi(s[bool]):
         settings: FlextApiSettings | None = None,
     ) -> None:
         """Public bootstrap surface using the canonical ``settings=`` call form."""
-        super().__init__(settings=settings)
+        super().__init__()
+        if settings is not None:
+            self._settings = settings
 
     @property
     @override

@@ -171,7 +171,7 @@ package "External Libraries" as external {
 
     package "pydantic" {
         class BaseModel
-        class Field
+        class u.Field
         class validator
     }
 
@@ -489,9 +489,9 @@ class FlextApiSettings(m.BaseModel):
 
     # HTTP client settings
     base_url: Optional[str] = None
-    timeout: float = m.Field(default=30.0, gt=0, le=300)
-    max_retries: int = m.Field(default=3, ge=0, le=10)
-    retry_delay: float = m.Field(default=1.0, gt=0, le=60)
+    timeout: float = u.Field(default=30.0, gt=0, le=300)
+    max_retries: int = u.Field(default=3, ge=0, le=10)
+    retry_delay: float = u.Field(default=1.0, gt=0, le=60)
 
     # Authentication
     auth_type: AuthType = AuthType.NONE
@@ -506,10 +506,10 @@ class FlextApiSettings(m.BaseModel):
     ssl_key_path: Optional[str] = None
 
     # Connection settings
-    max_connections: int = m.Field(default=100, gt=0, le=1000)
-    max_keepalive: int = m.Field(default=20, gt=0, le=100)
+    max_connections: int = u.Field(default=100, gt=0, le=1000)
+    max_keepalive: int = u.Field(default=20, gt=0, le=100)
 
-    @field_validator("base_url")
+    @u.field_validator("base_url")
     @classmethod
     def validate_base_url(cls, v):
         """Validate base URL format."""
@@ -517,7 +517,7 @@ class FlextApiSettings(m.BaseModel):
             raise ValueError("Base URL must start with http:// or https://")
         return v
 
-    @model_validator(mode="after")
+    @u.model_validator(mode="after")
     def validate_auth_config(self):
         """Validate authentication configuration consistency."""
         if self.auth_type == AuthType.API_KEY and not self.api_key:
