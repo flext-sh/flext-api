@@ -26,7 +26,7 @@ class FlextApiUtilitiesSerializers:
         )
 
     @staticmethod
-    def pack_raw(obj: t.RecursiveValue) -> t.Api.MsgpackBinary:
+    def pack_raw(obj: t.ApiJsonValue) -> t.Api.MsgpackBinary:
         """Return the raw msgpack payload for explicit runtime narrowing."""
         module = msgpack
         if not FlextApiUtilitiesSerializers._is_msgpack_module(module):
@@ -35,11 +35,11 @@ class FlextApiUtilitiesSerializers:
         return t.Api.BINARY_CONTENT_ADAPTER.validate_python(module.packb(obj))
 
     @staticmethod
-    def packb(obj: t.RecursiveValue) -> bytes:
+    def packb(obj: t.ApiJsonValue) -> bytes:
         """Type-safe wrapper for msgpack.packb().
 
         Args:
-            obj: Object to pack using the canonical t.RecursiveValue contract.
+            obj: Object to pack using the canonical t.ApiJsonValue contract.
 
         Returns:
             bytes: Packed binary data.

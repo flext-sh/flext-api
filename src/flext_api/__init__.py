@@ -24,7 +24,6 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.middleware import FlextApiMiddleware
     from flext_api._utilities.registry import FlextApiRegistry
     from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
-    from flext_api._utilities.server_factory import FlextApiServerFactory
     from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
     from flext_api._utilities.storage import FlextApiStorage
     from flext_api._utilities.webhook import FlextApiWebhookHandler
@@ -38,15 +37,8 @@ if _t.TYPE_CHECKING:
     from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
     from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
     from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
-    from flext_api.protocol_impls.storage_backend import (
-        FlextApiStorageBackendImplementation,
-    )
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
     from flext_api.protocols import FlextApiProtocols, p
-    from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
-    from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
-    from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
-    from flext_api.schemas.shared import FlextApiSchemaShared
     from flext_api.server import FlextApiServer
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
@@ -58,7 +50,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
         "._typings",
         "._utilities",
         ".protocol_impls",
-        ".schemas",
     ),
     build_lazy_import_map(
         {
@@ -83,7 +74,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._utilities.middleware": ("FlextApiMiddleware",),
             "._utilities.registry": ("FlextApiRegistry",),
             "._utilities.serializers": ("FlextApiUtilitiesSerializers",),
-            "._utilities.server_factory": ("FlextApiServerFactory",),
             "._utilities.settings_manager": ("FlextApiUtilitiesSettingsManager",),
             "._utilities.storage": ("FlextApiStorage",),
             "._utilities.webhook": ("FlextApiWebhookHandler",),
@@ -106,18 +96,11 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".protocol_impls.logger": ("FlextApiLoggerProtocolImplementation",),
             ".protocol_impls.rfc": ("FlextApiRfcProtocolImplementation",),
             ".protocol_impls.sse": ("FlextApiSseProtocolPlugin",),
-            ".protocol_impls.storage_backend": (
-                "FlextApiStorageBackendImplementation",
-            ),
             ".protocol_impls.websocket": ("FlextApiWebsocketProtocolPlugin",),
             ".protocols": (
                 "FlextApiProtocols",
                 "p",
             ),
-            ".schemas.asyncapi": ("FlextApiAsyncapiSchemaValidator",),
-            ".schemas.jsonschema": ("FlextApiJsonschemaValidator",),
-            ".schemas.openapi": ("FlextApiOpenapiSchemaValidator",),
-            ".schemas.shared": ("FlextApiSchemaShared",),
             ".server": ("FlextApiServer",),
             ".settings": ("FlextApiSettings",),
             ".typings": (
@@ -157,29 +140,23 @@ __all__: list[str] = [
     "FlextApi",
     "FlextApiAdapters",
     "FlextApiApp",
-    "FlextApiAsyncapiSchemaValidator",
     "FlextApiBaseProtocolImplementation",
     "FlextApiClient",
     "FlextApiConstants",
     "FlextApiErrors",
-    "FlextApiJsonschemaValidator",
     "FlextApiLifecycleManager",
     "FlextApiLoggerProtocolImplementation",
     "FlextApiMiddleware",
     "FlextApiModels",
-    "FlextApiOpenapiSchemaValidator",
     "FlextApiPlugins",
     "FlextApiProtocols",
     "FlextApiProtocolsSerialization",
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
-    "FlextApiSchemaShared",
     "FlextApiServer",
-    "FlextApiServerFactory",
     "FlextApiSettings",
     "FlextApiSseProtocolPlugin",
     "FlextApiStorage",
-    "FlextApiStorageBackendImplementation",
     "FlextApiTransports",
     "FlextApiTypes",
     "FlextApiTypingsSerialization",

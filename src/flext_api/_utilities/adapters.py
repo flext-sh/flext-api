@@ -176,7 +176,7 @@ class FlextApiAdapters:
         def convert_json_to_messagepack(data: t.JsonObject) -> p.Result[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
-                json_data = t.Cli.JSON_VALUE_ADAPTER.validate_python(data)
+                json_data = t.Api.API_JSON_VALUE_ADAPTER.validate_python(data)
                 packed_data = FlextApiUtilitiesSerializers.packb(json_data)
                 return u.try_(
                     lambda: bytes(packed_data),
