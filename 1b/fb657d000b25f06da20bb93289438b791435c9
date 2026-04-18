@@ -1,0 +1,14 @@
+src/flext_api/protocol_impls/websocket.py
+  h_9db9d35f50cf33 453
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "1bfb657d000b25f06da20bb93289438b791435c9",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
