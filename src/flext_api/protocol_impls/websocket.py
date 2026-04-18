@@ -450,13 +450,12 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 try:
                     inbound = m.Api.InboundMessage(message=message)
                 except c.ValidationError:
-                    pass
-                else:
-                    for handler in self._on_message_handlers:
-                        try:
-                            handler(inbound.message)
-                        except (ValueError, TypeError, KeyError, ConnectionError):
-                            self.logger.exception("Message handler error")
+                    continue
+                for handler in self._on_message_handlers:
+                    try:
+                        handler(inbound.message)
+                    except (ValueError, TypeError, KeyError, ConnectionError):
+                        self.logger.exception("Message handler error")
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")
                 for error_handler in self._on_error_handlers:
