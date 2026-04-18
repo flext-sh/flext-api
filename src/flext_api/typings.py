@@ -15,13 +15,13 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import Literal
 
-from flext_cli import FlextCliTypes, p, u
+from flext_cli import p, t, u
 
 from flext_api import FlextApiTypingsSerialization
-from flext_web import t
+from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(t, FlextCliTypes):
+class FlextApiTypes(t, FlextWebTypes):
     """Unified API type definitions extending t with composition."""
 
     class Api(FlextApiTypingsSerialization):

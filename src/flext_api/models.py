@@ -16,14 +16,14 @@ from collections.abc import Mapping
 from typing import Annotated, ClassVar, Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_cli import FlextCliModels
+from flext_cli import m
 
 from flext_api import c, t
 from flext_core import u
-from flext_web import FlextWebModels, m
+from flext_web import FlextWebModels
 
 
-class FlextApiModels(FlextCliModels, FlextWebModels):
+class FlextApiModels(m, FlextWebModels):
     """HTTP domain models for flext-api."""
 
     class Api:

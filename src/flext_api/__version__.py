@@ -1,37 +1,37 @@
-"""Version and package metadata using importlib.metadata.
+# AUTO-GENERATED FILE — Regenerate with: make gen
+"""Package version and metadata for flext-api.
 
-Single source of truth pattern following flext-core standards.
-All metadata comes from pyproject.toml via importlib.metadata.
+Subclass of ``FlextVersion`` — overrides only ``_metadata``.
+All derived attributes (``__version__``, ``__title__``, etc.) are
+computed automatically via ``FlextVersion.__init_subclass__``.
 
-Copyright (c) 2025 Flext Telecom. Todos os direitos reservados.
-SPDX-License-Identifier: Proprietary
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from importlib.metadata import metadata
+from importlib.metadata import PackageMetadata, metadata
 
-from flext_core import t
+from flext_core import FlextVersion
 
-_metadata_map: t.MutableStrMapping = {}
-try:
-    _metadata = metadata("flext_api")
-    for key in _metadata:
-        _metadata_map[key] = _metadata[key]
-    __version__ = _metadata["Version"]
-    __version_info__ = tuple(
-        int(part) if part.isdigit() else part for part in __version__.split(".")
-    )
-except (ValueError, TypeError, KeyError, ConnectionError):
-    __version__ = "0.12.0-dev"
-    __version_info__ = (0, 0, 0)
-__title__ = _metadata_map.get("Name", "flext-api")
-__description__ = _metadata_map.get("Summary", "")
-__author__ = _metadata_map.get("Author", "")
-__author_email__ = _metadata_map.get("Author-Email", "")
-__license__ = _metadata_map.get("License", "")
-__url__ = _metadata_map.get("Home-Page", "")
+
+class FlextApiVersion(FlextVersion):
+    """flext-api version — MRO-derived from FlextVersion."""
+
+    _metadata: PackageMetadata = metadata("flext-api")
+
+
+__version__ = FlextApiVersion.__version__
+__version_info__ = FlextApiVersion.__version_info__
+__title__ = FlextApiVersion.__title__
+__description__ = FlextApiVersion.__description__
+__author__ = FlextApiVersion.__author__
+__author_email__ = FlextApiVersion.__author_email__
+__license__ = FlextApiVersion.__license__
+__url__ = FlextApiVersion.__url__
 __all__: list[str] = [
+    "FlextApiVersion",
     "__author__",
     "__author_email__",
     "__description__",
