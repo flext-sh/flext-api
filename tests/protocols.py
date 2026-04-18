@@ -9,10 +9,9 @@ from __future__ import annotations
 from flext_tests import FlextTestsProtocols
 
 from flext_api import p
-from flext_web import FlextWebProtocols
 
 
-class TestsFlextApiProtocols(FlextTestsProtocols, p, FlextWebProtocols):
+class TestsFlextApiProtocols(FlextTestsProtocols, p):
     """Test protocols for flext-api."""
 
     class Api(p.Api):

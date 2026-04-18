@@ -17,7 +17,7 @@ from flext_api import c, m, p, t
 from flext_core import r, s, u
 
 
-class FlextWebhookHandler(s[bool]):
+class FlextApiWebhookHandler(s[bool]):
     """Webhook handler with centralized settings, event, delivery, and state models."""
 
     _settings: m.Api.Webhook.Settings
@@ -444,4 +444,4 @@ class FlextWebhookHandler(s[bool]):
         return r[bool].ok(True)
 
 
-__all__: list[str] = ["FlextWebhookHandler"]
+__all__: list[str] = ["FlextApiWebhookHandler"]

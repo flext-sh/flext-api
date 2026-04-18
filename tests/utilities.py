@@ -8,14 +8,13 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsUtilities
 
-from flext_api import FlextApiUtilities
-from flext_web import FlextWebUtilities
+from flext_api import u
 
 
-class TestsFlextApiUtilities(FlextTestsUtilities, FlextApiUtilities, FlextWebUtilities):
+class TestsFlextApiUtilities(FlextTestsUtilities, u):
     """Test utilities for flext-api."""
 
-    class Api(FlextApiUtilities.Api):
+    class Api(u.Api):
         """Api domain test utilities."""
 
         class Tests:

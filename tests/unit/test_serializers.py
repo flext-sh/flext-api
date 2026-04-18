@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiUtilitiesSerializers
+from tests import u
 
 
 class TestMessagePackUnpackb:
@@ -21,7 +21,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x81\xa3key\xa5value"  # {"key": "value"} in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
 
         # Assert
         assert result.success is True
@@ -33,7 +33,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x93\x01\x02\x03"  # [1, 2, 3] in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
 
         # Assert
         assert result.success is True
@@ -45,7 +45,7 @@ class TestMessagePackUnpackb:
         test_data = b"\xa5hello"  # "hello" in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
 
         # Assert
         assert result.success is True
@@ -57,7 +57,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x2a"  # 42 in msgpack
 
         # Act
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
 
         # Assert
         assert result.success is True
@@ -69,7 +69,7 @@ class TestMessagePackUnpackb:
         test_data = b"\xff\xff\xff\xff"  # Invalid msgpack bytes
 
         # Act
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
 
         # Assert
         assert result.failure is True
@@ -79,7 +79,7 @@ class TestMessagePackUnpackb:
     def test_unpackb_failure_validation_error(self) -> None:
         """Test failure when unpacked data is outside the public recursive contract."""
         test_data = b"\xc7\x07\x01invalid"
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
         assert result.failure is True
         assert result.error is not None
 
@@ -89,7 +89,7 @@ class TestMessagePackUnpackb:
         test_data = b"\x81\xa3key\xa5value"
 
         # Act
-        result = FlextApiUtilitiesSerializers.unpackb(test_data)
+        result = u.unpackb(test_data)
 
         # Assert: verify r semantics (success case)
         assert result.success is True

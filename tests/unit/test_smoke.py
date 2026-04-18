@@ -15,11 +15,8 @@ from flext_api import (
     FlextApi,
     FlextApiClient,
     FlextApiSettings,
-    FlextApiUtilitiesSerializers,
-    c,
-    m,
-    t,
 )
+from tests import c, m, t, u
 
 
 class TestConstants:
@@ -104,15 +101,15 @@ class TestSerializers:
     def test_packb_produces_bytes(self) -> None:
         """Packb returns non-empty bytes for valid input."""
         payload: t.StrMapping = {"key": "value"}
-        packed = FlextApiUtilitiesSerializers.packb(payload)
+        packed = u.packb(payload)
         assert packed, "packb should return non-empty bytes"
         assert len(packed) > 0
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """Pack then unpack returns original data."""
         original: t.HeaderMapping = {"hello": "world", "count": 42}
-        packed = FlextApiUtilitiesSerializers.packb(original)
-        result = FlextApiUtilitiesSerializers.unpackb(packed)
+        packed = u.packb(original)
+        result = u.unpackb(packed)
         assert result.success is True
         assert result.value == original
 
@@ -133,8 +130,9 @@ class TestFacadeContract:
         api = FlextApi(settings=settings)
         result = api.execute()
         assert result.success is True
-        assert result.value.base_url == "https://api.example"
-        assert abs(result.value.timeout - 4.0) < 1e-9
+        assert result.value is True
+        assert api.settings.base_url == "https://api.example"
+        assert abs(api.settings.timeout - 4.0) < 1e-9
 
 
 def test_package_imports_main_facade() -> None:

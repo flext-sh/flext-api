@@ -27,7 +27,7 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.server_factory import FlextApiServerFactory
     from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
     from flext_api._utilities.storage import FlextApiStorage
-    from flext_api._utilities.webhook import FlextWebhookHandler
+    from flext_api._utilities.webhook import FlextApiWebhookHandler
     from flext_api.api import FlextApi, api
     from flext_api.constants import FlextApiConstants, c
     from flext_api.errors import FlextApiErrors
@@ -46,18 +46,7 @@ if _t.TYPE_CHECKING:
     from flext_api.schemas.asyncapi import FlextApiAsyncapiSchemaValidator
     from flext_api.schemas.jsonschema import FlextApiJsonschemaValidator
     from flext_api.schemas.openapi import FlextApiOpenapiSchemaValidator
-    from flext_api.schemas.shared import (
-        FlextApiSchemaShared,
-        container_value,
-        load_and_validate_schema_document,
-        load_schema_document,
-        normalize_json_object,
-        object_mapping,
-        parse_dict_field,
-        parse_int_field,
-        parse_string_field,
-        to_general_value,
-    )
+    from flext_api.schemas.shared import FlextApiSchemaShared
     from flext_api.server import FlextApiServer
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
@@ -97,7 +86,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._utilities.server_factory": ("FlextApiServerFactory",),
             "._utilities.settings_manager": ("FlextApiUtilitiesSettingsManager",),
             "._utilities.storage": ("FlextApiStorage",),
-            "._utilities.webhook": ("FlextWebhookHandler",),
+            "._utilities.webhook": ("FlextApiWebhookHandler",),
             ".api": (
                 "FlextApi",
                 "api",
@@ -128,18 +117,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".schemas.asyncapi": ("FlextApiAsyncapiSchemaValidator",),
             ".schemas.jsonschema": ("FlextApiJsonschemaValidator",),
             ".schemas.openapi": ("FlextApiOpenapiSchemaValidator",),
-            ".schemas.shared": (
-                "FlextApiSchemaShared",
-                "container_value",
-                "load_and_validate_schema_document",
-                "load_schema_document",
-                "normalize_json_object",
-                "object_mapping",
-                "parse_dict_field",
-                "parse_int_field",
-                "parse_string_field",
-                "to_general_value",
-            ),
+            ".schemas.shared": ("FlextApiSchemaShared",),
             ".server": ("FlextApiServer",),
             ".settings": ("FlextApiSettings",),
             ".typings": (
@@ -208,10 +186,10 @@ __all__: list[str] = [
     "FlextApiUtilities",
     "FlextApiUtilitiesSerializers",
     "FlextApiUtilitiesSettingsManager",
+    "FlextApiWebhookHandler",
     "FlextApiWebsocketProtocolPlugin",
     "FlextWebClientImplementation",
     "FlextWebProtocolPlugin",
-    "FlextWebhookHandler",
     "__author__",
     "__author_email__",
     "__description__",
@@ -222,23 +200,14 @@ __all__: list[str] = [
     "__version_info__",
     "api",
     "c",
-    "container_value",
     "d",
     "e",
     "h",
-    "load_and_validate_schema_document",
-    "load_schema_document",
     "m",
-    "normalize_json_object",
-    "object_mapping",
     "p",
-    "parse_dict_field",
-    "parse_int_field",
-    "parse_string_field",
     "r",
     "s",
     "t",
-    "to_general_value",
     "u",
     "x",
 ]

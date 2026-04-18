@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from flext_tests import tm
 
-from flext_api import FlextWebhookHandler, m, p, r, t
+from flext_api import FlextApiWebhookHandler
+from tests import m, p, r, t
 
 
 class TestWebhookContract:
@@ -17,7 +18,7 @@ class TestWebhookContract:
     def test_receive_webhook_processes_registered_handler(self) -> None:
         """Webhook handler processes one event and stores delivered status."""
         received_payloads: list[t.ContainerValueMapping] = []
-        handler = FlextWebhookHandler(
+        handler = FlextApiWebhookHandler(
             settings=m.Api.Webhook.Settings(max_retries=0),
         )
 
@@ -40,7 +41,7 @@ class TestWebhookContract:
 
     def test_receive_webhook_rejects_invalid_signature(self) -> None:
         """Webhook handler rejects invalid signatures when a secret is configured."""
-        handler = FlextWebhookHandler(
+        handler = FlextApiWebhookHandler(
             settings=m.Api.Webhook.Settings(secret="top-secret"),
         )
 
@@ -54,7 +55,7 @@ class TestWebhookContract:
 
     def test_failed_event_without_retries_records_failed_delivery(self) -> None:
         """Webhook handler records terminal failure when retries are disabled."""
-        handler = FlextWebhookHandler(
+        handler = FlextApiWebhookHandler(
             settings=m.Api.Webhook.Settings(max_retries=0),
         )
 
@@ -76,7 +77,7 @@ class TestWebhookContract:
     def test_process_retry_queue_retries_and_marks_success(self) -> None:
         """Webhook handler retries queued events and stores retry delivery status."""
         attempts = {"count": 0}
-        handler = FlextWebhookHandler(
+        handler = FlextApiWebhookHandler(
             settings=m.Api.Webhook.Settings(
                 max_retries=1,
                 retry_delay=0.001,

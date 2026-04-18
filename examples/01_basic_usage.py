@@ -1,7 +1,4 @@
-"""FLEXT API - Basic usage example.
-
-This example demonstrates basic FLEXT API usage using ONLY the refactored classes
-following flext-core patterns. No helpers, no aliases, no legacy APIs.
+"""Executable flext-api example using the final public contract.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,172 +6,104 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import (
-    FlextApi,
-    FlextApiModels,
-    FlextApiSettings,
-    FlextApiStorage,
-    FlextApiUtilities,
-    c,
-    t,
-)
+from examples import c, m, r, t, u
+from flext_api import FlextApi, FlextApiSettings, FlextApiStorage
 
 
 def example_api_creation() -> None:
-    """Demonstrate basic API instance creation using refactored classes."""
-    print("=== API Creation Example ===")
-    api = FlextApi()
-    print(f"✅ API created: flext-api v0.9.0 - {api.__class__.__name__}")
-
-
-def example_client_creation() -> None:
-    """Demonstrate HTTP client creation using enhanced singleton pattern."""
-    print("\n=== Client Creation Example ===")
-    FlextApi()
-    client_config = FlextApiSettings(
-        base_url="https://httpbin.org",
-        timeout=c.DEFAULT_TIMEOUT_SECONDS,
-    )
-    print(f"✅ Client settings created: {client_config.base_url}")
-    print(f"   Timeout: {client_config.timeout}s")
-    print(f"   Max retries: {client_config.max_retries}")
-
-
-def example_direct_client() -> None:
-    """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
-    print("\n=== Direct Client Example ===")
+    """Create the facade with explicit settings and execute the service contract."""
+    print("=== API Creation ===")
     settings = FlextApiSettings(
-        base_url="https://httpbin.org",
-        timeout=c.DEFAULT_TIMEOUT_SECONDS,
+        base_url="https://service.internal",
+        timeout=float(c.DEFAULT_TIMEOUT_SECONDS),
     )
-    print(f"✅ Client settings: {settings.base_url}")
-    print(f"   Timeout: {settings.timeout}")
-    print(f"   Default headers: {settings.headers}")
+    api = FlextApi(settings=settings)
+    execute_result = api.execute()
+    if execute_result.failure:
+        print(f"❌ execute failed: {execute_result.error}")
+        return
+    print(f"✅ facade ready: base_url={api.settings.base_url}")
+
+
+def example_models_validation() -> None:
+    """Build request/response models through the canonical m alias."""
+    print("\n=== Model Validation ===")
+    request = m.Api.HttpRequest.model_validate({
+        "method": c.Api.Method.POST,
+        "url": "https://service.internal/resources",
+        "headers": {"content-type": c.Api.ContentType.JSON.value},
+        "body": {"name": "resource-1"},
+    })
+    response = m.Api.HttpResponse.model_validate({
+        "status_code": c.Api.HTTP_SUCCESS_MIN + 1,
+        "body": {"id": "r1", "name": "resource-1"},
+        "request_id": "req-example-1",
+    })
+    print(f"✅ request ok: {request.method} {request.url}")
+    print(f"✅ response ok: status={response.status_code}, success={response.success}")
 
 
 def example_storage_usage() -> None:
-    """Demonstrate storage usage with refactored FlextApiStorage."""
-    print("\n=== Storage Example ===")
-    storage = FlextApiStorage()
-    data: t.ContainerValueMapping = {"message": "Hello FlextAPI!"}
-    headers: t.ContainerValueMapping = {}
-    cache_value: t.ContainerValueMapping = {
-        "data": data,
-        "headers": headers,
-        "status_code": 200,
+    """Use the storage API with typed payloads and observable stats."""
+    print("\n=== Storage Usage ===")
+    storage = FlextApiStorage(
+        settings=m.Api.Storage.Settings(namespace="examples", default_ttl=60),
+    )
+    payload: t.ContainerValueMapping = {
+        "status_code": c.Api.HTTP_SUCCESS_MIN,
+        "data": {"name": "cached-item"},
     }
-    set_result = storage.set("example_key", cache_value, timeout=300)
-    if set_result.success:
-        print("✅ Data stored successfully")
-        get_result = storage.get("example_key")
-        if get_result.success:
-            print(f"✅ Data retrieved: {get_result.value}")
-        else:
-            print(f"❌ Data retrieval failed: {get_result.error}")
-    else:
-        print(f"❌ Data storage failed: {set_result.error}")
+    set_result = storage.set("item-1", payload)
+    if set_result.failure:
+        print(f"❌ storage.set failed: {set_result.error}")
+        return
+    get_result = storage.get("item-1")
+    if get_result.failure:
+        print(f"❌ storage.get failed: {get_result.error}")
+        return
+    print(f"✅ storage get: {get_result.value}")
+    metrics_result = storage.metrics()
+    if metrics_result.success:
+        print(f"✅ storage metrics: {metrics_result.value}")
 
 
 def example_utilities_usage() -> None:
-    """Demonstrate utilities usage with refactored FlextApiUtilities."""
-    print("\n=== Utilities Example ===")
-    url_result = FlextApiUtilities.FlextWebValidator.validate_url(
-        "https://example.com/api/v1",
-    )
+    """Use utility helpers through the canonical u alias."""
+    print("\n=== Utilities Usage ===")
+    url_result = u.FlextWebValidator.validate_url("https://example.com/api/v1")
     if url_result.success:
-        print(f"✅ URL validation successful: {url_result.value}")
+        print(f"✅ URL ok: {url_result.value}")
     else:
-        print(f"❌ URL validation failed: {url_result.error}")
-    response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
+        print(f"❌ URL invalid: {url_result.error}")
+    response_result = u.ResponseBuilder.build_success_response(
         data={"users": [{"id": 1, "name": "John"}]},
         message="Users retrieved successfully",
     )
     if response_result.success:
-        print("✅ Response built successfully")
-        print(f"   Status: {response_result.value['status']}")
-        print(f"   Message: {response_result.value['message']}")
+        print(f"✅ response builder: {response_result.value}")
     else:
-        print(f"❌ Response building failed: {response_result.error}")
+        print(f"❌ response builder failed: {response_result.error}")
 
 
-def example_app_creation() -> None:
-    """Demonstrate FastAPI app creation using refactored classes."""
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    "Demonstrate models usage with refactored FlextApiModels."
-    print("\n=== Models Example ===")
-    try:
-        request = FlextApiModels.Api.HttpRequest(
-            method="GET",
-            url="https://httpbin.org/get",
-            headers={"Accept": "application/json"},
-            timeout=int(c.DEFAULT_TIMEOUT_SECONDS),
-        )
-        print(f"✅ Request model created: {request.method} {request.url}")
-        print(f"   Timeout: {request.timeout}s")
-        response = FlextApiModels.Api.HttpResponse(
-            status_code=200,
-            headers={"Content-Type": "application/json"},
-            body=b'{"message": "Success"}',
-            request_id="example-001",
-        )
-        print(f"✅ Response model created: {response.status_code}")
-        print(f"   Status: {response.status_code}")
-        print(f"   Content-Type: {response.headers.get('content-type', 'unknown')}")
-    except Exception as e:
-        print(f"❌ Model creation failed: {e}")
-
-
-def example_batch_operations() -> None:
-    """Demonstrate batch operations with refactored classes."""
-    print("\n=== Batch Operations Example ===")
-    storage = FlextApiStorage()
-    try:
-        print("✅ Storage ready for batch operations")
-        keys = ["key1", "key2", "key3"]
-        for i, key in enumerate(keys):
-            result = storage.set(
-                key,
-                {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200},
-            )
-            if result.success:
-                print(f"✅ Set {key} successfully")
-            else:
-                print(f"❌ Failed to set {key}: {result.error}")
-        size_result = storage.size()
-        if size_result.success:
-            print(f"✅ Cache size: {size_result.value} items")
-        else:
-            print(f"❌ Failed to get cache size: {size_result.error}")
-    except Exception as e:
-        print(f"❌ Batch operations failed: {e}")
+def example_result_contract() -> None:
+    """Show explicit handling of the railway-style result contract."""
+    print("\n=== Result Contract ===")
+    ok = r[str].ok("ready")
+    fail = r[str].fail("example failure")
+    print(f"✅ ok.success={ok.success}, value={ok.value}")
+    print(f"✅ fail.failure={fail.failure}, error={fail.error}")
 
 
 def main() -> None:
-    """Run all examples using ONLY refactored classes."""
-    print("FLEXT API - Basic Usage Examples (Refactored Classes Only)")
-    print("=========================================================")
+    """Run all executable examples for the final public contract."""
+    print("FLEXT API - Basic Usage")
+    print("======================")
     example_api_creation()
-    example_client_creation()
-    example_direct_client()
+    example_models_validation()
     example_storage_usage()
     example_utilities_usage()
-    example_app_creation()
-    example_batch_operations()
-    print("\n🎉 All examples completed successfully using refactored classes!")
-    print("✅ r pattern used throughout")
-    print("✅ flext-core compliance maintained")
-    print("✅ No legacy APIs or helpers used")
-    print("✅ Synchronous architecture - no /await needed")
+    example_result_contract()
+    print("\n✅ examples completed")
 
 
 if __name__ == "__main__":

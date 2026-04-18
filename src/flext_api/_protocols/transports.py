@@ -190,6 +190,13 @@ class FlextApiTransports:
             ) as e:
                 return r[m.Api.HttpResponse].fail(f"HTTP request failed: {e}")
 
+        def request_model(
+            self,
+            request: m.Api.HttpRequest,
+        ) -> p.Result[m.Api.HttpResponse]:
+            """Public wrapper around request-model execution for protocol consumers."""
+            return self._request_model(request)
+
         @staticmethod
         def _response_model(response: httpx.Response) -> m.Api.HttpResponse:
             """Convert the concrete httpx response into the central API response model."""

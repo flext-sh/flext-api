@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from flext_tests import tm
 
-from flext_api import FlextApiStorage, m
+from flext_api import FlextApiStorage
+from tests import m
 
 
 class TestStorageContract:

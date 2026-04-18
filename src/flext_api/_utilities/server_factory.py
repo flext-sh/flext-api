@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiServer, FlextWebhookHandler, m, p, r
+from flext_api import FlextApiServer, FlextApiWebhookHandler, m, p, r
 
 
 class FlextApiServerFactory:
@@ -49,8 +49,8 @@ class FlextApiServerFactory:
     def create_webhook_handler(
         secret: str | None = None,
         max_retries: int = 3,
-    ) -> p.Result[FlextWebhookHandler]:
-        """Create FlextWebhookHandler instance.
+    ) -> p.Result[FlextApiWebhookHandler]:
+        """Create FlextApiWebhookHandler instance.
 
         Single responsibility: create webhook handler instances.
         Delegates error handling to railway pattern.
@@ -60,16 +60,16 @@ class FlextApiServerFactory:
         max_retries: Maximum retry attempts
 
         Returns:
-        r containing FlextWebhookHandler instance or error
+        r containing FlextApiWebhookHandler instance or error
 
         """
-        handler = FlextWebhookHandler(
+        handler = FlextApiWebhookHandler(
             settings=m.Api.Webhook.Settings(
                 secret=secret,
                 max_retries=max_retries,
             ),
         )
-        return r[FlextWebhookHandler].ok(handler)
+        return r[FlextApiWebhookHandler].ok(handler)
 
 
 __all__: list[str] = ["FlextApiServerFactory"]

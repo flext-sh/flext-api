@@ -21,7 +21,7 @@ from flext_api import FlextApiTypingsSerialization
 from flext_web import FlextWebTypes
 
 
-class FlextApiTypes(t, FlextWebTypes):
+class FlextApiTypes(FlextWebTypes):
     """Unified API type definitions extending t with composition."""
 
     class Api(FlextApiTypingsSerialization):

@@ -35,7 +35,6 @@ class FlextApi(s[bool]):
     """
 
     model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
-    "Unified HTTP API facade - pure delegation pattern.\n\n    Single responsibility: Delegate HTTP operations to FlextApiClient.\n    All configuration through FlextApiSettings model.\n    All data validation through FlextApiModels.\n    100% GENERIC - no domain coupling.\n    "
     Models: ClassVar[type[FlextApiModels]] = FlextApiModels
     config_type: ClassVar[type[FlextApiSettings]] = FlextApiSettings
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
@@ -86,11 +85,11 @@ class FlextApi(s[bool]):
     def execute(
         self,
         **kwargs: FlextApiTypes.Scalar,
-    ) -> FlextApiProtocols.Result[FlextApiSettings]:
+    ) -> FlextApiProtocols.Result[bool]:
         """Execute s interface."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs: {kwargs}")
-        return r[FlextApiSettings].ok(self.settings)
+        return r[bool].ok(True)
 
     def get(
         self,

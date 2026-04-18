@@ -102,9 +102,8 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         r with RFC-compliant success response
 
         """
-        json_data: t.MutableContainerValueMapping | None = None
+        json_data: t.MutableContainerValueMapping = {}
         if data is not None:
-            json_data = {}
             for key, value in data.items():
                 json_data[key] = value
         web_headers: t.AttributeMapping | None = None
@@ -113,7 +112,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         success_response: t.MutableContainerValueMapping = {
             "status_code": status_code,
         }
-        if json_data is not None:
+        if data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers

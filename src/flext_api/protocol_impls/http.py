@@ -387,7 +387,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                         **({"timeout": timeout} if timeout is not None else {}),
                     },
                 )
-                response_result = self._transport._request_model(request_model)
+                response_result = self._transport.request_model(request_model)
                 if response_result.failure:
                     last_error = response_result.error or "HTTP request failed"
                     if attempt < self._max_retries:

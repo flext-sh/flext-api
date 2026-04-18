@@ -13,17 +13,15 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, Self
-from urllib.parse import ParseResult, urlparse
+from typing import Annotated, ClassVar
 
-from flext_cli import m
+from flext_cli import FlextCliModels
 
 from flext_api import c, t
-from flext_core import u
-from flext_web import FlextWebModels
+from flext_web import m, u
 
 
-class FlextApiModels(m, FlextWebModels):
+class FlextApiModels(FlextCliModels, m):
     """HTTP domain models for flext-api."""
 
     class Api:
@@ -184,84 +182,6 @@ class FlextApiModels(m, FlextWebModels):
                 )
 
         # =========================================================================
-        # URL AND PARSING MODELS
-        # =========================================================================
-
-        class Url(m.Value):
-            """URL parsing and validation model (immutable value object)."""
-
-            url: Annotated[
-                t.NonEmptyStr,
-                u.Field(
-                    ..., max_length=c.Api.MAX_URL_LENGTH, description="Full URL string"
-                ),
-            ]
-
-            @property
-            def _parsed_url(self) -> ParseResult:
-                """Parse URL on demand (immutable, no caching needed)."""
-                return urlparse(self.url)
-
-            @u.computed_field(return_type=str)
-            @property
-            def fragment(self) -> str:
-                """Get URL fragment."""
-                parsed_fragment = self._parsed_url.fragment
-                if parsed_fragment:
-                    return parsed_fragment
-                return ""
-
-            @u.computed_field(return_type=bool)
-            @property
-            def valid(self) -> bool:
-                """Check if URL is valid."""
-                scheme_value = self._parsed_url.scheme
-                netloc_value = self._parsed_url.netloc
-                return bool(scheme_value and netloc_value)
-
-            @u.computed_field(return_type=str)
-            @property
-            def netloc(self) -> str:
-                """Get network location (host:port)."""
-                parsed_netloc = self._parsed_url.netloc
-                if parsed_netloc:
-                    return parsed_netloc
-                return f"{c.Api.Server.DEFAULT_HOST}:{c.Api.Server.DEFAULT_PORT}"
-
-            @u.computed_field(return_type=ParseResult)
-            @property
-            def parsed(self) -> ParseResult:
-                """Parse the URL."""
-                return self._parsed_url
-
-            @u.computed_field(return_type=str)
-            @property
-            def path(self) -> str:
-                """Get URL path."""
-                parsed_path = self._parsed_url.path
-                if parsed_path:
-                    return parsed_path
-                return "/"
-
-            @u.computed_field(return_type=str)
-            @property
-            def query(self) -> str:
-                """Get URL query string."""
-                parsed_query = self._parsed_url.query
-                if parsed_query:
-                    return parsed_query
-                return ""
-
-            @u.computed_field(return_type=str)
-            @property
-            def scheme(self) -> str:
-                """Get URL scheme (http, https, etc.)."""
-                parsed_scheme = self._parsed_url.scheme
-                if parsed_scheme:
-                    return parsed_scheme
-                return c.Api.HTTP.Protocol.HTTPS
-
-        # =========================================================================
         # CONFIGURATION MODELS
         # =========================================================================
 
@@ -305,155 +225,6 @@ class FlextApiModels(m, FlextWebModels):
                 if not self.base_url:
                     return False
                 return self.timeout > 0
-
-        # =========================================================================
-        # PAGINATION MODELS
-        # =========================================================================
-
-        class PaginationInfo(m.Value):
-            """Pagination information model for HTTP operations (immutable value object)."""
-
-            page: Annotated[
-                t.PositiveInt,
-                u.Field(default=1, description="Current page number (1-based)"),
-            ]
-            page_size: Annotated[
-                t.BatchSize,
-                u.Field(default=c.DEFAULT_PAGE_SIZE, description="Items per page"),
-            ]
-            total_items: Annotated[
-                t.NonNegativeInt,
-                u.Field(default=0, description="Total number of items"),
-            ]
-            total_pages: Annotated[
-                t.NonNegativeInt,
-                u.Field(default=0, description="Total number of pages"),
-            ]
-
-            @u.computed_field(return_type=bool)
-            @property
-            def has_next(self) -> bool:
-                """Check if there are more pages."""
-                if self.total_pages == 0:
-                    return False
-                return self.page < self.total_pages
-
-            @u.computed_field(return_type=bool)
-            @property
-            def has_previous(self) -> bool:
-                """Check if there are previous pages."""
-                return self.page > 1
-
-            @u.computed_field(return_type=int)
-            @property
-            def offset(self) -> int:
-                """Calculate offset for database queries."""
-                return (self.page - 1) * self.page_size
-
-        # =========================================================================
-        # ERROR MODELS
-        # =========================================================================
-
-        class Error(m.Value):
-            """HTTP error response model (immutable value object)."""
-
-            message: Annotated[
-                str,
-                u.Field(..., description="Human-readable error message"),
-            ]
-            error_code: Annotated[
-                str,
-                u.Field(default="", description="Machine-readable error code"),
-            ]
-            status_code: Annotated[
-                t.HttpStatusCode,
-                u.Field(
-                    default=c.Api.HTTP_SERVER_ERROR_MIN, description="HTTP status code"
-                ),
-            ]
-            details: Annotated[
-                t.JsonObject,
-                u.Field(description="Additional error details"),
-            ] = u.Field(default_factory=dict)
-            request_id: Annotated[
-                str,
-                u.Field(default="", description="Associated request ID for tracking"),
-            ]
-
-            @u.computed_field(return_type=bool)
-            @property
-            def client_error(self) -> bool:
-                """Check if error is client-side (4xx)."""
-                return (
-                    c.Api.HTTP_CLIENT_ERROR_MIN
-                    <= self.status_code
-                    < c.Api.HTTP_CLIENT_ERROR_MAX
-                )
-
-            @u.computed_field(return_type=bool)
-            @property
-            def server_error(self) -> bool:
-                """Check if error is server-side (5xx)."""
-                return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
-
-        # =========================================================================
-        # QUERY/FILTER MODELS
-        # =========================================================================
-
-        class QueryParams(m.Value):
-            """Query parameters model (immutable value object)."""
-
-            params: Annotated[
-                t.Api.WebParams,
-                u.Field(description="Query parameters"),
-            ] = u.Field(default_factory=dict)
-
-            def resolve_param(self, name: str) -> t.Api.WebParamValue:
-                """Get query parameter value."""
-                if name in self.params:
-                    return self.params[name]
-                return ""
-
-            def with_param(self, name: str, value: str | t.StrSequence) -> Self:
-                """Return new instance with updated parameter (functional pattern)."""
-                updated_params = {**self.params, name: value}
-                return self.model_copy(update={"params": updated_params})
-
-        class Headers(m.Value):
-            """HTTP headers model (immutable value object)."""
-
-            headers: Annotated[
-                t.StrMapping,
-                u.Field(description="HTTP headers"),
-            ] = u.Field(default_factory=dict)
-
-            def resolve_header(self, name: str) -> str:
-                """Get header value (case-insensitive)."""
-                for key, value in self.headers.items():
-                    if key.lower() == name.lower():
-                        return value
-                return ""
-
-            def with_header(self, name: str, value: str) -> Self:
-                """Return new instance with updated header (functional pattern)."""
-                updated_headers = {**self.headers, name: value}
-                return self.model_copy(update={"headers": updated_headers})
-
-            def without_header(self, name: str) -> Self:
-                """Return new instance without header (case-insensitive, functional pattern)."""
-
-                # Use u.filter() for unified filtering (DSL pattern)
-                def matches_header_key(k: str) -> bool:
-                    return k.lower() == name.lower()
-
-                keys_to_remove = u.filter(
-                    list(self.headers.keys()),
-                    matches_header_key,
-                )
-                updated_headers = {
-                    k: v for k, v in self.headers.items() if k not in keys_to_remove
-                }
-                return self.model_copy(update={"headers": updated_headers})
 
         @classmethod
         def create_config(
