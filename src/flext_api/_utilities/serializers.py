@@ -18,8 +18,8 @@ class FlextApiUtilitiesSerializers:
 
     @staticmethod
     def _is_msgpack_module(
-        value: t.RuntimeModule | p.Api.Serialization.MsgpackModule,
-    ) -> TypeIs[p.Api.Serialization.MsgpackModule]:
+        value: t.RuntimeModule | p.Api.MsgpackModule,
+    ) -> TypeIs[p.Api.MsgpackModule]:
         """Return whether the runtime module satisfies the msgpack contract."""
         return callable(getattr(value, "packb", None)) and callable(
             getattr(value, "unpackb", None),

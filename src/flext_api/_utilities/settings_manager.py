@@ -69,20 +69,29 @@ class FlextApiUtilitiesSettingsManager:
     ) -> p.Result[t.ContainerValue]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "headers" and isinstance(value, Mapping):
-            return u.try_(
+            validated_result = u.try_(
                 lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(value),
                 catch=(c.ValidationError, TypeError, ValueError),
             ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
+            if validated_result.failure:
+                return r[t.ContainerValue].fail(validated_result.error)
+            return r[t.ContainerValue].ok(validated_result.value)
         if key == "headers" and isinstance(value, str):
-            return u.try_(
+            parsed_result = u.try_(
                 lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),
                 catch=(c.ValidationError, TypeError, ValueError),
             ).map_error(lambda e: f"Failed to parse headers JSON: {e}")
+            if parsed_result.failure:
+                return r[t.ContainerValue].fail(parsed_result.error)
+            return r[t.ContainerValue].ok(parsed_result.value)
         if key in {"log_requests", "log_responses", "verify_ssl"}:
-            return u.try_(
+            bool_result = u.try_(
                 lambda: t.bool_adapter().validate_python(value),
                 catch=(c.ValidationError, TypeError, ValueError),
             ).map_error(lambda e: f"Invalid {key} value: {e}")
+            if bool_result.failure:
+                return r[t.ContainerValue].fail(bool_result.error)
+            return r[t.ContainerValue].ok(bool_result.value)
         return r[t.ContainerValue].ok(value)
 
     def _build_client_config(

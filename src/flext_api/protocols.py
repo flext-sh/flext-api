@@ -134,8 +134,6 @@ class FlextApiProtocols(p):
         class Serialization:
             """Serialization protocols."""
 
-            MsgpackModule = FlextApiProtocolsSerialization.MsgpackModule
-
             @runtime_checkable
             class Serializer(Protocol):
                 """Protocol for custom serializers.
