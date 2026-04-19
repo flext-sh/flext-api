@@ -1,0 +1,54 @@
+src/flext_api/_utilities/webhook.py
+  h_9db9d35f50cf33 407
+src/flext_api/_utilities/adapters.py
+  h_9db9d35f50cf33 40,133,136,163
+docs/guides/http-client.md
+  h_9db9d35f50cf33 397,668,670,676,731
+docs/api/middleware.md
+  h_9db9d35f50cf33 216,227,265
+docs/api/protocols.md
+  h_9db9d35f50cf33 39,396,420,425
+docs/api/core.md
+  h_9db9d35f50cf33 185
+docs/architecture/c4-model/containers.md
+  h_9db9d35f50cf33 65
+src/flext_api/_utilities/storage.py
+  h_9db9d35f50cf33 320
+docs/guides/testing.md
+  h_9db9d35f50cf33 528
+docs/architecture/c4-model/context.md
+  h_9db9d35f50cf33 112
+docs/guides/development.md
+  h_9db9d35f50cf33 154,193,196,202,353,356,405
+docs/guides/troubleshooting.md
+  h_9db9d35f50cf33 141,155
+src/flext_api/utilities.py
+  h_9db9d35f50cf33 412
+docs/testing.md
+  h_9db9d35f50cf33 164,171,185
+docs/architecture/decisions/003-protocol-abstraction.md
+  h_9db9d35f50cf33 134,139
+docs/api/schemas.md
+  h_9db9d35f50cf33 147
+docs/architecture/c4-model/code.md
+  h_9db9d35f50cf33 292,334,577
+src/flext_api/_utilities/registry.py
+  h_9db9d35f50cf33 198,200
+docs/architecture/overview.md
+  h_9db9d35f50cf33 237,363,423,451,837
+docs/architecture/decisions/README.md
+  h_9db9d35f50cf33 72
+docs/architecture/decisions/adr-template.md
+  h_9db9d35f50cf33 96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "9201dba61357d52d6c17696a562581e68db56c2b",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
