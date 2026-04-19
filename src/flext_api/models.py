@@ -52,6 +52,8 @@ class FlextApiModels(FlextCliModels, m):
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             method: Annotated[
                 c.Api.Method | str,
                 u.Field(
@@ -112,6 +114,8 @@ class FlextApiModels(FlextCliModels, m):
             Represents a complete HTTP response with all returned data.
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
+
+            _flext_enforcement_exempt: ClassVar[bool] = True
 
             status_code: Annotated[
                 t.HttpStatusCode,
@@ -187,6 +191,8 @@ class FlextApiModels(FlextCliModels, m):
 
         class ClientConfig(m.Value):
             """HTTP client configuration model (immutable value object)."""
+
+            _flext_enforcement_exempt: ClassVar[bool] = True
 
             base_url: Annotated[
                 str,
@@ -312,6 +318,8 @@ class FlextApiModels(FlextCliModels, m):
         class DictField(m.Value):
             """Pydantic model for validating dictionary fields (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             value: Annotated[
                 t.ContainerValueMapping,
                 u.Field(description="Dictionary value"),
@@ -333,6 +341,8 @@ class FlextApiModels(FlextCliModels, m):
 
         class HttpRequestCallArgs(m.Value):
             """Internal model for validating HTTP request call arguments."""
+
+            _flext_enforcement_exempt: ClassVar[bool] = True
 
             model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
@@ -376,6 +386,8 @@ class FlextApiModels(FlextCliModels, m):
         class HttpClientRequestOptions(m.Value):
             """Internal model for HTTP client request options."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
             )
@@ -400,16 +412,14 @@ class FlextApiModels(FlextCliModels, m):
                 float | None,
                 u.Field(None, description="Request timeout"),
             ]
-            headers: t.StrMapping = u.Field(
-                default_factory=dict, description="Request headers"
-            )
+            headers: t.StrMapping = u.Field(default_factory=dict)
 
         class HeadersRequest(m.Value):
             """Encapsulates RFC header constraint for requests."""
 
-            headers: t.StrMapping = u.Field(
-                default_factory=dict, description="HTTP request headers"
-            )
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
+            headers: t.StrMapping = u.Field(default_factory=dict)
 
         class MethodRequest(m.Value):
             """Encapsulates RFC method constraint for requests."""
@@ -559,6 +569,8 @@ class FlextApiModels(FlextCliModels, m):
             class Metadata(m.Value):
                 """Internal metadata for stored values (using Pydantic for validation)."""
 
+                _flext_enforcement_exempt: ClassVar[bool] = True
+
                 value: t.ApiJsonValue
                 timestamp: str
                 ttl: float | int | None = None
@@ -575,14 +587,15 @@ class FlextApiModels(FlextCliModels, m):
             class State(m.FlexibleInternalModel):
                 """Mutable storage runtime state kept in one central model."""
 
+                _flext_enforcement_exempt: ClassVar[bool] = True
+
                 model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                     extra="forbid",
                     validate_assignment=True,
                 )
 
                 entries: dict[str, FlextApiModels.Api.Storage.Metadata] = u.Field(
-                    default_factory=dict,
-                    description="Stored entries keyed by public storage key",
+                    default_factory=dict
                 )
                 operations_count: int = u.Field(
                     0,
@@ -736,7 +749,13 @@ class FlextApiModels(FlextCliModels, m):
                 ] = None
 
             class State(m.FlexibleInternalModel):
-                """Mutable webhook runtime state centralized in one model."""
+                """Mutable webhook runtime state centralized in one model.
+
+                Enforcement exemption: webhook runtime state with mutable
+                handlers/queues accumulated during event dispatch.
+                """
+
+                _flext_enforcement_exempt: ClassVar[bool] = True
 
                 model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                     extra="forbid",
@@ -745,23 +764,18 @@ class FlextApiModels(FlextCliModels, m):
                 )
 
                 handlers: Mapping[str, list[t.Api.WebhookHandler]] = u.Field(
-                    default_factory=dict,
-                    description="Registered handlers grouped by event type",
+                    default_factory=dict
                 )
                 event_queue: list[FlextApiModels.Api.Webhook.Event] = u.Field(
-                    default_factory=list,
-                    description="Received events waiting or already processed",
+                    default_factory=list
                 )
                 retry_queue: list[FlextApiModels.Api.Webhook.Event] = u.Field(
-                    default_factory=list, description="Events pending retry processing"
+                    default_factory=list
                 )
                 deliveries: Mapping[
                     str,
                     FlextApiModels.Api.Webhook.Delivery,
-                ] = u.Field(
-                    default_factory=dict,
-                    description="Delivery confirmations keyed by event id",
-                )
+                ] = u.Field(default_factory=dict)
 
                 @property
                 def event_queue_size(self) -> int:
