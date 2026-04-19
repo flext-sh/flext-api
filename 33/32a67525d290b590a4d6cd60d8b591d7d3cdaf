@@ -1,0 +1,18 @@
+src/flext_api/_protocols/serialization.py
+  h_9db9d35f50cf33 18
+src/flext_api/_utilities/settings_manager.py
+  h_9db9d35f50cf33 72,76-78,80,84-86,88,92-94
+src/flext_api/_utilities/serializers.py
+  h_9db9d35f50cf33 21-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "3332a67525d290b590a4d6cd60d8b591d7d3cdaf",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
