@@ -317,7 +317,7 @@ class FlextApiStorage:
             return m.Api.Storage.Settings()
         settings_result = u.load(
             m.Api.Storage.Settings,
-            t.ConfigMap(root=payload),
+            m.ConfigMap(root=payload),
         )
         if settings_result.failure:
             msg = settings_result.error or "Storage settings validation failed"

@@ -131,12 +131,12 @@ class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
-    def create_client(self, settings: Dict[str, t.RecursiveContainer]):
+    def create_client(self, settings: Dict[str, t.Container]):
         """Create protocol-specific client instance."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> p.Result[t.RecursiveContainer]:
+    async def execute_request(self, request) -> p.Result[t.Container]:
         """Execute request using protocol-specific logic."""
         pass
 
@@ -192,9 +192,7 @@ class FlextApiClient(s[None]):
         super().__init__()
         self._config = settings
 
-    async def request(
-        self, method: str, url: str, **kwargs
-    ) -> p.Result[t.RecursiveContainer]:
+    async def request(self, method: str, url: str, **kwargs) -> p.Result[t.Container]:
         """Unified request method that delegates to protocol."""
         protocol = await self._get_protocol_instance()
 
@@ -216,9 +214,7 @@ class FlextApiClient(s[None]):
 class FlextWeb(Base):
     """HTTP/REST protocol implementation."""
 
-    def create_client(
-        self, settings: Dict[str, t.RecursiveContainer]
-    ) -> httpx.AsyncClient:
+    def create_client(self, settings: Dict[str, t.Container]) -> httpx.AsyncClient:
         return httpx.AsyncClient(**settings)
 
     async def execute_request(
@@ -264,7 +260,7 @@ class FlextWeb(Base):
 class GraphQL(Base):
     """GraphQL protocol implementation."""
 
-    def create_client(self, settings: Dict[str, t.RecursiveContainer]) -> gql.Client:
+    def create_client(self, settings: Dict[str, t.Container]) -> gql.Client:
         transport = AIOHTTPTransport(url=settings["url"])
         return gql.Client(
             transport=transport, execute_timeout=settings.get("timeout", 30)
@@ -413,7 +409,7 @@ async def test_protocol_registry_integration():
 
 ```python
 class Custom(Base):
-    def create_client(self, settings: Dict[str, t.RecursiveContainer]):
+    def create_client(self, settings: Dict[str, t.Container]):
         return CustomClient(**settings)
 
     async def execute_request(self, request):

@@ -182,7 +182,7 @@ class MyApiConfig(FlextApiSettings):
     """Custom API configuration."""
 
     custom_setting: str = "default_value"
-    feature_flags: t.RecursiveContainerMapping = {}
+    feature_flags: Mapping[str, t.Container] = {}
 ```
 
 ## HTTP Models and Schemas

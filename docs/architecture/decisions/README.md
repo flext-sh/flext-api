@@ -69,7 +69,7 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[t.RecursiveContainer references to external documents, issues, or discussions]
+[t.Container references to external documents, issues, or discussions]
 ```
 
 ## Current ADRs
