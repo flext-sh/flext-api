@@ -11,7 +11,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import (
+    Callable,
+    Sequence,
+)
 
 from flext_api import m
 

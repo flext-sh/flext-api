@@ -10,7 +10,9 @@ import hashlib
 import hmac
 import time
 import uuid
-from collections.abc import Mapping
+from collections.abc import (
+    Mapping,
+)
 from typing import override
 
 from flext_api import c, m, p, t

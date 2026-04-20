@@ -18,7 +18,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, MutableSequence
+from collections.abc import (
+    Callable,
+    MutableSequence,
+)
 from typing import ClassVar, override
 
 import websockets

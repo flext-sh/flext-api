@@ -15,7 +15,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator, Mapping
+from collections.abc import (
+    Iterator,
+    Mapping,
+)
 from typing import override
 
 import httpx

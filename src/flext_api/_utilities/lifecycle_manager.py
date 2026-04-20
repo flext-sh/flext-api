@@ -8,7 +8,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
+from collections.abc import (
+    AsyncGenerator,
+)
 from contextlib import asynccontextmanager
 
 from flext_api import p
