@@ -145,15 +145,15 @@ class FlextApiUtilities(
             @staticmethod
             def to_json_value(
                 value: FlextApiTypes.ApiJsonValue,
-            ) -> FlextApiTypes.ContainerValue:
-                """Validate arbitrary value as ContainerValue using centralized Pydantic contracts."""
+            ) -> FlextApiTypes.Container:
+                """Validate arbitrary value as Container using centralized Pydantic contracts."""
                 if value is None:
                     return ""
                 return FlextApiTypes.Api.CONTAINER_VALUE_ADAPTER.validate_python(value)
 
             @staticmethod
             def to_request_body(
-                value: FlextApiTypes.ContainerValue,
+                value: FlextApiTypes.Container,
             ) -> FlextApiTypes.Api.RequestBody:
                 """Validate arbitrary value as RequestBody using centralized Pydantic contracts."""
                 return FlextApiTypes.Api.REQUEST_BODY_ADAPTER.validate_python(value)
@@ -410,7 +410,7 @@ class FlextApiUtilities(
 
         @staticmethod
         def extract_pagination_config(
-            settings: t.ContainerValue,
+            settings: t.Container,
         ) -> Mapping[str, t.ApiJsonValue]:
             """Extract pagination configuration from settings t.Container.
 
@@ -485,7 +485,7 @@ class FlextApiUtilities(
         """Web validation utilities for URLs and HTTP methods."""
 
         @staticmethod
-        def valid_port_number(port: t.ContainerValue) -> TypeIs[int]:
+        def valid_port_number(port: t.Container) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False

@@ -54,9 +54,7 @@ class FlextApiAdapters:
                             )
                     else:
                         body_value = request.body
-                message_body: t.ContainerValue = (
-                    body_value if body_value is not None else ""
-                )
+                message_body: t.Container = body_value if body_value is not None else ""
                 message: t.JsonObject = {
                     "type": "request",
                     "method": request.method,

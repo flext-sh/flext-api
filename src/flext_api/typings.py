@@ -37,12 +37,12 @@ class FlextApiTypes(FlextWebTypes):
         type ResponseBody = t.ContainerValueMapping | str | t.BinaryContent | None
         type HttpResponseDict = Mapping[
             str,
-            t.ContainerValue | t.StrMapping | t.BinaryContent | None,
+            t.Container | t.StrMapping | t.BinaryContent | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type RouteData = Mapping[
             str,
-            t.ContainerValue
+            t.Container
             | t.ResourceCallable
             | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
             | None,
@@ -56,20 +56,20 @@ class FlextApiTypes(FlextWebTypes):
         type WebhookAlgorithm = Literal["sha256", "sha512"]
         type WebhookHandler = Callable[
             [t.ContainerValueMapping],
-            t.ContainerValue | p.ResultLike[bool] | None,
+            t.Container | p.ResultLike[bool] | None,
         ]
         type RequestKwargs = Mapping[
             str,
             t.StrMapping
-            | Mapping[str, t.ContainerValue]
+            | Mapping[str, t.Container]
             | Mapping[str, t.Scalar | t.StrSequence]
             | float
             | None,
         ]
         type StorageDict = Mapping[str, t.OptionalPrimitive]
         type CacheDict = Mapping[str, t.Primitives]
-        CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.ContainerValue] = u.TypeAdapter(
-            t.ContainerValue,
+        CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.Container] = u.TypeAdapter(
+            t.Container,
         )
         API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.ApiJsonValue] = u.TypeAdapter(
             t.ApiJsonValue,

@@ -106,9 +106,7 @@ class FlextApiServer(s[bool]):
             options_json: t.ConfigurationMapping = options
             route_data: MutableMapping[
                 str,
-                t.ContainerValue
-                | Callable[..., t.Api.HttpResponseDict | str | None]
-                | None,
+                t.Container | Callable[..., t.Api.HttpResponseDict | str | None] | None,
             ] = {
                 "path": path,
                 "method": method,
@@ -532,7 +530,7 @@ class FlextApiServer(s[bool]):
     def restart(self) -> FlextApiProtocols.Result[bool]:
         """Restart server (orchestrate stop/start)."""
 
-        def _log_restart(_: t.ContainerValue) -> None:
+        def _log_restart(_: t.Container) -> None:
             u.fetch_logger(__name__).info("Server restarted")
 
         return (

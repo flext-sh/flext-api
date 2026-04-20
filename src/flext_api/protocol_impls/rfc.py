@@ -121,7 +121,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
     def _extract_body(
         self,
         request: t.ContainerValueMapping,
-    ) -> t.ContainerValue | None:
+    ) -> t.Container | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:

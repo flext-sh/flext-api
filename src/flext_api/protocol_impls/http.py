@@ -352,8 +352,8 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _response_body_to_value(
         self,
         body: t.Api.ResponseBody,
-    ) -> t.ContainerValue:
-        """Normalize response body to the protocol's ContainerValue contract."""
+    ) -> t.Container:
+        """Normalize response body to the protocol's Container contract."""
         match body:
             case None:
                 return ""

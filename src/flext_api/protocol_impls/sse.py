@@ -316,10 +316,10 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _parse_sse_event(
         self,
         *,
-        event_id: t.ContainerValue,
-        event_type: t.ContainerValue,
-        data: t.ContainerValue,
-        retry: t.ContainerValue,
+        event_id: t.Container,
+        event_type: t.Container,
+        data: t.Container,
+        retry: t.Container,
     ) -> t.ContainerValueMapping:
         parsed_id = (
             "" if not event_id else t.Api.STRING_ADAPTER.validate_python(event_id)

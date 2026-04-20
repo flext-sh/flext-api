@@ -80,7 +80,7 @@ class FlextApiPlugins:
             return "unknown"
 
         @abstractmethod
-        def load_schema(self, schema_source: str) -> p.Result[t.ContainerValue]:
+        def load_schema(self, schema_source: str) -> p.Result[t.Container]:
             """Load schema from source."""
             ...
 
@@ -115,7 +115,7 @@ class FlextApiPlugins:
             ...
 
         @abstractmethod
-        def disconnect(self, connection: t.ContainerValue) -> p.Result[bool]:
+        def disconnect(self, connection: t.Container) -> p.Result[bool]:
             """Close connection."""
             ...
 
@@ -126,7 +126,7 @@ class FlextApiPlugins:
         @abstractmethod
         def receive(
             self,
-            connection: t.ContainerValue,
+            connection: t.Container,
             **options: t.Scalar,
         ) -> p.Result[t.JsonObject | str | bytes]:
             """Receive data from connection."""
@@ -135,7 +135,7 @@ class FlextApiPlugins:
         @abstractmethod
         def send(
             self,
-            connection: t.ContainerValue,
+            connection: t.Container,
             data: t.JsonObject | str | bytes,
             **options: t.Scalar,
         ) -> p.Result[bool]:

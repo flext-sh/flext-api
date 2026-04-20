@@ -97,7 +97,7 @@ class FlextApiStorage:
         del self._state.entries[normalized_key]
         return r[bool].ok(True)
 
-    def deserialize_json(self, json_str: str) -> p.Result[t.ContainerValue]:
+    def deserialize_json(self, json_str: str) -> p.Result[t.Container]:
         """Deserialize JSON into the canonical container contract."""
         return u.try_(
             lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(json_str),
