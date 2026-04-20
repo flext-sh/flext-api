@@ -13,6 +13,8 @@ from typing import TypeIs
 from urllib.parse import urlparse
 
 from flext_cli import FlextCliUtilities
+from flext_core import m, r
+from flext_web import FlextWebUtilities
 
 from flext_api import (
     FlextApiProtocols,
@@ -21,8 +23,6 @@ from flext_api import (
     FlextApiUtilitiesSettingsManager,
     t,
 )
-from flext_core import m, r
-from flext_web import FlextWebUtilities
 
 
 class FlextApiUtilities(

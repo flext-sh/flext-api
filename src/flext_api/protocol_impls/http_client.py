@@ -14,7 +14,6 @@ from types import TracebackType
 from typing import Self, override
 
 import httpx
-
 from flext_api import c, m, p, r, t, u
 
 

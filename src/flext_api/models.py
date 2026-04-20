@@ -18,9 +18,9 @@ from collections.abc import (
 from typing import Annotated, ClassVar
 
 from flext_cli import FlextCliModels
+from flext_web import m, u
 
 from flext_api import c, t
-from flext_web import m, u
 
 
 class FlextApiModels(FlextCliModels, m):

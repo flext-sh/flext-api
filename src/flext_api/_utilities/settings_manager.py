@@ -15,8 +15,9 @@ from collections.abc import (
     Mapping,
 )
 
-from flext_api import c, m, p, t
 from flext_core import r, u
+
+from flext_api import c, m, p, t
 
 
 class FlextApiUtilitiesSettingsManager:

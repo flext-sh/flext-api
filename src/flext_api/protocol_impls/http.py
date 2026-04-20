@@ -22,7 +22,6 @@ from collections.abc import (
 from typing import override
 
 import httpx
-
 from flext_api import (
     FlextApiRfcProtocolImplementation,
     FlextApiTransports,

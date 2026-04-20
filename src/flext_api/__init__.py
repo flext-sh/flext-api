@@ -5,14 +5,17 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_api.__version__ import *
 from flext_core.lazy import (
     build_lazy_import_map,
     install_lazy_exports,
     merge_lazy_imports,
 )
 
+from flext_api.__version__ import *
+
 if _t.TYPE_CHECKING:
+    from flext_web import d, e, h, r, s, x
+
     from flext_api._protocols.plugins import FlextApiPlugins
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
     from flext_api._protocols.transports import FlextApiTransports
@@ -43,7 +46,6 @@ if _t.TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
-    from flext_web import d, e, h, r, s, x
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",

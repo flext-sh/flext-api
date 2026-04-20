@@ -15,8 +15,9 @@ from collections.abc import (
 )
 from typing import override
 
-from flext_api import c, m, p, t
 from flext_core import r, s, u
+
+from flext_api import c, m, p, t
 
 
 class FlextApiWebhookHandler(s[bool]):

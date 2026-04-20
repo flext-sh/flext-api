@@ -15,9 +15,9 @@ from collections.abc import (
 )
 from typing import override
 
-import httpx
 from httpx_sse import connect_sse
 
+import httpx
 from flext_api import FlextApiRfcProtocolImplementation, c, m, p, r, t
 
 

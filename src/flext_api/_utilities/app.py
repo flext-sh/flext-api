@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from fastapi import FastAPI
-
 from flext_api import FlextApiSettings
 
 

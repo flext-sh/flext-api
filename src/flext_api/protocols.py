@@ -15,8 +15,9 @@ from collections.abc import (
 )
 from typing import Protocol, runtime_checkable
 
-from flext_api import FlextApiProtocolsSerialization, c, t
 from flext_web import p
+
+from flext_api import FlextApiProtocolsSerialization, c, t
 
 
 class FlextApiProtocols(p):

@@ -14,7 +14,6 @@ from __future__ import annotations
 from typing import override
 
 import httpx
-
 from flext_api import c, m, p, r, t
 
 

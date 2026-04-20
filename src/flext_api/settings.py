@@ -12,8 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_api import c, t
 from flext_core import FlextSettings, m, u
+
+from flext_api import c, t
 
 
 @FlextSettings.auto_register("api")
