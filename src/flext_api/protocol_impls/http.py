@@ -102,10 +102,10 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
 
     @override
-    def protocol_info(self) -> t.JsonObject:
+    def protocol_info(self) -> t.JsonMapping:
         """Get protocol configuration information."""
         base_info = super().protocol_info()
-        updated_info: t.JsonObject = {
+        updated_info: t.JsonMapping = {
             **base_info,
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,

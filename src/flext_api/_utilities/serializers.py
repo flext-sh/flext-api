@@ -26,7 +26,7 @@ class FlextApiUtilitiesSerializers:
         )
 
     @staticmethod
-    def pack_raw(obj: t.ApiJsonValue) -> t.Api.MsgpackBinary:
+    def pack_raw(obj: t.JsonValue) -> t.Api.MsgpackBinary:
         """Return the raw msgpack payload for explicit runtime narrowing."""
         module = msgpack
         if not FlextApiUtilitiesSerializers._is_msgpack_module(module):
@@ -35,11 +35,11 @@ class FlextApiUtilitiesSerializers:
         return t.Api.BINARY_CONTENT_ADAPTER.validate_python(module.packb(obj))
 
     @staticmethod
-    def packb(obj: t.ApiJsonValue) -> bytes:
+    def packb(obj: t.JsonValue) -> bytes:
         """Type-safe wrapper for msgpack.packb().
 
         Args:
-            obj: Object to pack using the canonical t.ApiJsonValue contract.
+            obj: Object to pack using the canonical t.JsonValue contract.
 
         Returns:
             bytes: Packed binary data.
@@ -53,21 +53,21 @@ class FlextApiUtilitiesSerializers:
     @staticmethod
     def unpackb(
         data: bytes,
-    ) -> p.Result[t.RecursiveValue]:
+    ) -> p.Result[t.JsonValue]:
         """Type-safe wrapper for msgpack.unpackb().
 
         Args:
             data: Binary data to unpack.
 
         Returns:
-            Result containing unpacked t.RecursiveValue.
+            Result containing unpacked t.JsonValue.
 
         """
         try:
             module = msgpack
             if not FlextApiUtilitiesSerializers._is_msgpack_module(module):
-                return r[t.RecursiveValue].fail("msgpack module not available")
+                return r[t.JsonValue].fail("msgpack module not available")
             result = module.unpackb(data)
-            return u.validate_value(t.RecursiveValue, result)
+            return u.validate_value(t.JsonValue, result)
         except (TypeError, c.ValidationError, ValueError) as e:
-            return r[t.RecursiveValue].fail(f"msgpack deserialization failed: {e}")
+            return r[t.JsonValue].fail(f"msgpack deserialization failed: {e}")

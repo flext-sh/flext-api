@@ -53,18 +53,18 @@ class FlextApiStorage:
             return r[bool].ok(True)
         return r[bool].fail("Some keys could not be deleted")
 
-    def batch_get(self, keys: t.StrSequence) -> p.Result[Mapping[str, t.ApiJsonValue]]:
+    def batch_get(self, keys: t.StrSequence) -> p.Result[Mapping[str, t.JsonValue]]:
         """Get multiple keys."""
-        collected: dict[str, t.ApiJsonValue] = {}
+        collected: dict[str, t.JsonValue] = {}
         for key in keys:
             get_result = self.get(key)
             if get_result.success:
                 collected[key] = get_result.value
-        return r[Mapping[str, t.ApiJsonValue]].ok(collected)
+        return r[Mapping[str, t.JsonValue]].ok(collected)
 
     def batch_set(
         self,
-        data: Mapping[str, t.ApiJsonValue],
+        data: Mapping[str, t.JsonValue],
         ttl: int | None = None,
     ) -> p.Result[bool]:
         """Set multiple keys."""
@@ -104,9 +104,7 @@ class FlextApiStorage:
             catch=(ValueError, TypeError),
         ).map_error(lambda error: f"JSON deserialization failed: {error}")
 
-    def execute(
-        self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue
-    ) -> p.Result[bool]:
+    def execute(self, *_args: t.JsonValue, **_kwargs: t.JsonValue) -> p.Result[bool]:
         """Lifecycle entrypoint for parity with service-shaped components."""
         return r[bool].ok(True)
 
@@ -118,20 +116,20 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         return r[bool].ok(key_result.value in self._state.entries)
 
-    def get(self, key: str) -> p.Result[t.ApiJsonValue]:
+    def get(self, key: str) -> p.Result[t.JsonValue]:
         """Get one value from storage."""
         key_result = self._validate_key(key)
         if key_result.failure:
-            return r[t.ApiJsonValue].fail(key_result.error)
+            return r[t.JsonValue].fail(key_result.error)
         self._cleanup_expired_entries()
         self._record_operation()
         normalized_key = key_result.value
         entry = self._state.entries.get(normalized_key)
         if entry is None:
             self._state.cache_misses += 1
-            return r[t.ApiJsonValue].fail(f"Key not found: {normalized_key}")
+            return r[t.JsonValue].fail(f"Key not found: {normalized_key}")
         self._state.cache_hits += 1
-        return r[t.ApiJsonValue].ok(entry.value)
+        return r[t.JsonValue].ok(entry.value)
 
     def cache_stats(self) -> p.Result[t.Api.CacheDict]:
         """Return cache counters."""
@@ -164,9 +162,9 @@ class FlextApiStorage:
             "memory_usage": float(stats.memory_usage),
         })
 
-    def health_check(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
+    def health_check(self) -> p.Result[Mapping[str, t.JsonValue]]:
         """Return health information."""
-        return r[Mapping[str, t.ApiJsonValue]].ok({
+        return r[Mapping[str, t.JsonValue]].ok({
             "status": c.HealthStatus.HEALTHY.value,
             "timestamp": u.generate_iso_timestamp(),
             "storage_accessible": True,
@@ -174,9 +172,9 @@ class FlextApiStorage:
             "operations_count": self._state.operations_count,
         })
 
-    def info(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
+    def info(self) -> p.Result[Mapping[str, t.JsonValue]]:
         """Return storage configuration and runtime info."""
-        return r[Mapping[str, t.ApiJsonValue]].ok({
+        return r[Mapping[str, t.JsonValue]].ok({
             "namespace": self.namespace,
             "backend": self.backend,
             "size": len(self._state.entries),
@@ -186,10 +184,10 @@ class FlextApiStorage:
             "operations_count": self._state.operations_count,
         })
 
-    def items(self) -> p.Result[Sequence[t.Pair[str, t.ApiJsonValue]]]:
+    def items(self) -> p.Result[Sequence[t.Pair[str, t.JsonValue]]]:
         """Return stored key-value pairs."""
         self._cleanup_expired_entries()
-        return r[Sequence[t.Pair[str, t.ApiJsonValue]]].ok(
+        return r[Sequence[t.Pair[str, t.JsonValue]]].ok(
             [(key, entry.value) for key, entry in self._state.entries.items()],
         )
 
@@ -198,10 +196,10 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         return r[t.StrSequence].ok(list(self._state.entries.keys()))
 
-    def metrics(self) -> p.Result[Mapping[str, t.ApiJsonValue]]:
+    def metrics(self) -> p.Result[Mapping[str, t.JsonValue]]:
         """Return canonical storage metrics payload."""
         stats = self._stats_model()
-        return r[Mapping[str, t.ApiJsonValue]].ok({
+        return r[Mapping[str, t.JsonValue]].ok({
             "total_operations": stats.total_operations,
             "cache_hits": stats.cache_hits,
             "cache_misses": stats.cache_misses,
@@ -211,7 +209,7 @@ class FlextApiStorage:
             "namespace": stats.namespace,
         })
 
-    def serialize_json(self, data: t.ApiJsonValue) -> p.Result[str]:
+    def serialize_json(self, data: t.JsonValue) -> p.Result[str]:
         """Serialize one JSON-compatible value."""
         if data is None:
             return r[str].ok("null")
@@ -223,7 +221,7 @@ class FlextApiStorage:
     def set(
         self,
         key: str,
-        value: t.ApiJsonValue,
+        value: t.JsonValue,
         timeout: int | None = None,
         ttl: int | None = None,
     ) -> p.Result[bool]:
@@ -262,10 +260,10 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         return r[int].ok(len(self._state.entries))
 
-    def values(self) -> p.Result[Sequence[t.ApiJsonValue]]:
+    def values(self) -> p.Result[Sequence[t.JsonValue]]:
         """Return stored values."""
         self._cleanup_expired_entries()
-        return r[Sequence[t.ApiJsonValue]].ok(
+        return r[Sequence[t.JsonValue]].ok(
             [entry.value for entry in self._state.entries.values()],
         )
 

@@ -24,32 +24,32 @@ class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
         self.logger = u.fetch_logger(__name__)
 
     @override
-    def debug(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+    def debug(self, message: str, **kwargs: t.JsonValue) -> None:
         """Log debug message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.debug(message, return_result=False, **context)
 
     @override
-    def error(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+    def error(self, message: str, **kwargs: t.JsonValue) -> None:
         """Log error message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.error(message, return_result=False, **context)
 
     @override
-    def info(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+    def info(self, message: str, **kwargs: t.JsonValue) -> None:
         """Log info message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.info(message, return_result=False, **context)
 
     @override
-    def warning(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+    def warning(self, message: str, **kwargs: t.JsonValue) -> None:
         """Log warning message."""
         context = self._convert_kwargs_to_context(kwargs)
         self.logger.warning(message, return_result=False, **context)
 
     def _convert_kwargs_to_context(
         self,
-        kwargs: Mapping[str, t.ApiJsonValue],
+        kwargs: Mapping[str, t.JsonValue],
     ) -> t.FlatContainerMapping:
         """Convert kwargs to context dict for logger compatibility."""
         context: MutableMapping[str, t.Container] = {}

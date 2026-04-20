@@ -284,7 +284,7 @@ class FlextApiUtilities(
             message: str,
             status_code: int = 400,
             error_code: str | None = None,
-        ) -> Mapping[str, t.ApiJsonValue]:
+        ) -> Mapping[str, t.JsonValue]:
             """Build error response - returns plain dict."""
             error_detail: t.MutableContainerValueMapping = {
                 "message": message,
@@ -292,7 +292,7 @@ class FlextApiUtilities(
             }
             if error_code is not None:
                 error_detail["code"] = error_code
-            result: MutableMapping[str, t.ApiJsonValue] = {
+            result: MutableMapping[str, t.JsonValue] = {
                 "success": False,
                 "error": error_detail,
             }
@@ -302,11 +302,11 @@ class FlextApiUtilities(
         def build_error_result(
             error: str,
             status_code: int = 400,
-            data: t.ApiJsonValue | None = None,
+            data: t.JsonValue | None = None,
             headers: t.StrMapping | None = None,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.ApiJsonValue]]:
+        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
             """Build error result - returns r with error response."""
-            response: MutableMapping[str, t.ApiJsonValue] = {
+            response: MutableMapping[str, t.JsonValue] = {
                 "error": error,
                 "status_code": status_code,
             }
@@ -314,17 +314,17 @@ class FlextApiUtilities(
                 response["data"] = data
             if headers:
                 response["headers"] = headers
-            return r[Mapping[str, t.ApiJsonValue]].ok(response)
+            return r[Mapping[str, t.JsonValue]].ok(response)
 
         @staticmethod
         def build_success_response(
-            data: t.ApiJsonValue = None,
+            data: t.JsonValue = None,
             message: str = "Success",
             status_code: int = 200,
             headers: t.StrMapping | None = None,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.ApiJsonValue]]:
+        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
             """Build success response with optional data and message."""
-            response: MutableMapping[str, t.ApiJsonValue] = {
+            response: MutableMapping[str, t.JsonValue] = {
                 "status": "success",
                 "data": data,
                 "message": message,
@@ -333,7 +333,7 @@ class FlextApiUtilities(
             }
             if headers:
                 response["headers"] = headers
-            return r[Mapping[str, t.ApiJsonValue]].ok(response)
+            return r[Mapping[str, t.JsonValue]].ok(response)
 
     class PaginationBuilder:
         """Pagination builder for paginated responses."""
@@ -344,12 +344,12 @@ class FlextApiUtilities(
             page: int,
             page_size: int,
             total: int | None = None,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.ApiJsonValue]]:
+        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
             """Build paginated response."""
             if page < 1:
-                return r[Mapping[str, t.ApiJsonValue]].fail("Page must be >= 1")
+                return r[Mapping[str, t.JsonValue]].fail("Page must be >= 1")
             if page_size < 1:
-                return r[Mapping[str, t.ApiJsonValue]].fail("Page size must be >= 1")
+                return r[Mapping[str, t.JsonValue]].fail("Page size must be >= 1")
             total_items = total if total is not None else len(data)
             total_pages = (
                 (total_items + page_size - 1) // page_size if page_size > 0 else 0
@@ -360,31 +360,31 @@ class FlextApiUtilities(
                 "total": total_items,
                 "total_pages": total_pages,
             }
-            response: MutableMapping[str, t.ApiJsonValue] = {
+            response: MutableMapping[str, t.JsonValue] = {
                 "success": True,
                 "data": data,
                 "pagination": pagination_info,
             }
-            return r[Mapping[str, t.ApiJsonValue]].ok(response)
+            return r[Mapping[str, t.JsonValue]].ok(response)
 
         @staticmethod
         def build_pagination_response(
             pagination_data: t.ContainerValueMapping,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.ApiJsonValue]]:
+        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
-                return r[Mapping[str, t.ApiJsonValue]].fail(
+                return r[Mapping[str, t.JsonValue]].fail(
                     "pagination_data must contain 'data' key",
                 )
-            result: MutableMapping[str, t.ApiJsonValue] = {
+            result: MutableMapping[str, t.JsonValue] = {
                 "success": True,
                 "pagination": pagination_data,
             }
-            return r[Mapping[str, t.ApiJsonValue]].ok(result)
+            return r[Mapping[str, t.JsonValue]].ok(result)
 
         @staticmethod
         def extract_page_params(
-            params: Mapping[str, t.ApiJsonValue],
+            params: Mapping[str, t.JsonValue],
         ) -> FlextApiProtocols.Result[t.IntPair]:
             """Extract and validate page and page_size from params dict.
 
@@ -411,13 +411,13 @@ class FlextApiUtilities(
         @staticmethod
         def extract_pagination_config(
             settings: t.Container,
-        ) -> Mapping[str, t.ApiJsonValue]:
+        ) -> Mapping[str, t.JsonValue]:
             """Extract pagination configuration from settings t.Container.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
-            result: MutableMapping[str, t.ApiJsonValue] = {}
+            result: MutableMapping[str, t.JsonValue] = {}
             default_page_size = getattr(settings, "default_page_size", 20)
             max_page_size = getattr(settings, "max_page_size", 1000)
             result["default_page_size"] = (
@@ -434,13 +434,13 @@ class FlextApiUtilities(
             total: int,
             page: int,
             page_size: int,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.ApiJsonValue]]:
+        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
             """Prepare pagination metadata for response.
 
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
             """
             if page < 1 or page_size < 1:
-                return r[Mapping[str, t.ApiJsonValue]].fail(
+                return r[Mapping[str, t.JsonValue]].fail(
                     "Page and page_size must be >= 1",
                 )
             total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
@@ -448,7 +448,7 @@ class FlextApiUtilities(
             has_prev = page > 1
             next_page: int = page + 1 if has_next else 0
             prev_page: int = page - 1 if has_prev else 0
-            result: MutableMapping[str, t.ApiJsonValue] = {
+            result: MutableMapping[str, t.JsonValue] = {
                 "data": data,
                 "total": total,
                 "page": page,
@@ -459,7 +459,7 @@ class FlextApiUtilities(
                 "next_page": next_page,
                 "prev_page": prev_page,
             }
-            return r[Mapping[str, t.ApiJsonValue]].ok(result)
+            return r[Mapping[str, t.JsonValue]].ok(result)
 
         @staticmethod
         def validate_pagination_params(

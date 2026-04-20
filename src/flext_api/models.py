@@ -30,14 +30,14 @@ class FlextApiModels(FlextCliModels, m):
         """Api Models."""
 
         @staticmethod
-        def _normalize_request_body(v: t.ApiJsonValue) -> t.Api.RequestBody:
+        def _normalize_request_body(v: t.JsonValue) -> t.Api.RequestBody:
             """Normalize body - empty dict is valid."""
             if v is None:
                 return {}
             return t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
 
         @staticmethod
-        def _normalize_response_body(v: t.ApiJsonValue) -> t.Api.ResponseBody:
+        def _normalize_response_body(v: t.JsonValue) -> t.Api.ResponseBody:
             """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
@@ -573,7 +573,7 @@ class FlextApiModels(FlextCliModels, m):
 
                 _flext_enforcement_exempt: ClassVar[bool] = True
 
-                value: t.ApiJsonValue
+                value: t.JsonValue
                 timestamp: str
                 ttl: float | int | None = None
                 created_at: float = u.Field(default_factory=time.time)

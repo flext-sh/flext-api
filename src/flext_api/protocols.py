@@ -40,7 +40,7 @@ class FlextApiProtocols(p):
                 def delete(
                     self,
                     url: str,
-                    **kwargs: t.ApiJsonValue,
+                    **kwargs: t.JsonValue,
                 ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
@@ -48,7 +48,7 @@ class FlextApiProtocols(p):
                 def get(
                     self,
                     url: str,
-                    **kwargs: t.ApiJsonValue,
+                    **kwargs: t.JsonValue,
                 ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
@@ -56,7 +56,7 @@ class FlextApiProtocols(p):
                 def post(
                     self,
                     url: str,
-                    **kwargs: t.ApiJsonValue,
+                    **kwargs: t.JsonValue,
                 ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
@@ -64,7 +64,7 @@ class FlextApiProtocols(p):
                 def put(
                     self,
                     url: str,
-                    **kwargs: t.ApiJsonValue,
+                    **kwargs: t.JsonValue,
                 ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
@@ -73,7 +73,7 @@ class FlextApiProtocols(p):
                     self,
                     method: c.Api.Method | str,
                     url: str,
-                    **kwargs: t.ApiJsonValue,
+                    **kwargs: t.JsonValue,
                 ) -> p.Result[t.Api.HttpResponseDict]:
                     """Execute an HTTP request."""
                     ...
@@ -97,7 +97,7 @@ class FlextApiProtocols(p):
                     """Check if key exists."""
                     ...
 
-                def get(self, key: str) -> p.Result[t.ApiJsonValue]:
+                def get(self, key: str) -> p.Result[t.JsonValue]:
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
@@ -108,7 +108,7 @@ class FlextApiProtocols(p):
                 def set(
                     self,
                     key: str,
-                    value: t.ApiJsonValue,
+                    value: t.JsonValue,
                     timeout: int | None = None,
                 ) -> p.Result[bool]:
                     """Store value with optional timeout."""
@@ -121,16 +121,16 @@ class FlextApiProtocols(p):
             class Logger(Protocol):
                 """Protocol for generic logger implementations."""
 
-                def debug(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+                def debug(self, message: str, **kwargs: t.JsonValue) -> None:
                     """Log debug message."""
 
-                def error(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+                def error(self, message: str, **kwargs: t.JsonValue) -> None:
                     """Log error message."""
 
-                def info(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+                def info(self, message: str, **kwargs: t.JsonValue) -> None:
                     """Log info message."""
 
-                def warning(self, message: str, **kwargs: t.ApiJsonValue) -> None:
+                def warning(self, message: str, **kwargs: t.JsonValue) -> None:
                     """Log warning message."""
 
         class Serialization:
@@ -149,7 +149,7 @@ class FlextApiProtocols(p):
                     """Get content type for this serializer."""
                     ...
 
-                def deserialize(self, data: bytes) -> t.ApiJsonValue:
+                def deserialize(self, data: bytes) -> t.JsonValue:
                     """Deserialize bytes to data.
 
                     Args:
@@ -161,7 +161,7 @@ class FlextApiProtocols(p):
                     """
                     ...
 
-                def serialize(self, data: t.ApiJsonValue) -> bytes:
+                def serialize(self, data: t.JsonValue) -> bytes:
                     """Serialize data to bytes.
 
                     Args:
@@ -201,7 +201,7 @@ class FlextApiProtocols(p):
                 def connect(
                     self,
                     url: str,
-                    **options: t.ApiJsonValue,
+                    **options: t.JsonValue,
                 ) -> p.Result[str]:
                     """Connect to endpoint."""
                     ...
@@ -243,9 +243,7 @@ class FlextApiProtocols(p):
                 implement when flext-grpc is integrated.
                 """
 
-                def handle_request(
-                    self, request: t.ApiJsonValue
-                ) -> p.Result[t.ApiJsonValue]:
+                def handle_request(self, request: t.JsonValue) -> p.Result[t.JsonValue]:
                     """Handle gRPC request.
 
                     Args:
@@ -257,7 +255,7 @@ class FlextApiProtocols(p):
                     """
                     ...
 
-                def register_methods(self) -> Sequence[t.ApiJsonValue]:
+                def register_methods(self) -> Sequence[t.JsonValue]:
                     """Register service methods.
 
                     Returns:
@@ -280,7 +278,7 @@ class FlextApiProtocols(p):
                 def resolve_request_schema(
                     self,
                     method: str,
-                ) -> p.Result[t.JsonObject]:
+                ) -> p.Result[t.JsonMapping]:
                     """Get request schema for method.
 
                     Args:
@@ -294,7 +292,7 @@ class FlextApiProtocols(p):
 
                 def resolve_response_schema(
                     self, method: str
-                ) -> p.Result[t.JsonObject]:
+                ) -> p.Result[t.JsonMapping]:
                     """Get response schema for method.
 
                     Args:

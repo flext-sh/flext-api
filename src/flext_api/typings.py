@@ -66,13 +66,13 @@ class FlextApiTypes(FlextWebTypes):
             | float
             | None,
         ]
-        type StorageDict = Mapping[str, t.OptionalPrimitive]
+        type StorageDict = Mapping[str, t.Primitives | None]
         type CacheDict = Mapping[str, t.Primitives]
         CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.Container] = u.TypeAdapter(
             t.Container,
         )
-        API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.ApiJsonValue] = u.TypeAdapter(
-            t.ApiJsonValue,
+        API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = u.TypeAdapter(
+            t.JsonValue,
         )
         BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.BinaryContent] = u.TypeAdapter(
             t.BinaryContent,
@@ -95,10 +95,8 @@ class FlextApiTypes(FlextWebTypes):
         FLOAT_ADAPTER: u.TypeAdapter[t.FloatValue] = u.TypeAdapter(
             t.FloatValue,
         )
-        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[Mapping[str, t.ApiJsonValue]] = (
-            u.TypeAdapter(
-                Mapping[str, t.ApiJsonValue],
-            )
+        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[Mapping[str, t.JsonValue]] = u.TypeAdapter(
+            Mapping[str, t.JsonValue],
         )
         REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(
             RequestBody,

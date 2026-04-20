@@ -15,11 +15,11 @@ class FlextApiProtocolsSerialization(Protocol):
     class MsgpackModule(Protocol):
         """Structural contract for the msgpack module entrypoints in use."""
 
-        def packb(self, obj: t.ApiJsonValue) -> bytes | bytearray:
+        def packb(self, obj: t.JsonValue) -> bytes | bytearray:
             """Pack recursive payload to binary msgpack content."""
             ...
 
-        def unpackb(self, data: bytes) -> t.RecursiveValue:
+        def unpackb(self, data: bytes) -> t.JsonValue:
             """Unpack msgpack binary content into recursive payload."""
             ...
 

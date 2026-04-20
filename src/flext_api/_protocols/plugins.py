@@ -61,9 +61,9 @@ class FlextApiPlugins:
         @abstractmethod
         def send_request(
             self,
-            request: t.JsonObject,
+            request: t.JsonMapping,
             **kwargs: t.Scalar,
-        ) -> p.Result[t.JsonObject]:
+        ) -> p.Result[t.JsonMapping]:
             """Send request using this protocol."""
             ...
 
@@ -91,8 +91,8 @@ class FlextApiPlugins:
         @abstractmethod
         def validate_request(
             self,
-            request: t.JsonObject,
-            schema: t.JsonObject,
+            request: t.JsonMapping,
+            schema: t.JsonMapping,
         ) -> p.Result[bool]:
             """Validate request against schema."""
             ...
@@ -100,8 +100,8 @@ class FlextApiPlugins:
         @abstractmethod
         def validate_response(
             self,
-            response: t.JsonObject,
-            schema: t.JsonObject,
+            response: t.JsonMapping,
+            schema: t.JsonMapping,
         ) -> p.Result[bool]:
             """Validate response against schema."""
             ...
@@ -119,7 +119,7 @@ class FlextApiPlugins:
             """Close connection."""
             ...
 
-        def connection_info(self) -> t.JsonObject:
+        def connection_info(self) -> t.JsonMapping:
             """Get connection information."""
             return {}
 
@@ -128,7 +128,7 @@ class FlextApiPlugins:
             self,
             connection: t.Container,
             **options: t.Scalar,
-        ) -> p.Result[t.JsonObject | str | bytes]:
+        ) -> p.Result[t.JsonMapping | str | bytes]:
             """Receive data from connection."""
             ...
 
@@ -136,7 +136,7 @@ class FlextApiPlugins:
         def send(
             self,
             connection: t.Container,
-            data: t.JsonObject | str | bytes,
+            data: t.JsonMapping | str | bytes,
             **options: t.Scalar,
         ) -> p.Result[bool]:
             """Send data through connection."""
@@ -152,9 +152,9 @@ class FlextApiPlugins:
         @abstractmethod
         def authenticate(
             self,
-            request: t.JsonObject,
-            credentials: t.JsonObject,
-        ) -> p.Result[t.JsonObject]:
+            request: t.JsonMapping,
+            credentials: t.JsonMapping,
+        ) -> p.Result[t.JsonMapping]:
             """Add authentication to request."""
             ...
 
@@ -163,18 +163,18 @@ class FlextApiPlugins:
             return "Unknown"
 
         def refresh_credentials(
-            self, credentials: t.JsonObject
-        ) -> p.Result[t.JsonObject]:
+            self, credentials: t.JsonMapping
+        ) -> p.Result[t.JsonMapping]:
             """Refresh authentication credentials."""
             _ = credentials
-            return r[t.JsonObject].fail("Refresh not supported by this plugin")
+            return r[t.JsonMapping].fail("Refresh not supported by this plugin")
 
         def requires_refresh(self) -> bool:
             """Check if credentials need refresh."""
             return False
 
         @abstractmethod
-        def validate_credentials(self, credentials: t.JsonObject) -> p.Result[bool]:
+        def validate_credentials(self, credentials: t.JsonMapping) -> p.Result[bool]:
             """Validate authentication credentials."""
             ...
 

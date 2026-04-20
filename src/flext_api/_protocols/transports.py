@@ -29,7 +29,7 @@ class FlextApiTransports:
             self._client: httpx.Client | None = None
 
         @override
-        def connect(self, url: str, **options: t.ApiJsonValue) -> p.Result[str]:
+        def connect(self, url: str, **options: t.JsonValue) -> p.Result[str]:
             """Connect to HTTP endpoint."""
             try:
                 if not url:

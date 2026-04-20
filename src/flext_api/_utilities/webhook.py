@@ -45,17 +45,17 @@ class FlextApiWebhookHandler(s[bool]):
         """Execute webhook lifecycle parity with other FLEXT services."""
         return r[bool].ok(True)
 
-    def resolve_delivery_status(self, event_id: str) -> p.Result[t.JsonObject]:
+    def resolve_delivery_status(self, event_id: str) -> p.Result[t.JsonMapping]:
         """Return one delivery status payload."""
         key_result = self._string_value(event_id)
         if key_result.failure:
-            return r[t.JsonObject].fail(key_result.error or "Invalid event id")
+            return r[t.JsonMapping].fail(key_result.error or "Invalid event id")
         delivery = self._state.deliveries.get(key_result.value)
         if delivery is None:
-            return r[t.JsonObject].fail(f"Event not found: {key_result.value}")
-        return r[t.JsonObject].ok(self._delivery_payload(delivery))
+            return r[t.JsonMapping].fail(f"Event not found: {key_result.value}")
+        return r[t.JsonMapping].ok(self._delivery_payload(delivery))
 
-    def queue_stats(self) -> t.JsonObject:
+    def queue_stats(self) -> t.JsonMapping:
         """Return observable queue statistics."""
         return {
             "event_queue_size": self._state.event_queue_size,
@@ -65,7 +65,7 @@ class FlextApiWebhookHandler(s[bool]):
             "failed_deliveries": self._state.failed_deliveries,
         }
 
-    def process_retry_queue(self) -> p.Result[t.JsonObject]:
+    def process_retry_queue(self) -> p.Result[t.JsonMapping]:
         """Process all queued retries and report counts."""
         processed = 0
         failed = 0
@@ -76,18 +76,18 @@ class FlextApiWebhookHandler(s[bool]):
                 processed += 1
             else:
                 failed += 1
-        return r[t.JsonObject].ok({"processed": processed, "failed": failed})
+        return r[t.JsonMapping].ok({"processed": processed, "failed": failed})
 
     def receive_webhook(
         self,
         payload: bytes | str,
         headers: t.StrMapping,
-    ) -> p.Result[t.JsonObject]:
+    ) -> p.Result[t.JsonMapping]:
         """Receive and process one webhook request."""
         if self._settings.secret is not None:
             signature_result = self._verify_signature(payload, headers)
             if signature_result.failure:
-                return r[t.JsonObject].fail(
+                return r[t.JsonMapping].fail(
                     f"Signature verification failed: {signature_result.error}",
                 )
         event_data_result = self._parse_payload(payload)
@@ -95,7 +95,7 @@ class FlextApiWebhookHandler(s[bool]):
             return event_data_result
         event_result = self._build_event(event_data_result.value)
         if event_result.failure:
-            return r[t.JsonObject].fail(
+            return r[t.JsonMapping].fail(
                 event_result.error or "Webhook event validation failed",
             )
         event = event_result.value
@@ -224,7 +224,7 @@ class FlextApiWebhookHandler(s[bool]):
         self,
         event: m.Api.Webhook.Event,
         process_result: p.Result[bool],
-    ) -> p.Result[t.JsonObject]:
+    ) -> p.Result[t.JsonMapping]:
         """Handle one failed event processing attempt."""
         if event.attempts < self._settings.max_retries:
             self._append_limited(
@@ -238,7 +238,7 @@ class FlextApiWebhookHandler(s[bool]):
                 event_type=event.type,
                 error=process_result.error or "Webhook processing failed",
             )
-            return r[t.JsonObject].ok({
+            return r[t.JsonMapping].ok({
                 "event_id": event.id,
                 "status": "queued_for_retry",
             })
@@ -257,14 +257,14 @@ class FlextApiWebhookHandler(s[bool]):
             event_type=event.type,
             error=process_result.error or "Webhook processing failed",
         )
-        return r[t.JsonObject].fail(
+        return r[t.JsonMapping].fail(
             f"Processing failed: {process_result.error or 'Webhook processing failed'}",
         )
 
     def _handle_processing_success(
         self,
         event: m.Api.Webhook.Event,
-    ) -> p.Result[t.JsonObject]:
+    ) -> p.Result[t.JsonMapping]:
         """Handle one successful event processing attempt."""
         self._record_delivery(
             event.id,
@@ -278,7 +278,7 @@ class FlextApiWebhookHandler(s[bool]):
             event_id=event.id,
             event_type=event.type,
         )
-        return r[t.JsonObject].ok({"event_id": event.id, "status": "processed"})
+        return r[t.JsonMapping].ok({"event_id": event.id, "status": "processed"})
 
     def _handle_successful_retry(self, event: m.Api.Webhook.Event) -> None:
         """Persist one successful retry delivery."""
@@ -291,7 +291,7 @@ class FlextApiWebhookHandler(s[bool]):
             ),
         )
 
-    def _parse_payload(self, payload: bytes | str) -> p.Result[t.JsonObject]:
+    def _parse_payload(self, payload: bytes | str) -> p.Result[t.JsonMapping]:
         """Parse and normalize one webhook payload."""
         payload_text = (
             payload.decode("utf-8") if isinstance(payload, bytes) else payload
@@ -302,7 +302,7 @@ class FlextApiWebhookHandler(s[bool]):
             from_json=True,
         )
         if event_data_result.failure:
-            return r[t.JsonObject].fail(
+            return r[t.JsonMapping].fail(
                 f"Failed to parse payload: {event_data_result.error}",
             )
         mapping_result = u.validate_value(
@@ -310,8 +310,8 @@ class FlextApiWebhookHandler(s[bool]):
             event_data_result.value,
         )
         if mapping_result.failure:
-            return r[t.JsonObject].fail("Payload must be a JSON object")
-        return r[t.JsonObject].ok(dict(mapping_result.value))
+            return r[t.JsonMapping].fail("Payload must be a JSON object")
+        return r[t.JsonMapping].ok(dict(mapping_result.value))
 
     def _process_event(self, event: m.Api.Webhook.Event) -> p.Result[bool]:
         """Dispatch one event to registered handlers."""

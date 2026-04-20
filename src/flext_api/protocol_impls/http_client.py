@@ -65,29 +65,23 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
 
     @override
     def delete(
-        self, url: str, **kwargs: t.ApiJsonValue
+        self, url: str, **kwargs: t.JsonValue
     ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP DELETE request."""
         return self.request(c.Api.Method.DELETE, url, **kwargs)
 
     @override
-    def get(
-        self, url: str, **kwargs: t.ApiJsonValue
-    ) -> p.Result[t.Api.HttpResponseDict]:
+    def get(self, url: str, **kwargs: t.JsonValue) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP GET request."""
         return self.request(c.Api.Method.GET, url, **kwargs)
 
     @override
-    def post(
-        self, url: str, **kwargs: t.ApiJsonValue
-    ) -> p.Result[t.Api.HttpResponseDict]:
+    def post(self, url: str, **kwargs: t.JsonValue) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP POST request."""
         return self.request(c.Api.Method.POST, url, **kwargs)
 
     @override
-    def put(
-        self, url: str, **kwargs: t.ApiJsonValue
-    ) -> p.Result[t.Api.HttpResponseDict]:
+    def put(self, url: str, **kwargs: t.JsonValue) -> p.Result[t.Api.HttpResponseDict]:
         """Execute HTTP PUT request."""
         return self.request(c.Api.Method.PUT, url, **kwargs)
 
@@ -96,7 +90,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         self,
         method: c.Api.Method | str,
         url: str,
-        **kwargs: t.ApiJsonValue,
+        **kwargs: t.JsonValue,
     ) -> p.Result[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
@@ -136,7 +130,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
 
     def _build_request_options(
         self,
-        kwargs: Mapping[str, t.ApiJsonValue],
+        kwargs: Mapping[str, t.JsonValue],
     ) -> p.Result[m.Api.HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:

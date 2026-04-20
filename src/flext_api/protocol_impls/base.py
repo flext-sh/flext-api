@@ -87,7 +87,7 @@ class FlextApiBaseProtocolImplementation:
             )
         return r[bool].ok(value=True)
 
-    def protocol_info(self) -> t.JsonObject:
+    def protocol_info(self) -> t.JsonMapping:
         """Get protocol configuration information.
 
         Returns:
@@ -170,7 +170,7 @@ class FlextApiBaseProtocolImplementation:
         self,
         error: str,
         status_code: int = 500,
-    ) -> Mapping[str, t.ApiJsonValue]:
+    ) -> Mapping[str, t.JsonValue]:
         """Build error response dictionary.
 
         Args:
@@ -190,9 +190,9 @@ class FlextApiBaseProtocolImplementation:
 
     def _build_success_response(
         self,
-        data: t.ApiJsonValue | None = None,
+        data: t.JsonValue | None = None,
         status_code: int = 200,
-    ) -> Mapping[str, t.ApiJsonValue]:
+    ) -> Mapping[str, t.JsonValue]:
         """Build success response dictionary.
 
         Args:
@@ -203,7 +203,7 @@ class FlextApiBaseProtocolImplementation:
         Success response dictionary
 
         """
-        response: MutableMapping[str, t.ApiJsonValue] = {
+        response: MutableMapping[str, t.JsonValue] = {
             "status": c.Api.Status.SUCCESS.value,
             "status_code": status_code,
         }
