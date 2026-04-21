@@ -25,8 +25,8 @@ class FlextApiStorage:
 
     def __init__(
         self,
-        settings: m.Api.Storage.Settings | Mapping[str, t.ValueOrModel] | None = None,
-        **overrides: t.ValueOrModel,
+        settings: m.Api.Storage.Settings | Mapping[str, t.RuntimeData] | None = None,
+        **overrides: t.RuntimeData,
     ) -> None:
         """Create one storage instance from the canonical settings model."""
         self._settings = self._resolve_settings(settings, overrides)
@@ -302,13 +302,13 @@ class FlextApiStorage:
 
     def _resolve_settings(
         self,
-        settings: m.Api.Storage.Settings | Mapping[str, t.ValueOrModel] | None,
-        overrides: Mapping[str, t.ValueOrModel],
+        settings: m.Api.Storage.Settings | Mapping[str, t.RuntimeData] | None,
+        overrides: Mapping[str, t.RuntimeData],
     ) -> m.Api.Storage.Settings:
         """Resolve one canonical storage settings model."""
         if isinstance(settings, m.Api.Storage.Settings):
             return settings.model_copy(update=dict(overrides) or None)
-        payload: dict[str, t.ValueOrModel] = {}
+        payload: dict[str, t.RuntimeData] = {}
         if isinstance(settings, Mapping):
             payload.update(settings)
         elif settings is not None:

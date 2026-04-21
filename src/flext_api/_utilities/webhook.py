@@ -28,8 +28,8 @@ class FlextApiWebhookHandler(s[bool]):
 
     def __init__(
         self,
-        settings: m.Api.Webhook.Settings | Mapping[str, t.ValueOrModel] | None = None,
-        **overrides: t.ValueOrModel,
+        settings: m.Api.Webhook.Settings | Mapping[str, t.RuntimeData] | None = None,
+        **overrides: t.RuntimeData,
     ) -> None:
         """Create one webhook handler from the canonical webhook settings model."""
         super().__init__()
@@ -213,7 +213,7 @@ class FlextApiWebhookHandler(s[bool]):
         return delivery_result.value
 
     @staticmethod
-    def _string_value(value: t.ValueOrModel | None) -> p.Result[str]:
+    def _string_value(value: t.RuntimeData | None) -> p.Result[str]:
         """Validate and normalize one string input."""
         value_result = u.validate_value(t.Api.STRING_ADAPTER, value)
         if value_result.failure:
@@ -392,13 +392,13 @@ class FlextApiWebhookHandler(s[bool]):
 
     def _resolve_webhook_settings(
         self,
-        settings: m.Api.Webhook.Settings | Mapping[str, t.ValueOrModel] | None,
-        overrides: Mapping[str, t.ValueOrModel],
+        settings: m.Api.Webhook.Settings | Mapping[str, t.RuntimeData] | None,
+        overrides: Mapping[str, t.RuntimeData],
     ) -> m.Api.Webhook.Settings:
         """Resolve one canonical webhook settings model."""
         if isinstance(settings, m.Api.Webhook.Settings):
             return settings.model_copy(update=dict(overrides) or None)
-        payload: dict[str, t.ValueOrModel] = {}
+        payload: dict[str, t.RuntimeData] = {}
         if isinstance(settings, Mapping):
             payload.update(settings)
         elif settings is not None:
