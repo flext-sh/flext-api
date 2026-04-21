@@ -18,6 +18,7 @@ import time
 from collections.abc import (
     Iterator,
     Mapping,
+    MutableMapping,
 )
 from typing import override
 
@@ -101,10 +102,10 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
 
     @override
-    def protocol_info(self) -> t.JsonMapping:
+    def protocol_info(self) -> Mapping[str, t.Container | t.StrSequence]:
         """Get protocol configuration information."""
         base_info = super().protocol_info()
-        updated_info: t.JsonMapping = {
+        updated_info: Mapping[str, t.Container | t.StrSequence] = {
             **base_info,
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,
@@ -293,9 +294,11 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         params: t.StrMapping,
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> t.ContainerValueMapping:
+    ) -> MutableMapping[str, t.ContainerValueMapping | t.StrMapping | t.Container]:
         """Build request kwargs based on body type."""
-        kwargs: t.MutableContainerValueMapping = {
+        kwargs: MutableMapping[
+            str, t.ContainerValueMapping | t.StrMapping | t.Container
+        ] = {
             "method": method,
             "url": url,
             "headers": headers,
@@ -339,7 +342,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _response_to_dict(
         self,
         response: m.Api.HttpResponse,
-    ) -> t.ContainerValueMapping:
+    ) -> Mapping[str, t.Container | t.StrMapping]:
         """Convert HTTP response model to protocol response mapping."""
         body_value = self._response_body_to_value(response.body)
         return {

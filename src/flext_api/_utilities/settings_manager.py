@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from collections.abc import (
     Mapping,
+    MutableMapping,
 )
 
 from flext_core import r, u
@@ -69,7 +70,7 @@ class FlextApiUtilitiesSettingsManager:
         key: str,
         *,
         value: t.Scalar,
-    ) -> p.Result[t.Container]:
+    ) -> p.Result[t.Container | t.StrMapping]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "headers" and isinstance(value, Mapping):
             validated_result = u.try_(
@@ -77,32 +78,32 @@ class FlextApiUtilitiesSettingsManager:
                 catch=(c.ValidationError, TypeError, ValueError),
             ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
             if validated_result.failure:
-                return r[t.Container].fail(validated_result.error)
-            return r[t.Container].ok(validated_result.value)
+                return r[t.Container | t.StrMapping].fail(validated_result.error)
+            return r[t.Container | t.StrMapping].ok(validated_result.value)
         if key == "headers" and isinstance(value, str):
             parsed_result = u.try_(
                 lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),
                 catch=(c.ValidationError, TypeError, ValueError),
             ).map_error(lambda e: f"Failed to parse headers JSON: {e}")
             if parsed_result.failure:
-                return r[t.Container].fail(parsed_result.error)
-            return r[t.Container].ok(parsed_result.value)
+                return r[t.Container | t.StrMapping].fail(parsed_result.error)
+            return r[t.Container | t.StrMapping].ok(parsed_result.value)
         if key in {"log_requests", "log_responses", "verify_ssl"}:
             bool_result = u.try_(
                 lambda: t.bool_adapter().validate_python(value),
                 catch=(c.ValidationError, TypeError, ValueError),
             ).map_error(lambda e: f"Invalid {key} value: {e}")
             if bool_result.failure:
-                return r[t.Container].fail(bool_result.error)
-            return r[t.Container].ok(bool_result.value)
-        return r[t.Container].ok(value)
+                return r[t.Container | t.StrMapping].fail(bool_result.error)
+            return r[t.Container | t.StrMapping].ok(bool_result.value)
+        return r[t.Container | t.StrMapping].ok(value)
 
     def _build_client_config(
         self,
         settings: t.ScalarMapping,
     ) -> p.Result[m.Api.ClientConfig]:
         """Build typed ClientConfig from scalar settings payload."""
-        processed: t.MutableContainerValueMapping = {}
+        processed: MutableMapping[str, t.Container | t.StrMapping] = {}
         for key, raw_value in settings.items():
             normalize_result = self._normalize_value(key, value=raw_value)
             if normalize_result.failure:

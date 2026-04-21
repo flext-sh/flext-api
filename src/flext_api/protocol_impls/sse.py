@@ -210,19 +210,18 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     )
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
-        response: t.ContainerValueMapping = {
+        response: t.MutableContainerValueMapping = {
             "status_code": 200,
             "url": url_result.value,
             "method": "SSE",
-            "headers": headers,
-            "body": {
-                "events": events,
-                "event_count": len(events),
-                "last_event_id": self.last_event_id,
-                "retry_timeout": retry_timeout_ms,
-                "reconnect_attempts": attempts,
-            },
+            "event_count": len(events),
+            "last_event_id": self.last_event_id,
+            "reconnect_attempts": attempts,
         }
+        if retry_timeout_ms is not None:
+            response["retry_timeout"] = retry_timeout_ms
+        for key, val in headers.items():
+            response[key] = val
         return r[t.ContainerValueMapping].ok(response)
 
     @override

@@ -64,7 +64,7 @@ class FlextApiServer(s[bool]):
             logger: Logger instance for audit trail
 
             """
-            self._routes: MutableMapping[str, t.Api.RouteData] = {}
+            self._routes: dict[str, t.Api.RouteData] = {}
             self._logger = logger
 
         @property
@@ -104,9 +104,14 @@ class FlextApiServer(s[bool]):
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
             options_json: t.ConfigurationMapping = options
-            route_data: MutableMapping[
+            route_dict: dict[
                 str,
-                t.Container | Callable[..., t.Api.HttpResponseDict | str | None] | None,
+                t.Container
+                | t.ConfigurationMapping
+                | t.ContainerValueMapping
+                | t.ResourceCallable
+                | Callable[..., t.Api.HttpResponseDict | str | None]
+                | None,
             ] = {
                 "path": path,
                 "method": method,
@@ -114,8 +119,8 @@ class FlextApiServer(s[bool]):
                 "options": options_json,
             }
             if schema is not None:
-                route_data["schema"] = schema
-            self._routes[route_key] = route_data
+                route_dict["schema"] = schema
+            self._routes[route_key] = route_dict
             self._logger.info(
                 "Endpoint registered",
                 method=method,

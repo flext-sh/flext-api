@@ -11,6 +11,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import (
+    Mapping,
+    MutableMapping,
+)
+
 from flext_api import FlextApiBaseProtocolImplementation, c, m, p, r, t
 
 
@@ -90,7 +95,9 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         data: t.ContainerValueMapping | None = None,
         status_code: int = 200,
         headers: t.StrMapping | None = None,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[
+        Mapping[str, t.ContainerValueMapping | t.AttributeMapping | t.Container]
+    ]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -109,14 +116,18 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         web_headers: t.AttributeMapping | None = None
         if headers is not None:
             web_headers = headers
-        success_response: t.MutableContainerValueMapping = {
+        success_response: MutableMapping[
+            str, t.MutableContainerValueMapping | t.AttributeMapping | t.Container
+        ] = {
             "status_code": status_code,
         }
         if data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
-        return r[t.ContainerValueMapping].ok(success_response)
+        return r[
+            Mapping[str, t.ContainerValueMapping | t.AttributeMapping | t.Container]
+        ].ok(success_response)
 
     def _extract_body(
         self,

@@ -202,7 +202,9 @@ class FlextApi(s[bool]):
                 request_kwargs=request_kwargs,
                 timeout=timeout,
             )
-            .flat_map(lambda payload: u.load(FlextApiModels.Api.HttpRequest, payload))
+            .flat_map(
+                lambda payload: u.parse_model(payload, FlextApiModels.Api.HttpRequest)
+            )
             .flat_map(self.request)
         )
 

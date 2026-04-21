@@ -45,7 +45,7 @@ class FlextApiClient(s):
         settings: FlextApiSettings | None = None,
     ) -> None:
         """Public bootstrap surface using the canonical ``settings=`` call form."""
-        super().__init__(settings=settings)
+        super().__init__(runtime_settings=settings)
 
     @property
     @override
@@ -241,15 +241,15 @@ class FlextApiClient(s):
                     f"HTTP {response.status_code}: {response.reason_phrase}",
                 )
             return self._deserialize_body(response).flat_map(
-                lambda body: u.load(
-                    m.Api.HttpResponse,
-                    {
+                lambda body: u.try_(
+                    lambda: m.Api.HttpResponse.model_validate({
                         "status_code": response.status_code,
                         "headers": dict(response.headers),
                         "body": body,
                         "request_id": "",
-                    },
-                ),
+                    }),
+                    catch=(c.ValidationError, ValueError, TypeError),
+                ).map_error(lambda e: f"Response model validation failed: {e}"),
             )
         except (
             ValueError,

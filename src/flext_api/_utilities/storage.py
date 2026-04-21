@@ -241,14 +241,14 @@ class FlextApiStorage:
             and len(self._state.entries) >= self._settings.max_size
         ):
             return r[bool].fail("Storage is full")
-        metadata_result = u.load(
-            m.Api.Storage.Metadata,
+        metadata_result = u.parse_model(
             {
                 "value": value,
                 "timestamp": u.generate_iso_timestamp(),
                 "ttl": ttl_result.value,
                 "created_at": time.time(),
             },
+            m.Api.Storage.Metadata,
         )
         if metadata_result.failure:
             return r[bool].fail(metadata_result.error or "Metadata validation failed")
@@ -317,9 +317,9 @@ class FlextApiStorage:
         payload.update(overrides)
         if not payload:
             return m.Api.Storage.Settings()
-        settings_result = u.load(
-            m.Api.Storage.Settings,
+        settings_result = u.parse_model(
             m.ConfigMap(root=payload),
+            m.Api.Storage.Settings,
         )
         if settings_result.failure:
             msg = settings_result.error or "Storage settings validation failed"

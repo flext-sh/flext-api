@@ -37,12 +37,18 @@ class FlextApiTypes(FlextWebTypes):
         type ResponseBody = t.ContainerValueMapping | str | t.BinaryContent | None
         type HttpResponseDict = Mapping[
             str,
-            t.Container | t.StrMapping | t.BinaryContent | None,
+            t.Container
+            | t.StrMapping
+            | t.ContainerValueMapping
+            | t.BinaryContent
+            | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type RouteData = Mapping[
             str,
             t.Container
+            | t.ConfigurationMapping
+            | t.ContainerValueMapping
             | t.ResourceCallable
             | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
             | None,

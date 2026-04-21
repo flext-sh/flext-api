@@ -87,7 +87,7 @@ class FlextApiBaseProtocolImplementation:
             )
         return r[bool].ok(value=True)
 
-    def protocol_info(self) -> t.JsonMapping:
+    def protocol_info(self) -> Mapping[str, t.Container | t.StrSequence]:
         """Get protocol configuration information.
 
         Returns:

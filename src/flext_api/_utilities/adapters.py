@@ -31,7 +31,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_http_request_to_websocket(
             request: m.Api.HttpRequest,
-        ) -> p.Result[t.JsonMapping | m.Api.HttpRequest]:
+        ) -> p.Result[t.Api.HttpResponseDict | m.Api.HttpRequest]:
             """Convert HTTP request to WebSocket message format.
 
             Args:
@@ -42,28 +42,30 @@ class FlextApiAdapters:
 
             """
             try:
-                body_value: str | t.JsonMapping | None = None
+                body_value: str | t.ContainerValueMapping | None = None
                 if request.body:
                     if isinstance(request.body, bytes):
                         try:
                             body_value = request.body.decode("utf-8")
                         except UnicodeDecodeError:
-                            return r[t.JsonMapping | m.Api.HttpRequest].fail(
+                            return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
                                 "Binary request body is not valid UTF-8 for WebSocket JSON transport",
                             )
                     else:
                         body_value = request.body
-                message_body: t.Container = body_value if body_value is not None else ""
-                message: t.JsonMapping = {
+                message_body: str | t.ContainerValueMapping = (
+                    body_value if body_value is not None else ""
+                )
+                message: t.Api.HttpResponseDict = {
                     "type": "request",
                     "method": request.method,
                     "url": request.url,
                     "headers": dict(request.headers),
                     "body": message_body,
                 }
-                return r[t.JsonMapping | m.Api.HttpRequest].ok(message)
+                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].ok(message)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.JsonMapping | m.Api.HttpRequest].fail(
+                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
                     f"HTTP to WebSocket adaptation failed: {e}",
                 )
 
@@ -195,7 +197,7 @@ class FlextApiAdapters:
         def transform_request_for_protocol(
             request: m.Api.HttpRequest,
             target_protocol: str,
-        ) -> p.Result[t.JsonMapping | m.Api.HttpRequest]:
+        ) -> p.Result[t.Api.HttpResponseDict | m.Api.HttpRequest]:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
@@ -204,12 +206,12 @@ class FlextApiAdapters:
                     )
                     if result.success:
                         return result
-                    return r[t.JsonMapping | m.Api.HttpRequest].fail(
+                    return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
                         result.error or "Adaptation failed",
                     )
-                return r[t.JsonMapping | m.Api.HttpRequest].ok(request)
+                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].ok(request)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.JsonMapping | m.Api.HttpRequest].fail(
+                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
                     f"Request transformation failed: {e}",
                 )
 

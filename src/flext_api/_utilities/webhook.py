@@ -93,7 +93,9 @@ class FlextApiWebhookHandler(s[bool]):
                 )
         event_data_result = self._parse_payload(payload)
         if event_data_result.failure:
-            return event_data_result
+            return r[t.JsonMapping].fail(
+                event_data_result.error or "Payload parse failed"
+            )
         event_result = self._build_event(event_data_result.value)
         if event_result.failure:
             return r[t.JsonMapping].fail(
@@ -142,9 +144,9 @@ class FlextApiWebhookHandler(s[bool]):
     @staticmethod
     def _delivery_payload(
         delivery: m.Api.Webhook.Delivery,
-    ) -> t.MutableContainerValueMapping:
+    ) -> t.JsonMapping:
         """Project one delivery model into the public payload."""
-        payload: t.MutableContainerValueMapping = {
+        payload: dict[str, t.JsonValue] = {
             "event_type": delivery.event_type,
             "timestamp": delivery.timestamp,
             "status": delivery.status,
@@ -175,16 +177,16 @@ class FlextApiWebhookHandler(s[bool]):
             return r[m.Api.Webhook.Event].fail(
                 event_type_result.error or "Missing event type in payload",
             )
-        return u.load(
-            m.Api.Webhook.Event,
-            {
+        return u.try_(
+            lambda: m.Api.Webhook.Event.model_validate({
                 "id": self._resolve_event_id(event_data),
                 "type": event_type_result.value,
                 "data": event_data,
                 "timestamp": time.time(),
                 "attempts": 0,
-            },
-        )
+            }),
+            catch=(c.ValidationError, ValueError, TypeError),
+        ).map_error(lambda e: f"Webhook event validation failed: {e}")
 
     def _build_delivery(
         self,
@@ -195,8 +197,7 @@ class FlextApiWebhookHandler(s[bool]):
         attempts: int | None = None,
     ) -> m.Api.Webhook.Delivery:
         """Build one canonical delivery model."""
-        delivery_result = u.load(
-            m.Api.Webhook.Delivery,
+        delivery_result = u.parse_model(
             {
                 "event_type": event.type,
                 "timestamp": time.time(),
@@ -204,6 +205,7 @@ class FlextApiWebhookHandler(s[bool]):
                 "attempts": attempts,
                 "error": error,
             },
+            m.Api.Webhook.Delivery,
         )
         if delivery_result.failure:
             msg = delivery_result.error or "Webhook delivery validation failed"
@@ -292,7 +294,7 @@ class FlextApiWebhookHandler(s[bool]):
             ),
         )
 
-    def _parse_payload(self, payload: bytes | str) -> p.Result[t.JsonMapping]:
+    def _parse_payload(self, payload: bytes | str) -> p.Result[t.ContainerValueMapping]:
         """Parse and normalize one webhook payload."""
         payload_text = (
             payload.decode("utf-8") if isinstance(payload, bytes) else payload
@@ -303,7 +305,7 @@ class FlextApiWebhookHandler(s[bool]):
             from_json=True,
         )
         if event_data_result.failure:
-            return r[t.JsonMapping].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"Failed to parse payload: {event_data_result.error}",
             )
         mapping_result = u.validate_value(
@@ -311,8 +313,8 @@ class FlextApiWebhookHandler(s[bool]):
             event_data_result.value,
         )
         if mapping_result.failure:
-            return r[t.JsonMapping].fail("Payload must be a JSON object")
-        return r[t.JsonMapping].ok(dict(mapping_result.value))
+            return r[t.ContainerValueMapping].fail("Payload must be a JSON object")
+        return r[t.ContainerValueMapping].ok(mapping_result.value)
 
     def _process_event(self, event: m.Api.Webhook.Event) -> p.Result[bool]:
         """Dispatch one event to registered handlers."""
@@ -405,9 +407,9 @@ class FlextApiWebhookHandler(s[bool]):
         payload.update(overrides)
         if not payload:
             return m.Api.Webhook.Settings()
-        settings_result = u.load(
-            m.Api.Webhook.Settings,
+        settings_result = u.parse_model(
             m.ConfigMap(root=payload),
+            m.Api.Webhook.Settings,
         )
         if settings_result.failure:
             msg = settings_result.error or "Webhook settings validation failed"
