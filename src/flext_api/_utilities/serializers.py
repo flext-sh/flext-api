@@ -7,10 +7,10 @@ from __future__ import annotations
 
 from typing import TypeIs
 
-from flext_core import r, u
+from flext_web import u
 
 import msgpack
-from flext_api import c, p, t
+from flext_api import c, p, r, t
 
 
 class FlextApiUtilitiesSerializers:

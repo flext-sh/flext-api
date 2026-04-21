@@ -14,8 +14,10 @@ from collections.abc import (
     Mapping,
 )
 
+from flext_web import u
+
 import cbor2
-from flext_api import FlextApiUtilitiesSerializers, c, m, p, r, t, u
+from flext_api import FlextApiUtilitiesSerializers, c, m, p, r, t
 
 
 class FlextApiAdapters:

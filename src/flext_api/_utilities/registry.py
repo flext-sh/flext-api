@@ -12,7 +12,9 @@ from collections.abc import (
 )
 from typing import ClassVar
 
-from flext_api import FlextApiPlugins, c, p, r, t, u
+from flext_web import u
+
+from flext_api import FlextApiPlugins, c, p, r, t
 
 
 class FlextApiRegistry:

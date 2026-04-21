@@ -13,8 +13,10 @@ from __future__ import annotations
 
 from typing import override
 
+from flext_web import p
+
 import httpx
-from flext_api import c, m, p, r, t
+from flext_api import c, m, r, t
 
 
 class FlextApiTransports:

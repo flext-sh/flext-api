@@ -12,9 +12,9 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_core import r, u
+from flext_web import u
 
-from flext_api import c, m, p, t
+from flext_api import c, m, p, r, t
 
 
 class FlextApiStorage:

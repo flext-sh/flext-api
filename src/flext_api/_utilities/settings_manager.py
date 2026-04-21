@@ -16,9 +16,9 @@ from collections.abc import (
     MutableMapping,
 )
 
-from flext_core import r, u
+from flext_web import u
 
-from flext_api import c, m, p, t
+from flext_api import c, m, p, r, t
 
 
 class FlextApiUtilitiesSettingsManager:

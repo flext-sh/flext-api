@@ -16,7 +16,9 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_api import p, r, t, u
+from flext_web import p, u
+
+from flext_api import r, t
 
 
 class _FlextApiPluginBase:
