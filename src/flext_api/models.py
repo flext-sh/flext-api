@@ -53,8 +53,6 @@ class FlextApiModels(m):
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             method: Annotated[
                 c.Api.Method | str,
                 u.Field(
@@ -115,8 +113,6 @@ class FlextApiModels(m):
             Represents a complete HTTP response with all returned data.
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             status_code: Annotated[
                 t.HttpStatusCode,
@@ -192,8 +188,6 @@ class FlextApiModels(m):
 
         class ClientConfig(m.Value):
             """HTTP client configuration model (immutable value object)."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             base_url: Annotated[
                 str,
@@ -319,8 +313,6 @@ class FlextApiModels(m):
         class DictField(m.Value):
             """Pydantic model for validating dictionary fields (immutable value object)."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             value: Annotated[
                 t.ContainerValueMapping,
                 u.Field(description="Dictionary value"),
@@ -342,8 +334,6 @@ class FlextApiModels(m):
 
         class HttpRequestCallArgs(m.Value):
             """Internal model for validating HTTP request call arguments."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
@@ -387,8 +377,6 @@ class FlextApiModels(m):
         class HttpClientRequestOptions(m.Value):
             """Internal model for HTTP client request options."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
             )
@@ -417,8 +405,6 @@ class FlextApiModels(m):
 
         class HeadersRequest(m.Value):
             """Encapsulates RFC header constraint for requests."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             headers: t.StrMapping = u.Field(default_factory=dict)
 
@@ -570,8 +556,6 @@ class FlextApiModels(m):
             class Metadata(m.Value):
                 """Internal metadata for stored values (using Pydantic for validation)."""
 
-                _flext_enforcement_exempt: ClassVar[bool] = True
-
                 value: t.JsonValue
                 timestamp: str
                 ttl: float | int | None = None
@@ -587,8 +571,6 @@ class FlextApiModels(m):
 
             class State(m.FlexibleInternalModel):
                 """Mutable storage runtime state kept in one central model."""
-
-                _flext_enforcement_exempt: ClassVar[bool] = True
 
                 model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                     extra="forbid",
@@ -755,8 +737,6 @@ class FlextApiModels(m):
                 Enforcement exemption: webhook runtime state with mutable
                 handlers/queues accumulated during event dispatch.
                 """
-
-                _flext_enforcement_exempt: ClassVar[bool] = True
 
                 model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                     extra="forbid",
