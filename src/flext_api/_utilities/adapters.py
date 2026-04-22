@@ -14,9 +14,9 @@ from collections.abc import (
     Mapping,
 )
 
+import cbor2
 from flext_web import u
 
-import cbor2
 from flext_api import FlextApiUtilitiesSerializers, c, m, p, r, t
 
 

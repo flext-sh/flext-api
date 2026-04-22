@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
+import httpx
 from flext_core import FlextSettings
 from flext_web import u
 
-import httpx
 from flext_api import (
     FlextApiSettings,
     c,

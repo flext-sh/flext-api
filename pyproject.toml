@@ -151,23 +151,7 @@ omit = [ "*/dependency_injector/providers.pyx" ]
 
 # [MANAGED] deptry
 [tool.deptry]
-known_first_party = [
-  "cbor2",
-  "fastapi",
-  "flext-core",
-  "flext-web",
-  "flext_api",
-  "gql",
-  "httpx",
-  "httpx-sse",
-  "msgpack",
-  "orjson",
-  "pydantic",
-  "pydantic-core",
-  "pydantic-settings",
-  "typing-extensions",
-  "websockets",
-]
+known_first_party = [ "flext_api" ]
 pep621_dev_dependency_groups = [ "dev" ]
 
 [tool.flext.docs]
@@ -497,23 +481,7 @@ select = [ "ALL" ]
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
-known-first-party = [
-  "cbor2",
-  "fastapi",
-  "flext-core",
-  "flext-web",
-  "flext_api",
-  "gql",
-  "httpx",
-  "httpx-sse",
-  "msgpack",
-  "orjson",
-  "pydantic",
-  "pydantic-core",
-  "pydantic-settings",
-  "typing-extensions",
-  "websockets",
-]
+known-first-party = [ "flext_api" ]
 split-on-trailing-comma = true
 
 [tool.ruff.lint.per-file-ignores]

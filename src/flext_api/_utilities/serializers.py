@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import TypeIs
 
+import msgpack
 from flext_web import u
 
-import msgpack
 from flext_api import c, p, r, t
 
 
