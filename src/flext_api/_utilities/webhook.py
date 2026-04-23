@@ -24,8 +24,11 @@ from flext_api import c, m, p, r, s, t
 class FlextApiWebhookHandler(s[bool]):
     """Webhook handler with centralized settings, event, delivery, and state models."""
 
-    _settings: m.Api.Webhook.Settings
-    state: m.Api.Webhook.State
+    _settings: m.Api.Webhook.Settings = u.PrivateAttr()
+    state: m.Api.Webhook.State = u.Field(
+        default_factory=lambda: m.Api.Webhook.State(),
+        description="Webhook runtime state",
+    )
 
     def __init__(
         self,
