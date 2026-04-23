@@ -1,0 +1,24 @@
+src/flext_api/_utilities/storage.py
+  829bd02b9844440d 108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "32fc9cd60673586cafd20492ef908382bbb85f6e",
+  "prompts": {
+    "829bd02b9844440d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7999663-f020-473e-b97a-736d5ebfd970",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 8,
+      "accepted_lines": 1,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/c525f94f36c5b568afe271eca19780bd3d9f9a23b283fd5c4deb662feb1af186"
+    }
+  }
+}
