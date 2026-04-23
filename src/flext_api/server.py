@@ -222,11 +222,6 @@ class FlextApiServer(s[bool]):
             return self._is_running
 
         @property
-        def logger(self) -> p.Logger:
-            """Get the logger instance."""
-            return self.logger
-
-        @property
         def port(self) -> int:
             """Get the server port."""
             return self._port

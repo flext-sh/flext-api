@@ -105,7 +105,7 @@ class FlextApiStorage:
             catch=(ValueError, TypeError),
         ).map_error(lambda error: f"JSON deserialization failed: {error}")
 
-    def execute(self, *args: t.JsonValue, **kwargs: t.JsonValue) -> p.Result[bool]:
+    def execute(self) -> p.Result[bool]:
         """Lifecycle entrypoint for parity with service-shaped components."""
         return r[bool].ok(True)
 

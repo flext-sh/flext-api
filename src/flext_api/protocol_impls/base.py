@@ -54,7 +54,6 @@ class FlextApiBaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **kwargs: t.Scalar,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -62,7 +61,6 @@ class FlextApiBaseProtocolImplementation:
         name: Protocol name (e.g., "http", "websocket", "sse")
         version: Protocol version
         description: Protocol description
-        **kwargs: Additional configuration parameters
 
         """
         self.logger = u.fetch_logger(__name__)

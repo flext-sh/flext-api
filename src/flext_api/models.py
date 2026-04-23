@@ -68,7 +68,7 @@ class FlextApiModels(m):
                 ),
             ]
             headers: Annotated[
-                t.StrMapping,
+                t.MutableStrMapping,
                 u.Field(description="HTTP request headers"),
             ] = u.Field(default_factory=dict)
             body: Annotated[
