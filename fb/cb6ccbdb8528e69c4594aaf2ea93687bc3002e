@@ -1,0 +1,26 @@
+src/flext_api/_utilities/webhook.py
+  02db55bf620bbdf2 27-31
+pyproject.toml
+  02db55bf620bbdf2 165,176-177,179,182-183,185-194,203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "fbcb6ccbdb8528e69c4594aaf2ea93687bc3002e",
+  "prompts": {
+    "02db55bf620bbdf2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd88b7e6-5715-4a2d-af33-58b483877723",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 22,
+      "total_deletions": 4,
+      "accepted_lines": 22,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/58a2e76beaf9a9c799eadfc6b77e34d1c7bc3dc02f44689954a6b0074ef56bc9"
+    }
+  }
+}
