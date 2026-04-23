@@ -12,8 +12,9 @@ import time
 import uuid
 from collections.abc import (
     Mapping,
+    MutableMapping,
+    MutableSequence,
 )
-from typing import override
 
 from flext_web import u
 
@@ -41,7 +42,6 @@ class FlextApiWebhookHandler(s[bool]):
         """Return canonical webhook settings."""
         return self._settings
 
-    @override
     def execute(self) -> p.Result[bool]:
         """Execute webhook lifecycle parity with other FLEXT services."""
         return r[bool].ok(True)
@@ -121,7 +121,9 @@ class FlextApiWebhookHandler(s[bool]):
         event_type_result = self._string_value(event_type)
         if event_type_result.failure:
             return r[bool].fail(event_type_result.error or "Invalid event type")
-        handlers = {key: list(value) for key, value in self.state.handlers.items()}
+        handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = {
+            key: list(value) for key, value in self.state.handlers.items()
+        }
         handlers.setdefault(event_type_result.value, []).append(handler)
         self.state.handlers = handlers
         u.fetch_logger(__name__).info(
@@ -132,7 +134,7 @@ class FlextApiWebhookHandler(s[bool]):
 
     @staticmethod
     def _append_limited[TItem](
-        queue: list[TItem],
+        queue: MutableSequence[TItem],
         item: TItem,
         limit: int,
     ) -> None:
@@ -409,7 +411,7 @@ class FlextApiWebhookHandler(s[bool]):
         if not payload:
             return m.Api.Webhook.Settings()
         settings_result = u.parse_model(
-            m.ConfigMap(root=payload),
+            payload,
             m.Api.Webhook.Settings,
         )
         if settings_result.failure:

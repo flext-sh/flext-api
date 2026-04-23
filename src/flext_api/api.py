@@ -82,7 +82,6 @@ class FlextApi(s[bool]):
             request_kwargs=request_kwargs,
         )
 
-    @override
     def execute(
         self,
         **kwargs: FlextApiTypes.Scalar,
@@ -203,7 +202,9 @@ class FlextApi(s[bool]):
                 timeout=timeout,
             )
             .flat_map(
-                lambda payload: u.parse_model(payload, FlextApiModels.Api.HttpRequest)
+                lambda payload: u.parse_model(
+                    payload.root, FlextApiModels.Api.HttpRequest
+                )
             )
             .flat_map(self.request)
         )

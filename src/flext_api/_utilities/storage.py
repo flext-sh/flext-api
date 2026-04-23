@@ -321,7 +321,7 @@ class FlextApiStorage:
         if not payload:
             return m.Api.Storage.Settings()
         settings_result = u.parse_model(
-            m.ConfigMap(root=payload),
+            payload,
             m.Api.Storage.Settings,
         )
         if settings_result.failure:

@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import time
 from collections.abc import (
-    Mapping,
+    MutableMapping,
+    MutableSequence,
 )
 from typing import Annotated, ClassVar
 
@@ -53,6 +54,8 @@ class FlextApiModels(m):
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             method: Annotated[
                 c.Api.Method | str,
                 u.Field(
@@ -68,23 +71,21 @@ class FlextApiModels(m):
                 ),
             ]
             headers: Annotated[
-                t.MutableStrMapping,
+                t.StrMapping,
                 u.Field(description="HTTP request headers"),
             ] = u.Field(default_factory=dict)
             body: Annotated[
-                Annotated[
-                    t.Api.RequestBody,
-                    m.BeforeValidator(
-                        lambda v: FlextApiModels.Api._normalize_request_body(v)
-                    ),
-                ],
+                t.Api.RequestBody | None,
+                m.BeforeValidator(
+                    lambda v: FlextApiModels.Api._normalize_request_body(v)
+                ),
                 u.Field(description="Request body"),
-            ] = u.Field(default_factory=dict)
+            ] = None
 
             query_params: Annotated[
-                t.Api.WebParams,
+                t.Api.WebParams | None,
                 u.Field(description="Query parameters"),
-            ] = u.Field(default_factory=dict)
+            ] = None
             timeout: Annotated[
                 t.PositiveTimeout,
                 u.Field(
@@ -113,6 +114,8 @@ class FlextApiModels(m):
             Represents a complete HTTP response with all returned data.
             Follows Value Object pattern: immutable, compared by value, no identity.
             """
+
+            _flext_enforcement_exempt: ClassVar[bool] = True
 
             status_code: Annotated[
                 t.HttpStatusCode,
@@ -188,6 +191,8 @@ class FlextApiModels(m):
 
         class ClientConfig(m.Value):
             """HTTP client configuration model (immutable value object)."""
+
+            _flext_enforcement_exempt: ClassVar[bool] = True
 
             base_url: Annotated[
                 str,
@@ -314,7 +319,7 @@ class FlextApiModels(m):
             """Pydantic model for validating dictionary fields (immutable value object)."""
 
             value: Annotated[
-                t.JsonMapping,
+                t.MutableJsonMapping,
                 u.Field(description="Dictionary value"),
             ] = u.Field(default_factory=dict)
 
@@ -405,12 +410,16 @@ class FlextApiModels(m):
                 float | None,
                 u.Field(None, description="Request timeout"),
             ]
-            headers: t.StrMapping = u.Field(default_factory=dict)
+            headers: t.MutableStrMapping = u.Field(
+                default_factory=dict, description="HTTP request headers"
+            )
 
         class HeadersRequest(m.Value):
             """Encapsulates RFC header constraint for requests."""
 
-            headers: t.StrMapping = u.Field(default_factory=dict)
+            headers: t.MutableStrMapping = u.Field(
+                default_factory=dict, description="HTTP headers"
+            )
 
         class MethodRequest(m.Value):
             """Encapsulates RFC method constraint for requests."""
@@ -560,6 +569,8 @@ class FlextApiModels(m):
             class Metadata(m.Value):
                 """Internal metadata for stored values (using Pydantic for validation)."""
 
+                _flext_enforcement_exempt: ClassVar[bool] = True
+
                 value: t.JsonValue
                 timestamp: str
                 ttl: float | int | None = None
@@ -581,8 +592,8 @@ class FlextApiModels(m):
                     validate_assignment=True,
                 )
 
-                entries: dict[str, FlextApiModels.Api.Storage.Metadata] = u.Field(
-                    default_factory=dict
+                entries: MutableMapping[str, FlextApiModels.Api.Storage.Metadata] = (
+                    u.Field(default_factory=dict, description="Storage entries by key")
                 )
                 operations_count: int = u.Field(
                     0,
@@ -746,19 +757,24 @@ class FlextApiModels(m):
                     arbitrary_types_allowed=True,
                 )
 
-                handlers: Mapping[str, list[t.Api.WebhookHandler]] = u.Field(
-                    default_factory=dict
+                handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = (
+                    u.Field(
+                        default_factory=dict,
+                        description="Registered webhook handlers by event type",
+                    )
                 )
-                event_queue: list[FlextApiModels.Api.Webhook.Event] = u.Field(
-                    default_factory=list
+                event_queue: MutableSequence[FlextApiModels.Api.Webhook.Event] = (
+                    u.Field(default_factory=list, description="Main event queue")
                 )
-                retry_queue: list[FlextApiModels.Api.Webhook.Event] = u.Field(
-                    default_factory=list
+                retry_queue: MutableSequence[FlextApiModels.Api.Webhook.Event] = (
+                    u.Field(default_factory=list, description="Retry event queue")
                 )
-                deliveries: Mapping[
+                deliveries: MutableMapping[
                     str,
                     FlextApiModels.Api.Webhook.Delivery,
-                ] = u.Field(default_factory=dict)
+                ] = u.Field(
+                    default_factory=dict, description="Delivery records by event id"
+                )
 
                 @property
                 def event_queue_size(self) -> int:

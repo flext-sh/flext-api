@@ -25,7 +25,6 @@ from collections.abc import (
     MutableSequence,
     Sequence,
 )
-from typing import override
 
 from fastapi import FastAPI
 from flext_core import s
@@ -415,7 +414,6 @@ class FlextApiServer(s[bool]):
         )
         return r[bool].ok(value=True)
 
-    @override
     def execute(self) -> p.Result[bool]:
         """Execute server service (required by s)."""
         return r[bool].ok(True)

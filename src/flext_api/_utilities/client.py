@@ -135,9 +135,11 @@ class FlextApiClient(s[bool]):
 
     @staticmethod
     def _serialize_body(
-        body: t.Api.RequestBody,
+        body: t.Api.RequestBody | None,
     ) -> p.Result[bytes]:
-        """Serialize request body to bytes - no None, empty dict is valid."""
+        """Serialize request body to bytes - None and empty dict map to empty bytes."""
+        if body is None:
+            return r[bytes].ok(b"")
         if isinstance(body, dict) and not body:
             return r[bytes].ok(b"")
         if isinstance(body, bytes):
@@ -152,7 +154,6 @@ class FlextApiClient(s[bool]):
             return r[bytes].ok(body.encode("utf-8"))
         return r[bytes].fail("Request body must be bytes, str, or JSON object")
 
-    @override
     def execute(
         self,
         **kwargs: t.Scalar,
@@ -180,7 +181,10 @@ class FlextApiClient(s[bool]):
             return r[m.Api.HttpResponse].fail(
                 url_result.error or "URL validation failed"
             )
-        body_result = self._serialize_body(request.body)
+        request_body: t.Api.RequestBody = (
+            request.body if request.body is not None else b""
+        )
+        body_result = self._serialize_body(request_body)
         if body_result.failure:
             return r[m.Api.HttpResponse].fail(
                 body_result.error or "Body serialization failed",
@@ -221,7 +225,7 @@ class FlextApiClient(s[bool]):
                 request_method: str = request.method
                 request_url: str = url
                 request_headers: t.StrMapping = headers
-                request_params: t.Api.WebParams = request.query_params
+                request_params: t.Api.WebParams = request.query_params or {}
                 if serialized_body:
                     response = client.request(
                         method=request_method,
