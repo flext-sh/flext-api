@@ -146,16 +146,15 @@ class FlextApiWebhookHandler(s[bool]):
         delivery: m.Api.Webhook.Delivery,
     ) -> t.JsonMapping:
         """Project one delivery model into the public payload."""
-        payload: dict[str, t.JsonValue] = {
+        return t.json_mapping_adapter().validate_python({
             "event_type": delivery.event_type,
             "timestamp": delivery.timestamp,
             "status": delivery.status,
-        }
-        if delivery.attempts is not None:
-            payload["attempts"] = delivery.attempts
-        if delivery.error is not None:
-            payload["error"] = delivery.error
-        return payload
+            **(
+                {"attempts": delivery.attempts} if delivery.attempts is not None else {}
+            ),
+            **({"error": delivery.error} if delivery.error is not None else {}),
+        })
 
     def _record_delivery(
         self,
@@ -169,7 +168,7 @@ class FlextApiWebhookHandler(s[bool]):
 
     def _build_event(
         self,
-        event_data: t.ContainerValueMapping,
+        event_data: t.JsonMapping,
     ) -> p.Result[m.Api.Webhook.Event]:
         """Build one canonical webhook event model."""
         event_type_result = self._resolve_event_type(event_data)
@@ -197,16 +196,16 @@ class FlextApiWebhookHandler(s[bool]):
         attempts: int | None = None,
     ) -> m.Api.Webhook.Delivery:
         """Build one canonical delivery model."""
-        delivery_result = u.parse_model(
-            {
-                "event_type": event.type,
-                "timestamp": time.time(),
-                "status": status,
-                "attempts": attempts,
-                "error": error,
-            },
-            m.Api.Webhook.Delivery,
-        )
+        delivery_payload: dict[str, t.RuntimeData] = {
+            "event_type": event.type,
+            "timestamp": time.time(),
+            "status": status,
+        }
+        if attempts is not None:
+            delivery_payload["attempts"] = attempts
+        if error is not None:
+            delivery_payload["error"] = error
+        delivery_result = u.parse_model(delivery_payload, m.Api.Webhook.Delivery)
         if delivery_result.failure:
             msg = delivery_result.error or "Webhook delivery validation failed"
             raise ValueError(msg)
@@ -215,6 +214,8 @@ class FlextApiWebhookHandler(s[bool]):
     @staticmethod
     def _string_value(value: t.RuntimeData | None) -> p.Result[str]:
         """Validate and normalize one string input."""
+        if value is None:
+            return r[str].fail("Invalid string value")
         value_result = u.validate_value(t.Api.STRING_ADAPTER, value)
         if value_result.failure:
             return r[str].fail(value_result.error or "Invalid string value")
@@ -294,7 +295,7 @@ class FlextApiWebhookHandler(s[bool]):
             ),
         )
 
-    def _parse_payload(self, payload: bytes | str) -> p.Result[t.ContainerValueMapping]:
+    def _parse_payload(self, payload: bytes | str) -> p.Result[t.JsonMapping]:
         """Parse and normalize one webhook payload."""
         payload_text = (
             payload.decode("utf-8") if isinstance(payload, bytes) else payload
@@ -305,7 +306,7 @@ class FlextApiWebhookHandler(s[bool]):
             from_json=True,
         )
         if event_data_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 f"Failed to parse payload: {event_data_result.error}",
             )
         mapping_result = u.validate_value(
@@ -313,8 +314,8 @@ class FlextApiWebhookHandler(s[bool]):
             event_data_result.value,
         )
         if mapping_result.failure:
-            return r[t.ContainerValueMapping].fail("Payload must be a JSON object")
-        return r[t.ContainerValueMapping].ok(mapping_result.value)
+            return r[t.JsonMapping].fail("Payload must be a JSON object")
+        return r[t.JsonMapping].ok(mapping_result.value)
 
     def _process_event(self, event: m.Api.Webhook.Event) -> p.Result[bool]:
         """Dispatch one event to registered handlers."""
@@ -372,7 +373,7 @@ class FlextApiWebhookHandler(s[bool]):
         )
         return (False, False)
 
-    def _resolve_event_id(self, event_data: t.ContainerValueMapping) -> str:
+    def _resolve_event_id(self, event_data: t.JsonMapping) -> str:
         """Resolve one event id, generating a UUID when absent."""
         event_id_result = self._string_value(event_data.get("id"))
         if event_id_result.success:
@@ -381,7 +382,7 @@ class FlextApiWebhookHandler(s[bool]):
 
     def _resolve_event_type(
         self,
-        event_data: t.ContainerValueMapping,
+        event_data: t.JsonMapping,
     ) -> p.Result[str]:
         """Resolve canonical event type from supported payload fields."""
         for key in ("type", "event_type"):

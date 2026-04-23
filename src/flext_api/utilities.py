@@ -11,22 +11,19 @@ from enum import StrEnum
 from typing import TypeIs
 from urllib.parse import urlparse
 
-from flext_cli import FlextCliUtilities
-from flext_core import m, r
-from flext_web import FlextWebUtilities
+from flext_web import m, u
 
 from flext_api import (
-    FlextApiProtocols,
-    FlextApiTypes,
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
+    p,
+    r,
     t,
 )
 
 
 class FlextApiUtilities(
-    FlextWebUtilities,
-    FlextCliUtilities,
+    u,
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
 ):
@@ -93,16 +90,16 @@ class FlextApiUtilities(
 
             @staticmethod
             def extract_body_from_kwargs(
-                data: FlextApiTypes.Api.RequestBody | None,
-                kwargs: FlextApiTypes.Api.RequestKwargs | None,
-            ) -> FlextApiProtocols.Result[FlextApiTypes.Api.RequestBody]:
+                data: t.Api.RequestBody | None,
+                kwargs: t.Api.RequestKwargs | None,
+            ) -> p.Result[t.Api.RequestBody]:
                 """Extract body from data or kwargs - returns empty dict if no body found."""
                 if data is not None:
-                    return r[FlextApiTypes.Api.RequestBody].ok(data)
+                    return r[t.Api.RequestBody].ok(data)
                 if kwargs is not None and "data" in kwargs:
                     raw_data = kwargs["data"]
                     if raw_data is not None:
-                        return r[FlextApiTypes.Api.RequestBody].ok(
+                        return r[t.Api.RequestBody].ok(
                             FlextApiUtilities.Api.RequestUtils.to_request_body(
                                 raw_data,
                             ),
@@ -110,63 +107,61 @@ class FlextApiUtilities(
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
                     if raw_json is not None:
-                        return r[FlextApiTypes.Api.RequestBody].ok(
+                        return r[t.Api.RequestBody].ok(
                             FlextApiUtilities.Api.RequestUtils.to_request_body(
                                 raw_json,
                             ),
                         )
-                return r[FlextApiTypes.Api.RequestBody].ok({})
+                return r[t.Api.RequestBody].ok({})
 
             @staticmethod
             def merge_headers(
-                headers: FlextApiTypes.StrMapping | None,
-                kwargs: FlextApiTypes.Api.RequestKwargs | None,
-            ) -> FlextApiProtocols.Result[FlextApiTypes.StrMapping]:
+                headers: t.StrMapping | None,
+                kwargs: t.Api.RequestKwargs | None,
+            ) -> p.Result[t.StrMapping]:
                 """Merge headers from headers dict and kwargs."""
-                merged: FlextApiTypes.MutableStrMapping = {}
+                merged: t.MutableStrMapping = {}
                 if headers:
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
                     headers_value = kwargs["headers"]
                     if headers_value is not None:
                         if not isinstance(headers_value, Mapping):
-                            return r[FlextApiTypes.StrMapping].fail(
-                                "Headers must be a mapping"
-                            )
-                        validated_headers = (
-                            FlextApiTypes.Api.STR_MAPPING_ADAPTER.validate_python(
-                                headers_value,
-                            )
+                            return r[t.StrMapping].fail("Headers must be a mapping")
+                        validated_headers = t.Api.STR_MAPPING_ADAPTER.validate_python(
+                            headers_value,
                         )
                         merged.update(validated_headers)
-                return r[FlextApiTypes.StrMapping].ok(merged)
+                return r[t.StrMapping].ok(merged)
 
             @staticmethod
             def to_json_value(
-                value: FlextApiTypes.Container | FlextApiTypes.JsonValue,
-            ) -> FlextApiTypes.JsonValue:
+                value: (
+                    t.JsonValue | t.StrMapping | t.ScalarMapping | t.Api.WebHeaders
+                ),
+            ) -> t.JsonValue:
                 """Validate arbitrary value as JsonValue using centralized Pydantic contracts."""
                 if value is None:
                     return None
-                return FlextApiTypes.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
+                return t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
 
             @staticmethod
             def to_request_body(
-                value: FlextApiTypes.Api.RequestBody
-                | FlextApiTypes.FlatContainerMapping
-                | FlextApiTypes.StrMapping
-                | FlextApiTypes.ScalarMapping
-                | FlextApiTypes.Api.WebHeaders
-                | FlextApiTypes.Container,
-            ) -> FlextApiTypes.Api.RequestBody:
+                value: t.Api.RequestBody
+                | t.JsonMapping
+                | t.StrMapping
+                | t.ScalarMapping
+                | t.Api.WebHeaders
+                | t.JsonValue,
+            ) -> t.Api.RequestBody:
                 """Validate arbitrary value as RequestBody using centralized Pydantic contracts."""
-                return FlextApiTypes.Api.REQUEST_BODY_ADAPTER.validate_python(value)
+                return t.Api.REQUEST_BODY_ADAPTER.validate_python(value)
 
             @staticmethod
             def validate_and_extract_timeout(
                 timeout: float | str | None,
-                kwargs: FlextApiTypes.Api.RequestKwargs | None,
-            ) -> FlextApiProtocols.Result[float]:
+                kwargs: t.Api.RequestKwargs | None,
+            ) -> p.Result[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
                 Returns default timeout of 30.0 if not specified.
@@ -196,20 +191,20 @@ class FlextApiUtilities(
 
             @staticmethod
             def extract_query_params(
-                request_kwargs: FlextApiTypes.Api.RequestKwargs | None,
-            ) -> FlextApiProtocols.Result[FlextApiTypes.Api.WebParams]:
+                request_kwargs: t.Api.RequestKwargs | None,
+            ) -> p.Result[t.Api.WebParams]:
                 """Extract and normalize query parameters from request kwargs."""
-                query_params: FlextApiTypes.Api.WebParams = {}
+                query_params: t.Api.WebParams = {}
                 if request_kwargs is None or "params" not in request_kwargs:
-                    return r[FlextApiTypes.Api.WebParams].ok(query_params)
+                    return r[t.Api.WebParams].ok(query_params)
                 params_value = request_kwargs["params"]
                 if params_value is None:
-                    return r[FlextApiTypes.Api.WebParams].ok(query_params)
+                    return r[t.Api.WebParams].ok(query_params)
                 if not isinstance(params_value, Mapping):
-                    return r[FlextApiTypes.Api.WebParams].fail(
+                    return r[t.Api.WebParams].fail(
                         f"Invalid params type: {type(params_value)}",
                     )
-                params_result: FlextApiTypes.MutableStrMapping = {}
+                params_result: t.MutableStrMapping = {}
                 for key, value in params_value.items():
                     if isinstance(value, str):
                         params_result[key] = value
@@ -217,18 +212,18 @@ class FlextApiUtilities(
                         params_result[key] = f"{value}"
                     else:
                         params_result[key] = ""
-                return r[FlextApiTypes.Api.WebParams].ok(params_result)
+                return r[t.Api.WebParams].ok(params_result)
 
             @staticmethod
             def build_request_payload(
                 *,
                 method: str,
                 url: str,
-                data: FlextApiTypes.Api.RequestBody | None = None,
-                headers: FlextApiTypes.StrMapping | None = None,
-                request_kwargs: FlextApiTypes.Api.RequestKwargs | None = None,
+                data: t.Api.RequestBody | None = None,
+                headers: t.StrMapping | None = None,
+                request_kwargs: t.Api.RequestKwargs | None = None,
                 timeout: float | str | None = None,
-            ) -> FlextApiProtocols.Result[m.ConfigMap]:
+            ) -> p.Result[m.ConfigMap]:
                 """Build one normalized request payload for HttpRequest validation."""
                 body_result = (
                     FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
@@ -288,19 +283,17 @@ class FlextApiUtilities(
             message: str,
             status_code: int = 400,
             error_code: str | None = None,
-        ) -> Mapping[str, t.JsonValue]:
+        ) -> t.JsonMapping:
             """Build error response - returns plain dict."""
-            error_detail: dict[str, t.JsonValue] = {
+            error_detail = t.json_mapping_adapter().validate_python({
                 "message": message,
                 "status_code": status_code,
-            }
-            if error_code is not None:
-                error_detail["code"] = error_code
-            result: dict[str, t.JsonValue] = {
+                **({"code": error_code} if error_code is not None else {}),
+            })
+            return t.json_mapping_adapter().validate_python({
                 "success": False,
                 "error": error_detail,
-            }
-            return result
+            })
 
         @staticmethod
         def build_error_result(
@@ -308,17 +301,25 @@ class FlextApiUtilities(
             status_code: int = 400,
             data: t.JsonValue | None = None,
             headers: t.StrMapping | None = None,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
+        ) -> p.Result[t.JsonMapping]:
             """Build error result - returns r with error response."""
-            response: dict[str, t.JsonValue] = {
-                "error": error,
-                "status_code": status_code,
-            }
-            if data is not None:
-                response["data"] = data
-            if headers:
-                response["headers"] = dict(headers)
-            return r[Mapping[str, t.JsonValue]].ok(response)
+            normalized_headers = (
+                t.Api.API_JSON_VALUE_ADAPTER.validate_python(dict(headers))
+                if headers
+                else None
+            )
+            return r[t.JsonMapping].ok(
+                t.json_mapping_adapter().validate_python({
+                    "error": error,
+                    "status_code": status_code,
+                    **({"data": data} if data is not None else {}),
+                    **(
+                        {"headers": normalized_headers}
+                        if normalized_headers is not None
+                        else {}
+                    ),
+                })
+            )
 
         @staticmethod
         def build_success_response(
@@ -326,70 +327,81 @@ class FlextApiUtilities(
             message: str = "Success",
             status_code: int = 200,
             headers: t.StrMapping | None = None,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
+        ) -> p.Result[t.JsonMapping]:
             """Build success response with optional data and message."""
-            response: dict[str, t.JsonValue] = {
-                "status": "success",
-                "data": data,
-                "message": message,
-                "status_code": status_code,
-                "timestamp": datetime.now(tz=UTC).isoformat(),
-            }
-            if headers:
-                response["headers"] = dict(headers)
-            return r[Mapping[str, t.JsonValue]].ok(response)
+            normalized_headers = (
+                t.Api.API_JSON_VALUE_ADAPTER.validate_python(dict(headers))
+                if headers
+                else None
+            )
+            return r[t.JsonMapping].ok(
+                t.json_mapping_adapter().validate_python({
+                    "status": "success",
+                    "data": data,
+                    "message": message,
+                    "status_code": status_code,
+                    "timestamp": datetime.now(tz=UTC).isoformat(),
+                    **(
+                        {"headers": normalized_headers}
+                        if normalized_headers is not None
+                        else {}
+                    ),
+                })
+            )
 
     class PaginationBuilder:
         """Pagination builder for paginated responses."""
 
         @staticmethod
         def build_paginated_response(
-            data: t.JsonSequence,
+            data: t.JsonList,
             page: int,
             page_size: int,
             total: int | None = None,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
+        ) -> p.Result[t.JsonMapping]:
             """Build paginated response."""
             if page < 1:
-                return r[Mapping[str, t.JsonValue]].fail("Page must be >= 1")
+                return r[t.JsonMapping].fail("Page must be >= 1")
             if page_size < 1:
-                return r[Mapping[str, t.JsonValue]].fail("Page size must be >= 1")
+                return r[t.JsonMapping].fail("Page size must be >= 1")
             total_items = total if total is not None else len(data)
             total_pages = (
                 (total_items + page_size - 1) // page_size if page_size > 0 else 0
             )
-            pagination_info: dict[str, t.JsonValue] = {
+            pagination_info = t.json_mapping_adapter().validate_python({
                 "page": page,
                 "page_size": page_size,
                 "total": total_items,
                 "total_pages": total_pages,
-            }
-            response: dict[str, t.JsonValue] = {
-                "success": True,
-                "data": list(data),
-                "pagination": pagination_info,
-            }
-            return r[Mapping[str, t.JsonValue]].ok(response)
+            })
+            return r[t.JsonMapping].ok(
+                t.json_mapping_adapter().validate_python({
+                    "success": True,
+                    "data": list(data),
+                    "pagination": pagination_info,
+                })
+            )
 
         @staticmethod
         def build_pagination_response(
-            pagination_data: Mapping[str, t.JsonValue],
-        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
+            pagination_data: t.JsonMapping,
+        ) -> p.Result[t.JsonMapping]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
-                return r[Mapping[str, t.JsonValue]].fail(
+                return r[t.JsonMapping].fail(
                     "pagination_data must contain 'data' key",
                 )
-            result: dict[str, t.JsonValue] = {
-                "success": True,
-                "pagination": dict(pagination_data),
-            }
-            return r[Mapping[str, t.JsonValue]].ok(result)
+            return r[t.JsonMapping].ok(
+                t.json_mapping_adapter().validate_python({
+                    "success": True,
+                    "pagination": dict(pagination_data),
+                })
+            )
 
         @staticmethod
         def extract_page_params(
-            params: Mapping[str, t.JsonValue],
-        ) -> FlextApiProtocols.Result[t.IntPair]:
+            params: t.JsonMapping,
+        ) -> p.Result[t.IntPair]:
             """Extract and validate page and page_size from params dict.
 
             Returns tuple of (page, page_size).
@@ -414,37 +426,39 @@ class FlextApiUtilities(
 
         @staticmethod
         def extract_pagination_config(
-            settings: t.Container,
-        ) -> Mapping[str, t.JsonValue]:
-            """Extract pagination configuration from settings t.Container.
+            settings: t.JsonValue,
+        ) -> t.JsonMapping:
+            """Extract pagination configuration from settings t.JsonValue.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
-            result: dict[str, t.JsonValue] = {}
             default_page_size = getattr(settings, "default_page_size", 20)
             max_page_size = getattr(settings, "max_page_size", 1000)
-            result["default_page_size"] = (
-                FlextApiUtilities.Api.RequestUtils.to_json_value(default_page_size)
-            )
-            result["max_page_size"] = FlextApiUtilities.Api.RequestUtils.to_json_value(
-                max_page_size,
-            )
-            return result
+            return t.json_mapping_adapter().validate_python({
+                "default_page_size": (
+                    FlextApiUtilities.Api.RequestUtils.to_json_value(
+                        default_page_size,
+                    )
+                ),
+                "max_page_size": FlextApiUtilities.Api.RequestUtils.to_json_value(
+                    max_page_size,
+                ),
+            })
 
         @staticmethod
         def prepare_pagination_data(
-            data: t.JsonSequence,
+            data: t.JsonList,
             total: int,
             page: int,
             page_size: int,
-        ) -> FlextApiProtocols.Result[Mapping[str, t.JsonValue]]:
+        ) -> p.Result[t.JsonMapping]:
             """Prepare pagination metadata for response.
 
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
             """
             if page < 1 or page_size < 1:
-                return r[Mapping[str, t.JsonValue]].fail(
+                return r[t.JsonMapping].fail(
                     "Page and page_size must be >= 1",
                 )
             total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
@@ -452,7 +466,7 @@ class FlextApiUtilities(
             has_prev = page > 1
             next_page: int = page + 1 if has_next else 0
             prev_page: int = page - 1 if has_prev else 0
-            result: dict[str, t.JsonValue] = {
+            result: t.JsonMapping = {
                 "data": list(data),
                 "total": total,
                 "page": page,
@@ -463,14 +477,14 @@ class FlextApiUtilities(
                 "next_page": next_page,
                 "prev_page": prev_page,
             }
-            return r[Mapping[str, t.JsonValue]].ok(result)
+            return r[t.JsonMapping].ok(result)
 
         @staticmethod
         def validate_pagination_params(
             page: int,
             page_size: int,
             max_page_size: int = 1000,
-        ) -> FlextApiProtocols.Result[t.IntPair]:
+        ) -> p.Result[t.IntPair]:
             """Validate pagination parameters.
 
             Returns tuple of (page, page_size) if valid.
@@ -489,7 +503,7 @@ class FlextApiUtilities(
         """Web validation utilities for URLs and HTTP methods."""
 
         @staticmethod
-        def valid_port_number(port: t.Container) -> TypeIs[int]:
+        def valid_port_number(port: t.JsonValue) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
             if not isinstance(port, int):
                 return False
@@ -505,7 +519,7 @@ class FlextApiUtilities(
             return url
 
         @staticmethod
-        def validate_hostname(host: str) -> FlextApiProtocols.Result[str]:
+        def validate_hostname(host: str) -> p.Result[str]:
             """Validate hostname format."""
             if not host or not host.strip():
                 return r[str].fail("Hostname cannot be empty")
@@ -522,7 +536,7 @@ class FlextApiUtilities(
             return method.upper() in FlextApiUtilities.VALID_HTTP_METHODS
 
         @staticmethod
-        def validate_port_number(port: int) -> FlextApiProtocols.Result[int]:
+        def validate_port_number(port: int) -> p.Result[int]:
             """Validate port number range."""
             if port < 1 or port > FlextApiUtilities.MAX_PORT:
                 return r[int].fail(
@@ -531,7 +545,7 @@ class FlextApiUtilities(
             return r[int].ok(port)
 
         @staticmethod
-        def validate_url(url: str) -> FlextApiProtocols.Result[str]:
+        def validate_url(url: str) -> p.Result[str]:
             """Validate URL format and structure."""
             if not url or not url.strip():
                 return r[str].fail("URL cannot be empty")

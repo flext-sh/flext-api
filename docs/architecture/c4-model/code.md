@@ -289,7 +289,7 @@ class FlextApiModels(FlextModels):
         method: str
         url: str
         headers: Dict[str, str] = {}
-        body: Optional[t.Container] = None
+        body: Optional[t.JsonValue] = None
         timeout: float = 30.0
 
         @u.computed_field
@@ -331,7 +331,7 @@ class Base
         pass
 
     @abstractmethod
-    async def execute_request(self, request) -> p.Result[t.Container]:
+    async def execute_request(self, request) -> p.Result[t.JsonValue]:
         """Execute protocol-specific request."""
         pass
 
@@ -574,7 +574,7 @@ class StorageBackend(ABC):
 class S3Backend(StorageBackend):
     """Amazon S3 storage backend."""
 
-    def __init__(self, settings: Dict[str, t.Container]):
+    def __init__(self, settings: Dict[str, t.JsonValue]):
         self.bucket = settings["bucket"]
         self.client = boto3.client(
             "s3",

@@ -100,14 +100,14 @@ class TestSerializers:
 
     def test_packb_produces_bytes(self) -> None:
         """Packb returns non-empty bytes for valid input."""
-        payload: t.StrMapping = {"key": "value"}
+        payload: t.JsonMapping = {"key": "value"}
         packed = u.packb(payload)
         assert packed, "packb should return non-empty bytes"
         assert len(packed) > 0
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """Pack then unpack returns original data."""
-        original: t.HeaderMapping = {"hello": "world", "count": 42}
+        original: t.JsonMapping = {"hello": "world", "count": 42}
         packed = u.packb(original)
         result = u.unpackb(packed)
         assert result.success is True

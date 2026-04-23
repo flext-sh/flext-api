@@ -14,7 +14,7 @@ from typing import ClassVar
 
 from flext_web import u
 
-from flext_api import FlextApiPlugins, c, p, r, t
+from flext_api import FlextApiProtocolPlugins, c, p, r, t
 
 
 class FlextApiRegistry:
@@ -27,10 +27,10 @@ class FlextApiRegistry:
     _global_instance: ClassVar[FlextApiRegistry | None] = None
 
     _registry: p.Registry
-    _protocol_cache: MutableMapping[str, FlextApiPlugins.Protocol]
-    _schema_cache: MutableMapping[str, FlextApiPlugins.Schema]
-    _transport_cache: MutableMapping[str, FlextApiPlugins.Transport]
-    _auth_cache: MutableMapping[str, FlextApiPlugins.Authentication]
+    _protocol_cache: MutableMapping[str, FlextApiProtocolPlugins.Protocol]
+    _schema_cache: MutableMapping[str, FlextApiProtocolPlugins.Schema]
+    _transport_cache: MutableMapping[str, FlextApiProtocolPlugins.Transport]
+    _auth_cache: MutableMapping[str, FlextApiProtocolPlugins.Authentication]
 
     def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
         """Initialize API registry."""
@@ -74,25 +74,25 @@ class FlextApiRegistry:
 
     def resolve_auth_provider(
         self, name: str
-    ) -> p.Result[FlextApiPlugins.Authentication]:
+    ) -> p.Result[FlextApiProtocolPlugins.Authentication]:
         """Get registered authentication provider by name."""
         if name in self._auth_cache:
-            return r[FlextApiPlugins.Authentication].ok(self._auth_cache[name])
+            return r[FlextApiProtocolPlugins.Authentication].ok(self._auth_cache[name])
         result = self.fetch_plugin(self.AUTH_PROVIDERS, name)
         if result.failure:
-            return r[FlextApiPlugins.Authentication].fail(result.error)
-        return r[FlextApiPlugins.Authentication].fail(
+            return r[FlextApiProtocolPlugins.Authentication].fail(result.error)
+        return r[FlextApiProtocolPlugins.Authentication].fail(
             "Plugin is not an Authentication type",
         )
 
-    def resolve_protocol(self, name: str) -> p.Result[FlextApiPlugins.Protocol]:
+    def resolve_protocol(self, name: str) -> p.Result[FlextApiProtocolPlugins.Protocol]:
         """Get registered protocol plugin by name."""
         if name in self._protocol_cache:
-            return r[FlextApiPlugins.Protocol].ok(self._protocol_cache[name])
+            return r[FlextApiProtocolPlugins.Protocol].ok(self._protocol_cache[name])
         result = self.fetch_plugin(self.PROTOCOLS, name)
         if result.failure:
-            return r[FlextApiPlugins.Protocol].fail(result.error)
-        return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
+            return r[FlextApiProtocolPlugins.Protocol].fail(result.error)
+        return r[FlextApiProtocolPlugins.Protocol].fail("Plugin is not a Protocol type")
 
     def registry_status(self) -> p.Result[t.IntMapping]:
         """Get current registry status with plugin counts."""
@@ -112,23 +112,27 @@ class FlextApiRegistry:
         }
         return r[t.IntMapping].ok(status)
 
-    def resolve_schema(self, name: str) -> p.Result[FlextApiPlugins.Schema]:
+    def resolve_schema(self, name: str) -> p.Result[FlextApiProtocolPlugins.Schema]:
         """Get registered schema plugin by name."""
         if name in self._schema_cache:
-            return r[FlextApiPlugins.Schema].ok(self._schema_cache[name])
+            return r[FlextApiProtocolPlugins.Schema].ok(self._schema_cache[name])
         result = self.fetch_plugin(self.SCHEMAS, name)
         if result.failure:
-            return r[FlextApiPlugins.Schema].fail(result.error)
-        return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
+            return r[FlextApiProtocolPlugins.Schema].fail(result.error)
+        return r[FlextApiProtocolPlugins.Schema].fail("Plugin is not a Schema type")
 
-    def resolve_transport(self, name: str) -> p.Result[FlextApiPlugins.Transport]:
+    def resolve_transport(
+        self, name: str
+    ) -> p.Result[FlextApiProtocolPlugins.Transport]:
         """Get registered transport plugin by name."""
         if name in self._transport_cache:
-            return r[FlextApiPlugins.Transport].ok(self._transport_cache[name])
+            return r[FlextApiProtocolPlugins.Transport].ok(self._transport_cache[name])
         result = self.fetch_plugin(self.TRANSPORTS, name)
         if result.failure:
-            return r[FlextApiPlugins.Transport].fail(result.error)
-        return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
+            return r[FlextApiProtocolPlugins.Transport].fail(result.error)
+        return r[FlextApiProtocolPlugins.Transport].fail(
+            "Plugin is not a Transport type"
+        )
 
     def list_auth_providers(self) -> p.Result[t.StrSequence]:
         """List all registered authentication provider names."""
@@ -149,21 +153,21 @@ class FlextApiRegistry:
     def register_auth_provider(
         self,
         name: str,
-        plugin: FlextApiPlugins.Authentication,
+        plugin: FlextApiProtocolPlugins.Authentication,
     ) -> p.Result[bool]:
         """Register an authentication provider plugin."""
         self._auth_cache[name] = plugin
         return self.register_plugin(self.AUTH_PROVIDERS, name, plugin.name)
 
     def register_protocol(
-        self, name: str, plugin: FlextApiPlugins.Protocol
+        self, name: str, plugin: FlextApiProtocolPlugins.Protocol
     ) -> p.Result[bool]:
         """Register a protocol plugin."""
         self._protocol_cache[name] = plugin
         return self.register_plugin(self.PROTOCOLS, name, plugin.name)
 
     def register_schema(
-        self, name: str, plugin: FlextApiPlugins.Schema
+        self, name: str, plugin: FlextApiProtocolPlugins.Schema
     ) -> p.Result[bool]:
         """Register a schema plugin."""
         self._schema_cache[name] = plugin
@@ -172,7 +176,7 @@ class FlextApiRegistry:
     def register_transport(
         self,
         name: str,
-        plugin: FlextApiPlugins.Transport,
+        plugin: FlextApiProtocolPlugins.Transport,
     ) -> p.Result[bool]:
         """Register a transport plugin."""
         self._transport_cache[name] = plugin

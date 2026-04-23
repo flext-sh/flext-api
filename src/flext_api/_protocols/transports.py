@@ -16,13 +16,13 @@ from typing import override
 import httpx
 from flext_web import p
 
-from flext_api import c, m, r, t
+from flext_api import FlextApiProtocolsBase as pb, c, m, r, t
 
 
-class FlextApiTransports:
+class FlextApiProtocolsTransports:
     """FLEXT API transport implementations."""
 
-    class FlextWebTransport(p.Api.Transport.TransportPlugin):
+    class FlextWebTransport(pb.TransportPlugin):
         """HTTP transport implementation using httpx."""
 
         def __init__(self) -> None:
@@ -88,7 +88,7 @@ class FlextApiTransports:
         def send(
             self,
             connection: str,
-            data: t.ContainerValueMapping | t.Api.RequestBody,
+            data: t.JsonMapping | t.Api.RequestBody,
         ) -> p.Result[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             params_result = self._extract_request_params(
@@ -110,7 +110,7 @@ class FlextApiTransports:
 
         def _extract_request_params(
             self,
-            data: t.ContainerValueMapping | t.Api.RequestBody,
+            data: t.JsonMapping | t.Api.RequestBody,
             *,
             connection_url: str,
         ) -> p.Result[m.Api.HttpRequest]:
@@ -219,4 +219,4 @@ class FlextApiTransports:
             }
 
 
-__all__: list[str] = ["FlextApiTransports"]
+__all__: list[str] = ["FlextApiProtocolsTransports"]

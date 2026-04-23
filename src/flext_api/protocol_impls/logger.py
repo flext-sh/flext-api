@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Mapping,
-    MutableMapping,
     Sequence,
 )
 from typing import override
@@ -16,7 +15,7 @@ from typing import override
 from flext_api import p, t, u
 
 
-class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
+class FlextApiLoggerProtocolImplementation(p.Api.Logger):
     """Logger implementation conforming to Logger."""
 
     def __init__(self) -> None:
@@ -49,16 +48,21 @@ class FlextApiLoggerProtocolImplementation(p.Api.Logger.Logger):
 
     def _convert_kwargs_to_context(
         self,
-        kwargs: Mapping[str, t.JsonValue],
-    ) -> t.FlatContainerMapping:
+        kwargs: t.JsonMapping,
+    ) -> t.JsonMapping:
         """Convert kwargs to context dict for logger compatibility."""
-        context: MutableMapping[str, t.Container] = {}
+        context: dict[str, t.JsonValue] = {}
         for key, value in kwargs.items():
+            if value is None:
+                context[key] = "<unstructured>"
+                continue
+            if isinstance(value, Mapping) or (
+                isinstance(value, Sequence) and not isinstance(value, (str, bytes))
+            ):
+                context[key] = "<structured>"
+                continue
             if u.container(value):
                 context[key] = value
-                continue
-            if isinstance(value, (Mapping, Sequence)):
-                context[key] = "<structured>"
                 continue
             context[key] = "<unstructured>"
         return context

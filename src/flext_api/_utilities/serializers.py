@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import TypeIs
 
 import msgpack
-from flext_web import u
 
 from flext_api import c, p, r, t
 
@@ -68,6 +67,7 @@ class FlextApiUtilitiesSerializers:
             if not FlextApiUtilitiesSerializers._is_msgpack_module(module):
                 return r[t.JsonValue].fail("msgpack module not available")
             result = module.unpackb(data)
-            return u.validate_value(t.JsonValue, result)
+            normalized = t.Api.API_JSON_VALUE_ADAPTER.validate_python(result)
+            return r[t.JsonValue].ok(normalized)
         except (TypeError, c.ValidationError, ValueError) as e:
             return r[t.JsonValue].fail(f"msgpack deserialization failed: {e}")

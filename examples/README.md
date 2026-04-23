@@ -48,7 +48,7 @@
 - **FlextApiClient** - HTTP client with support
 - **FlextApiModels** - Domain models and data structures
 - **FlextApiStorage** - Storage backends (Memory, File)
-- **FlextApiPlugins** - Extensible plugin system
+- **FlextApiProtocolPlugins** - Extensible plugin system
 - **create_flext_api()** - Factory function
 - **create_flext_api_app()** - FastAPI application factory
 

@@ -25,8 +25,8 @@ from typing import override
 import httpx
 
 from flext_api import (
+    FlextApiProtocolsTransports,
     FlextApiRfcProtocolImplementation,
-    FlextApiTransports,
     c,
     m,
     p,
@@ -88,7 +88,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
         self._follow_redirects = follow_redirects
         self._max_redirects = max_redirects
-        self._transport = FlextApiTransports.FlextWebTransport()
+        self._transport = FlextApiProtocolsTransports.FlextWebTransport()
 
         def _log_initialize_error(error: str) -> None:
             self.logger.error("Failed to initialize HTTP protocol: %s", error)
@@ -103,10 +103,10 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
 
     @override
-    def protocol_info(self) -> Mapping[str, t.Container | t.StrSequence]:
+    def protocol_info(self) -> Mapping[str, t.JsonValue | t.StrSequence]:
         """Get protocol configuration information."""
         base_info = super().protocol_info()
-        updated_info: Mapping[str, t.Container | t.StrSequence] = {
+        updated_info: Mapping[str, t.JsonValue | t.StrSequence] = {
             **base_info,
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,
@@ -127,16 +127,14 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def send_request(
         self,
-        request: t.ContainerValueMapping,
+        request: t.JsonMapping,
         **_kwargs: t.Scalar,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Send HTTP request with retry logic and error handling."""
-        request_general: t.MutableContainerValueMapping = {}
-        for key, value in request.items():
-            request_general[key] = u.Api.RequestUtils.to_json_value(value)
+        request_general: t.MutableJsonMapping = dict(request)
         request_result = self._build_http_request_from_dict(request_general)
         if request_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 request_result.error or "Request building failed",
             )
         http_request = request_result.value
@@ -144,7 +142,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         url = http_request.url
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
@@ -155,7 +153,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             follow_redirects=self._follow_redirects,
         )
         if conn_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
         connection = conn_result.value
@@ -169,10 +167,10 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             body,
         )
         return result.fold(
-            on_failure=lambda e: p.Result[t.ContainerValueMapping].fail(
+            on_failure=lambda e: r[t.Api.HttpResponseDict].fail(
                 e or "Request execution failed",
             ),
-            on_success=lambda response: p.Result[t.ContainerValueMapping].ok(
+            on_success=lambda response: r[t.Api.HttpResponseDict].ok(
                 self._response_to_dict(response),
             ),
         )
@@ -206,10 +204,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             request.timeout,
             request.body,
         )
-        try:
-            call_args = m.Api.HttpRequestCallArgs.model_validate(request_kwargs)
-        except c.ValidationError as e:
-            return r[Iterator[bytes]].fail(f"Invalid streaming request arguments: {e}")
+        call_args = request_kwargs
 
         def _iter_stream_chunks() -> Iterator[bytes]:
             timeout_config = (
@@ -229,6 +224,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                     url=call_args.url,
                     headers=call_args.headers,
                     params=call_args.params,
+                    data=call_args.data,
                     json=call_args.json_body,
                     content=call_args.content,
                     timeout=call_args.timeout,
@@ -252,7 +248,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _build_http_request_from_dict(
         self,
-        request: t.ContainerValueMapping,
+        request: t.JsonMapping,
     ) -> p.Result[m.Api.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         validation_result = self._validate_request(request)
@@ -295,33 +291,52 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         params: t.StrMapping,
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> MutableMapping[str, t.ContainerValueMapping | t.StrMapping | t.Container]:
-        """Build request kwargs based on body type."""
-        kwargs: MutableMapping[
-            str, t.ContainerValueMapping | t.StrMapping | t.Container
+    ) -> m.Api.HttpRequestCallArgs:
+        """Build typed request call arguments based on body type."""
+        request_fields: MutableMapping[
+            str, t.JsonMapping | t.StrMapping | t.JsonValue
         ] = {
             "method": method,
             "url": url,
             "headers": headers,
             "params": params,
+            "data": None,
+            "json_body": None,
+            "content": None,
         }
         if timeout is not None:
-            kwargs["timeout"] = timeout
+            request_fields["timeout"] = timeout
         if body is None:
-            return kwargs
+            return m.Api.HttpRequestCallArgs.model_validate(request_fields)
         content_type = self._content_type(headers)
         if isinstance(body, Mapping):
             parsed_mapping = m.Api.MappingBodyModel(body=body)
             if c.Api.ContentType.FORM in content_type:
-                kwargs["data"] = parsed_mapping.body
-                return kwargs
-            kwargs["json_body"] = parsed_mapping.body
-            return kwargs
+                request_fields["data"] = parsed_mapping.body
+                return m.Api.HttpRequestCallArgs.model_validate(request_fields)
+            request_fields["json_body"] = parsed_mapping.body
+            return m.Api.HttpRequestCallArgs.model_validate(request_fields)
         if isinstance(body, bytes):
-            kwargs["content"] = body
-            return kwargs
-        kwargs["content"] = body.encode("utf-8")
-        return kwargs
+            return m.Api.HttpRequestCallArgs(
+                method=method,
+                url=url,
+                headers=headers,
+                params=params,
+                data=None,
+                json_body=None,
+                content=body,
+                timeout=timeout,
+            )
+        return m.Api.HttpRequestCallArgs(
+            method=method,
+            url=url,
+            headers=headers,
+            params=params,
+            data=None,
+            json_body=None,
+            content=body.encode("utf-8"),
+            timeout=timeout,
+        )
 
     def _build_response(
         self,
@@ -343,7 +358,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _response_to_dict(
         self,
         response: m.Api.HttpResponse,
-    ) -> Mapping[str, t.Container | t.StrMapping]:
+    ) -> t.Api.HttpResponseDict:
         """Convert HTTP response model to protocol response mapping."""
         body_value = self._response_body_to_value(response.body)
         return {
@@ -355,19 +370,19 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _response_body_to_value(
         self,
         body: t.Api.ResponseBody,
-    ) -> t.Container:
-        """Normalize response body to the protocol's Container contract."""
+    ) -> t.Api.ResponseBody:
+        """Normalize response body to the protocol response-body contract."""
         match body:
             case None:
-                return ""
+                return None
             case str() as body_text:
                 return body_text
             case bytes() as body_bytes:
-                return body_bytes.decode("utf-8")
+                return body_bytes
             case Mapping() as body_mapping:
-                return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(body_mapping)
+                return t.Api.RESPONSE_BODY_ADAPTER.validate_python(body_mapping)
             case _:
-                return t.Api.CONTAINER_VALUE_ADAPTER.validate_python(body)
+                return t.Api.RESPONSE_BODY_ADAPTER.validate_python(body)
 
     def _execute_with_retry(
         self,

@@ -161,14 +161,14 @@ def test_api_config_creation():
 
 #### 1. Model Validation Failures (4 tests failing)
 
-**Error**: `AttributeError: type t.Container 'FlextModels' has no attribute 'create_validated_http_url'`
+**Error**: `AttributeError: type t.JsonValue 'FlextModels' has no attribute 'create_validated_http_url'`
 
 **Impact**: Prevents model creation and validation testing
 **Solution**: Implement missing URL validation method in models.py
 
 #### 2. Configuration API Failures (4 tests failing)
 
-**Error**: `AttributeError: 'FlextApiSettings' t.Container has no attribute 'to_dict'`
+**Error**: `AttributeError: 'FlextApiSettings' t.JsonValue has no attribute 'to_dict'`
 
 **Impact**: Configuration serialization not working
 **Solution**: Add to_dict() method to configuration classes
@@ -182,7 +182,7 @@ def test_api_config_creation():
 
 #### 4. Storage Implementation Failures (6 tests failing)
 
-**Error**: `AttributeError: property 'logger' of 'FlextApiStorage' t.Container has no setter`
+**Error**: `AttributeError: property 'logger' of 'FlextApiStorage' t.JsonValue has no setter`
 
 **Impact**: Storage abstraction cannot be properly initialized
 **Solution**: Implement logger property setter
@@ -416,7 +416,7 @@ make security               # ✅ PASSING
 make test                   # ❌ 28% PASS RATE (CRITICAL)
 
 # Target quality gates (Phase 1 completion)
-make validate               # All gates passing
+make val               # All gates passing
 make test                   # 75%+ coverage (threshold in pyproject.toml)
 ```
 

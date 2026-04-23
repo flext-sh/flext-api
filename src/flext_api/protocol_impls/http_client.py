@@ -7,9 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
 from types import TracebackType
 from typing import Self, override
 
@@ -18,7 +15,7 @@ import httpx
 from flext_api import c, m, p, r, t, u
 
 
-class FlextWebClientImplementation(p.Api.Client.HttpClient):
+class FlextWebClientImplementation(p.Api.HttpClient):
     """HTTP client implementation conforming to FlextWebClient."""
 
     def __init__(self, client_config: m.Api.ClientConfig) -> None:
@@ -130,7 +127,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
 
     def _build_request_options(
         self,
-        kwargs: Mapping[str, t.JsonValue],
+        kwargs: t.JsonMapping,
     ) -> p.Result[m.Api.HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:

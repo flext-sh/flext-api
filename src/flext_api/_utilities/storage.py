@@ -54,18 +54,18 @@ class FlextApiStorage:
             return r[bool].ok(True)
         return r[bool].fail("Some keys could not be deleted")
 
-    def batch_get(self, keys: t.StrSequence) -> p.Result[Mapping[str, t.JsonValue]]:
+    def batch_get(self, keys: t.StrSequence) -> p.Result[t.JsonMapping]:
         """Get multiple keys."""
-        collected: dict[str, t.JsonValue] = {}
+        collected: t.JsonMapping = {}
         for key in keys:
             get_result = self.get(key)
             if get_result.success:
                 collected[key] = get_result.value
-        return r[Mapping[str, t.JsonValue]].ok(collected)
+        return r[t.JsonMapping].ok(collected)
 
     def batch_set(
         self,
-        data: Mapping[str, t.JsonValue],
+        data: t.JsonMapping,
         ttl: int | None = None,
     ) -> p.Result[bool]:
         """Set multiple keys."""
@@ -98,7 +98,7 @@ class FlextApiStorage:
         del self._state.entries[normalized_key]
         return r[bool].ok(True)
 
-    def deserialize_json(self, json_str: str) -> p.Result[t.Container]:
+    def deserialize_json(self, json_str: str) -> p.Result[t.JsonValue]:
         """Deserialize JSON into the canonical container contract."""
         return u.try_(
             lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(json_str),
@@ -163,9 +163,9 @@ class FlextApiStorage:
             "memory_usage": float(stats.memory_usage),
         })
 
-    def health_check(self) -> p.Result[Mapping[str, t.JsonValue]]:
+    def health_check(self) -> p.Result[t.JsonMapping]:
         """Return health information."""
-        return r[Mapping[str, t.JsonValue]].ok({
+        return r[t.JsonMapping].ok({
             "status": c.HealthStatus.HEALTHY.value,
             "timestamp": u.generate_iso_timestamp(),
             "storage_accessible": True,
@@ -173,9 +173,9 @@ class FlextApiStorage:
             "operations_count": self._state.operations_count,
         })
 
-    def info(self) -> p.Result[Mapping[str, t.JsonValue]]:
+    def info(self) -> p.Result[t.JsonMapping]:
         """Return storage configuration and runtime info."""
-        return r[Mapping[str, t.JsonValue]].ok({
+        return r[t.JsonMapping].ok({
             "namespace": self.namespace,
             "backend": self.backend,
             "size": len(self._state.entries),
@@ -197,10 +197,10 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         return r[t.StrSequence].ok(list(self._state.entries.keys()))
 
-    def metrics(self) -> p.Result[Mapping[str, t.JsonValue]]:
+    def metrics(self) -> p.Result[t.JsonMapping]:
         """Return canonical storage metrics payload."""
         stats = self._stats_model()
-        return r[Mapping[str, t.JsonValue]].ok({
+        return r[t.JsonMapping].ok({
             "total_operations": stats.total_operations,
             "cache_hits": stats.cache_hits,
             "cache_misses": stats.cache_misses,
@@ -241,15 +241,18 @@ class FlextApiStorage:
             and len(self._state.entries) >= self._settings.max_size
         ):
             return r[bool].fail("Storage is full")
-        metadata_result = u.parse_model(
-            {
-                "value": value,
-                "timestamp": u.generate_iso_timestamp(),
-                "ttl": ttl_result.value,
-                "created_at": time.time(),
-            },
-            m.Api.Storage.Metadata,
-        )
+        metadata_value = t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
+        metadata_payload: dict[str, t.JsonValue | str | float | int] = {
+            "value": metadata_value,
+            "timestamp": u.generate_iso_timestamp(),
+            "created_at": time.time(),
+        }
+        if ttl_result.value is not None:
+            metadata_payload["ttl"] = ttl_result.value
+        metadata_result = u.try_(
+            lambda: m.Api.Storage.Metadata.model_validate(metadata_payload),
+            catch=(c.ValidationError, TypeError, ValueError),
+        ).map_error(lambda error: f"Metadata validation failed: {error}")
         if metadata_result.failure:
             return r[bool].fail(metadata_result.error or "Metadata validation failed")
         self._state.entries[normalized_key] = metadata_result.value
@@ -261,10 +264,10 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         return r[int].ok(len(self._state.entries))
 
-    def values(self) -> p.Result[Sequence[t.JsonValue]]:
+    def values(self) -> p.Result[t.JsonList]:
         """Return stored values."""
         self._cleanup_expired_entries()
-        return r[Sequence[t.JsonValue]].ok(
+        return r[t.JsonList].ok(
             [entry.value for entry in self._state.entries.values()],
         )
 

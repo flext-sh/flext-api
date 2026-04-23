@@ -16,9 +16,10 @@ from flext_api.__version__ import *
 if _t.TYPE_CHECKING:
     from flext_web import d, e, h, r, s, x
 
-    from flext_api._protocols.plugins import FlextApiPlugins
+    from flext_api._protocols.base import FlextApiProtocolsBase
+    from flext_api._protocols.plugins import FlextApiProtocolPlugins
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
-    from flext_api._protocols.transports import FlextApiTransports
+    from flext_api._protocols.transports import FlextApiProtocolsTransports
     from flext_api._typings.serialization import FlextApiTypingsSerialization
     from flext_api._utilities.adapters import FlextApiAdapters
     from flext_api._utilities.app import FlextApiApp
@@ -65,9 +66,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "__version__",
                 "__version_info__",
             ),
-            "._protocols.plugins": ("FlextApiPlugins",),
+            "._protocols.base": ("FlextApiProtocolsBase",),
+            "._protocols.plugins": ("FlextApiProtocolPlugins",),
             "._protocols.serialization": ("FlextApiProtocolsSerialization",),
-            "._protocols.transports": ("FlextApiTransports",),
+            "._protocols.transports": ("FlextApiProtocolsTransports",),
             "._typings.serialization": ("FlextApiTypingsSerialization",),
             "._utilities.adapters": ("FlextApiAdapters",),
             "._utilities.app": ("FlextApiApp",),
@@ -150,16 +152,17 @@ __all__: list[str] = [
     "FlextApiLoggerProtocolImplementation",
     "FlextApiMiddleware",
     "FlextApiModels",
-    "FlextApiPlugins",
+    "FlextApiProtocolPlugins",
     "FlextApiProtocols",
+    "FlextApiProtocolsBase",
     "FlextApiProtocolsSerialization",
+    "FlextApiProtocolsTransports",
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
     "FlextApiServer",
     "FlextApiSettings",
     "FlextApiSseProtocolPlugin",
     "FlextApiStorage",
-    "FlextApiTransports",
     "FlextApiTypes",
     "FlextApiTypingsSerialization",
     "FlextApiUtilities",

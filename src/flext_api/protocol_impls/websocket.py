@@ -283,9 +283,9 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def send_request(
         self,
-        request: t.ContainerValueMapping,
+        request: t.JsonMapping,
         **kwargs: t.Scalar,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -302,36 +302,36 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[t.ContainerValueMapping].fail(details)
+            return r[t.Api.HttpResponseDict].fail(details)
         message_result = self._extract_message(request, options)
         if message_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 message_result.error or "Message extraction failed",
             )
         message_type = self._extract_message_type(options)
         connect_result = self._ensure_connected(request)
         if connect_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
         send_result = self._send_message(message_result.value, message_type)
         if send_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 f"WebSocket send failed: {send_result.error}",
             )
         url_result = self._extract_url(request)
         if url_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.Api.HttpResponseDict].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
-        response: t.ContainerValueMapping = {
+        response: t.Api.HttpResponseDict = {
             "status_code": c.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
             "method": "WEBSOCKET",
             "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
             "body": {"status": "message_sent", "message_type": message_type},
         }
-        return r[t.ContainerValueMapping].ok(response)
+        return r[t.Api.HttpResponseDict].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -397,7 +397,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")
 
-    def _ensure_connected(self, request: t.ContainerValueMapping) -> p.Result[bool]:
+    def _ensure_connected(self, request: t.JsonMapping) -> p.Result[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
@@ -409,7 +409,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _extract_message(
         self,
-        request: t.ContainerValueMapping,
+        request: t.JsonMapping,
         options: m.Api.SendRequestWsOptions,
     ) -> p.Result[str | bytes]:
         """Extract message from request or kwargs."""

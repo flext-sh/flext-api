@@ -131,23 +131,23 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def send_request(
         self,
-        request: t.ContainerValueMapping,
+        request: t.JsonMapping,
         **kwargs: t.Scalar,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.JsonMapping]:
         """Send an SSE request and process the stream."""
         validation_result = self._validate_request(request)
         if validation_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 validation_result.error or "Request validation failed",
             )
         try:
             options = m.Api.SendRequestSseOptions.model_validate(kwargs)
         except c.ValidationError as exc:
             details = exc.errors()[0]["msg"] if exc.errors() else "Invalid SSE options"
-            return r[t.ContainerValueMapping].fail(details)
+            return r[t.JsonMapping].fail(details)
         url_result = self._extract_url(request)
         if url_result.failure:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 url_result.error or "URL extraction failed",
             )
         headers = dict(self._extract_headers(request))
@@ -173,7 +173,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             if options.retry_timeout is not None
             else self._retry_timeout
         )
-        events: MutableSequence[t.ContainerValueMapping] = []
+        events: MutableSequence[t.JsonMapping] = []
         retry_timeout_ms = base_retry_timeout
         attempts = 0
         while len(events) < max_events:
@@ -205,12 +205,12 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             ) as exc:
                 self._notify_error_handlers(exc)
                 if not auto_reconnect or attempts >= max_attempts:
-                    return r[t.ContainerValueMapping].fail(
+                    return r[t.JsonMapping].fail(
                         f"SSE stream failed: {exc}",
                     )
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
-        response: t.MutableContainerValueMapping = {
+        response: t.MutableJsonMapping = {
             "status_code": 200,
             "url": url_result.value,
             "method": "SSE",
@@ -222,7 +222,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             response["retry_timeout"] = retry_timeout_ms
         for key, val in headers.items():
             response[key] = val
-        return r[t.ContainerValueMapping].ok(response)
+        return r[t.JsonMapping].ok(response)
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -241,9 +241,9 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         method: str,
         headers: t.StrMapping,
         remaining: int,
-    ) -> t.Pair[Sequence[t.ContainerValueMapping], int | None]:
+    ) -> t.Pair[Sequence[t.JsonMapping], int | None]:
         timeout = httpx.Timeout(connect=self._connect_timeout, read=self._read_timeout)
-        events: MutableSequence[t.ContainerValueMapping] = []
+        events: MutableSequence[t.JsonMapping] = []
         retry_timeout: int | None = None
         self._update_connected_state(connected=True)
         self._notify_connect_handlers()
@@ -273,7 +273,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _extract_retry_timeout(
         self,
-        event: t.ContainerValueMapping,
+        event: t.JsonMapping,
     ) -> int | None:
         retry_value = event.get("retry")
         if isinstance(retry_value, int) and retry_value >= 0:
@@ -301,7 +301,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
                 self.logger.exception("SSE error handler error")
 
-    def _notify_event_handlers(self, event: t.ContainerValueMapping) -> None:
+    def _notify_event_handlers(self, event: t.JsonMapping) -> None:
         event_type_raw = event.get("event")
         event_type = event_type_raw if isinstance(event_type_raw, str) else "message"
         handlers = [*self._on_event_handlers.get(event_type, [])]
@@ -315,11 +315,11 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     def _parse_sse_event(
         self,
         *,
-        event_id: t.Container,
-        event_type: t.Container,
-        data: t.Container,
-        retry: t.Container,
-    ) -> t.ContainerValueMapping:
+        event_id: t.JsonValue,
+        event_type: t.JsonValue,
+        data: t.JsonValue,
+        retry: t.JsonValue,
+    ) -> t.JsonMapping:
         parsed_id = (
             "" if not event_id else t.Api.STRING_ADAPTER.validate_python(event_id)
         )
@@ -335,7 +335,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                 parsed_retry = t.Api.INTEGER_ADAPTER.validate_python(retry)
             except c.ValidationError:
                 parsed_retry = None
-        event_payload: t.MutableContainerValueMapping = {
+        event_payload: t.MutableJsonMapping = {
             "id": parsed_id,
             "event": parsed_type,
             "data": parsed_data,
@@ -344,7 +344,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             event_payload["retry"] = parsed_retry
         return event_payload
 
-    def _record_event_id(self, event: t.ContainerValueMapping) -> None:
+    def _record_event_id(self, event: t.JsonMapping) -> None:
         event_id = event.get("id")
         if isinstance(event_id, str) and event_id:
             self.last_event_id = event_id

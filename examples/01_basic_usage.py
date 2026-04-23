@@ -49,10 +49,10 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage(
         settings=m.Api.Storage.Settings(namespace="examples", default_ttl=60),
     )
-    payload: t.ContainerValueMapping = {
+    payload: t.JsonValue = t.json_value_adapter().validate_python({
         "status_code": c.Api.HTTP_SUCCESS_MIN,
         "data": {"name": "cached-item"},
-    }
+    })
     set_result = storage.set("item-1", payload)
     if set_result.failure:
         print(f"❌ storage.set failed: {set_result.error}")

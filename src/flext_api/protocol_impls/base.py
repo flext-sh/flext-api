@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Mapping,
-    MutableMapping,
 )
 
 from flext_api import c, p, r, t, u
@@ -24,7 +23,7 @@ class FlextApiBaseProtocolImplementation:
     Defines the standard interface and patterns that all protocol implementations
     must follow. All protocol implementations extend this class.
 
-    This class structurally implements FlextApiPlugins.Protocol without explicit
+    This class structurally implements FlextApiProtocolPlugins.Protocol without explicit
     inheritance to avoid MRO conflicts with s[bool]. All required
     Protocol methods are implemented here.
 
@@ -87,7 +86,7 @@ class FlextApiBaseProtocolImplementation:
             )
         return r[bool].ok(value=True)
 
-    def protocol_info(self) -> Mapping[str, t.Container | t.StrSequence]:
+    def protocol_info(self) -> Mapping[str, t.JsonValue | t.StrSequence]:
         """Get protocol configuration information.
 
         Returns:
@@ -121,9 +120,9 @@ class FlextApiBaseProtocolImplementation:
 
     def send_request(
         self,
-        request: t.ContainerValueMapping,
+        request: t.JsonMapping,
         **kwargs: t.Scalar,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.Api.HttpResponseDict]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -139,7 +138,7 @@ class FlextApiBaseProtocolImplementation:
         """
         _ = request
         _ = kwargs
-        return r[t.ContainerValueMapping].fail(
+        return r[t.Api.HttpResponseDict].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -170,7 +169,7 @@ class FlextApiBaseProtocolImplementation:
         self,
         error: str,
         status_code: int = 500,
-    ) -> Mapping[str, t.JsonValue]:
+    ) -> t.JsonMapping:
         """Build error response dictionary.
 
         Args:
@@ -192,7 +191,7 @@ class FlextApiBaseProtocolImplementation:
         self,
         data: t.JsonValue | None = None,
         status_code: int = 200,
-    ) -> Mapping[str, t.JsonValue]:
+    ) -> t.JsonMapping:
         """Build success response dictionary.
 
         Args:
@@ -203,7 +202,7 @@ class FlextApiBaseProtocolImplementation:
         Success response dictionary
 
         """
-        response: MutableMapping[str, t.JsonValue] = {
+        response: t.MutableJsonMapping = {
             "status": c.Api.Status.SUCCESS.value,
             "status_code": status_code,
         }
@@ -213,8 +212,8 @@ class FlextApiBaseProtocolImplementation:
 
     def _validate_request(
         self,
-        request: t.ContainerValueMapping,
-    ) -> p.Result[t.ContainerValueMapping]:
+        request: t.JsonMapping,
+    ) -> p.Result[t.JsonMapping]:
         """Validate request dictionary.
 
         Args:
@@ -225,8 +224,8 @@ class FlextApiBaseProtocolImplementation:
 
         """
         if not request:
-            return r[t.ContainerValueMapping].fail("Request cannot be empty")
-        return r[t.ContainerValueMapping].ok(request)
+            return r[t.JsonMapping].fail("Request cannot be empty")
+        return r[t.JsonMapping].ok(request)
 
 
 __all__: list[str] = ["FlextApiBaseProtocolImplementation"]

@@ -40,11 +40,11 @@ class FlextApiAdapters:
                 request: HTTP request model to adapt.
 
             Returns:
-                r t.Container containing WebSocket-compatible payload or failure.
+                r t.JsonValue containing WebSocket-compatible payload or failure.
 
             """
             try:
-                body_value: str | t.ContainerValueMapping | None = None
+                body_value: str | t.JsonMapping | None = None
                 if request.body:
                     if isinstance(request.body, bytes):
                         try:
@@ -55,7 +55,7 @@ class FlextApiAdapters:
                             )
                     else:
                         body_value = request.body
-                message_body: str | t.ContainerValueMapping = (
+                message_body: str | t.JsonMapping = (
                     body_value if body_value is not None else ""
                 )
                 message: t.Api.HttpResponseDict = {
@@ -133,10 +133,10 @@ class FlextApiAdapters:
             """Convert OpenAPI specification to GraphQL schema.
 
             Args:
-                _openapi_spec: OpenAPI JSON t.Container to translate.
+                _openapi_spec: OpenAPI JSON t.JsonValue to translate.
 
             Returns:
-                r containing GraphQL schema t.Container or failure.
+                r containing GraphQL schema t.JsonValue or failure.
 
             """
             try:
@@ -163,7 +163,7 @@ class FlextApiAdapters:
             """Convert JSON data to CBOR format.
 
             Args:
-                data: JSON t.Container for serialization.
+                data: JSON t.JsonValue for serialization.
 
             Returns:
                 r containing CBOR bytes or failure.

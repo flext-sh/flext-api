@@ -33,22 +33,18 @@ class FlextApiTypes(FlextWebTypes):
         type WebHeaders = Mapping[str, t.Scalar | t.StrSequence]
         type WebParamValue = str | t.StrSequence
         type WebParams = Mapping[str, WebParamValue]
-        type RequestBody = t.ContainerValueMapping | str | t.BinaryContent
-        type ResponseBody = t.ContainerValueMapping | str | t.BinaryContent | None
+        type RequestBody = t.JsonMapping | str | t.StrictBytes
+        type ResponseBody = t.JsonMapping | str | t.StrictBytes | None
         type HttpResponseDict = Mapping[
             str,
-            t.Container
-            | t.StrMapping
-            | t.ContainerValueMapping
-            | t.BinaryContent
-            | None,
+            t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type RouteData = Mapping[
             str,
-            t.Container
+            t.JsonValue
             | t.ConfigurationMapping
-            | t.ContainerValueMapping
+            | t.JsonMapping
             | t.ResourceCallable
             | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
             | None,
@@ -61,27 +57,27 @@ class FlextApiTypes(FlextWebTypes):
         ]
         type WebhookAlgorithm = Literal["sha256", "sha512"]
         type WebhookHandler = Callable[
-            [t.ContainerValueMapping],
-            t.Container | p.ResultLike[bool] | None,
+            [t.JsonMapping],
+            t.JsonValue | p.ResultLike[bool] | None,
         ]
         type RequestKwargs = Mapping[
             str,
             t.StrMapping
-            | Mapping[str, t.Container]
+            | t.JsonMapping
             | Mapping[str, t.Scalar | t.StrSequence]
             | float
             | None,
         ]
         type StorageDict = Mapping[str, t.Primitives | None]
         type CacheDict = Mapping[str, t.Primitives]
-        CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.Container] = u.TypeAdapter(
-            t.Container,
+        CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = u.TypeAdapter(
+            t.JsonValue,
         )
         API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = u.TypeAdapter(
             t.JsonValue,
         )
-        BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.BinaryContent] = u.TypeAdapter(
-            t.BinaryContent,
+        BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.StrictBytes] = u.TypeAdapter(
+            t.StrictBytes,
         )
         STR_MAPPING_ADAPTER: u.TypeAdapter[t.StrMapping] = u.TypeAdapter(
             t.StrMapping,
@@ -92,17 +88,17 @@ class FlextApiTypes(FlextWebTypes):
         PORT_NUMBER_ADAPTER: u.TypeAdapter[t.PortNumber] = u.TypeAdapter(
             t.PortNumber,
         )
-        STRING_ADAPTER: u.TypeAdapter[t.TextValue] = u.TypeAdapter(
-            t.TextValue,
+        STRING_ADAPTER: u.TypeAdapter[t.StrictStr] = u.TypeAdapter(
+            t.StrictStr,
         )
-        INTEGER_ADAPTER: u.TypeAdapter[t.IntegerValue] = u.TypeAdapter(
-            t.IntegerValue,
+        INTEGER_ADAPTER: u.TypeAdapter[t.StrictInt] = u.TypeAdapter(
+            t.StrictInt,
         )
-        FLOAT_ADAPTER: u.TypeAdapter[t.FloatValue] = u.TypeAdapter(
-            t.FloatValue,
+        FLOAT_ADAPTER: u.TypeAdapter[t.StrictFloat] = u.TypeAdapter(
+            t.StrictFloat,
         )
-        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[Mapping[str, t.JsonValue]] = u.TypeAdapter(
-            Mapping[str, t.JsonValue],
+        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
+            t.JsonMapping,
         )
         REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(
             RequestBody,
@@ -111,12 +107,12 @@ class FlextApiTypes(FlextWebTypes):
         RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(
             ResponseBody,
         )
-        DICT_BODY_ADAPTER: u.TypeAdapter[t.ContainerValueMapping] = u.TypeAdapter(
-            t.ContainerValueMapping,
+        DICT_BODY_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
+            t.JsonMapping,
         )
 
-        JSON_HEADERS_ADAPTER: u.TypeAdapter[t.ContainerValueMapping] = u.TypeAdapter(
-            t.ContainerValueMapping,
+        JSON_HEADERS_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
+            t.JsonMapping,
         )
 
 

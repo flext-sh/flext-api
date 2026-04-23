@@ -36,7 +36,7 @@ Protocol Layer
 │   ├── GraphQL (GraphQL APIs)
 │   ├── WebSocket (Real-time communication)
 │   ├── Server-Sent Events (One-way streaming)
-│   └── Storage Backend (File/t.Container storage)
+│   └── Storage Backend (File/t.JsonValue storage)
 └── Protocol Stubs (protocol_stubs/)
     ├── gRPC (Protocol buffer services)
     └── Protobuf (Binary serialization)
@@ -393,7 +393,7 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 | `protocol_impls/graphql.py`         | 85%      | ✅ Good   | GraphQL query/mutation support                |
 | `protocol_impls/websocket.py`       | 88%      | ✅ Good   | WebSocket real-time communication             |
 | `protocol_impls/sse.py`             | 82%      | ✅ Good   | Server-sent events streaming                  |
-| `protocol_impls/storage_backend.py` | 87%      | ✅ Good   | File/t.Container storage abstraction |
+| `protocol_impls/storage_backend.py` | 87%      | ✅ Good   | File/t.JsonValue storage abstraction |
 | `protocol_stubs/grpc_stub.py`       | 80%      | ✅ Good   | gRPC protocol buffer support                  |
 | `protocol_stubs/protobuf_stub.py`   | 85%      | ✅ Good   | Binary serialization                          |
 
@@ -417,12 +417,12 @@ class MultiProtocolClient:
         self.graphql = GraphQLt="https://api.example.com/graphql")
         self.websocket = WebSockets://api.example.com/ws")
 
-    def get_user_http(self, user_id: str) -> Mapping[str, t.Container]:
+    def get_user_http(self, user_id: str) -> t.JsonMapping:
         """Get user via REST API."""
         result = self.http.execute_request("GET", f"/users/{user_id}")
         return result.unwrap().json() if result.success else None
 
-    def get_user_graphql(self, user_id: str) -> Mapping[str, t.Container]:
+    def get_user_graphql(self, user_id: str) -> t.JsonMapping:
         """Get user via GraphQL."""
         query = """
             query GetUser($id: ID!) {

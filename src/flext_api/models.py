@@ -314,7 +314,7 @@ class FlextApiModels(m):
             """Pydantic model for validating dictionary fields (immutable value object)."""
 
             value: Annotated[
-                t.ContainerValueMapping,
+                t.JsonMapping,
                 u.Field(description="Dictionary value"),
             ] = u.Field(default_factory=dict)
 
@@ -349,8 +349,12 @@ class FlextApiModels(m):
                 t.StrMapping,
                 u.Field(description="Query parameters"),
             ] = u.Field(default_factory=dict)
+            data: Annotated[
+                t.JsonMapping | None,
+                u.Field(None, description="Form request body"),
+            ]
             json_body: Annotated[
-                t.Container | None,
+                t.JsonValue | None,
                 u.Field(None, description="JSON request body"),
             ]
             content: Annotated[
@@ -370,7 +374,7 @@ class FlextApiModels(m):
             )
 
             body: Annotated[
-                t.ContainerValueMapping,
+                t.JsonMapping,
                 u.Field(..., description="Request body as mapping"),
             ]
 
@@ -386,7 +390,7 @@ class FlextApiModels(m):
                 u.Field(None, description="Query parameters"),
             ]
             json_data: Annotated[
-                t.Container | None,
+                t.JsonValue | None,
                 u.Field(None, description="JSON body"),
             ]
             content: Annotated[
@@ -394,7 +398,7 @@ class FlextApiModels(m):
                 u.Field(None, description="Raw content body"),
             ]
             data: Annotated[
-                t.ContainerValueMapping | None,
+                t.JsonMapping | None,
                 u.Field(None, description="Form data"),
             ]
             timeout: Annotated[
@@ -692,9 +696,7 @@ class FlextApiModels(m):
 
                 id: str = u.Field(description="Unique event identifier", min_length=1)
                 type: str = u.Field(description="Canonical event type", min_length=1)
-                data: t.ContainerValueMapping = u.Field(
-                    description="Normalized event payload"
-                )
+                data: t.JsonMapping = u.Field(description="Normalized event payload")
                 timestamp: float = u.Field(
                     default_factory=time.time, description="Event creation timestamp"
                 )

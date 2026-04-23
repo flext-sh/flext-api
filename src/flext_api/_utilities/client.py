@@ -28,7 +28,7 @@ from flext_api import (
 )
 
 
-class FlextApiClient(s):
+class FlextApiClient(s[bool]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with r error handling.
