@@ -28,8 +28,8 @@ class FlextApiWebhookHandler(s[bool]):
 
     def __init__(
         self,
-        settings: m.Api.Webhook.Settings | Mapping[str, t.RuntimeData] | None = None,
-        **overrides: t.RuntimeData,
+        settings: m.Api.Webhook.Settings | Mapping[str, t.JsonPayload] | None = None,
+        **overrides: t.JsonPayload,
     ) -> None:
         """Create one webhook handler from the canonical webhook settings model."""
         super().__init__()
@@ -196,7 +196,7 @@ class FlextApiWebhookHandler(s[bool]):
         attempts: int | None = None,
     ) -> m.Api.Webhook.Delivery:
         """Build one canonical delivery model."""
-        delivery_payload: dict[str, t.RuntimeData] = {
+        delivery_payload: dict[str, t.JsonPayload] = {
             "event_type": event.type,
             "timestamp": time.time(),
             "status": status,
@@ -212,7 +212,7 @@ class FlextApiWebhookHandler(s[bool]):
         return delivery_result.value
 
     @staticmethod
-    def _string_value(value: t.RuntimeData | None) -> p.Result[str]:
+    def _string_value(value: t.JsonPayload | None) -> p.Result[str]:
         """Validate and normalize one string input."""
         if value is None:
             return r[str].fail("Invalid string value")
@@ -393,13 +393,13 @@ class FlextApiWebhookHandler(s[bool]):
 
     def _resolve_webhook_settings(
         self,
-        settings: m.Api.Webhook.Settings | Mapping[str, t.RuntimeData] | None,
-        overrides: Mapping[str, t.RuntimeData],
+        settings: m.Api.Webhook.Settings | Mapping[str, t.JsonPayload] | None,
+        overrides: Mapping[str, t.JsonPayload],
     ) -> m.Api.Webhook.Settings:
         """Resolve one canonical webhook settings model."""
         if isinstance(settings, m.Api.Webhook.Settings):
             return settings.model_copy(update=dict(overrides) or None)
-        payload: dict[str, t.RuntimeData] = {}
+        payload: dict[str, t.JsonPayload] = {}
         if isinstance(settings, Mapping):
             payload.update(settings)
         elif settings is not None:

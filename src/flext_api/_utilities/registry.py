@@ -204,9 +204,9 @@ class FlextApiRegistry:
         name: str,
         *,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> p.Result[t.RuntimeData | None]:
+    ) -> p.Result[t.JsonPayload | None]:
         """Delegate plugin lookup to the canonical registry."""
-        return r[t.RuntimeData | None].from_result(
+        return r[t.JsonPayload | None].from_result(
             self._registry.fetch_plugin(category, name, scope=scope),
         )
 

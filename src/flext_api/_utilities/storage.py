@@ -25,8 +25,8 @@ class FlextApiStorage:
 
     def __init__(
         self,
-        settings: m.Api.Storage.Settings | Mapping[str, t.RuntimeData] | None = None,
-        **overrides: t.RuntimeData,
+        settings: m.Api.Storage.Settings | Mapping[str, t.JsonPayload] | None = None,
+        **overrides: t.JsonPayload,
     ) -> None:
         """Create one storage instance from the canonical settings model."""
         self._settings = self._resolve_settings(settings, overrides)
@@ -56,7 +56,7 @@ class FlextApiStorage:
 
     def batch_get(self, keys: t.StrSequence) -> p.Result[t.JsonMapping]:
         """Get multiple keys."""
-        collected: t.JsonMapping = {}
+        collected: t.MutableJsonMapping = {}
         for key in keys:
             get_result = self.get(key)
             if get_result.success:
@@ -305,13 +305,13 @@ class FlextApiStorage:
 
     def _resolve_settings(
         self,
-        settings: m.Api.Storage.Settings | Mapping[str, t.RuntimeData] | None,
-        overrides: Mapping[str, t.RuntimeData],
+        settings: m.Api.Storage.Settings | Mapping[str, t.JsonPayload] | None,
+        overrides: Mapping[str, t.JsonPayload],
     ) -> m.Api.Storage.Settings:
         """Resolve one canonical storage settings model."""
         if isinstance(settings, m.Api.Storage.Settings):
             return settings.model_copy(update=dict(overrides) or None)
-        payload: dict[str, t.RuntimeData] = {}
+        payload: dict[str, t.JsonPayload] = {}
         if isinstance(settings, Mapping):
             payload.update(settings)
         elif settings is not None:
