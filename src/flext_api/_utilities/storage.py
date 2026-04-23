@@ -21,7 +21,7 @@ class FlextApiStorage:
     """In-memory storage with centralized settings/state models."""
 
     _settings: m.Api.Storage.Settings
-    _state: m.Api.Storage.State
+    state: m.Api.Storage.State
 
     def __init__(
         self,
@@ -30,8 +30,8 @@ class FlextApiStorage:
     ) -> None:
         """Create one storage instance from the canonical settings model."""
         self._settings = self._resolve_settings(settings, overrides)
-        self._state = m.Api.Storage.State()
-        self._logger = u.fetch_logger(__name__)
+        self.state = m.Api.Storage.State()
+        self.logger = u.fetch_logger(__name__)
 
     @property
     def backend(self) -> str:
@@ -81,8 +81,8 @@ class FlextApiStorage:
 
     def clear(self) -> p.Result[bool]:
         """Clear storage state."""
-        created_at = self._state.created_at
-        self._state = m.Api.Storage.State(created_at=created_at)
+        created_at = self.state.created_at
+        self.state = m.Api.Storage.State(created_at=created_at)
         return r[bool].ok(True)
 
     def delete(self, key: str) -> p.Result[bool]:
@@ -93,9 +93,9 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         self._record_operation()
         normalized_key = key_result.value
-        if normalized_key not in self._state.entries:
+        if normalized_key not in self.state.entries:
             return r[bool].fail(f"Key not found: {normalized_key}")
-        del self._state.entries[normalized_key]
+        del self.state.entries[normalized_key]
         return r[bool].ok(True)
 
     def deserialize_json(self, json_str: str) -> p.Result[t.JsonValue]:
@@ -105,7 +105,7 @@ class FlextApiStorage:
             catch=(ValueError, TypeError),
         ).map_error(lambda error: f"JSON deserialization failed: {error}")
 
-    def execute(self, *_args: t.JsonValue, **_kwargs: t.JsonValue) -> p.Result[bool]:
+    def execute(self, *args: t.JsonValue, **kwargs: t.JsonValue) -> p.Result[bool]:
         """Lifecycle entrypoint for parity with service-shaped components."""
         return r[bool].ok(True)
 
@@ -115,7 +115,7 @@ class FlextApiStorage:
         if key_result.failure:
             return r[bool].fail(key_result.error)
         self._cleanup_expired_entries()
-        return r[bool].ok(key_result.value in self._state.entries)
+        return r[bool].ok(key_result.value in self.state.entries)
 
     def get(self, key: str) -> p.Result[t.JsonValue]:
         """Get one value from storage."""
@@ -125,11 +125,11 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         self._record_operation()
         normalized_key = key_result.value
-        entry = self._state.entries.get(normalized_key)
+        entry = self.state.entries.get(normalized_key)
         if entry is None:
-            self._state.cache_misses += 1
+            self.state.cache_misses += 1
             return r[t.JsonValue].fail(f"Key not found: {normalized_key}")
-        self._state.cache_hits += 1
+        self.state.cache_hits += 1
         return r[t.JsonValue].ok(entry.value)
 
     def cache_stats(self) -> p.Result[t.Api.CacheDict]:
@@ -169,8 +169,8 @@ class FlextApiStorage:
             "status": c.HealthStatus.HEALTHY.value,
             "timestamp": u.generate_iso_timestamp(),
             "storage_accessible": True,
-            "size": len(self._state.entries),
-            "operations_count": self._state.operations_count,
+            "size": len(self.state.entries),
+            "operations_count": self.state.operations_count,
         })
 
     def info(self) -> p.Result[t.JsonMapping]:
@@ -178,24 +178,24 @@ class FlextApiStorage:
         return r[t.JsonMapping].ok({
             "namespace": self.namespace,
             "backend": self.backend,
-            "size": len(self._state.entries),
-            "created_at": self._state.created_at,
+            "size": len(self.state.entries),
+            "created_at": self.state.created_at,
             "max_size": self._settings.max_size,
             "default_ttl": self._settings.default_ttl,
-            "operations_count": self._state.operations_count,
+            "operations_count": self.state.operations_count,
         })
 
     def items(self) -> p.Result[Sequence[t.Pair[str, t.JsonValue]]]:
         """Return stored key-value pairs."""
         self._cleanup_expired_entries()
         return r[Sequence[t.Pair[str, t.JsonValue]]].ok(
-            [(key, entry.value) for key, entry in self._state.entries.items()],
+            [(key, entry.value) for key, entry in self.state.entries.items()],
         )
 
     def keys(self) -> p.Result[t.StrSequence]:
         """Return stored keys."""
         self._cleanup_expired_entries()
-        return r[t.StrSequence].ok(list(self._state.entries.keys()))
+        return r[t.StrSequence].ok(list(self.state.entries.keys()))
 
     def metrics(self) -> p.Result[t.JsonMapping]:
         """Return canonical storage metrics payload."""
@@ -237,8 +237,8 @@ class FlextApiStorage:
         self._cleanup_expired_entries()
         if (
             self._settings.max_size is not None
-            and normalized_key not in self._state.entries
-            and len(self._state.entries) >= self._settings.max_size
+            and normalized_key not in self.state.entries
+            and len(self.state.entries) >= self._settings.max_size
         ):
             return r[bool].fail("Storage is full")
         metadata_value = t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
@@ -255,20 +255,20 @@ class FlextApiStorage:
         ).map_error(lambda error: f"Metadata validation failed: {error}")
         if metadata_result.failure:
             return r[bool].fail(metadata_result.error or "Metadata validation failed")
-        self._state.entries[normalized_key] = metadata_result.value
+        self.state.entries[normalized_key] = metadata_result.value
         self._record_operation()
         return r[bool].ok(True)
 
     def size(self) -> p.Result[int]:
         """Return current storage size."""
         self._cleanup_expired_entries()
-        return r[int].ok(len(self._state.entries))
+        return r[int].ok(len(self.state.entries))
 
     def values(self) -> p.Result[t.JsonList]:
         """Return stored values."""
         self._cleanup_expired_entries()
         return r[t.JsonList].ok(
-            [entry.value for entry in self._state.entries.values()],
+            [entry.value for entry in self.state.entries.values()],
         )
 
     @staticmethod
@@ -285,10 +285,10 @@ class FlextApiStorage:
     def _cleanup_expired_entries(self) -> int:
         """Remove expired entries and return the number removed."""
         expired_keys = [
-            key for key, entry in self._state.entries.items() if entry.expired
+            key for key, entry in self.state.entries.items() if entry.expired
         ]
         for key in expired_keys:
-            del self._state.entries[key]
+            del self.state.entries[key]
         return len(expired_keys)
 
     def _estimate_memory_usage(self) -> int:
@@ -296,12 +296,12 @@ class FlextApiStorage:
         return sum(
             len(t.Api.STRING_ADAPTER.dump_json(key))
             + len(t.Api.API_JSON_VALUE_ADAPTER.dump_json(entry.value))
-            for key, entry in self._state.entries.items()
+            for key, entry in self.state.entries.items()
         )
 
     def _record_operation(self) -> None:
         """Increment storage operation count."""
-        self._state.operations_count += 1
+        self.state.operations_count += 1
 
     def _resolve_settings(
         self,
@@ -348,10 +348,10 @@ class FlextApiStorage:
     def _stats_model(self) -> m.Api.Storage.Stats:
         """Materialize one stats model from centralized runtime state."""
         return m.Api.Storage.Stats(
-            total_operations=self._state.operations_count,
-            cache_hits=self._state.cache_hits,
-            cache_misses=self._state.cache_misses,
-            storage_size=len(self._state.entries),
+            total_operations=self.state.operations_count,
+            cache_hits=self.state.cache_hits,
+            cache_misses=self.state.cache_misses,
+            storage_size=len(self.state.entries),
             memory_usage=self._estimate_memory_usage(),
             namespace=self.namespace,
         )

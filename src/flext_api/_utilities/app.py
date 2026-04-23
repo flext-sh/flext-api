@@ -24,7 +24,7 @@ class FlextApiApp:
 
     @staticmethod
     def create(
-        _config: FlextApiSettings,
+        config: FlextApiSettings,
         *,
         title: str | None = None,
         version: str | None = None,
@@ -36,7 +36,7 @@ class FlextApiApp:
         """Create FastAPI application with flext-core integration.
 
         Args:
-        _config: Application configuration
+        config: Application configuration
         title: Application title
         version: Application version
         description: Application description
@@ -48,7 +48,7 @@ class FlextApiApp:
         FastAPI application instance.
 
         """
-        return FastAPI(
+        app = FastAPI(
             title=title or "FlextAPI",
             version=version or "1.0.0",
             description=description or "FlextAPI Application",
@@ -56,6 +56,8 @@ class FlextApiApp:
             redoc_url=redoc_url or "/redoc",
             openapi_url=openapi_url or "/openapi.json",
         )
+        app.state.flext_api_settings = config
+        return app
 
 
 __all__: list[str] = ["FlextApiApp"]

@@ -65,7 +65,7 @@ class FlextApiServer(s[bool]):
 
             """
             self._routes: dict[str, t.Api.RouteData] = {}
-            self._logger = logger
+            self.logger = logger
 
         @property
         def count(self) -> int:
@@ -121,7 +121,7 @@ class FlextApiServer(s[bool]):
             if schema is not None:
                 route_dict["schema"] = schema
             self._routes[route_key] = route_dict
-            self._logger.info(
+            self.logger.info(
                 "Endpoint registered",
                 method=method,
                 path=path,
@@ -147,7 +147,7 @@ class FlextApiServer(s[bool]):
                 str,
                 p.Api.HttpResource,
             ] = {}
-            self._logger = logger
+            self.logger = logger
 
         def close_all(self) -> p.Result[bool]:
             """Close all active connections gracefully."""
@@ -157,7 +157,7 @@ class FlextApiServer(s[bool]):
                     if callable(close_method):
                         close_method()
                 except (ValueError, TypeError, KeyError, ConnectionError) as exc:
-                    self._logger.warning(
+                    self.logger.warning(
                         "Failed to close WebSocket %s",
                         conn_id,
                         error=f"{exc}",
@@ -168,7 +168,7 @@ class FlextApiServer(s[bool]):
                     if callable(close_method):
                         close_method()
                 except (ValueError, TypeError, KeyError, ConnectionError) as exc:
-                    self._logger.warning(
+                    self.logger.warning(
                         "Failed to close SSE %s",
                         conn_id,
                         error=f"{exc}",
@@ -202,7 +202,7 @@ class FlextApiServer(s[bool]):
             self._port = port
             self._title = title
             self._version = version
-            self._logger = logger
+            self.logger = logger
             self._is_running = False
             self._app: FastAPI | None = None
 
@@ -224,7 +224,7 @@ class FlextApiServer(s[bool]):
         @property
         def logger(self) -> p.Logger:
             """Get the logger instance."""
-            return self._logger
+            return self.logger
 
         @property
         def port(self) -> int:
@@ -238,7 +238,7 @@ class FlextApiServer(s[bool]):
             """Apply middleware to application."""
             try:
                 for middleware in middleware_pipeline:
-                    self._logger.debug(
+                    self.logger.debug(
                         "Middleware applied",
                         middleware=middleware.__class__.__name__,
                     )
@@ -301,7 +301,7 @@ class FlextApiServer(s[bool]):
                             app.head(path)(route_handler)
                         elif method_lower == c.Api.MethodLiterals.OPTIONS_LOWER:
                             app.options(path)(route_handler)
-                    self._logger.debug("Route registered", method=method, path=path)
+                    self.logger.debug("Route registered", method=method, path=path)
                 return r[bool].ok(value=True)
             except (ValueError, TypeError, KeyError, ConnectionError) as exc:
                 return r[bool].fail(f"Failed to register routes: {exc}")
@@ -329,7 +329,7 @@ class FlextApiServer(s[bool]):
             if routes_result.failure:
                 return routes_result
             self._is_running = True
-            self._logger.info(
+            self.logger.info(
                 "Server started",
                 host=self._host,
                 port=self._port,
@@ -344,7 +344,7 @@ class FlextApiServer(s[bool]):
                 return r[bool].fail("Server not running")
             self._is_running = False
             self._app = None
-            self._logger.info("Server stopped")
+            self.logger.info("Server stopped")
             return r[bool].ok(value=True)
 
     def __init__(

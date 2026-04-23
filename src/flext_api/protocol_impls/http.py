@@ -128,7 +128,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def send_request(
         self,
         request: t.JsonMapping,
-        **_kwargs: t.Scalar,
+        **kwargs: t.Scalar,
     ) -> p.Result[t.Api.HttpResponseDict]:
         """Send HTTP request with retry logic and error handling."""
         request_general: t.MutableJsonMapping = dict(request)

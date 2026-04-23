@@ -54,7 +54,7 @@ class FlextApiBaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: t.Scalar,
+        **kwargs: t.Scalar,
     ) -> None:
         """Initialize base protocol implementation.
 

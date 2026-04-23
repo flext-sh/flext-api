@@ -24,7 +24,7 @@ class FlextApiWebhookHandler(s[bool]):
     """Webhook handler with centralized settings, event, delivery, and state models."""
 
     _settings: m.Api.Webhook.Settings
-    _state: m.Api.Webhook.State
+    state: m.Api.Webhook.State
 
     def __init__(
         self,
@@ -34,7 +34,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Create one webhook handler from the canonical webhook settings model."""
         super().__init__()
         self._settings = self._resolve_webhook_settings(settings, overrides)
-        self._state = m.Api.Webhook.State()
+        self.state = m.Api.Webhook.State()
 
     @property
     def webhook_settings(self) -> m.Api.Webhook.Settings:
@@ -51,7 +51,7 @@ class FlextApiWebhookHandler(s[bool]):
         key_result = self._string_value(event_id)
         if key_result.failure:
             return r[t.JsonMapping].fail(key_result.error or "Invalid event id")
-        delivery = self._state.deliveries.get(key_result.value)
+        delivery = self.state.deliveries.get(key_result.value)
         if delivery is None:
             return r[t.JsonMapping].fail(f"Event not found: {key_result.value}")
         return r[t.JsonMapping].ok(self._delivery_payload(delivery))
@@ -59,19 +59,19 @@ class FlextApiWebhookHandler(s[bool]):
     def queue_stats(self) -> t.JsonMapping:
         """Return observable queue statistics."""
         return {
-            "event_queue_size": self._state.event_queue_size,
-            "retry_queue_size": self._state.retry_queue_size,
-            "total_deliveries": self._state.total_deliveries,
-            "successful_deliveries": self._state.successful_deliveries,
-            "failed_deliveries": self._state.failed_deliveries,
+            "event_queue_size": self.state.event_queue_size,
+            "retry_queue_size": self.state.retry_queue_size,
+            "total_deliveries": self.state.total_deliveries,
+            "successful_deliveries": self.state.successful_deliveries,
+            "failed_deliveries": self.state.failed_deliveries,
         }
 
     def process_retry_queue(self) -> p.Result[t.JsonMapping]:
         """Process all queued retries and report counts."""
         processed = 0
         failed = 0
-        while self._state.retry_queue:
-            event = self._state.retry_queue.pop(0)
+        while self.state.retry_queue:
+            event = self.state.retry_queue.pop(0)
             success, _should_retry = self._process_single_retry(event)
             if success:
                 processed += 1
@@ -103,7 +103,7 @@ class FlextApiWebhookHandler(s[bool]):
             )
         event = event_result.value
         self._append_limited(
-            self._state.event_queue,
+            self.state.event_queue,
             event,
             self._settings.queue_limit,
         )
@@ -121,9 +121,9 @@ class FlextApiWebhookHandler(s[bool]):
         event_type_result = self._string_value(event_type)
         if event_type_result.failure:
             return r[bool].fail(event_type_result.error or "Invalid event type")
-        handlers = {key: list(value) for key, value in self._state.handlers.items()}
+        handlers = {key: list(value) for key, value in self.state.handlers.items()}
         handlers.setdefault(event_type_result.value, []).append(handler)
-        self._state.handlers = handlers
+        self.state.handlers = handlers
         u.fetch_logger(__name__).info(
             "Event handler registered",
             event_type=event_type_result.value,
@@ -162,9 +162,9 @@ class FlextApiWebhookHandler(s[bool]):
         delivery: m.Api.Webhook.Delivery,
     ) -> None:
         """Persist one delivery update through the centralized state model."""
-        deliveries = dict(self._state.deliveries)
+        deliveries = dict(self.state.deliveries)
         deliveries[event_id] = delivery
-        self._state.deliveries = deliveries
+        self.state.deliveries = deliveries
 
     def _build_event(
         self,
@@ -232,7 +232,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Handle one failed event processing attempt."""
         if event.attempts < self._settings.max_retries:
             self._append_limited(
-                self._state.retry_queue,
+                self.state.retry_queue,
                 event,
                 self._settings.retry_queue_limit,
             )
@@ -319,7 +319,7 @@ class FlextApiWebhookHandler(s[bool]):
 
     def _process_event(self, event: m.Api.Webhook.Event) -> p.Result[bool]:
         """Dispatch one event to registered handlers."""
-        handlers = self._state.handlers.get(event.type, [])
+        handlers = self.state.handlers.get(event.type, [])
         if not handlers:
             u.fetch_logger(__name__).warning(
                 "No handlers registered for event type",
@@ -357,7 +357,7 @@ class FlextApiWebhookHandler(s[bool]):
             return (True, False)
         if retry_event.attempts < self._settings.max_retries:
             self._append_limited(
-                self._state.retry_queue,
+                self.state.retry_queue,
                 retry_event,
                 self._settings.retry_queue_limit,
             )

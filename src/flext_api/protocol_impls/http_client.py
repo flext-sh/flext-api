@@ -25,7 +25,7 @@ class FlextWebClientImplementation(p.Api.HttpClient):
         client_config: HTTP client configuration
 
         """
-        self._config = client_config
+        self.config = client_config
         self.logger = u.fetch_logger(__name__)
         self._client = httpx.Client(
             timeout=httpx.Timeout(
@@ -113,7 +113,7 @@ class FlextWebClientImplementation(p.Api.HttpClient):
         """Build full URL from configuration base_url and provided path."""
         if url.startswith(("http://", "https://")):
             return r[str].ok(url)
-        base_url = self._config.base_url
+        base_url = self.config.base_url
         if not base_url:
             return r[str].fail("base_url is required when URL is not absolute")
         normalized_base = base_url.rstrip("/")
@@ -201,7 +201,7 @@ class FlextWebClientImplementation(p.Api.HttpClient):
         options: m.Api.HttpClientRequestOptions,
     ) -> t.StrMapping:
         """Prepare merged headers from settings and request."""
-        headers = dict(self._config.headers)
+        headers = dict(self.config.headers)
         headers.update(options.headers)
         return headers
 
