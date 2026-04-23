@@ -14,7 +14,6 @@ from __future__ import annotations
 from typing import ClassVar, override
 
 import httpx
-from flext_core import FlextSettings
 from flext_web import u
 
 from flext_api import (
@@ -28,7 +27,7 @@ from flext_api import (
 )
 
 
-class FlextApiClient(s[bool]):
+class FlextApiClient(s[bool, FlextApiSettings]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with r error handling.
@@ -52,10 +51,7 @@ class FlextApiClient(s[bool]):
     @override
     def settings(self) -> FlextApiSettings:
         """Return typed API settings for client operations."""
-        settings = super().settings
-        if isinstance(settings, FlextApiSettings):
-            return settings
-        return FlextSettings.fetch_global().fetch_namespace("api", FlextApiSettings)
+        return super().settings
 
     @property
     def base_url(self) -> str:
