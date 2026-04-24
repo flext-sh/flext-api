@@ -1,0 +1,28 @@
+src/flext_api/_utilities/storage.py
+  9f85f2ec1ecedfdb 39,44,277
+src/flext_api/protocol_impls/rfc.py
+  9f85f2ec1ecedfdb 203,241-242
+src/flext_api/protocol_impls/websocket.py
+  9f85f2ec1ecedfdb 430
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "463f787391a213d359f5681e35969e251b76c271",
+  "prompts": {
+    "9f85f2ec1ecedfdb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "55c96ba6-e7b4-41e4-8a67-ec8c8d953db4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 7,
+      "total_deletions": 12,
+      "accepted_lines": 7,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/0d3f781a985576490b7cd81234b28ddea487764330cea3dca3ddf48feb0dc6b2"
+    }
+  }
+}
