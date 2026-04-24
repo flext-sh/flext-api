@@ -182,9 +182,7 @@ class FlextApiModels(m):
             def success(self) -> bool:
                 """Check if response indicates success (2xx status code)."""
                 return bool(
-                    c.Api.HTTP_SUCCESS_MIN
-                    <= self.status_code
-                    < c.Api.HTTP_SUCCESS_MAX,
+                    c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX,
                 )
 
         # =========================================================================
