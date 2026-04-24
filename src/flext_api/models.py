@@ -98,8 +98,6 @@ class FlextApiModels(m):
             @property
             def content_type(self) -> str:
                 """Get content type from headers."""
-                # Check Content-Type header (case-insensitive)
-                # c.Api.HEADER_CONTENT_TYPE = c.Api.HEADER_CONTENT_TYPE
                 if c.Api.HEADER_CONTENT_TYPE in self.headers:
                     return str(self.headers[c.Api.HEADER_CONTENT_TYPE])
                 # Check lowercase variant
