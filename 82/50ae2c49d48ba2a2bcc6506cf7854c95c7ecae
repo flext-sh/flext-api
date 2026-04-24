@@ -1,0 +1,24 @@
+src/flext_api/typings.py
+  1e8c46a785af34f8 33-34,64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "8250ae2c49d48ba2a2bcc6506cf7854c95c7ecae",
+  "prompts": {
+    "1e8c46a785af34f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa25f2cb-80b0-440b-a64c-b692f5b15b99",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 5,
+      "accepted_lines": 3,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/4ddf623464145a585be60e57afe7dcf52c569d0f41e427fa95025ec8e8ad1397"
+    }
+  }
+}
