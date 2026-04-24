@@ -12,7 +12,7 @@ from __future__ import annotations
 from tests import u
 
 
-class TestMessagePackUnpackb:
+class TestsFlextApiSerializers:
     """Tests for unpackb() result type conversion."""
 
     def test_unpackb_success_with_dict(self) -> None:

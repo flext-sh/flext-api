@@ -12,7 +12,7 @@ from flext_api import FlextApiWebhookHandler
 from tests import m, p, r, t
 
 
-class TestWebhookContract:
+class TestsFlextApiWebhook:
     """Validate webhook behavior through public methods only."""
 
     def test_receive_webhook_processes_registered_handler(self) -> None:

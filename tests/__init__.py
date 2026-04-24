@@ -19,15 +19,10 @@ if _t.TYPE_CHECKING:
     from tests.models import TestsFlextApiModels, m
     from tests.protocols import TestsFlextApiProtocols, p
     from tests.typings import TestsFlextApiTypes, t
-    from tests.unit.test_serializers import TestMessagePackUnpackb
-    from tests.unit.test_smoke import (
-        TestConstants,
-        TestFacadeContract,
-        TestModels,
-        TestSerializers,
-    )
-    from tests.unit.test_storage import TestStorageContract
-    from tests.unit.test_webhook import TestWebhookContract
+    from tests.unit.test_serializers import TestsFlextApiSerializers
+    from tests.unit.test_smoke import TestsFlextApiSmoke
+    from tests.unit.test_storage import TestsFlextApiStorage
+    from tests.unit.test_webhook import TestsFlextApiWebhook
     from tests.utilities import TestsFlextApiUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
     (".unit",),
@@ -49,15 +44,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextApiTypes",
                 "t",
             ),
-            ".unit.test_serializers": ("TestMessagePackUnpackb",),
-            ".unit.test_smoke": (
-                "TestConstants",
-                "TestFacadeContract",
-                "TestModels",
-                "TestSerializers",
-            ),
-            ".unit.test_storage": ("TestStorageContract",),
-            ".unit.test_webhook": ("TestWebhookContract",),
+            ".unit.test_serializers": ("TestsFlextApiSerializers",),
+            ".unit.test_smoke": ("TestsFlextApiSmoke",),
+            ".unit.test_storage": ("TestsFlextApiStorage",),
+            ".unit.test_webhook": ("TestsFlextApiWebhook",),
             ".utilities": (
                 "TestsFlextApiUtilities",
                 "u",
@@ -95,18 +85,15 @@ _LAZY_IMPORTS = merge_lazy_imports(
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
-    "TestConstants",
-    "TestFacadeContract",
-    "TestMessagePackUnpackb",
-    "TestModels",
-    "TestSerializers",
-    "TestStorageContract",
-    "TestWebhookContract",
     "TestsFlextApiConstants",
     "TestsFlextApiModels",
     "TestsFlextApiProtocols",
+    "TestsFlextApiSerializers",
+    "TestsFlextApiSmoke",
+    "TestsFlextApiStorage",
     "TestsFlextApiTypes",
     "TestsFlextApiUtilities",
+    "TestsFlextApiWebhook",
     "c",
     "d",
     "e",

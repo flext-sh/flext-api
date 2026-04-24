@@ -215,7 +215,9 @@ class FlextApiStorage:
         if data is None:
             return r[str].ok("null")
         return u.try_(
-            lambda: t.Api.API_JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
+            lambda: t.Api.API_JSON_VALUE_ADAPTER.dump_json(data).decode(
+                c.DEFAULT_ENCODING
+            ),
             catch=(ValueError, TypeError),
         ).map_error(lambda error: f"JSON serialization failed: {error}")
 

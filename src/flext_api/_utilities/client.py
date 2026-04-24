@@ -140,7 +140,7 @@ class FlextApiClient(FlextWebServiceBase[bool, FlextApiSettings]):
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")
         if isinstance(body, str):
-            return r[bytes].ok(body.encode("utf-8"))
+            return r[bytes].ok(body.encode(c.DEFAULT_ENCODING))
         return r[bytes].fail("Request body must be bytes, str, or JSON object")
 
     def execute(

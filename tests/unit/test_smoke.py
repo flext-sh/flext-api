@@ -19,7 +19,7 @@ from flext_api import (
 from tests import c, m, t, u
 
 
-class TestConstants:
+class TestsFlextApiSmoke:
     """Validate constants are usable at runtime."""
 
     def test_method_enum_values(self) -> None:
@@ -56,10 +56,6 @@ class TestConstants:
         assert c.Api.HTTP_SUCCESS_MIN == 200
         assert c.Api.HTTP_SUCCESS_MAX == 300
 
-
-class TestModels:
-    """Validate Pydantic models accept/reject data correctly."""
-
     def test_http_request_defaults(self) -> None:
         """HttpRequest fills defaults for method, headers, body."""
         request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
@@ -94,10 +90,6 @@ class TestModels:
         with pytest.raises(c.ValidationError):
             m.Api.HttpResponse.model_validate({"status_code": 999})
 
-
-class TestSerializers:
-    """Validate serializer round-trip works."""
-
     def test_packb_produces_bytes(self) -> None:
         """Packb returns non-empty bytes for valid input."""
         payload: t.JsonMapping = {"key": "value"}
@@ -112,10 +104,6 @@ class TestSerializers:
         result = u.unpackb(packed)
         assert result.success is True
         assert result.value == original
-
-
-class TestFacadeContract:
-    """Validate public facade behavior only."""
 
     def test_api_client_uses_keyword_settings(self) -> None:
         """FlextApiClient accepts a settings model through the public settings input."""
@@ -136,5 +124,4 @@ class TestFacadeContract:
 
 
 def test_package_imports_main_facade() -> None:
-    """Package root exports the main API facade."""
     assert FlextApi.__name__ == "FlextApi"

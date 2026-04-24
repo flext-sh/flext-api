@@ -303,7 +303,9 @@ class FlextApiWebhookHandler(s[bool]):
     def _parse_payload(self, payload: bytes | str) -> p.Result[t.JsonMapping]:
         """Parse and normalize one webhook payload."""
         payload_text = (
-            payload.decode("utf-8") if isinstance(payload, bytes) else payload
+            payload.decode(c.DEFAULT_ENCODING)
+            if isinstance(payload, bytes)
+            else payload
         )
         event_data_result: p.Result[t.JsonValue] = u.validate_value(
             t.Api.CONTAINER_VALUE_ADAPTER,
@@ -435,7 +437,9 @@ class FlextApiWebhookHandler(s[bool]):
                 f"Missing signature header: {self._settings.signature_header}",
             )
         payload_bytes = (
-            payload if isinstance(payload, bytes) else payload.encode("utf-8")
+            payload
+            if isinstance(payload, bytes)
+            else payload.encode(c.DEFAULT_ENCODING)
         )
         secret = self._settings.secret
         if secret is None:
@@ -446,7 +450,7 @@ class FlextApiWebhookHandler(s[bool]):
             else hashlib.sha512
         )
         expected = hmac.new(
-            secret.encode("utf-8"),
+            secret.encode(c.DEFAULT_ENCODING),
             payload_bytes,
             digest,
         ).hexdigest()

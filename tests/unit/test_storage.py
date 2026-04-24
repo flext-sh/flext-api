@@ -12,7 +12,7 @@ from flext_api import FlextApiStorage
 from tests import m
 
 
-class TestStorageContract:
+class TestsFlextApiStorage:
     """Validate storage behavior only through its public API."""
 
     def test_storage_uses_canonical_settings_model(self) -> None:
