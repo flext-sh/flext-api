@@ -30,9 +30,8 @@ class FlextApiTypes(FlextWebTypes):
     class Api(FlextApiTypingsSerialization):
         """API types namespace for cross-project access."""
 
-        type WebHeaders = Mapping[str, t.Scalar | t.StrSequence]
-        type WebParamValue = str | t.StrSequence
-        type WebParams = Mapping[str, WebParamValue]
+        type WebHeaders = t.ScalarOrStrSequenceMapping
+        type WebParams = Mapping[str, str | t.StrSequence]
         type RequestBody = t.JsonMapping | str | t.StrictBytes
         type ResponseBody = t.JsonMapping | str | t.StrictBytes | None
         type HttpResponseDict = Mapping[
@@ -62,13 +61,8 @@ class FlextApiTypes(FlextWebTypes):
         ]
         type RequestKwargs = Mapping[
             str,
-            t.StrMapping
-            | t.JsonMapping
-            | Mapping[str, t.Scalar | t.StrSequence]
-            | float
-            | None,
+            t.StrMapping | t.JsonMapping | t.ScalarOrStrSequenceMapping | float | None,
         ]
-        type StorageDict = Mapping[str, t.Primitives | None]
         type CacheDict = Mapping[str, t.Primitives]
         CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = u.TypeAdapter(
             t.JsonValue,
