@@ -221,7 +221,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Validate and normalize one string input."""
         if value is None:
             return r[str].fail("Invalid string value")
-        value_result = u.validate_value(t.Api.STRING_ADAPTER, value)
+        value_result: p.Result[str] = u.validate_value(t.Api.STRING_ADAPTER, value)
         if value_result.failure:
             return r[str].fail(value_result.error or "Invalid string value")
         normalized = value_result.value.strip()
@@ -305,7 +305,7 @@ class FlextApiWebhookHandler(s[bool]):
         payload_text = (
             payload.decode("utf-8") if isinstance(payload, bytes) else payload
         )
-        event_data_result = u.validate_value(
+        event_data_result: p.Result[t.JsonValue] = u.validate_value(
             t.Api.CONTAINER_VALUE_ADAPTER,
             payload_text,
             from_json=True,
@@ -314,7 +314,7 @@ class FlextApiWebhookHandler(s[bool]):
             return r[t.JsonMapping].fail(
                 f"Failed to parse payload: {event_data_result.error}",
             )
-        mapping_result = u.validate_value(
+        mapping_result: p.Result[t.JsonMapping] = u.validate_value(
             t.Api.DICT_BODY_ADAPTER,
             event_data_result.value,
         )
@@ -382,7 +382,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Resolve one event id, generating a UUID when absent."""
         event_id_result = self._string_value(event_data.get("id"))
         if event_id_result.success:
-            return event_id_result.value
+            return str(event_id_result.value)
         return str(uuid.uuid4())
 
     def _resolve_event_type(

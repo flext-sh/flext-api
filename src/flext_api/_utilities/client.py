@@ -11,10 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, override
+from typing import ClassVar
 
 import httpx
-from flext_web import u
+from flext_web import FlextWebServiceBase, u
 
 from flext_api import (
     FlextApiSettings,
@@ -22,12 +22,11 @@ from flext_api import (
     m,
     p,
     r,
-    s,
     t,
 )
 
 
-class FlextApiClient(s[bool, FlextApiSettings]):
+class FlextApiClient(FlextWebServiceBase[bool, FlextApiSettings]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with r error handling.
@@ -48,20 +47,14 @@ class FlextApiClient(s[bool, FlextApiSettings]):
         super().__init__(runtime_settings=settings)
 
     @property
-    @override
-    def settings(self) -> FlextApiSettings:
-        """Return typed API settings for client operations."""
-        return super().settings
-
-    @property
     def base_url(self) -> str:
         """Access base_url from configuration."""
-        return self.settings.base_url
+        return str(self.settings.base_url)
 
     @property
     def timeout(self) -> float:
         """Access timeout from configuration."""
-        return self.settings.timeout
+        return float(self.settings.timeout)
 
     @staticmethod
     def _deserialize_body(
