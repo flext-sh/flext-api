@@ -30,7 +30,7 @@ class FlextApiProtocolPlugins:
         name: str
         version: str
         description: str
-        logger: p.Logger
+        logger: p.Api.Logger
 
         def __init__(
             self,
