@@ -36,12 +36,12 @@ class FlextApiStorage:
     @property
     def backend(self) -> str:
         """Return configured backend name."""
-        return self._settings.backend
+        return str(self._settings.backend)
 
     @property
     def namespace(self) -> str:
         """Return configured namespace."""
-        return self._settings.namespace
+        return str(self._settings.namespace)
 
     def batch_delete(self, keys: t.StrSequence) -> p.Result[bool]:
         """Delete multiple keys."""
@@ -274,7 +274,7 @@ class FlextApiStorage:
     @staticmethod
     def _validate_key(key: str) -> p.Result[str]:
         """Validate a public storage key."""
-        key_result = u.validate_value(t.Api.STRING_ADAPTER, key)
+        key_result: p.Result[str] = u.validate_value(t.Api.STRING_ADAPTER, key)
         if key_result.failure:
             return r[str].fail(key_result.error or "Invalid storage key")
         normalized_key = key_result.value.strip()

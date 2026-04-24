@@ -24,7 +24,6 @@ from collections.abc import (
 )
 from typing import ClassVar, override
 
-import websockets
 from websockets.sync.client import ClientConnection, connect as websocket_connect
 
 from flext_api import FlextApiRfcProtocolImplementation, c, m, p, r, t
@@ -361,10 +360,6 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             r indicating success or failure
 
         """
-        if websockets is None:
-            return r[bool].fail(
-                "websockets library not installed. Install with: pip install websockets",
-            )
         try:
             self._url = url
             self._headers = headers
@@ -432,7 +427,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _extract_message_type(self, options: m.Api.SendRequestWsOptions) -> str:
         """Extract message type from kwargs."""
-        return options.message_type
+        return str(options.message_type)
 
     def _heartbeat_loop(self) -> None:
         """Background task for heartbeat monitoring."""

@@ -200,7 +200,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         if "timeout" in request:
             try:
                 parsed = m.Api.TimeoutRequest.model_validate(request)
-                return parsed.timeout
+                return float(parsed.timeout)
             except c.ValidationError:
                 return float(c.Api.DEFAULT_TIMEOUT)
         return float(c.Api.DEFAULT_TIMEOUT)
@@ -238,8 +238,8 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         content_type_key = "content-type"
         if content_type_key in headers:
-            return headers[content_type_key]
-        return c.Api.ContentType.JSON
+            return str(headers[content_type_key])
+        return str(c.Api.ContentType.JSON)
 
     def _client_error(self, status_code: int) -> bool:
         """Check if status code indicates client error (RFC 7231).
