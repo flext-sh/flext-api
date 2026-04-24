@@ -38,7 +38,6 @@ if _t.TYPE_CHECKING:
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
     from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.logger import FlextApiLoggerProtocolImplementation
     from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
     from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
     from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
@@ -97,7 +96,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".protocol_impls.base": ("FlextApiBaseProtocolImplementation",),
             ".protocol_impls.http": ("FlextWebProtocolPlugin",),
             ".protocol_impls.http_client": ("FlextWebClientImplementation",),
-            ".protocol_impls.logger": ("FlextApiLoggerProtocolImplementation",),
             ".protocol_impls.rfc": ("FlextApiRfcProtocolImplementation",),
             ".protocol_impls.sse": ("FlextApiSseProtocolPlugin",),
             ".protocol_impls.websocket": ("FlextApiWebsocketProtocolPlugin",),
@@ -149,7 +147,6 @@ __all__: list[str] = [
     "FlextApiConstants",
     "FlextApiErrors",
     "FlextApiLifecycleManager",
-    "FlextApiLoggerProtocolImplementation",
     "FlextApiMiddleware",
     "FlextApiModels",
     "FlextApiProtocolPlugins",

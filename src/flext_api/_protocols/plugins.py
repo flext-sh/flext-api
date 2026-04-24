@@ -16,9 +16,9 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_web import p, u
+from flext_web import u
 
-from flext_api import r, t
+from flext_api import p, r, t
 
 
 class FlextApiProtocolPlugins:
@@ -30,7 +30,7 @@ class FlextApiProtocolPlugins:
         name: str
         version: str
         description: str
-        logger: p.Api.Logger
+        logger: p.Logger
 
         def __init__(
             self,

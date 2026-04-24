@@ -10,7 +10,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".base": ("FlextApiBaseProtocolImplementation",),
         ".http": ("FlextWebProtocolPlugin",),
         ".http_client": ("FlextWebClientImplementation",),
-        ".logger": ("FlextApiLoggerProtocolImplementation",),
         ".rfc": ("FlextApiRfcProtocolImplementation",),
         ".sse": ("FlextApiSseProtocolPlugin",),
         ".websocket": ("FlextApiWebsocketProtocolPlugin",),

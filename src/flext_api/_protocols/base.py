@@ -99,22 +99,6 @@ class FlextApiProtocolsBase:
             ...
 
     @runtime_checkable
-    class Logger(Protocol):
-        """Protocol for generic logger implementations."""
-
-        def debug(self, message: str, **kwargs: t.JsonValue) -> None:
-            """Log debug message."""
-
-        def error(self, message: str, **kwargs: t.JsonValue) -> None:
-            """Log error message."""
-
-        def info(self, message: str, **kwargs: t.JsonValue) -> None:
-            """Log info message."""
-
-        def warning(self, message: str, **kwargs: t.JsonValue) -> None:
-            """Log warning message."""
-
-    @runtime_checkable
     class Serializer(Protocol):
         """Protocol for custom serializers.
 
