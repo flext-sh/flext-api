@@ -7,15 +7,10 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".test_serializers": ("TestMessagePackUnpackb",),
-        ".test_smoke": (
-            "TestConstants",
-            "TestFacadeContract",
-            "TestModels",
-            "TestSerializers",
-        ),
-        ".test_storage": ("TestStorageContract",),
-        ".test_webhook": ("TestWebhookContract",),
+        ".test_serializers": ("TestsFlextApiSerializers",),
+        ".test_smoke": ("TestsFlextApiSmoke",),
+        ".test_storage": ("TestsFlextApiStorage",),
+        ".test_webhook": ("TestsFlextApiWebhook",),
     },
 )
 
