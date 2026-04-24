@@ -17,7 +17,7 @@ class TestWebhookContract:
 
     def test_receive_webhook_processes_registered_handler(self) -> None:
         """Webhook handler processes one event and stores delivered status."""
-        received_payloads: list[t.JsonMapping] = []
+        received_payloads: t.MutableSequenceOf[t.JsonMapping] = []
         handler = FlextApiWebhookHandler(
             settings=m.Api.Webhook.Settings(max_retries=0),
         )

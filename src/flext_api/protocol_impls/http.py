@@ -489,4 +489,4 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         return error_msg
 
 
-__all__: list[str] = ["FlextWebProtocolPlugin"]
+__all__: t.MutableSequenceOf[str] = ["FlextWebProtocolPlugin"]

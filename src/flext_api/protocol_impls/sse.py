@@ -366,4 +366,4 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             time.sleep(delay_seconds)
 
 
-__all__: list[str] = ["FlextApiSseProtocolPlugin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiSseProtocolPlugin"]

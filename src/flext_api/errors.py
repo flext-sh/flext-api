@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import e
+from flext_api import e, t
 
 
 class FlextApiErrors:
@@ -29,4 +29,4 @@ class FlextApiErrors:
         """
 
 
-__all__: list[str] = ["FlextApiErrors"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiErrors"]

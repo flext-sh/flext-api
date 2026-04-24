@@ -257,4 +257,4 @@ class FlextApiClient(FlextWebServiceBase[bool, FlextApiSettings]):
             )
 
 
-__all__: list[str] = ["FlextApiClient"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClient"]

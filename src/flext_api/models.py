@@ -18,12 +18,13 @@ from collections.abc import (
 )
 from typing import Annotated, ClassVar
 
+from flext_core import FlextModels
 from flext_web import m, u
 
 from flext_api import c, t
 
 
-class FlextApiModels(m):
+class FlextApiModels(FlextModels):
     """HTTP domain models for flext-api."""
 
     class Api:

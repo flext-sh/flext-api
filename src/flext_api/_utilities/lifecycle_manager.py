@@ -13,7 +13,7 @@ from collections.abc import (
 )
 from contextlib import asynccontextmanager
 
-from flext_api import p
+from flext_api import p, t
 
 
 class FlextApiLifecycleManager:
@@ -45,4 +45,4 @@ class FlextApiLifecycleManager:
             resource.close()
 
 
-__all__: list[str] = ["FlextApiLifecycleManager"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiLifecycleManager"]

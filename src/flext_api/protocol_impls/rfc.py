@@ -157,12 +157,13 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         Dictionary of headers (normalized to lowercase keys per RFC 7230)
 
         """
+        empty_headers: Mapping[str, str] = {}
         if "headers" not in request:
-            return {}
+            return empty_headers
         try:
             parsed = m.Api.HeadersRequest.model_validate(request)
         except c.ValidationError:
-            return {}
+            return empty_headers
         normalized_headers: t.MutableStrMapping = {}
         for key, value in parsed.headers.items():
             normalized_headers[key.lower()] = value
@@ -330,4 +331,4 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         return r[int].ok(parsed.status_code)
 
 
-__all__: list[str] = ["FlextApiRfcProtocolImplementation"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiRfcProtocolImplementation"]

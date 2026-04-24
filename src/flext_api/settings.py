@@ -60,4 +60,4 @@ class FlextApiSettings(FlextSettings):
     ] = False
 
 
-__all__: list[str] = ["FlextApiSettings"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiSettings"]

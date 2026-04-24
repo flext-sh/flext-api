@@ -1,5 +1,7 @@
 """FlextApi constants - Pure constants using StrEnum + Pydantic 2 patterns.
 
+from flext_core import FlextConstants as Constants
+
 FLEXT-API domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
 - StrEnum for type-safe enumerations with Pydantic 2 validation
 - PEP 695 type aliases for strict Literal types
@@ -22,10 +24,11 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
+from flext_core import FlextConstants as Constants
 from flext_web import FlextWebConstants, t
 
 
-class FlextApiConstants(FlextWebConstants):
+class FlextApiConstants(Constants):
     """FlextApi domain constants extending FlextConstants."""
 
     class Api:
@@ -445,6 +448,6 @@ class FlextApiConstants(FlextWebConstants):
             """Pagination default values."""
 
 
-__all__: list[str] = ["FlextApiConstants", "c"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiConstants", "c"]
 
 c = FlextApiConstants

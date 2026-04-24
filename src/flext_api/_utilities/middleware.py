@@ -16,7 +16,7 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_api import m
+from flext_api import m, t
 
 
 class FlextApiMiddleware:
@@ -51,4 +51,4 @@ class FlextApiMiddleware:
         return request
 
 
-__all__: list[str] = ["FlextApiMiddleware"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiMiddleware"]

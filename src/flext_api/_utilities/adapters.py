@@ -246,4 +246,4 @@ class FlextApiAdapters:
                 )
 
 
-__all__: list[str] = ["FlextApiAdapters"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiAdapters"]

@@ -57,7 +57,8 @@ class FlextApiProtocolPlugins:
 
         def supported_protocols(self) -> t.StrSequence:
             """Get list of supported protocols."""
-            return []
+            protocols: list[str] = []
+            return protocols
 
         @abstractmethod
         def send_request(
@@ -122,7 +123,8 @@ class FlextApiProtocolPlugins:
 
         def connection_info(self) -> t.JsonMapping:
             """Get connection information."""
-            return {}
+            info: t.JsonMapping = {}
+            return info
 
         @abstractmethod
         def receive(

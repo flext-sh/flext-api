@@ -106,7 +106,8 @@ class FlextApiBaseProtocolImplementation:
         List of supported protocol identifiers
 
         """
-        return []
+        protocols: t.MutableSequenceOf[str] = []
+        return protocols
 
     def initialize(self) -> p.Result[bool]:
         """Initialize protocol resources."""
@@ -178,12 +179,13 @@ class FlextApiBaseProtocolImplementation:
         Error response dictionary
 
         """
-        return {
+        response: t.MutableJsonMapping = {
             "status": c.Api.Status.ERROR.value,
             "status_code": status_code,
             "error": error,
             "timestamp": None,
         }
+        return response
 
     def _build_success_response(
         self,
@@ -226,4 +228,4 @@ class FlextApiBaseProtocolImplementation:
         return r[t.JsonMapping].ok(request)
 
 
-__all__: list[str] = ["FlextApiBaseProtocolImplementation"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiBaseProtocolImplementation"]

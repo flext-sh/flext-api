@@ -254,4 +254,4 @@ class FlextApiRegistry:
         )
 
 
-__all__: list[str] = ["FlextApiRegistry"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiRegistry"]

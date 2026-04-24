@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from flext_api import FlextApiSettings
+from flext_api import FlextApiSettings, t
 
 
 class FlextApiApp:
@@ -60,4 +60,4 @@ class FlextApiApp:
         return app
 
 
-__all__: list[str] = ["FlextApiApp"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiApp"]

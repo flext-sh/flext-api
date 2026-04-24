@@ -523,4 +523,4 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[bool].fail(f"WebSocket send error: {e}")
 
 
-__all__: list[str] = ["FlextApiWebsocketProtocolPlugin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiWebsocketProtocolPlugin"]

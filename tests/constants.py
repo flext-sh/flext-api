@@ -9,6 +9,7 @@ from __future__ import annotations
 from flext_tests import FlextTestsConstants
 
 from flext_api import c
+from tests import t
 
 
 class TestsFlextApiConstants(FlextTestsConstants, c):
@@ -22,4 +23,4 @@ class TestsFlextApiConstants(FlextTestsConstants, c):
 
 
 c = TestsFlextApiConstants
-__all__: list[str] = ["TestsFlextApiConstants", "c"]
+__all__: t.MutableSequenceOf[str] = ["TestsFlextApiConstants", "c"]
