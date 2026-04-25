@@ -349,11 +349,11 @@ class FlextApiModels(FlextModels):
             headers: Annotated[
                 t.StrMapping,
                 u.Field(description="HTTP headers"),
-            ] = u.Field(default_factory=dict)
+            ] = u.Field(default_factory=lambda: MappingProxyType({}))
             params: Annotated[
                 t.StrMapping,
                 u.Field(description="Query parameters"),
-            ] = u.Field(default_factory=dict)
+            ] = u.Field(default_factory=lambda: MappingProxyType({}))
             data: Annotated[
                 t.JsonMapping | None,
                 u.Field(None, description="Form request body"),
