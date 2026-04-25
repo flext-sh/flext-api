@@ -32,7 +32,6 @@ from flext_api import (
     p,
     r,
     t,
-    u,
 )
 
 
@@ -105,9 +104,8 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     @override
     def protocol_info(self) -> Mapping[str, t.JsonValue | t.StrSequence]:
         """Get protocol configuration information."""
-        base_info = super().protocol_info()
-        updated_info: Mapping[str, t.JsonValue | t.StrSequence] = {
-            **base_info,
+        return {
+            **super().protocol_info(),
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,
             "max_retries": self._max_retries,
@@ -115,14 +113,15 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             "follow_redirects": self._follow_redirects,
             "max_redirects": self._max_redirects,
         }
-        return updated_info
 
     @override
     def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols."""
-        if self._http3:
-            return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
-        return list(c.Api.HTTP.SUPPORTED_PROTOCOLS)
+        return list(
+            c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+            if self._http3
+            else c.Api.HTTP.SUPPORTED_PROTOCOLS
+        )
 
     @override
     def send_request(
@@ -140,12 +139,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         http_request = request_result.value
         method = http_request.method.upper()
         url = http_request.url
-        headers_result = self._extract_headers_from_model(http_request)
-        if headers_result.failure:
-            return r[t.Api.HttpResponseDict].fail(
-                headers_result.error or "Headers extraction failed",
-            )
-        headers_dict = headers_result.value
+        headers_dict = dict(http_request.headers)
         timeout = http_request.timeout
         body = http_request.body
         conn_result = self._transport.connect(
@@ -156,9 +150,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[t.Api.HttpResponseDict].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
-        connection = conn_result.value
         result = self._execute_with_retry(
-            connection,
             method,
             url,
             headers_dict,
@@ -189,17 +181,13 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
         if chunk_size <= 0:
             return r[Iterator[bytes]].fail("chunk_size must be greater than 0")
-        headers_result = self._extract_headers_from_model(request)
-        if headers_result.failure:
-            return r[Iterator[bytes]].fail(
-                headers_result.error or "Headers extraction failed",
-            )
+        headers = dict(request.headers)
         method = request.method.upper()
         url = request.url
         request_kwargs = self._build_request_kwargs(
             method,
             url,
-            headers_result.value,
+            headers,
             {},
             request.timeout,
             request.body,
@@ -269,7 +257,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         headers = self._extract_headers(request)
         body_value = self._extract_body(request)
         body = (
-            u.Api.RequestUtils.to_request_body(body_value)
+            t.Api.REQUEST_BODY_ADAPTER.validate_python(body_value)
             if body_value is not None
             else ""
         )
@@ -338,23 +326,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             timeout=timeout,
         )
 
-    def _build_response(
-        self,
-        httpx_response: httpx.Response,
-        _method: str,
-    ) -> p.Result[m.Api.HttpResponse]:
-        """Build FlextApiModels.HttpResponse from httpx.Response."""
-        try:
-            response = m.Api.HttpResponse(
-                status_code=httpx_response.status_code,
-                headers=dict(httpx_response.headers),
-                body=httpx_response.text,
-                request_id="",
-            )
-            return r[m.Api.HttpResponse].ok(response)
-        except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError) as e:
-            return r[m.Api.HttpResponse].fail(f"Failed to build response: {e}")
-
     def _response_to_dict(
         self,
         response: m.Api.HttpResponse,
@@ -386,7 +357,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _execute_with_retry(
         self,
-        _connection_url: str,
         method: str,
         url: str,
         headers: t.StrMapping,
@@ -467,13 +437,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         return r[m.Api.HttpResponse].fail(
             f"Request failed after {self._max_retries + 1} attempts: {last_error}",
         )
-
-    def _extract_headers_from_model(
-        self,
-        request: m.Api.HttpRequest,
-    ) -> p.Result[t.StrMapping]:
-        """Extract headers from HttpRequest model without fallback."""
-        return r[t.StrMapping].ok(dict(request.headers))
 
     def _handle_request_exception(
         self,

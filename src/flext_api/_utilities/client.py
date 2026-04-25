@@ -14,8 +14,8 @@ from __future__ import annotations
 from typing import ClassVar, override
 
 import httpx
-from flext_core import FlextSettings
-from flext_web import FlextWebServiceBase, u
+from flext_core import FlextSettings, s
+from flext_web import u
 
 from flext_api import (
     FlextApiSettings,
@@ -27,7 +27,7 @@ from flext_api import (
 )
 
 
-class FlextApiClient(FlextWebServiceBase[bool]):
+class FlextApiClient(s[bool]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with r error handling.
@@ -51,6 +51,9 @@ class FlextApiClient(FlextWebServiceBase[bool]):
     @override
     def settings(self) -> FlextApiSettings:
         """Return the typed API settings namespace."""
+        settings = super().settings
+        if isinstance(settings, FlextApiSettings):
+            return settings
         return FlextSettings.fetch_global().fetch_namespace("api", FlextApiSettings)
 
     @property
@@ -72,24 +75,24 @@ class FlextApiClient(FlextWebServiceBase[bool]):
         if "application/octet-stream" in content_type or "binary" in content_type:
             bytes_result = FlextApiClient._deserialize_bytes(response)
             if bytes_result.success:
-                return bytes_result.map(lambda v: v)
+                return bytes_result
         if "application/json" in content_type or "application/vnd" in content_type:
             json_result = FlextApiClient._deserialize_json(response)
             if json_result.success:
-                return json_result.map(lambda v: v)
+                return json_result
         json_result = FlextApiClient._deserialize_json(response)
         if json_result.success:
-            return json_result.map(lambda v: v)
+            return json_result
         if "text/" in content_type:
             text_result = FlextApiClient._deserialize_text(response)
             if text_result.success:
-                return text_result.map(lambda v: v)
+                return text_result
         text_result = FlextApiClient._deserialize_text(response)
         if text_result.success:
-            return text_result.map(lambda v: v)
+            return text_result
         bytes_result = FlextApiClient._deserialize_bytes(response)
         if bytes_result.success:
-            return bytes_result.map(lambda v: v)
+            return bytes_result
         return r[t.Api.ResponseBody].fail(
             "Failed to deserialize response body: no valid format found",
         )
@@ -222,21 +225,13 @@ class FlextApiClient(FlextWebServiceBase[bool]):
                 request_url: str = url
                 request_headers: t.StrMapping = headers
                 request_params: t.Api.WebParams = request.query_params or {}
-                if serialized_body:
-                    response = client.request(
-                        method=request_method,
-                        url=request_url,
-                        headers=request_headers,
-                        params=request_params,
-                        content=serialized_body,
-                    )
-                else:
-                    response = client.request(
-                        method=request_method,
-                        url=request_url,
-                        headers=request_headers,
-                        params=request_params,
-                    )
+                response = client.request(
+                    method=request_method,
+                    url=request_url,
+                    headers=request_headers,
+                    params=request_params,
+                    content=serialized_body or None,
+                )
             if response.status_code >= c.Api.HTTP_ERROR_MIN:
                 return r[m.Api.HttpResponse].fail(
                     f"HTTP {response.status_code}: {response.reason_phrase}",

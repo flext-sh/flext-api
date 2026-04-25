@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import (
     MutableMapping,
     Sequence,
@@ -48,10 +48,10 @@ class FlextApiProtocolPlugins:
         def shutdown(self) -> p.Result[bool]:
             return r[bool].ok(value=True)
 
-    class Plugin(_FlextApiPluginBase):
+    class Plugin(_FlextApiPluginBase, ABC):
         """Base plugin type used by manager APIs."""
 
-    class Protocol(_FlextApiPluginBase):
+    class Protocol(_FlextApiPluginBase, ABC):
         """Abstract protocol plugin for API protocol implementations."""
 
         def supported_protocols(self) -> t.StrSequence:
@@ -73,7 +73,7 @@ class FlextApiProtocolPlugins:
             """Check if this plugin supports the given protocol."""
             ...
 
-    class Schema(_FlextApiPluginBase):
+    class Schema(_FlextApiPluginBase, ABC):
         """Abstract schema plugin for schema validation and introspection."""
 
         def schema_version(self) -> str:
@@ -107,7 +107,7 @@ class FlextApiProtocolPlugins:
             """Validate response against schema."""
             ...
 
-    class Transport(_FlextApiPluginBase):
+    class Transport(_FlextApiPluginBase, ABC):
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
@@ -148,7 +148,7 @@ class FlextApiProtocolPlugins:
             """Check if transport supports streaming."""
             return False
 
-    class Authentication(_FlextApiPluginBase):
+    class Authentication(_FlextApiPluginBase, ABC):
         """Abstract authentication plugin for credential management."""
 
         @abstractmethod
@@ -180,7 +180,7 @@ class FlextApiProtocolPlugins:
             """Validate authentication credentials."""
             ...
 
-    class Manager:
+    class Manager(ABC):
         """Plugin manager for discovery, loading, and lifecycle management."""
 
         _loaded_plugins: MutableMapping[str, FlextApiProtocolPlugins.Plugin]

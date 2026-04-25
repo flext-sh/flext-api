@@ -89,6 +89,19 @@ class FlextApiUtilities(
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
+            def coerce_positive_timeout(
+                timeout_value: float | str,
+            ) -> p.Result[float]:
+                """Coerce timeout to a positive float."""
+                try:
+                    timeout_float = float(timeout_value)
+                except (ValueError, TypeError):
+                    return r[float].fail(f"Invalid timeout value: {timeout_value}")
+                if timeout_float <= 0:
+                    return r[float].fail("Invalid timeout value: must be positive")
+                return r[float].ok(timeout_float)
+
+            @staticmethod
             def extract_body_from_kwargs(
                 data: t.Api.RequestBody | None,
                 kwargs: t.Api.RequestKwargs | None,
@@ -100,17 +113,13 @@ class FlextApiUtilities(
                     raw_data = kwargs["data"]
                     if raw_data is not None:
                         return r[t.Api.RequestBody].ok(
-                            FlextApiUtilities.Api.RequestUtils.to_request_body(
-                                raw_data,
-                            ),
+                            t.Api.REQUEST_BODY_ADAPTER.validate_python(raw_data),
                         )
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
                     if raw_json is not None:
                         return r[t.Api.RequestBody].ok(
-                            FlextApiUtilities.Api.RequestUtils.to_request_body(
-                                raw_json,
-                            ),
+                            t.Api.REQUEST_BODY_ADAPTER.validate_python(raw_json),
                         )
                 return r[t.Api.RequestBody].ok({})
 
@@ -146,18 +155,6 @@ class FlextApiUtilities(
                 return t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
 
             @staticmethod
-            def to_request_body(
-                value: t.Api.RequestBody
-                | t.JsonMapping
-                | t.StrMapping
-                | t.ScalarMapping
-                | t.Api.WebHeaders
-                | t.JsonValue,
-            ) -> t.Api.RequestBody:
-                """Validate arbitrary value as RequestBody using centralized Pydantic contracts."""
-                return t.Api.REQUEST_BODY_ADAPTER.validate_python(value)
-
-            @staticmethod
             def validate_and_extract_timeout(
                 timeout: float | str | None,
                 kwargs: t.Api.RequestKwargs | None,
@@ -169,24 +166,16 @@ class FlextApiUtilities(
                 Fails if timeout is explicitly provided but invalid.
                 """
                 if timeout is not None:
-                    try:
-                        timeout_float = float(timeout)
-                        if timeout_float > 0:
-                            return r[float].ok(timeout_float)
-                        return r[float].fail("Invalid timeout value: must be positive")
-                    except (ValueError, TypeError):
-                        return r[float].fail(f"Invalid timeout value: {timeout}")
+                    return FlextApiUtilities.Api.RequestUtils.coerce_positive_timeout(
+                        timeout,
+                    )
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
                     if not isinstance(timeout_value, (int, float, str)):
                         return r[float].fail(f"Invalid timeout value: {timeout_value}")
-                    try:
-                        timeout_float = float(timeout_value)
-                        if timeout_float > 0:
-                            return r[float].ok(timeout_float)
-                        return r[float].fail("Invalid timeout value: must be positive")
-                    except (ValueError, TypeError):
-                        return r[float].fail(f"Invalid timeout value: {timeout_value}")
+                    return FlextApiUtilities.Api.RequestUtils.coerce_positive_timeout(
+                        timeout_value,
+                    )
                 return r[float].ok(30.0)
 
             @staticmethod
@@ -304,7 +293,7 @@ class FlextApiUtilities(
         ) -> p.Result[t.JsonMapping]:
             """Build error result - returns r with error response."""
             normalized_headers = (
-                t.Api.API_JSON_VALUE_ADAPTER.validate_python(dict(headers))
+                FlextApiUtilities.Api.RequestUtils.to_json_value(dict(headers))
                 if headers
                 else None
             )
@@ -330,7 +319,7 @@ class FlextApiUtilities(
         ) -> p.Result[t.JsonMapping]:
             """Build success response with optional data and message."""
             normalized_headers = (
-                t.Api.API_JSON_VALUE_ADAPTER.validate_python(dict(headers))
+                FlextApiUtilities.Api.RequestUtils.to_json_value(dict(headers))
                 if headers
                 else None
             )

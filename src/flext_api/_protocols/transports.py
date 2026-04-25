@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from abc import ABC
 from typing import override
 
 import httpx
@@ -22,7 +23,7 @@ from flext_api import FlextApiProtocolsBase as pb, c, m, r, t
 class FlextApiProtocolsTransports:
     """FLEXT API transport implementations."""
 
-    class FlextWebTransport(pb.TransportPlugin):
+    class FlextWebTransport(pb.TransportPlugin, ABC):
         """HTTP transport implementation using httpx."""
 
         def __init__(self) -> None:

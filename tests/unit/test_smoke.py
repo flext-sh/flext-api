@@ -30,13 +30,13 @@ class TestsFlextApiSmoke:
 
     def test_status_enum_values(self) -> None:
         """Status enum contains expected states."""
-        assert c.Api.Status.SUCCESS == "success"
-        assert c.Api.Status.FAILED == "failed"
+        assert c.Api.Status.SUCCESS.value == "success"
+        assert c.Api.Status.FAILED.value == "failed"
 
     def test_content_type_enum_values(self) -> None:
         """Content type enum maps to MIME types."""
-        assert c.Api.ContentType.JSON == "application/json"
-        assert c.Api.ContentType.XML == "application/xml"
+        assert c.Api.ContentType.JSON.value == "application/json"
+        assert c.Api.ContentType.XML.value == "application/xml"
 
     def test_safe_methods_are_frozenset(self) -> None:
         """SAFE_METHODS is immutable and contains expected values."""
