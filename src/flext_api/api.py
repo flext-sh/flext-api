@@ -210,6 +210,7 @@ class FlextApi(s[bool]):
         )
 
 
-api = FlextApi
+api = FlextApi()
+
 
 __all__: list[str] = ["FlextApi", "api"]
