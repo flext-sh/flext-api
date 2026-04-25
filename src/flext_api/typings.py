@@ -20,13 +20,13 @@ from collections.abc import (
 )
 from typing import Literal
 
-from flext_cli import p, t, u
-from flext_web import FlextWebTypes
+from flext_core import FlextTypes
+from flext_web import p, t, u
 
 from flext_api import FlextApiTypingsSerialization
 
 
-class FlextApiTypes(FlextWebTypes):
+class FlextApiTypes(Types):
     """Unified API type definitions extending t with composition."""
 
     class Api(FlextApiTypingsSerialization):

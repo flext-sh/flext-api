@@ -63,7 +63,7 @@ class FlextApiServer(s[bool]):
             logger: Logger instance for audit trail
 
             """
-            self._routes: dict[str, t.Api.RouteData] = {}
+            self._routes: MutableMapping[str, t.Api.RouteData] = {}
             self.logger = logger
 
         @property
@@ -103,7 +103,7 @@ class FlextApiServer(s[bool]):
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
             options_json: t.ConfigurationMapping = options
-            route_dict: dict[
+            route_dict: MutableMapping[
                 str,
                 t.JsonValue
                 | t.ConfigurationMapping
@@ -588,4 +588,4 @@ class FlextApiServer(s[bool]):
         )
 
 
-__all__: list[str] = ["FlextApiServer"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiServer"]

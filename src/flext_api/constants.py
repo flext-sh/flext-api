@@ -29,7 +29,7 @@ from typing import Final
 from flext_web import c, t
 
 
-class FlextApiConstants(c):
+class FlextApiConstants(Constants):
     """FlextApi domain constants extending FlextConstants."""
 
     class Api:

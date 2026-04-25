@@ -201,7 +201,7 @@ class FlextApiWebhookHandler(s[bool]):
         attempts: int | None = None,
     ) -> m.Api.Webhook.Delivery:
         """Build one canonical delivery model."""
-        delivery_payload: dict[str, t.JsonPayload] = {
+        delivery_payload: MutableMapping[str, t.JsonPayload] = {
             "event_type": event.type,
             "timestamp": time.time(),
             "status": status,
@@ -345,7 +345,7 @@ class FlextApiWebhookHandler(s[bool]):
     def _process_single_retry(
         self,
         event: m.Api.Webhook.Event,
-    ) -> tuple[bool, bool]:
+    ) -> t.Pair[bool, bool]:
         """Process one queued retry event and report success/requeue status."""
         retry_event = event.model_copy(update={"attempts": event.attempts + 1})
         delay = self._settings.retry_delay * (
@@ -406,7 +406,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Resolve one canonical webhook settings model."""
         if isinstance(settings, m.Api.Webhook.Settings):
             return settings.model_copy(update=dict(overrides) or None)
-        payload: dict[str, t.JsonPayload] = {}
+        payload: MutableMapping[str, t.JsonPayload] = {}
         if isinstance(settings, Mapping):
             payload.update(settings)
         elif settings is not None:
@@ -459,4 +459,4 @@ class FlextApiWebhookHandler(s[bool]):
         return r[bool].ok(True)
 
 
-__all__: list[str] = ["FlextApiWebhookHandler"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiWebhookHandler"]

@@ -574,7 +574,7 @@ class FlextApiModels(FlextModels):
 
                 value: t.JsonValue
                 timestamp: str
-                ttl: float | int | None = None
+                ttl: t.Numeric | None = None
                 created_at: float = u.Field(default_factory=time.time)
 
                 @property
@@ -817,4 +817,4 @@ class FlextApiModels(FlextModels):
 
 m = FlextApiModels
 
-__all__: list[str] = ["FlextApiModels", "m"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModels", "m"]

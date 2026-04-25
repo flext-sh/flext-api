@@ -28,8 +28,8 @@ class TestsFlextApiStorage:
 
         info_result = storage.info()
 
-        tm.that(storage.namespace, eq="api-cache")
-        tm.that(storage.backend, eq="memory")
+        tm.that(storage.settings.namespace, eq="api-cache")
+        tm.that(storage.settings.backend, eq="memory")
         tm.that(info_result.success, eq=True)
         tm.that(info_result.value["max_size"], eq=2)
         tm.that(info_result.value["default_ttl"], eq=30)

@@ -9,6 +9,7 @@ from __future__ import annotations
 import time
 from collections.abc import (
     Mapping,
+    MutableMapping,
     Sequence,
 )
 
@@ -20,7 +21,7 @@ from flext_api import c, m, p, r, t
 class FlextApiStorage:
     """In-memory storage with centralized settings/state models."""
 
-    _settings: m.Api.Storage.Settings
+    settings: m.Api.Storage.Settings
     state: m.Api.Storage.State
 
     def __init__(
@@ -29,19 +30,9 @@ class FlextApiStorage:
         **overrides: t.JsonPayload,
     ) -> None:
         """Create one storage instance from the canonical settings model."""
-        self._settings = self._resolve_settings(settings, overrides)
+        self.settings = self._resolve_settings(settings, overrides)
         self.state = m.Api.Storage.State()
         self.logger = u.fetch_logger(__name__)
-
-    @property
-    def backend(self) -> str:
-        """Return configured backend name."""
-        return str(self._settings.backend)
-
-    @property
-    def namespace(self) -> str:
-        """Return configured namespace."""
-        return str(self._settings.namespace)
 
     def batch_delete(self, keys: t.StrSequence) -> p.Result[bool]:
         """Delete multiple keys."""
@@ -137,7 +128,7 @@ class FlextApiStorage:
         stats = self._stats_model()
         return r[t.Api.CacheDict].ok({
             "size": stats.storage_size,
-            "backend": self.backend,
+            "backend": self.settings.backend,
             "hits": stats.cache_hits,
             "misses": stats.cache_misses,
         })
@@ -176,12 +167,12 @@ class FlextApiStorage:
     def info(self) -> p.Result[t.JsonMapping]:
         """Return storage configuration and runtime info."""
         return r[t.JsonMapping].ok({
-            "namespace": self.namespace,
-            "backend": self.backend,
+            "namespace": self.settings.namespace,
+            "backend": self.settings.backend,
             "size": len(self.state.entries),
             "created_at": self.state.created_at,
-            "max_size": self._settings.max_size,
-            "default_ttl": self._settings.default_ttl,
+            "max_size": self.settings.max_size,
+            "default_ttl": self.settings.default_ttl,
             "operations_count": self.state.operations_count,
         })
 
@@ -238,13 +229,13 @@ class FlextApiStorage:
         normalized_key = key_result.value
         self._cleanup_expired_entries()
         if (
-            self._settings.max_size is not None
+            self.settings.max_size is not None
             and normalized_key not in self.state.entries
-            and len(self.state.entries) >= self._settings.max_size
+            and len(self.state.entries) >= self.settings.max_size
         ):
             return r[bool].fail("Storage is full")
         metadata_value = t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
-        metadata_payload: dict[str, t.JsonValue | str | float | int] = {
+        metadata_payload: MutableMapping[str, t.JsonValue | str | t.Numeric] = {
             "value": metadata_value,
             "timestamp": u.generate_iso_timestamp(),
             "created_at": time.time(),
@@ -313,7 +304,7 @@ class FlextApiStorage:
         """Resolve one canonical storage settings model."""
         if isinstance(settings, m.Api.Storage.Settings):
             return settings.model_copy(update=dict(overrides) or None)
-        payload: dict[str, t.JsonPayload] = {}
+        payload: MutableMapping[str, t.JsonPayload] = {}
         if isinstance(settings, Mapping):
             payload.update(settings)
         elif settings is not None:
@@ -340,7 +331,7 @@ class FlextApiStorage:
         """Resolve one TTL value from public inputs and settings."""
         resolved = timeout if timeout is not None else ttl
         if resolved is None:
-            resolved = self._settings.default_ttl
+            resolved = self.settings.default_ttl
         if resolved is None:
             return r[int | None].ok(None)
         if resolved <= 0:
@@ -355,8 +346,8 @@ class FlextApiStorage:
             cache_misses=self.state.cache_misses,
             storage_size=len(self.state.entries),
             memory_usage=self._estimate_memory_usage(),
-            namespace=self.namespace,
+            namespace=self.settings.namespace,
         )
 
 
-__all__: list[str] = ["FlextApiStorage"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiStorage"]
