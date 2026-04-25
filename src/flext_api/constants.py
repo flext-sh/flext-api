@@ -1,5 +1,7 @@
 """FlextApi constants - Pure constants using StrEnum + Pydantic 2 patterns.
 
+from flext_core import FlextConstants as Constants
+
 from flext_core import FlextConstants
 
 FLEXT-API domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
@@ -24,11 +26,10 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
-from flext_core import FlextConstants
-from flext_web import FlextWebConstants, t
+from flext_web import c, t
 
 
-class FlextApiConstants(FlextConstants):
+class FlextApiConstants(c):
     """FlextApi domain constants extending FlextConstants."""
 
     class Api:
@@ -235,7 +236,7 @@ class FlextApiConstants(FlextConstants):
         "Immutable set of all valid content types."
         "Active HTTP methods for validation - references Method enum members."
         "Safe HTTP methods for validation - references Method enum members."
-        DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
+        DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
         "Default request timeout in seconds."
         "Default maximum retry attempts."
         DEFAULT_BASE_URL: Final[str] = "http://localhost:8000"
