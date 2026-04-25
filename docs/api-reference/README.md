@@ -19,7 +19,7 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextApi`, `FlextApiConstants`, `FlextApiErrors`, `FlextApiModels`, `FlextApiProtocols`, `FlextApiServer` (+3 more)
-- Generated module pages: `11`
+- Primary facades: `FlextApiRegistry`, `FlextApiTypingsSerialization`, `FlextApiMiddleware`, `FlextApiProtocolsTransports`, `FlextApiProtocolPlugins`, `FlextApiAdapters` (+24 more)
+- Generated module pages: `16`
 
 - [Back to project docs](../index.md)

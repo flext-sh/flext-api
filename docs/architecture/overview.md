@@ -32,7 +32,7 @@
   - [Deployment Configuration](#deployment-configuration)
   - [Kubernetes Deployment](#kubernetes-deployment)
 - [Quality Metrics](#quality-metrics)
-  - [Current State (v0.12.0-dev)](#current-state-v099)
+  - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
   - [Coverage by Layer](#coverage-by-layer)
 - [Extension Points](#extension-points)
   - [Adding New Protocols](#adding-new-protocols)
