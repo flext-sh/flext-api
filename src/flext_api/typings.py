@@ -1,7 +1,5 @@
 """FLEXT API Types - Unified domain-specific type definitions with Clean Architecture.
 
-from flext_core import FlextTypes as Types
-
 Single class namespace with NO aliases, NO weak types.
 All types consolidated within FlextApiTypes using Python 3.13+ syntax.
 
@@ -20,14 +18,13 @@ from collections.abc import (
 )
 from typing import Literal
 
-from flext_core import FlextTypes
-from flext_web import p, t, u
+from flext_web import FlextWebTypes, p, t, u
 
 from flext_api import FlextApiTypingsSerialization
 
 
-class FlextApiTypes(Types):
-    """Unified API type definitions extending t with composition."""
+class FlextApiTypes(FlextWebTypes):
+    """Unified API type definitions extending FlextWebTypes via MRO."""
 
     class Api(FlextApiTypingsSerialization):
         """API types namespace for cross-project access."""

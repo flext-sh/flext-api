@@ -4,7 +4,6 @@ Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-
 from __future__ import annotations
 
 from examples import c, m, r, t, u

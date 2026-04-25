@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 # AUTO-GENERATED FILE — Regenerate with: make gen
 """Examples package."""
 
+from __future__ import annotations
 
 import typing as _t
 

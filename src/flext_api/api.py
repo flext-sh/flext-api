@@ -206,4 +206,4 @@ class FlextApi(s[bool]):
 api = FlextApi()
 
 
-__all__: list[str] = ["FlextApi", "api"]
+__all__: t.MutableSequenceOf[str] = ["FlextApi", "api"]
