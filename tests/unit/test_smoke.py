@@ -122,6 +122,5 @@ class TestsFlextApiSmoke:
         assert api.settings.base_url == "https://api.example"
         assert abs(api.settings.timeout - 4.0) < 1e-9
 
-
-def test_package_imports_main_facade() -> None:
-    assert FlextApi.__name__ == "FlextApi"
+    def test_package_imports_main_facade(self) -> None:
+        assert FlextApi.__name__ == "FlextApi"
