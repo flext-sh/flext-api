@@ -411,7 +411,8 @@ class FlextApiModels(FlextModels):
                 u.Field(None, description="Request timeout"),
             ]
             headers: t.MutableStrMapping = u.Field(
-                default_factory=dict, description="HTTP request headers"
+                default_factory=dict,
+                description="HTTP request headers",
             )
 
         class HeadersRequest(m.Value):
@@ -593,7 +594,10 @@ class FlextApiModels(FlextModels):
                 )
 
                 entries: MutableMapping[str, FlextApiModels.Api.Storage.Metadata] = (
-                    u.Field(default_factory=dict, description="Storage entries by key")
+                    u.Field(
+                        default_factory=dict,
+                        description="Storage entries by key",
+                    )
                 )
                 operations_count: int = u.Field(
                     0,
@@ -773,7 +777,8 @@ class FlextApiModels(FlextModels):
                     str,
                     FlextApiModels.Api.Webhook.Delivery,
                 ] = u.Field(
-                    default_factory=dict, description="Delivery records by event id"
+                    default_factory=dict,
+                    description="Delivery records by event id",
                 )
 
                 @property
