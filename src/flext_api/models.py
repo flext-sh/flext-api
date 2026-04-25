@@ -16,6 +16,7 @@ from collections.abc import (
     MutableMapping,
     MutableSequence,
 )
+from types import MappingProxyType
 from typing import Annotated, ClassVar
 
 from flext_core import FlextModels
@@ -74,7 +75,7 @@ class FlextApiModels(FlextModels):
             headers: Annotated[
                 t.StrMapping,
                 u.Field(description="HTTP request headers"),
-            ] = u.Field(default_factory=dict)
+            ] = u.Field(default_factory=lambda: MappingProxyType({}))
             body: Annotated[
                 t.Api.RequestBody | None,
                 m.BeforeValidator(
@@ -126,7 +127,7 @@ class FlextApiModels(FlextModels):
             headers: Annotated[
                 t.StrMapping,
                 u.Field(description="HTTP response headers"),
-            ] = u.Field(default_factory=dict)
+            ] = u.Field(default_factory=lambda: MappingProxyType({}))
             body: Annotated[
                 Annotated[
                     t.Api.ResponseBody,
@@ -137,7 +138,7 @@ class FlextApiModels(FlextModels):
                 u.Field(
                     description="Response body (empty dict by default, None allowed for 204)"
                 ),
-            ] = u.Field(default_factory=dict)
+            ] = u.Field(default_factory=lambda: MappingProxyType({}))
 
             request_id: Annotated[
                 str,
@@ -217,7 +218,7 @@ class FlextApiModels(FlextModels):
             headers: Annotated[
                 t.StrMapping,
                 u.Field(description="Default headers for all requests"),
-            ] = u.Field(default_factory=dict)
+            ] = u.Field(default_factory=lambda: MappingProxyType({}))
             verify_ssl: Annotated[
                 bool,
                 u.Field(default=True, description="Verify SSL certificates"),
