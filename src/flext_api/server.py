@@ -81,7 +81,6 @@ class FlextApiServer(s[bool]):
             method: c.Api.Method | str,
             path: str,
             handler: Callable[..., t.Api.HttpResponseDict | str | None],
-            prefix: str = "",
             schema: t.JsonMapping | None = None,
             **options: t.Scalar,
         ) -> p.Result[bool]:
@@ -91,18 +90,23 @@ class FlextApiServer(s[bool]):
                 method: HTTP method (GET, POST, etc.) or special (WS, SSE, GRAPHQL)
                 path: Endpoint path
                 handler: Handler function
-                prefix: Optional prefix for method (e.g., "WS" -> "WS:path")
                 schema: Optional schema (for GraphQL)
-                **options: Additional options
+                **options: Additional options. Use ``prefix=...`` for route key prefix.
 
             Returns:
                 r indicating success or failure
 
             """
+            prefix_value = options.get("prefix", "")
+            prefix = (
+                prefix_value if isinstance(prefix_value, str) else str(prefix_value)
+            )
             route_key = f"{prefix}{method}:{path}" if prefix else f"{method}:{path}"
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
-            options_json: t.ConfigurationMapping = options
+            options_json: t.ConfigurationMapping = {
+                str(key): value for key, value in options.items() if key != "prefix"
+            }
             route_dict: MutableMapping[
                 str,
                 t.JsonValue

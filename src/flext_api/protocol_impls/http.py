@@ -181,16 +181,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
         if chunk_size <= 0:
             return r[Iterator[bytes]].fail("chunk_size must be greater than 0")
-        headers = dict(request.headers)
-        method = request.method.upper()
-        url = request.url
         request_kwargs = self._build_request_kwargs(
-            method,
-            url,
-            headers,
+            request,
             {},
-            request.timeout,
-            request.body,
         )
         call_args = request_kwargs
 
@@ -273,14 +266,15 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
 
     def _build_request_kwargs(
         self,
-        method: str,
-        url: str,
-        headers: t.StrMapping,
+        request: m.Api.HttpRequest,
         params: t.StrMapping,
-        timeout: float | None,
-        body: t.Api.RequestBody | None,
     ) -> m.Api.HttpRequestCallArgs:
         """Build typed request call arguments based on body type."""
+        method = request.method.upper()
+        url = request.url
+        headers = request.headers
+        timeout = request.timeout
+        body = request.body
         request_fields: MutableMapping[
             str, t.JsonMapping | t.StrMapping | t.JsonValue
         ] = {
