@@ -428,8 +428,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                     e,
                     url,
                     method,
-                    attempt,
-                    self._max_retries,
                 )
             if attempt < self._max_retries:
                 backoff_time = self._retry_backoff_factor * 2**attempt
@@ -443,8 +441,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         e: Exception,
         url: str,
         method: str,
-        _attempt: int,
-        _max_retries: int,
     ) -> str:
         """Handle request exceptions and return error message."""
         error_msg = f"Unexpected error: {e}"
