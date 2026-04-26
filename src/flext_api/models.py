@@ -19,10 +19,9 @@ from collections.abc import (
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
+from flext_api import c, t
 from flext_core import FlextModels
 from flext_web import m, u
-
-from flext_api import c, t
 
 
 class FlextApiModels(FlextModels):

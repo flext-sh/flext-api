@@ -15,9 +15,9 @@ from abc import ABC
 from typing import override
 
 import httpx
-from flext_web import p
 
 from flext_api import FlextApiProtocolsBase as pb, c, m, r, t
+from flext_web import p
 
 
 class FlextApiProtocolsTransports:

@@ -14,8 +14,6 @@ from __future__ import annotations
 from typing import ClassVar, override
 
 import httpx
-from flext_core import FlextSettings, s
-from flext_web import u
 
 from flext_api import (
     FlextApiSettings,
@@ -25,6 +23,8 @@ from flext_api import (
     r,
     t,
 )
+from flext_core import FlextSettings, s
+from flext_web import u
 
 
 class FlextApiClient(s[bool]):

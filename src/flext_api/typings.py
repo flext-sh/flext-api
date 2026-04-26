@@ -18,9 +18,8 @@ from collections.abc import (
 )
 from typing import Literal
 
-from flext_web import FlextWebTypes, p, t, u
-
 from flext_api import FlextApiTypingsSerialization
+from flext_web import FlextWebTypes, p, t, u
 
 
 class FlextApiTypes(FlextWebTypes):

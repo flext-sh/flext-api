@@ -27,9 +27,9 @@ from collections.abc import (
 )
 
 from fastapi import FastAPI
-from flext_core import s
 
 from flext_api import c, e, p, r, t, u
+from flext_core import s
 
 
 class FlextApiServer(s[bool]):
@@ -481,12 +481,14 @@ class FlextApiServer(s[bool]):
         **options: t.Scalar,
     ) -> p.Result[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
+        method_value = str(method)
+        prefix = method_value if method_value in c.Api.VALID_PROTOCOL_METHODS else ""
         options_typed: t.ConfigurationMapping = options
         return self._route_registry.register(
-            method,
+            method_value,
             path,
             handler,
-            prefix="",
+            prefix=prefix,
             schema=None,
             **options_typed,
         )
@@ -498,14 +500,11 @@ class FlextApiServer(s[bool]):
         **options: t.Scalar,
     ) -> p.Result[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
-        options_typed: t.ConfigurationMapping = options
-        return self._route_registry.register(
-            "SSE",
+        return self.register_route(
             path,
+            c.Api.ProtocolMethod.SSE,
             handler,
-            prefix="SSE",
-            schema=None,
-            **options_typed,
+            **options,
         )
 
     def register_websocket_endpoint(
@@ -515,14 +514,11 @@ class FlextApiServer(s[bool]):
         **options: t.Scalar,
     ) -> p.Result[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
-        options_typed: t.ConfigurationMapping = options
-        return self._route_registry.register(
-            "WS",
+        return self.register_route(
             path,
+            c.Api.ProtocolMethod.WS,
             handler,
-            prefix="WS",
-            schema=None,
-            **options_typed,
+            **options,
         )
 
     def restart(self) -> p.Result[bool]:

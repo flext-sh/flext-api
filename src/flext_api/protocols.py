@@ -10,14 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextProtocols
-
 from flext_api import (
     FlextApiProtocolPlugins,
     FlextApiProtocolsBase,
     FlextApiProtocolsSerialization,
     FlextApiProtocolsTransports,
 )
+from flext_core import FlextProtocols
 
 
 class FlextApiProtocols(

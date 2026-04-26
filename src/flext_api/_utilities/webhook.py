@@ -16,9 +16,8 @@ from collections.abc import (
     MutableSequence,
 )
 
-from flext_web import u
-
 from flext_api import c, m, p, r, s, t
+from flext_web import u
 
 
 class FlextApiWebhookHandler(s[bool]):

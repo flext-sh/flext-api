@@ -15,9 +15,9 @@ from collections.abc import (
 )
 
 import cbor2
-from flext_web import u
 
 from flext_api import FlextApiUtilitiesSerializers, c, m, p, r, t
+from flext_web import u
 
 
 class FlextApiAdapters:

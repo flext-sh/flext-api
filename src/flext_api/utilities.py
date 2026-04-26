@@ -11,8 +11,6 @@ from enum import StrEnum
 from typing import TypeIs
 from urllib.parse import urlparse
 
-from flext_web import m, u
-
 from flext_api import (
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
@@ -20,6 +18,7 @@ from flext_api import (
     r,
     t,
 )
+from flext_web import m, u
 
 
 class FlextApiUtilities(
