@@ -29,7 +29,18 @@ class FlextApiStorage:
         **overrides: t.JsonPayload,
     ) -> None:
         """Create one storage instance from the canonical settings model."""
-        self.settings = self._resolve_settings(settings, overrides)
+        if isinstance(settings, m.Api.Storage.Settings):
+            self.settings = settings.model_copy(update=dict(overrides) or None)
+        else:
+            payload: dict[str, t.JsonPayload] = {
+                **(dict(settings) if settings else {}),
+                **overrides,
+            }
+            settings_result = u.resolve_options(None, payload, m.Api.Storage.Settings)
+            if settings_result.failure:
+                msg = settings_result.error or "Storage settings validation failed"
+                raise ValueError(msg)
+            self.settings = settings_result.value
         self.state = m.Api.Storage.State()
         self.logger = u.fetch_logger(__name__)
 
@@ -294,32 +305,6 @@ class FlextApiStorage:
     def _record_operation(self) -> None:
         """Increment storage operation count."""
         self.state.operations_count += 1
-
-    def _resolve_settings(
-        self,
-        settings: m.Api.Storage.Settings | Mapping[str, t.JsonPayload] | None,
-        overrides: Mapping[str, t.JsonPayload],
-    ) -> m.Api.Storage.Settings:
-        """Resolve one canonical storage settings model."""
-        if isinstance(settings, m.Api.Storage.Settings):
-            return settings.model_copy(update=dict(overrides) or None)
-        payload: MutableMapping[str, t.JsonPayload] = {}
-        if isinstance(settings, Mapping):
-            payload.update(settings)
-        elif settings is not None:
-            msg = "Storage settings must be a mapping or Storage.Settings model"
-            raise TypeError(msg)
-        payload.update(overrides)
-        if not payload:
-            return m.Api.Storage.Settings()
-        settings_result = u.parse_model(
-            payload,
-            m.Api.Storage.Settings,
-        )
-        if settings_result.failure:
-            msg = settings_result.error or "Storage settings validation failed"
-            raise ValueError(msg)
-        return settings_result.value
 
     def _resolve_ttl(
         self,

@@ -411,19 +411,21 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         if options.message is not None:
             return r[str | bytes].ok(options.message)
         body = self._extract_body(request)
-        if body is not None:
-            if isinstance(body, (str, bytes)):
+        match body:
+            case None:
+                return r[str | bytes].fail("Message or body is required")
+            case str() | bytes():
                 try:
                     parsed = m.Api.InboundMessage(message=body)
-                    return r[str | bytes].ok(parsed.message)
                 except c.ValidationError:
                     return r[str | bytes].ok(body)
-            try:
-                serialized_body = t.Api.CONTAINER_VALUE_ADAPTER.dump_json(body)
-            except c.ValidationError:
-                return r[str | bytes].fail("Unsupported WebSocket body type")
-            return r[str | bytes].ok(serialized_body.decode("utf-8"))
-        return r[str | bytes].fail("Message or body is required")
+                return r[str | bytes].ok(parsed.message)
+            case _:
+                try:
+                    serialized_body = t.Api.CONTAINER_VALUE_ADAPTER.dump_json(body)
+                except c.ValidationError:
+                    return r[str | bytes].fail("Unsupported WebSocket body type")
+                return r[str | bytes].ok(serialized_body.decode("utf-8"))
 
     def _extract_message_type(self, options: m.Api.SendRequestWsOptions) -> str:
         """Extract message type from kwargs."""
@@ -440,6 +442,22 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 self.logger.exception("Heartbeat error")
                 break
 
+    def _dispatch_inbound_message(self, message: str | bytes) -> None:
+        """Notify registered message handlers for one inbound payload."""
+        for handler in self._on_message_handlers:
+            try:
+                handler(message)
+            except (ValueError, TypeError, KeyError, ConnectionError):
+                self.logger.exception("Message handler error")
+
+    def _dispatch_receive_error(self, error: Exception) -> None:
+        """Notify registered error handlers for one receive failure."""
+        for error_handler in self._on_error_handlers:
+            try:
+                error_handler(error)
+            except (ValueError, TypeError, KeyError, ConnectionError):
+                self.logger.exception("Error handler error")
+
     def _receive_loop(self) -> None:
         """Background task to receive messages."""
         while self._connected and self._connection:
@@ -449,18 +467,10 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                     inbound = m.Api.InboundMessage(message=message)
                 except c.ValidationError:
                     continue
-                for handler in self._on_message_handlers:
-                    try:
-                        handler(inbound.message)
-                    except (ValueError, TypeError, KeyError, ConnectionError):
-                        self.logger.exception("Message handler error")
+                self._dispatch_inbound_message(inbound.message)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 self.logger.exception("WebSocket receive error")
-                for error_handler in self._on_error_handlers:
-                    try:
-                        error_handler(e)
-                    except (ValueError, TypeError, KeyError, ConnectionError):
-                        self.logger.exception("Error handler error")
+                self._dispatch_receive_error(e)
                 if self._auto_reconnect:
                     self._reconnect()
                 break

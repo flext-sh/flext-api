@@ -36,7 +36,18 @@ class FlextApiWebhookHandler(s[bool]):
     ) -> None:
         """Create one webhook handler from the canonical webhook settings model."""
         super().__init__()
-        self._settings = self._resolve_webhook_settings(settings, overrides)
+        if isinstance(settings, m.Api.Webhook.Settings):
+            self._settings = settings.model_copy(update=dict(overrides) or None)
+        else:
+            payload: dict[str, t.JsonPayload] = {
+                **(dict(settings) if settings else {}),
+                **overrides,
+            }
+            settings_result = u.resolve_options(None, payload, m.Api.Webhook.Settings)
+            if settings_result.failure:
+                msg = settings_result.error or "Webhook settings validation failed"
+                raise ValueError(msg)
+            self._settings = settings_result.value
         self.state = m.Api.Webhook.State()
 
     @property
@@ -396,32 +407,6 @@ class FlextApiWebhookHandler(s[bool]):
             if event_type_result.success:
                 return event_type_result
         return r[str].fail("Missing event type in payload")
-
-    def _resolve_webhook_settings(
-        self,
-        settings: m.Api.Webhook.Settings | Mapping[str, t.JsonPayload] | None,
-        overrides: Mapping[str, t.JsonPayload],
-    ) -> m.Api.Webhook.Settings:
-        """Resolve one canonical webhook settings model."""
-        if isinstance(settings, m.Api.Webhook.Settings):
-            return settings.model_copy(update=dict(overrides) or None)
-        payload: MutableMapping[str, t.JsonPayload] = {}
-        if isinstance(settings, Mapping):
-            payload.update(settings)
-        elif settings is not None:
-            msg = "Webhook settings must be a mapping or Webhook.Settings model"
-            raise TypeError(msg)
-        payload.update(overrides)
-        if not payload:
-            return m.Api.Webhook.Settings()
-        settings_result = u.parse_model(
-            payload,
-            m.Api.Webhook.Settings,
-        )
-        if settings_result.failure:
-            msg = settings_result.error or "Webhook settings validation failed"
-            raise ValueError(msg)
-        return settings_result.value
 
     def _verify_signature(
         self,
