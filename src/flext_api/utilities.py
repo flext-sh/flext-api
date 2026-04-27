@@ -18,6 +18,7 @@ from flext_api import (
     r,
     t,
 )
+from flext_core import c
 from flext_web import m, u
 
 
@@ -513,8 +514,7 @@ class FlextApiUtilities(
                 return r[str].fail("Hostname cannot be empty")
             if len(host) > FlextApiUtilities.MAX_HOSTNAME_LENGTH:
                 return r[str].fail("Hostname too long")
-            pattern = "^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^localhost$|^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$"
-            if not re.match(pattern, host):
+            if not re.match(c.PATTERN_HOSTNAME_OR_IP, host):
                 return r[str].fail("Invalid hostname format")
             return r[str].ok(host)
 
