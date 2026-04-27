@@ -1,0 +1,18 @@
+src/flext_api/typings.py
+  h_9db9d35f50cf33 50
+src/flext_api/models.py
+  h_9db9d35f50cf33 65,635
+src/flext_api/constants.py
+  h_9db9d35f50cf33 111-115,299-303,309-338,341-364,366-367,369-387,389-391,395-396,406-410
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "39fef45faa43be18ac69571d02820bce029e80a7",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
