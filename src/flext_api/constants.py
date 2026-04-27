@@ -79,16 +79,21 @@ class FlextApiConstants(FlextWebConstants):
             SSE = "SSE"
             GRAPHQL = "GRAPHQL"
 
-        class MethodLiterals:
-            """Lowercase HTTP method literals for case-insensitive comparisons."""
-
-            GET_LOWER: Final[str] = "get"
-            POST_LOWER: Final[str] = "post"
-            PUT_LOWER: Final[str] = "put"
-            DELETE_LOWER: Final[str] = "delete"
-            PATCH_LOWER: Final[str] = "patch"
-            HEAD_LOWER: Final[str] = "head"
-            OPTIONS_LOWER: Final[str] = "options"
+        # ===== HTTP Method Literals =====
+        METHOD_LITERALS_GET_LOWER: Final[str] = "get"
+        "Lowercase GET method literal."
+        METHOD_LITERALS_POST_LOWER: Final[str] = "post"
+        "Lowercase POST method literal."
+        METHOD_LITERALS_PUT_LOWER: Final[str] = "put"
+        "Lowercase PUT method literal."
+        METHOD_LITERALS_DELETE_LOWER: Final[str] = "delete"
+        "Lowercase DELETE method literal."
+        METHOD_LITERALS_PATCH_LOWER: Final[str] = "patch"
+        "Lowercase PATCH method literal."
+        METHOD_LITERALS_HEAD_LOWER: Final[str] = "head"
+        "Lowercase HEAD method literal."
+        METHOD_LITERALS_OPTIONS_LOWER: Final[str] = "options"
+        "Lowercase OPTIONS method literal."
 
         VALID_HTTP_METHODS_LOWER: Final[frozenset[str]] = frozenset({
             "get",
@@ -324,7 +329,7 @@ class FlextApiConstants(FlextWebConstants):
         "Supported HTTP protocols (including HTTP/3)."
 
         # ===== Server Configuration =====
-        SERVER_DEFAULT_HOST: Final[str] = "127.0.0.1"
+        SERVER_DEFAULT_HOST: Final[str] = c.LOCALHOST
         "Default server host."
         SERVER_DEFAULT_PORT: Final[int] = 8000
         "Default server port."
@@ -410,6 +415,6 @@ class FlextApiConstants(FlextWebConstants):
         "Default maximum number of HTTP client keepalive connections."
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiConstants", "c"]
-
 c = FlextApiConstants
+
+__all__: t.MutableSequenceOf[str] = ["FlextApiConstants", "c"]

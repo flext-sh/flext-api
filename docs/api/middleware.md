@@ -157,7 +157,7 @@ from flext_core import u
 class JwtAuthenticationMiddleware(AuthenticationMiddleware):
     """JWT-based authentication middleware."""
 
-    def __init__(self, secret_key: str, algorithm: str = "HS256"):
+    def __init__(self, secret_key: str, algorithm: str = c.Auth.Algorithms.HS256):
         super().__init__()
         self.secret_key = secret_key
         self.algorithm = algorithm

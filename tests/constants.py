@@ -15,11 +15,8 @@ from tests import t
 class TestsFlextApiConstants(FlextTestsConstants, c):
     """Test constants for flext-api."""
 
-    class Api(c.Api):
-        """Api domain test constants."""
-
-        class Tests:
-            """Test-specific constants."""
+    class Tests(FlextTestsConstants.Tests):
+        """Test-specific constants."""
 
 
 c = TestsFlextApiConstants

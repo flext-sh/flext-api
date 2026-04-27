@@ -14,11 +14,8 @@ from flext_api import p
 class TestsFlextApiProtocols(FlextTestsProtocols, p):
     """Test protocols for flext-api."""
 
-    class Api(p.Api):
-        """Api domain test protocols."""
-
-        class Tests:
-            """Test-specific protocols."""
+    class Tests(FlextTestsProtocols.Tests):
+        """Test-specific protocols."""
 
 
 p = TestsFlextApiProtocols

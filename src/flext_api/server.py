@@ -285,19 +285,19 @@ class FlextApiServer(s[bool]):
                         app.post(path)(route_handler)
                     else:
                         method_lower = method.lower()
-                        if method_lower == c.Api.MethodLiterals.GET_LOWER:
+                        if method_lower == c.Api.METHOD_LITERALS_GET_LOWER:
                             app.get(path)(route_handler)
-                        elif method_lower == c.Api.MethodLiterals.POST_LOWER:
+                        elif method_lower == c.Api.METHOD_LITERALS_POST_LOWER:
                             app.post(path)(route_handler)
-                        elif method_lower == c.Api.MethodLiterals.PUT_LOWER:
+                        elif method_lower == c.Api.METHOD_LITERALS_PUT_LOWER:
                             app.put(path)(route_handler)
-                        elif method_lower == c.Api.MethodLiterals.DELETE_LOWER:
+                        elif method_lower == c.Api.METHOD_LITERALS_DELETE_LOWER:
                             app.delete(path)(route_handler)
-                        elif method_lower == c.Api.MethodLiterals.PATCH_LOWER:
+                        elif method_lower == c.Api.METHOD_LITERALS_PATCH_LOWER:
                             app.patch(path)(route_handler)
-                        elif method_lower == c.Api.MethodLiterals.HEAD_LOWER:
+                        elif method_lower == c.Api.METHOD_LITERALS_HEAD_LOWER:
                             app.head(path)(route_handler)
-                        elif method_lower == c.Api.MethodLiterals.OPTIONS_LOWER:
+                        elif method_lower == c.Api.METHOD_LITERALS_OPTIONS_LOWER:
                             app.options(path)(route_handler)
                     self.logger.debug("Route registered", method=method, path=path)
                 return r[bool].ok(value=True)

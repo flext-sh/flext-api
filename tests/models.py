@@ -14,11 +14,8 @@ from flext_api import m
 class TestsFlextApiModels(FlextTestsModels, m):
     """Test models for flext-api."""
 
-    class Api(m.Api):
-        """Api domain test models."""
-
-        class Tests:
-            """Test-specific models."""
+    class Tests(FlextTestsModels.Tests):
+        """Test-specific models."""
 
 
 m = TestsFlextApiModels

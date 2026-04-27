@@ -161,7 +161,7 @@ class FlextApiUtilities(
             ) -> p.Result[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
-                Returns default timeout of 30.0 if not specified.
+                Returns default timeout of c.DEFAULT_TIMEOUT_SECONDS if not specified.
                 Coerces string/int values to float.
                 Fails if timeout is explicitly provided but invalid.
                 """
@@ -176,7 +176,7 @@ class FlextApiUtilities(
                     return FlextApiUtilities.Api.RequestUtils.coerce_positive_timeout(
                         timeout_value,
                     )
-                return r[float].ok(30.0)
+                return r[float].ok(float(c.DEFAULT_TIMEOUT_SECONDS))
 
             @staticmethod
             def extract_query_params(
