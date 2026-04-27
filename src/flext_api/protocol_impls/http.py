@@ -52,7 +52,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     - Cookie management
 
     Usage:
-    plugin = FlextWebProtocolPlugin(http2=True, max_connections=100)
+    plugin = FlextWebProtocolPlugin(http2=True)
     result = plugin.send_request(request)
     if result.success:
     response = result.value
@@ -63,7 +63,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         *,
         http2: bool = True,
         http3: bool = False,
-        max_connections: int = 100,
         max_retries: int | None = None,
         retry_backoff_factor: float | None = None,
         follow_redirects: bool = True,
@@ -97,7 +96,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             "HTTP protocol initialized",
             http2=http2,
             http3=http3,
-            max_connections=max_connections,
             max_retries=self._max_retries,
         )
 
@@ -150,14 +148,81 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             return r[t.Api.HttpResponseDict].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
-        result = self._execute_with_retry(
-            method,
-            url,
-            headers_dict,
-            {},
-            timeout,
-            body,
-        )
+        last_error = "Unknown error"
+        result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].fail(last_error)
+        for attempt in range(self._max_retries + 1):
+            try:
+                request_model = m.Api.HttpRequest.model_validate(
+                    {
+                        "method": method,
+                        "url": url,
+                        "headers": headers_dict,
+                        "query_params": {},
+                        "body": {} if body is None else body,
+                        **({"timeout": timeout} if timeout is not None else {}),
+                    },
+                )
+                response_result = self._transport.request_model(request_model)
+                if response_result.failure:
+                    last_error = response_result.error or "HTTP request failed"
+                    if attempt < self._max_retries:
+                        backoff_time = self._retry_backoff_factor * 2**attempt
+                        time.sleep(backoff_time)
+                        continue
+                    result = r[m.Api.HttpResponse].fail(last_error)
+                    break
+                response = response_result.value
+                if self._success_status(response.status_code):
+                    result = r[m.Api.HttpResponse].ok(response)
+                    break
+                if not self._should_retry(
+                    response.status_code,
+                    attempt,
+                    self._max_retries,
+                ):
+                    result = r[m.Api.HttpResponse].fail(
+                        f"HTTP {response.status_code}: {response.body}",
+                    )
+                    break
+            except httpx.TimeoutException as e:
+                last_error = f"Request timeout: {e}"
+                self.logger.warning(
+                    f"Request timeout (attempt {attempt + 1}/{self._max_retries + 1})",
+                    url=url,
+                    method=method,
+                    attempt=attempt + 1,
+                )
+            except httpx.NetworkError as e:
+                last_error = f"Network error: {e}"
+                self.logger.warning(
+                    f"Network error (attempt {attempt + 1}/{self._max_retries + 1})",
+                    url=url,
+                    method=method,
+                    attempt=attempt + 1,
+                )
+            except httpx.HTTPError as e:
+                last_error = f"HTTP error: {e}"
+                self.logger.warning(
+                    f"HTTP error (attempt {attempt + 1}/{self._max_retries + 1})",
+                    url=url,
+                    method=method,
+                    attempt=attempt + 1,
+                )
+            except c.ValidationError as e:
+                last_error = f"Invalid request argument type: {e}"
+            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+                last_error = self._handle_request_exception(
+                    e,
+                    url,
+                    method,
+                )
+            if attempt < self._max_retries:
+                backoff_time = self._retry_backoff_factor * 2**attempt
+                time.sleep(backoff_time)
+        else:
+            result = r[m.Api.HttpResponse].fail(
+                f"Request failed after {self._max_retries + 1} attempts: {last_error}",
+            )
         return result.fold(
             on_failure=lambda e: r[t.Api.HttpResponseDict].fail(
                 e or "Request execution failed",
@@ -348,87 +413,6 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                 return t.Api.RESPONSE_BODY_ADAPTER.validate_python(body_mapping)
             case _:
                 return t.Api.RESPONSE_BODY_ADAPTER.validate_python(body)
-
-    def _execute_with_retry(
-        self,
-        method: str,
-        url: str,
-        headers: t.StrMapping,
-        params: t.StrMapping,
-        timeout: float | None,
-        body: t.Api.RequestBody | None,
-    ) -> p.Result[m.Api.HttpResponse]:
-        """Execute HTTP request with retry logic."""
-        last_error = "Unknown error"
-        for attempt in range(self._max_retries + 1):
-            try:
-                request_model = m.Api.HttpRequest.model_validate(
-                    {
-                        "method": method,
-                        "url": url,
-                        "headers": headers,
-                        "query_params": params,
-                        "body": {} if body is None else body,
-                        **({"timeout": timeout} if timeout is not None else {}),
-                    },
-                )
-                response_result = self._transport.request_model(request_model)
-                if response_result.failure:
-                    last_error = response_result.error or "HTTP request failed"
-                    if attempt < self._max_retries:
-                        backoff_time = self._retry_backoff_factor * 2**attempt
-                        time.sleep(backoff_time)
-                        continue
-                    return r[m.Api.HttpResponse].fail(last_error)
-                response = response_result.value
-                if self._success_status(response.status_code):
-                    return r[m.Api.HttpResponse].ok(response)
-                if not self._should_retry(
-                    response.status_code,
-                    attempt,
-                    self._max_retries,
-                ):
-                    return r[m.Api.HttpResponse].fail(
-                        f"HTTP {response.status_code}: {response.body}",
-                    )
-            except httpx.TimeoutException as e:
-                last_error = f"Request timeout: {e}"
-                self.logger.warning(
-                    f"Request timeout (attempt {attempt + 1}/{self._max_retries + 1})",
-                    url=url,
-                    method=method,
-                    attempt=attempt + 1,
-                )
-            except httpx.NetworkError as e:
-                last_error = f"Network error: {e}"
-                self.logger.warning(
-                    f"Network error (attempt {attempt + 1}/{self._max_retries + 1})",
-                    url=url,
-                    method=method,
-                    attempt=attempt + 1,
-                )
-            except httpx.HTTPError as e:
-                last_error = f"HTTP error: {e}"
-                self.logger.warning(
-                    f"HTTP error (attempt {attempt + 1}/{self._max_retries + 1})",
-                    url=url,
-                    method=method,
-                    attempt=attempt + 1,
-                )
-            except c.ValidationError as e:
-                last_error = f"Invalid request argument type: {e}"
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                last_error = self._handle_request_exception(
-                    e,
-                    url,
-                    method,
-                )
-            if attempt < self._max_retries:
-                backoff_time = self._retry_backoff_factor * 2**attempt
-                time.sleep(backoff_time)
-        return r[m.Api.HttpResponse].fail(
-            f"Request failed after {self._max_retries + 1} attempts: {last_error}",
-        )
 
     def _handle_request_exception(
         self,

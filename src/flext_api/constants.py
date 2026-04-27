@@ -441,9 +441,6 @@ class FlextApiConstants(FlextWebConstants):
             DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
             "Default maximum number of keepalive connections."
 
-        class PaginationDefaults:
-            """Pagination default values."""
-
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiConstants", "c"]
 
