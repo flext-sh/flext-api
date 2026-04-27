@@ -36,8 +36,8 @@ class FlextWebClientImplementation(p.Api.HttpClient):
                 pool=client_config.timeout,
             ),
             limits=httpx.Limits(
-                max_connections=c.Api.HTTPClient.DEFAULT_MAX_CONNECTIONS,
-                max_keepalive_connections=c.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS,
+                max_connections=c.Api.HTTP_CLIENT_DEFAULT_MAX_CONNECTIONS,
+                max_keepalive_connections=c.Api.HTTP_CLIENT_DEFAULT_MAX_KEEPALIVE_CONNECTIONS,
             ),
             follow_redirects=True,
             verify=client_config.verify_ssl,

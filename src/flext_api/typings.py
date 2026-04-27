@@ -16,9 +16,8 @@ from collections.abc import (
     Callable,
     Mapping,
 )
-from typing import Literal
 
-from flext_api import FlextApiTypingsSerialization
+from flext_api import FlextApiTypingsSerialization, c
 from flext_web import FlextWebTypes, p, t, u
 
 
@@ -47,12 +46,8 @@ class FlextApiTypes(FlextWebTypes):
             | None,
         ]
         "Route registration data structure."
-        type WebhookDeliveryStatus = Literal[
-            "delivered",
-            "delivered_after_retry",
-            "failed",
-        ]
-        type WebhookAlgorithm = Literal["sha256", "sha512"]
+        type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
+        type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
         type WebhookHandler = Callable[
             [t.JsonMapping],
             t.JsonValue | p.ResultLike[bool] | None,

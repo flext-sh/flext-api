@@ -116,9 +116,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols."""
         return list(
-            c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+            c.Api.HTTP_PROTOCOL_SUPPORTED_WITH_HTTP3
             if self._http3
-            else c.Api.HTTP.SUPPORTED_PROTOCOLS
+            else c.Api.HTTP_PROTOCOL_SUPPORTED
         )
 
     @override
@@ -287,9 +287,9 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol."""
         if self._http3:
-            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+            supported = c.Api.HTTP_PROTOCOL_SUPPORTED_WITH_HTTP3
         else:
-            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS
+            supported = c.Api.HTTP_PROTOCOL_SUPPORTED
         return protocol.lower() in supported
 
     def _build_http_request_from_dict(

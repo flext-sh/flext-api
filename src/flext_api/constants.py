@@ -108,6 +108,11 @@ class FlextApiConstants(FlextWebConstants):
         })
         "Valid protocol route methods (WS, SSE, GRAPHQL)."
 
+        HTTP_METHOD_PATTERN: Final[str] = (
+            r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$"
+        )
+        "Regex pattern for HTTP method validation - matches all Method enum values."
+
         @unique
         class Status(StrEnum):
             """HTTP status enumeration for operations.
@@ -291,155 +296,118 @@ class FlextApiConstants(FlextWebConstants):
         "CORS configuration."
         "URL configuration mapping."
 
-        class HTTP:
-            """HTTP protocol-specific constants."""
+        # ===== HTTP Protocol =====
+        @unique
+        class HttpProtocol(StrEnum):
+            """HTTP protocol enumeration - all HTTP/HTTPS variants."""
 
-            @unique
-            class Protocol(StrEnum):
-                """HTTP protocol enumeration.
+            HTTP = "http"
+            HTTPS = "https"
+            HTTP_1_1 = "http/1.1"
+            HTTP_2 = "http/2"
+            HTTP_3 = "http/3"
 
-                DRY Pattern:
-                    StrEnum is the single source of truth. Use Protocol.HTTP.value
-                    or Protocol.HTTP directly - no base strings needed.
-                """
+        HTTP_PROTOCOL_SUPPORTED: Final[frozenset[str]] = frozenset({
+            HttpProtocol.HTTP.value,
+            HttpProtocol.HTTPS.value,
+            HttpProtocol.HTTP_1_1.value,
+            HttpProtocol.HTTP_2.value,
+        })
+        "Supported HTTP protocols (without HTTP/3)."
+        HTTP_PROTOCOL_SUPPORTED_WITH_HTTP3: Final[frozenset[str]] = frozenset({
+            HttpProtocol.HTTP.value,
+            HttpProtocol.HTTPS.value,
+            HttpProtocol.HTTP_1_1.value,
+            HttpProtocol.HTTP_2.value,
+            HttpProtocol.HTTP_3.value,
+        })
+        "Supported HTTP protocols (including HTTP/3)."
 
-                HTTP = "http"
-                HTTPS = "https"
-                HTTP_1_1 = "http/1.1"
-                HTTP_2 = "http/2"
-                HTTP_3 = "http/3"
+        # ===== Server Configuration =====
+        SERVER_DEFAULT_HOST: Final[str] = "127.0.0.1"
+        "Default server host."
+        SERVER_DEFAULT_PORT: Final[int] = 8000
+        "Default server port."
 
-            SUPPORTED_PROTOCOLS: Final[frozenset[str]] = frozenset({
-                Protocol.HTTP.value,
-                Protocol.HTTPS.value,
-                Protocol.HTTP_1_1.value,
-                Protocol.HTTP_2.value,
-            })
-            "Supported HTTP protocols - references Protocol enum members."
-            SUPPORTED_PROTOCOLS_WITH_HTTP3: Final[frozenset[str]] = frozenset({
-                Protocol.HTTP.value,
-                Protocol.HTTPS.value,
-                Protocol.HTTP_1_1.value,
-                Protocol.HTTP_2.value,
-                Protocol.HTTP_3.value,
-            })
-            "Supported HTTP protocols including HTTP/3 - references Protocol enum members."
+        # ===== WebSocket Protocol =====
+        @unique
+        class WebsocketMessageType(StrEnum):
+            """WebSocket message type enumeration."""
 
-        class Server:
-            """Server configuration constants."""
+            TEXT = "text"
+            BINARY = "binary"
 
-            DEFAULT_HOST: Final[str] = "127.0.0.1"
-            DEFAULT_PORT: Final[int] = 8000
+        @unique
+        class WebsocketProtocol(StrEnum):
+            """WebSocket protocol enumeration."""
 
-        class WebSocket:
-            """WebSocket protocol constants."""
+            WS = "ws"
+            WSS = "wss"
+            WEBSOCKET = "websocket"
 
-            DEFAULT_PING_INTERVAL: Final[float] = 20.0
-            "Default ping interval in seconds."
-            DEFAULT_PING_TIMEOUT: Final[float] = 20.0
-            "Default ping timeout in seconds."
-            DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
-            "Default close timeout in seconds."
-            DEFAULT_MAX_SIZE: Final[int] = 2**20
-            "Default maximum message size in bytes (1 MiB)."
-            DEFAULT_MAX_QUEUE: Final[int] = 16
-            "Default maximum queue size for outgoing messages."
-            COMPRESSION_DEFLATE: Final[str] = "deflate"
-            "Deflate compression method identifier."
-            DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
-            "Default maximum reconnection attempts."
-            DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
-            "Default reconnection backoff multiplier."
-            STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
-            "HTTP 101 Switching Protocols status code for WebSocket upgrade."
+        WEBSOCKET_DEFAULT_PING_INTERVAL: Final[float] = 20.0
+        "Default WebSocket ping interval in seconds."
+        WEBSOCKET_DEFAULT_PING_TIMEOUT: Final[float] = 20.0
+        "Default WebSocket ping timeout in seconds."
+        WEBSOCKET_DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
+        "Default WebSocket close timeout in seconds."
+        WEBSOCKET_DEFAULT_MAX_SIZE: Final[int] = 2**20
+        "Default WebSocket maximum message size in bytes (1 MiB)."
+        WEBSOCKET_DEFAULT_MAX_QUEUE: Final[int] = 16
+        "Default WebSocket maximum queue size for outgoing messages."
+        WEBSOCKET_COMPRESSION_DEFLATE: Final[str] = "deflate"
+        "WebSocket deflate compression method identifier."
+        WEBSOCKET_DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
+        "Default WebSocket maximum reconnection attempts."
+        WEBSOCKET_DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+        "Default WebSocket reconnection backoff multiplier."
+        WEBSOCKET_STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
+        "HTTP 101 Switching Protocols status code for WebSocket upgrade."
 
-            @unique
-            class MessageType(StrEnum):
-                """WebSocket message type enumeration.
+        # ===== Server-Sent Events (SSE) Protocol =====
+        @unique
+        class SseProtocol(StrEnum):
+            """Server-Sent Events (SSE) protocol enumeration."""
 
-                DRY Pattern:
-                    StrEnum is the single source of truth. Use MessageType.TEXT.value
-                    or MessageType.TEXT directly - no base strings needed.
-                """
+            SSE = "sse"
+            SERVER_SENT_EVENTS = "server-sent-events"
+            EVENTSOURCE = "eventsource"
 
-                TEXT = "text"
-                BINARY = "binary"
+        SSE_DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
+        "Default SSE retry timeout in milliseconds."
+        SSE_DEFAULT_CONNECT_TIMEOUT: Final[float] = 10.0
+        "Default SSE connect timeout in seconds."
+        SSE_DEFAULT_READ_TIMEOUT: Final[float] = 60.0
+        "Default SSE read timeout in seconds."
+        SSE_DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
+        "Default SSE maximum reconnection attempts."
+        SSE_DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+        "Default SSE reconnection backoff multiplier."
 
-            @unique
-            class Protocol(StrEnum):
-                """WebSocket protocol enumeration.
+        # ===== GraphQL Protocol =====
+        @unique
+        class GraphqlProtocol(StrEnum):
+            """GraphQL protocol enumeration."""
 
-                DRY Pattern:
-                    StrEnum is the single source of truth. Use Protocol.WS.value
-                    or Protocol.WS directly - no base strings needed.
-                """
+            GRAPHQL = "graphql"
+            GQL = "gql"
 
-                WS = "ws"
-                WSS = "wss"
-                WEBSOCKET = "websocket"
+        # ===== HTTP Retry =====
+        HTTP_RETRY_RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
+            408,
+            429,
+            500,
+            502,
+            503,
+            504,
+        })
+        "HTTP status codes eligible for automatic retry."
 
-        class SSE:
-            """Server-Sent Events protocol constants."""
-
-            DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
-            "Default retry timeout in milliseconds."
-            DEFAULT_CONNECT_TIMEOUT: Final[float] = 10.0
-            "Default connect timeout in seconds."
-            DEFAULT_READ_TIMEOUT: Final[float] = 60.0
-            "Default read timeout in seconds."
-            DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
-            "Default maximum reconnection attempts."
-            DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
-            "Default reconnection backoff multiplier."
-
-            @unique
-            class Protocol(StrEnum):
-                """SSE protocol enumeration.
-
-                DRY Pattern:
-                    StrEnum is the single source of truth. Use Protocol.SSE.value
-                    or Protocol.SSE directly - no base strings needed.
-                """
-
-                SSE = "sse"
-                SERVER_SENT_EVENTS = "server-sent-events"
-                EVENTSOURCE = "eventsource"
-
-        class GraphQL:
-            """GraphQL protocol constants."""
-
-            @unique
-            class Protocol(StrEnum):
-                """GraphQL protocol enumeration.
-
-                DRY Pattern:
-                    StrEnum is the single source of truth. Use Protocol.GRAPHQL.value
-                    or Protocol.GRAPHQL directly - no base strings needed.
-                """
-
-                GRAPHQL = "graphql"
-                GQL = "gql"
-
-        class HTTPRetry:
-            """HTTP retry status codes."""
-
-            RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
-                408,
-                429,
-                500,
-                502,
-                503,
-                504,
-            })
-            "HTTP status codes eligible for automatic retry."
-
-        class HTTPClient:
-            """HTTP client connection constants."""
-
-            DEFAULT_MAX_CONNECTIONS: Final[int] = 100
-            "Default maximum number of connections in the pool."
-            DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
-            "Default maximum number of keepalive connections."
+        # ===== HTTP Client =====
+        HTTP_CLIENT_DEFAULT_MAX_CONNECTIONS: Final[int] = 100
+        "Default maximum number of HTTP client connections in the pool."
+        HTTP_CLIENT_DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
+        "Default maximum number of HTTP client keepalive connections."
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiConstants", "c"]

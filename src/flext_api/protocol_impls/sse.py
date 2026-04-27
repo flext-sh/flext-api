@@ -66,7 +66,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             "_retry_timeout",
             retry_timeout
             if retry_timeout is not None
-            else c.Api.SSE.DEFAULT_RETRY_TIMEOUT,
+            else c.Api.SSE_DEFAULT_RETRY_TIMEOUT,
         )
         object.__setattr__(self, "_auto_reconnect", auto_reconnect)
         object.__setattr__(
@@ -74,28 +74,28 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             "_connect_timeout",
             connect_timeout
             if connect_timeout is not None
-            else c.Api.SSE.DEFAULT_CONNECT_TIMEOUT,
+            else c.Api.SSE_DEFAULT_CONNECT_TIMEOUT,
         )
         object.__setattr__(
             self,
             "_read_timeout",
             read_timeout
             if read_timeout is not None
-            else c.Api.SSE.DEFAULT_READ_TIMEOUT,
+            else c.Api.SSE_DEFAULT_READ_TIMEOUT,
         )
         object.__setattr__(
             self,
             "_reconnect_max_attempts",
             reconnect_max_attempts
             if reconnect_max_attempts is not None
-            else c.Api.SSE.DEFAULT_RECONNECT_MAX_ATTEMPTS,
+            else c.Api.SSE_DEFAULT_RECONNECT_MAX_ATTEMPTS,
         )
         object.__setattr__(
             self,
             "_reconnect_backoff_factor",
             reconnect_backoff_factor
             if reconnect_backoff_factor is not None
-            else c.Api.SSE.DEFAULT_RECONNECT_BACKOFF_FACTOR,
+            else c.Api.SSE_DEFAULT_RECONNECT_BACKOFF_FACTOR,
         )
 
         def _log_initialize_error(error: str) -> None:
@@ -107,9 +107,9 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
     def supported_protocols(self) -> t.StrSequence:
         """Get list of supported protocols."""
         return [
-            c.Api.SSE.Protocol.SSE,
-            c.Api.SSE.Protocol.SERVER_SENT_EVENTS,
-            c.Api.SSE.Protocol.EVENTSOURCE,
+            c.Api.SseProtocol.SSE,
+            c.Api.SseProtocol.SERVER_SENT_EVENTS,
+            c.Api.SseProtocol.EVENTSOURCE,
         ]
 
     def on_connect(self, handler: Callable[[], None]) -> None:
@@ -229,9 +229,9 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         """Check if protocol is supported by this plugin."""
         protocol_lower = protocol.lower()
         return protocol_lower in {
-            c.Api.SSE.Protocol.SSE,
-            c.Api.SSE.Protocol.SERVER_SENT_EVENTS,
-            c.Api.SSE.Protocol.EVENTSOURCE,
+            c.Api.SseProtocol.SSE,
+            c.Api.SseProtocol.SERVER_SENT_EVENTS,
+            c.Api.SseProtocol.EVENTSOURCE,
         }
 
     def _consume_stream_once(

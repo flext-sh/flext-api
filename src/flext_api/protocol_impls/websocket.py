@@ -107,38 +107,38 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             "_ping_interval",
             ping_interval
             if ping_interval is not None
-            else c.Api.WebSocket.DEFAULT_PING_INTERVAL,
+            else c.Api.WEBSOCKET_DEFAULT_PING_INTERVAL,
         )
         object.__setattr__(
             self,
             "_ping_timeout",
             ping_timeout
             if ping_timeout is not None
-            else c.Api.WebSocket.DEFAULT_PING_TIMEOUT,
+            else c.Api.WEBSOCKET_DEFAULT_PING_TIMEOUT,
         )
         object.__setattr__(
             self,
             "_close_timeout",
             close_timeout
             if close_timeout is not None
-            else c.Api.WebSocket.DEFAULT_CLOSE_TIMEOUT,
+            else c.Api.WEBSOCKET_DEFAULT_CLOSE_TIMEOUT,
         )
         object.__setattr__(
             self,
             "_max_size",
-            max_size if max_size is not None else c.Api.WebSocket.DEFAULT_MAX_SIZE,
+            max_size if max_size is not None else c.Api.WEBSOCKET_DEFAULT_MAX_SIZE,
         )
         object.__setattr__(
             self,
             "_max_queue",
-            max_queue if max_queue is not None else c.Api.WebSocket.DEFAULT_MAX_QUEUE,
+            max_queue if max_queue is not None else c.Api.WEBSOCKET_DEFAULT_MAX_QUEUE,
         )
         object.__setattr__(
             self,
             "_compression",
             compression
             if compression is not None
-            else c.Api.WebSocket.COMPRESSION_DEFLATE,
+            else c.Api.WEBSOCKET_COMPRESSION_DEFLATE,
         )
         object.__setattr__(self, "_auto_reconnect", auto_reconnect)
         object.__setattr__(
@@ -146,14 +146,14 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             "_reconnect_max_attempts",
             reconnect_max_attempts
             if reconnect_max_attempts is not None
-            else c.Api.WebSocket.DEFAULT_RECONNECT_MAX_ATTEMPTS,
+            else c.Api.WEBSOCKET_DEFAULT_RECONNECT_MAX_ATTEMPTS,
         )
         object.__setattr__(
             self,
             "_reconnect_backoff_factor",
             reconnect_backoff_factor
             if reconnect_backoff_factor is not None
-            else c.Api.WebSocket.DEFAULT_RECONNECT_BACKOFF_FACTOR,
+            else c.Api.WEBSOCKET_DEFAULT_RECONNECT_BACKOFF_FACTOR,
         )
         object.__setattr__(self, "_connection", None)
         object.__setattr__(self, "_connected", False)
@@ -223,9 +223,9 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
 
         """
         return [
-            c.Api.WebSocket.Protocol.WEBSOCKET,
-            c.Api.WebSocket.Protocol.WS,
-            c.Api.WebSocket.Protocol.WSS,
+            c.Api.WebsocketProtocol.WEBSOCKET,
+            c.Api.WebsocketProtocol.WS,
+            c.Api.WebsocketProtocol.WSS,
         ]
 
     def on_connect(self, handler: Callable[[], None]) -> None:
@@ -324,7 +324,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 f"Failed to extract URL: {url_result.error}",
             )
         response: t.Api.HttpResponseDict = {
-            "status_code": c.Api.WebSocket.STATUS_SWITCHING_PROTOCOLS,
+            "status_code": c.Api.WEBSOCKET_STATUS_SWITCHING_PROTOCOLS,
             "url": url_result.value,
             "method": "WEBSOCKET",
             "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
@@ -344,9 +344,9 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
 
         """
         return protocol.lower() in {
-            c.Api.WebSocket.Protocol.WEBSOCKET,
-            c.Api.WebSocket.Protocol.WS,
-            c.Api.WebSocket.Protocol.WSS,
+            c.Api.WebsocketProtocol.WEBSOCKET,
+            c.Api.WebsocketProtocol.WS,
+            c.Api.WebsocketProtocol.WSS,
         }
 
     def _connect(self, url: str, headers: t.StrMapping) -> p.Result[bool]:
@@ -511,12 +511,12 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         if not self._connection:
             return r[bool].fail("WebSocket connection is None")
         try:
-            if message_type == c.Api.WebSocket.MessageType.TEXT:
+            if message_type == c.Api.WebsocketMessageType.TEXT:
                 text_message = (
                     message if isinstance(message, str) else message.decode("utf-8")
                 )
                 self._connection.send(text_message)
-            elif message_type == c.Api.WebSocket.MessageType.BINARY:
+            elif message_type == c.Api.WebsocketMessageType.BINARY:
                 binary_message = (
                     message if isinstance(message, bytes) else message.encode("utf-8")
                 )

@@ -355,8 +355,8 @@ class FlextApiServer(s[bool]):
         """Initialize API server with Flext patterns."""
         super().__init__()
         logger = u.fetch_logger(__name__)
-        server_host = host if host is not None else c.Api.Server.DEFAULT_HOST
-        server_port = port if port is not None else c.Api.Server.DEFAULT_PORT
+        server_host = host if host is not None else c.Api.SERVER_DEFAULT_HOST
+        server_port = port if port is not None else c.Api.SERVER_DEFAULT_PORT
         config_validation = self._validate_server_config(
             server_host,
             server_port,

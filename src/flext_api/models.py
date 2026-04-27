@@ -62,7 +62,7 @@ class FlextApiModels(FlextModels):
                 u.Field(
                     default="GET",
                     description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
-                    pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
+                    pattern=c.Api.HTTP_METHOD_PATTERN,
                 ),
             ]
             url: Annotated[
@@ -632,7 +632,7 @@ class FlextApiModels(FlextModels):
                 algorithm: Annotated[
                     t.Api.WebhookAlgorithm,
                     u.Field("sha256", description="Supported HMAC signature algorithm"),
-                ] = "sha256"
+                ] = c.Api.WebhookAlgorithm.SHA256
                 max_retries: Annotated[
                     int,
                     u.Field(3, description="Maximum retry attempts per event", ge=0),

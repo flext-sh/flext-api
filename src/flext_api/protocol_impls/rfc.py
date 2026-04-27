@@ -310,7 +310,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         if attempt >= max_retries:
             return False
-        return status_code in c.Api.HTTPRetry.RETRYABLE_STATUS_CODES
+        return status_code in c.Api.HTTP_RETRY_RETRYABLE_STATUS_CODES
 
     def _validate_status_code(self, status_code: int) -> p.Result[int]:
         """Validate HTTP status code (RFC 7231).
