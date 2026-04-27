@@ -231,49 +231,6 @@ class FlextApiModels(FlextModels):
                     return False
                 return bool(self.timeout > 0)
 
-        @classmethod
-        def create_config(
-            cls,
-            base_url: str | None = None,
-            timeout: float | None = None,
-            max_retries: int | None = None,
-            headers: t.StrMapping | None = None,
-            *,
-            verify_ssl: bool = True,
-        ) -> ClientConfig:
-            """Create ClientConfig from parameters.
-
-            Args:
-            base_url: Base URL for all requests (uses Constants default if None)
-            timeout: Request timeout in seconds (uses Constants default if None)
-            max_retries: Maximum retry attempts (uses Constants default if None)
-            headers: Default headers for all requests (None for empty dict)
-            verify_ssl: Verify SSL certificates
-
-            Returns:
-            ClientConfig instance with defaults from Constants
-
-            """
-            # Use Constants defaults when None - Config has priority but uses Constants as base
-            config_base_url = (
-                base_url if base_url is not None else c.Api.DEFAULT_BASE_URL
-            )
-            config_timeout = (
-                float(timeout) if timeout is not None else float(c.Api.DEFAULT_TIMEOUT)
-            )
-            config_max_retries = (
-                max_retries if max_retries is not None else c.MAX_RETRY_ATTEMPTS
-            )
-            config_headers: t.StrMapping = headers if headers is not None else {}
-
-            return cls.ClientConfig(
-                base_url=config_base_url,
-                timeout=config_timeout,
-                max_retries=config_max_retries,
-                headers=config_headers,
-                verify_ssl=verify_ssl,
-            )
-
         # =========================================================================
         # FACTORY METHODS - Model creation utilities
         # =========================================================================

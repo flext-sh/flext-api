@@ -171,7 +171,6 @@ class FlextApi(s[bool]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-        timeout: float | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         """Generic HTTP method executor using monadic patterns - no fallbacks.
 
@@ -181,7 +180,6 @@ class FlextApi(s[bool]):
         data: Optional body.
         headers: Optional headers.
         request_kwargs: Additional parameters aligned with FlextApiModels.HttpRequest.
-        timeout: Optional timeout override.
 
         Returns:
         r[HttpResponse]: Response or error.
@@ -195,7 +193,6 @@ class FlextApi(s[bool]):
                 data=data,
                 headers=headers,
                 request_kwargs=request_kwargs,
-                timeout=timeout,
             )
             .flat_map(lambda payload: u.parse_model(payload.root, m.Api.HttpRequest))
             .flat_map(self.request)

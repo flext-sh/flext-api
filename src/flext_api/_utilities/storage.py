@@ -29,18 +29,15 @@ class FlextApiStorage:
         **overrides: t.JsonPayload,
     ) -> None:
         """Create one storage instance from the canonical settings model."""
-        if isinstance(settings, m.Api.Storage.Settings):
-            self.settings = settings.model_copy(update=dict(overrides) or None)
-        else:
-            payload: dict[str, t.JsonPayload] = {
-                **(dict(settings) if settings else {}),
-                **overrides,
-            }
-            settings_result = u.resolve_options(None, payload, m.Api.Storage.Settings)
-            if settings_result.failure:
-                msg = settings_result.error or "Storage settings validation failed"
-                raise ValueError(msg)
-            self.settings = settings_result.value
+        existing_payload: dict[str, t.JsonPayload] = (
+            dict(settings.model_dump())
+            if isinstance(settings, m.Api.Storage.Settings)
+            else dict(settings or {})
+        )
+        self.settings = m.Api.Storage.Settings.model_validate({
+            **existing_payload,
+            **overrides,
+        })
         self.state = m.Api.Storage.State()
         self.logger = u.fetch_logger(__name__)
 

@@ -36,18 +36,15 @@ class FlextApiWebhookHandler(s[bool]):
     ) -> None:
         """Create one webhook handler from the canonical webhook settings model."""
         super().__init__()
-        if isinstance(settings, m.Api.Webhook.Settings):
-            self._settings = settings.model_copy(update=dict(overrides) or None)
-        else:
-            payload: dict[str, t.JsonPayload] = {
-                **(dict(settings) if settings else {}),
-                **overrides,
-            }
-            settings_result = u.resolve_options(None, payload, m.Api.Webhook.Settings)
-            if settings_result.failure:
-                msg = settings_result.error or "Webhook settings validation failed"
-                raise ValueError(msg)
-            self._settings = settings_result.value
+        existing_payload: dict[str, t.JsonPayload] = (
+            dict(settings.model_dump())
+            if isinstance(settings, m.Api.Webhook.Settings)
+            else dict(settings or {})
+        )
+        self._settings = m.Api.Webhook.Settings.model_validate({
+            **existing_payload,
+            **overrides,
+        })
         self.state = m.Api.Webhook.State()
 
     @property

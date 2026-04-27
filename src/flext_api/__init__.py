@@ -19,7 +19,6 @@ if _t.TYPE_CHECKING:
     from flext_api._protocols.transports import FlextApiProtocolsTransports
     from flext_api._typings.serialization import FlextApiTypingsSerialization
     from flext_api._utilities.adapters import FlextApiAdapters
-    from flext_api._utilities.app import FlextApiApp
     from flext_api._utilities.client import FlextApiClient
     from flext_api._utilities.lifecycle_manager import FlextApiLifecycleManager
     from flext_api._utilities.middleware import FlextApiMiddleware
@@ -69,7 +68,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._protocols.transports": ("FlextApiProtocolsTransports",),
             "._typings.serialization": ("FlextApiTypingsSerialization",),
             "._utilities.adapters": ("FlextApiAdapters",),
-            "._utilities.app": ("FlextApiApp",),
             "._utilities.client": ("FlextApiClient",),
             "._utilities.lifecycle_manager": ("FlextApiLifecycleManager",),
             "._utilities.middleware": ("FlextApiMiddleware",),
@@ -149,7 +147,6 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 __all__: list[str] = [
     "FlextApi",
     "FlextApiAdapters",
-    "FlextApiApp",
     "FlextApiBaseProtocolImplementation",
     "FlextApiClient",
     "FlextApiConstants",
