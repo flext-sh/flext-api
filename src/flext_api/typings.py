@@ -57,36 +57,17 @@ class FlextApiTypes(FlextWebTypes):
             t.StrMapping | t.JsonMapping | t.ScalarOrStrSequenceMapping | float | None,
         ]
         type CacheDict = Mapping[str, t.Primitives]
-        CONTAINER_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = u.TypeAdapter(
-            t.JsonValue,
+        API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = t.json_value_adapter()
+        BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.StrictBytes] = (
+            t.binary_content_adapter()
         )
-        API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = u.TypeAdapter(
-            t.JsonValue,
-        )
-        BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.StrictBytes] = u.TypeAdapter(
-            t.StrictBytes,
-        )
-        STR_MAPPING_ADAPTER: u.TypeAdapter[t.StrMapping] = u.TypeAdapter(
-            t.StrMapping,
-        )
-        HOSTNAME_ADAPTER: u.TypeAdapter[t.HostnameStr] = u.TypeAdapter(
-            t.HostnameStr,
-        )
-        PORT_NUMBER_ADAPTER: u.TypeAdapter[t.PortNumber] = u.TypeAdapter(
-            t.PortNumber,
-        )
-        STRING_ADAPTER: u.TypeAdapter[t.StrictStr] = u.TypeAdapter(
-            t.StrictStr,
-        )
-        INTEGER_ADAPTER: u.TypeAdapter[t.StrictInt] = u.TypeAdapter(
-            t.StrictInt,
-        )
-        FLOAT_ADAPTER: u.TypeAdapter[t.StrictFloat] = u.TypeAdapter(
-            t.StrictFloat,
-        )
-        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
-            t.JsonMapping,
-        )
+        STR_MAPPING_ADAPTER: u.TypeAdapter[t.StrMapping] = t.str_mapping_adapter()
+        HOSTNAME_ADAPTER: u.TypeAdapter[t.HostnameStr] = t.hostname_str_adapter()
+        PORT_NUMBER_ADAPTER: u.TypeAdapter[t.PortNumber] = t.port_number_adapter()
+        STRING_ADAPTER: u.TypeAdapter[t.StrictStr] = t.str_adapter()
+        INTEGER_ADAPTER: u.TypeAdapter[t.StrictInt] = t.int_adapter()
+        FLOAT_ADAPTER: u.TypeAdapter[t.StrictFloat] = t.float_adapter()
+        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
         REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(
             RequestBody,
         )
@@ -94,13 +75,8 @@ class FlextApiTypes(FlextWebTypes):
         RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(
             ResponseBody,
         )
-        DICT_BODY_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
-            t.JsonMapping,
-        )
-
-        JSON_HEADERS_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
-            t.JsonMapping,
-        )
+        DICT_BODY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        JSON_HEADERS_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
 
 
 t = FlextApiTypes

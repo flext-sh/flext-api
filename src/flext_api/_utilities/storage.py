@@ -99,7 +99,7 @@ class FlextApiStorage:
     def deserialize_json(self, json_str: str) -> p.Result[t.JsonValue]:
         """Deserialize JSON into the canonical container contract."""
         return u.try_(
-            lambda: t.Api.CONTAINER_VALUE_ADAPTER.validate_json(json_str),
+            lambda: t.Api.API_JSON_VALUE_ADAPTER.validate_json(json_str),
             catch=(ValueError, TypeError),
         ).map_error(lambda error: f"JSON deserialization failed: {error}")
 

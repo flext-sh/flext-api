@@ -100,12 +100,12 @@ class FlextApiModels(FlextModels):
             def content_type(self) -> str:
                 """Get content type from headers."""
                 if c.Api.HEADER_CONTENT_TYPE in self.headers:
-                    return str(self.headers[c.Api.HEADER_CONTENT_TYPE])
+                    return self.headers[c.Api.HEADER_CONTENT_TYPE]
                 # Check lowercase variant
                 if c.Api.HEADER_CONTENT_TYPE.lower() in self.headers:
-                    return str(self.headers[c.Api.HEADER_CONTENT_TYPE.lower()])
+                    return self.headers[c.Api.HEADER_CONTENT_TYPE.lower()]
                 # Default from Constants
-                return str(c.Api.ContentType.JSON)
+                return c.Api.ContentType.JSON
 
         class HttpResponse(m.Value):
             """Immutable HTTP response value object.

@@ -50,12 +50,12 @@ class FlextApiClient(FlextApiServiceBase[bool]):
     @property
     def base_url(self) -> str:
         """Access base_url from configuration."""
-        return str(self.settings.base_url)
+        return self.settings.base_url
 
     @property
     def timeout(self) -> float:
         """Access timeout from configuration."""
-        return float(self.settings.timeout)
+        return self.settings.timeout
 
     @staticmethod
     def _deserialize_body(

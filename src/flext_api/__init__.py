@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_api.__version__ import *
 from flext_core.lazy import (
     build_lazy_import_map,
     install_lazy_exports,
@@ -13,6 +12,16 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
+    from flext_api.__version__ import (
+        __author__,
+        __author_email__,
+        __description__,
+        __license__,
+        __title__,
+        __url__,
+        __version__,
+        __version_info__,
+    )
     from flext_api._protocols.base import FlextApiProtocolsBase
     from flext_api._protocols.plugins import FlextApiProtocolPlugins
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
@@ -28,6 +37,7 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.storage import FlextApiStorage
     from flext_api._utilities.webhook import FlextApiWebhookHandler
     from flext_api.api import FlextApi, api
+    from flext_api.base import FlextApiServiceBase, s
     from flext_api.constants import FlextApiConstants, c
     from flext_api.errors import FlextApiErrors
     from flext_api.models import FlextApiModels, m
@@ -42,7 +52,7 @@ if _t.TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
-    from flext_web import d, e, h, r, s, x
+    from flext_web import d, e, h, r, x
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",
@@ -80,6 +90,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextApi",
                 "api",
             ),
+            ".base": (
+                "FlextApiServiceBase",
+                "s",
+            ),
             ".constants": (
                 "FlextApiConstants",
                 "c",
@@ -114,7 +128,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "e",
                 "h",
                 "r",
-                "s",
                 "x",
             ),
         },
@@ -162,6 +175,7 @@ __all__: list[str] = [
     "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
     "FlextApiServer",
+    "FlextApiServiceBase",
     "FlextApiSettings",
     "FlextApiSseProtocolPlugin",
     "FlextApiStorage",

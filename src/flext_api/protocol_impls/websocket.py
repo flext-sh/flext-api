@@ -422,14 +422,14 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 return r[str | bytes].ok(parsed.message)
             case _:
                 try:
-                    serialized_body = t.Api.CONTAINER_VALUE_ADAPTER.dump_json(body)
+                    serialized_body = t.Api.API_JSON_VALUE_ADAPTER.dump_json(body)
                 except c.ValidationError:
                     return r[str | bytes].fail("Unsupported WebSocket body type")
                 return r[str | bytes].ok(serialized_body.decode("utf-8"))
 
     def _extract_message_type(self, options: m.Api.SendRequestWsOptions) -> str:
         """Extract message type from kwargs."""
-        return str(options.message_type)
+        return options.message_type
 
     def _heartbeat_loop(self) -> None:
         """Background task for heartbeat monitoring."""

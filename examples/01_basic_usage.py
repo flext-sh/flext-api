@@ -76,11 +76,9 @@ class ExamplesFlextApiBasicUsage:
     def example_utilities_usage() -> None:
         """Use utility helpers through the canonical u alias."""
         print("\n=== Utilities Usage ===")
-        url_result = u.FlextWebValidator.validate_url("https://example.com/api/v1")
-        if url_result.success:
-            print(f"✅ URL ok: {url_result.value}")
-        else:
-            print(f"❌ URL invalid: {url_result.error}")
+        normalized_url = u.FlextWebValidator.normalize_url("example.com/api/v1")
+        validated_url = m.Api.UrlRequest.model_validate({"url": normalized_url})
+        print(f"✅ URL ok: {validated_url.url}")
         response_result = u.ResponseBuilder.build_success_response(
             data={"users": [{"id": 1, "name": "John"}]},
             message="Users retrieved successfully",

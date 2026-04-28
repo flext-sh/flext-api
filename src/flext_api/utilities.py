@@ -9,7 +9,6 @@ from collections.abc import (
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import TypeIs
-from urllib.parse import urlparse
 
 from flext_api import (
     FlextApiUtilitiesSerializers,
@@ -531,25 +530,6 @@ class FlextApiUtilities(
                     f"Port must be between 1 and {FlextApiUtilities.MAX_PORT}",
                 )
             return r[int].ok(port)
-
-        @staticmethod
-        def validate_url(url: str) -> p.Result[str]:
-            """Validate URL format and structure."""
-            if not url or not url.strip():
-                return r[str].fail("URL cannot be empty")
-            try:
-                parsed = urlparse(url)
-                if not parsed.scheme or parsed.scheme not in {"http", "https"}:
-                    return r[str].fail(f"Invalid URL scheme: {parsed.scheme}")
-                if not parsed.netloc:
-                    return r[str].fail("URL must have a valid host")
-                if parsed.port is not None and (
-                    parsed.port < 1 or parsed.port > FlextApiUtilities.MAX_PORT
-                ):
-                    return r[str].fail(f"Invalid port {parsed.port}")
-                return r[str].ok(url)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[str].fail(f"Invalid URL: {e}")
 
 
 __all__: list[str] = ["FlextApiUtilities", "u"]

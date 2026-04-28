@@ -315,7 +315,7 @@ class FlextApiWebhookHandler(s[bool]):
             else payload
         )
         event_data_result: p.Result[t.JsonValue] = u.validate_value(
-            t.Api.CONTAINER_VALUE_ADAPTER,
+            t.Api.API_JSON_VALUE_ADAPTER,
             payload_text,
             from_json=True,
         )
@@ -391,7 +391,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Resolve one event id, generating a UUID when absent."""
         event_id_result = self._string_value(event_data.get("id"))
         if event_id_result.success:
-            return str(event_id_result.value)
+            return event_id_result.value
         return str(uuid.uuid4())
 
     def _resolve_event_type(

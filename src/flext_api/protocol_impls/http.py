@@ -77,7 +77,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         self._http2 = http2
         self._http3 = http3
         self._max_retries = (
-            max_retries if max_retries is not None else int(c.MAX_RETRY_ATTEMPTS)
+            max_retries if max_retries is not None else c.MAX_RETRY_ATTEMPTS
         )
         self._retry_backoff_factor = (
             retry_backoff_factor
@@ -256,7 +256,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
             timeout_config = (
                 call_args.timeout
                 if call_args.timeout is not None
-                else float(c.Api.DEFAULT_TIMEOUT)
+                else c.Api.DEFAULT_TIMEOUT
             )
             with (
                 httpx.Client(
