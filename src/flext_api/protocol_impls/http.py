@@ -374,16 +374,19 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                 content=body,
                 timeout=timeout,
             )
-        return m.Api.HttpRequestCallArgs(
-            method=method,
-            url=url,
-            headers=headers,
-            params=params,
-            data=None,
-            json_body=None,
-            content=body.encode("utf-8"),
-            timeout=timeout,
-        )
+        if isinstance(body, str):
+            return m.Api.HttpRequestCallArgs(
+                method=method,
+                url=url,
+                headers=headers,
+                params=params,
+                data=None,
+                json_body=None,
+                content=body.encode("utf-8"),
+                timeout=timeout,
+            )
+        msg = f"Unsupported body type: {type(body).__name__}"
+        raise TypeError(msg)
 
     def _response_to_dict(
         self,

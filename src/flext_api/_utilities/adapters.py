@@ -53,8 +53,10 @@ class FlextApiAdapters:
                             return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
                                 "Binary request body is not valid UTF-8 for WebSocket JSON transport",
                             )
-                    else:
+                    elif isinstance(request.body, (str, Mapping)):
                         body_value = request.body
+                    else:
+                        body_value = u.to_json(request.body).decode(c.DEFAULT_ENCODING)
                 message_body: str | t.JsonMapping = (
                     body_value if body_value is not None else ""
                 )

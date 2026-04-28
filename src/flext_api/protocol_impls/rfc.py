@@ -252,7 +252,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         True if status code indicates client error (4xx range)
 
         """
-        return (
+        return bool(
             status_code >= c.Api.HTTP_CLIENT_ERROR_MIN
             and status_code < c.Api.HTTP_CLIENT_ERROR_MAX
         )
@@ -267,7 +267,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         True if status code indicates server error (5xx range)
 
         """
-        return status_code >= c.Api.HTTP_SERVER_ERROR_MIN
+        return bool(status_code >= c.Api.HTTP_SERVER_ERROR_MIN)
 
     def _success_status(self, status_code: int) -> bool:
         """Check if status code indicates success (RFC 7231).
@@ -279,7 +279,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         True if status code indicates success (2xx range)
 
         """
-        return (
+        return bool(
             status_code >= c.Api.HTTP_SUCCESS_MIN
             and status_code < c.Api.HTTP_SUCCESS_MAX
         )

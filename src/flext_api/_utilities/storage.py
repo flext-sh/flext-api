@@ -230,9 +230,11 @@ class FlextApiStorage:
         key_result = self._validate_key(key)
         if key_result.failure:
             return r[bool].fail(key_result.error)
-        ttl_result = self._resolve_ttl(timeout=timeout, ttl=ttl)
-        if ttl_result.failure:
-            return r[bool].fail(ttl_result.error)
+        resolved_ttl = timeout if timeout is not None else ttl
+        if resolved_ttl is None:
+            resolved_ttl = self.settings.default_ttl
+        if resolved_ttl is not None and resolved_ttl <= 0:
+            return r[bool].fail("TTL must be positive")
         normalized_key = key_result.value
         self._cleanup_expired_entries()
         if (
@@ -247,8 +249,8 @@ class FlextApiStorage:
             "timestamp": u.generate_iso_timestamp(),
             "created_at": time.time(),
         }
-        if ttl_result.value is not None:
-            metadata_payload["ttl"] = ttl_result.value
+        if resolved_ttl is not None:
+            metadata_payload["ttl"] = resolved_ttl
         metadata_result = u.try_(
             lambda: m.Api.Storage.Metadata.model_validate(metadata_payload),
             catch=(c.ValidationError, TypeError, ValueError),
@@ -302,22 +304,6 @@ class FlextApiStorage:
     def _record_operation(self) -> None:
         """Increment storage operation count."""
         self.state.operations_count += 1
-
-    def _resolve_ttl(
-        self,
-        *,
-        timeout: int | None = None,
-        ttl: int | None = None,
-    ) -> p.Result[int | None]:
-        """Resolve one TTL value from public inputs and settings."""
-        resolved = timeout if timeout is not None else ttl
-        if resolved is None:
-            resolved = self.settings.default_ttl
-        if resolved is None:
-            return r[int | None].ok(None)
-        if resolved <= 0:
-            return r[int | None].fail("TTL must be positive")
-        return r[int | None].ok(resolved)
 
     def _stats_model(self) -> m.Api.Storage.Stats:
         """Materialize one stats model from centralized runtime state."""

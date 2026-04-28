@@ -62,7 +62,7 @@ class FlextApiModels(FlextModels):
                 u.Field(
                     default="GET",
                     description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
-                    pattern=c.Api.HTTP_METHOD_PATTERN,
+                    pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
                 ),
             ]
             url: Annotated[
@@ -128,16 +128,14 @@ class FlextApiModels(FlextModels):
                 u.Field(description="HTTP response headers"),
             ] = u.Field(default_factory=lambda: MappingProxyType({}))
             body: Annotated[
-                Annotated[
-                    t.Api.ResponseBody,
-                    m.BeforeValidator(
-                        lambda v: FlextApiModels.Api._normalize_response_body(v)
-                    ),
-                ],
+                t.Api.ResponseBody | None,
+                m.BeforeValidator(
+                    lambda v: FlextApiModels.Api._normalize_response_body(v)
+                ),
                 u.Field(
                     description="Response body (empty dict by default, None allowed for 204)"
                 ),
-            ] = u.Field(default_factory=lambda: MappingProxyType({}))
+            ] = None
 
             request_id: Annotated[
                 str,
@@ -255,7 +253,7 @@ class FlextApiModels(FlextModels):
             HttpResponse instance with defaults from model
 
             """
-            # Use model defaults - body defaults to empty dict, not None
+            # Preserve the public factory default of an empty mapping.
             response_body: t.Api.ResponseBody = body if body is not None else {}
             response_headers: t.StrMapping = headers if headers is not None else {}
             response_id: str = request_id if request_id is not None else ""
@@ -528,10 +526,28 @@ class FlextApiModels(FlextModels):
 
                 _flext_enforcement_exempt: ClassVar[bool] = True
 
-                value: t.JsonValue
-                timestamp: str
-                ttl: t.Numeric | None = None
-                created_at: float = u.Field(default_factory=time.time)
+                value: Annotated[
+                    t.JsonValue,
+                    u.Field(description="Stored JSON-compatible value payload"),
+                ]
+                timestamp: Annotated[
+                    str,
+                    u.Field(description="Entry creation timestamp in ISO format"),
+                ]
+                ttl: Annotated[
+                    t.Numeric | None,
+                    u.Field(
+                        default=None,
+                        description="Optional time-to-live in seconds for the entry",
+                    ),
+                ] = None
+                created_at: Annotated[
+                    float,
+                    u.Field(
+                        default_factory=time.time,
+                        description="Monotonic creation timestamp used for expiry checks",
+                    ),
+                ]
 
                 @property
                 def expired(self) -> bool:
@@ -539,7 +555,7 @@ class FlextApiModels(FlextModels):
                     if self.ttl is None:
                         return False
                     elapsed = time.time() - self.created_at
-                    return elapsed > self.ttl
+                    return elapsed > float(self.ttl)
 
             class State(m.FlexibleInternalModel):
                 """Mutable storage runtime state kept in one central model."""

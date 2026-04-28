@@ -11,23 +11,23 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, override
+from typing import ClassVar
 
 import httpx
 
 from flext_api import (
-    FlextApiSettings,
     c,
     m,
     p,
     r,
     t,
 )
-from flext_core import FlextSettings, s
+from flext_api.base import FlextApiServiceBase
+from flext_api.settings import FlextApiSettings
 from flext_web import u
 
 
-class FlextApiClient(s[bool]):
+class FlextApiClient(FlextApiServiceBase[bool]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with r error handling.
@@ -46,15 +46,6 @@ class FlextApiClient(s[bool]):
     ) -> None:
         """Public bootstrap surface using the canonical ``settings=`` call form."""
         super().__init__(runtime_settings=settings)
-
-    @property
-    @override
-    def settings(self) -> FlextApiSettings:
-        """Return the typed API settings namespace."""
-        settings = super().settings
-        if isinstance(settings, FlextApiSettings):
-            return settings
-        return FlextSettings.fetch_global().fetch_namespace("api", FlextApiSettings)
 
     @property
     def base_url(self) -> str:

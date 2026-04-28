@@ -29,8 +29,8 @@ class FlextApiTypes(FlextWebTypes):
 
         type WebHeaders = t.ScalarOrStrSequenceMapping
         type WebParams = Mapping[str, str | t.StrSequence]
-        type RequestBody = t.JsonMapping | str | t.StrictBytes
-        type ResponseBody = t.JsonMapping | str | t.StrictBytes | None
+        type RequestBody = t.JsonValue | t.StrictBytes
+        type ResponseBody = t.JsonValue | t.StrictBytes | None
         type HttpResponseDict = Mapping[
             str,
             t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None,

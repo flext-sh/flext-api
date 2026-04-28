@@ -10,21 +10,22 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, override
+from typing import ClassVar
 
 from flext_api import (
     FlextApiClient,
-    FlextApiSettings,
     c,
     m,
     p,
+    r,
     t,
     u,
 )
-from flext_core import FlextSettings, r, s
+from flext_api.base import FlextApiServiceBase
+from flext_api.settings import FlextApiSettings
 
 
-class FlextApi(s[bool]):
+class FlextApi(FlextApiServiceBase[bool]):
     """Unified HTTP API facade - pure delegation pattern.
 
     Single responsibility: Delegate HTTP operations to FlextApiClient.
@@ -42,18 +43,7 @@ class FlextApi(s[bool]):
         settings: FlextApiSettings | None = None,
     ) -> None:
         """Public bootstrap surface using the canonical ``settings=`` call form."""
-        super().__init__()
-        if settings is not None:
-            self._settings = settings
-
-    @property
-    @override
-    def settings(self) -> FlextApiSettings:
-        """Return typed API settings for facade operations."""
-        settings = super().settings
-        if isinstance(settings, FlextApiSettings):
-            return settings
-        return FlextSettings.fetch_global().fetch_namespace("api", FlextApiSettings)
+        super().__init__(runtime_settings=settings)
 
     @property
     def client(self) -> FlextApiClient:
