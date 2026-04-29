@@ -10,13 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import logging
 from collections.abc import (
     Callable,
     Sequence,
 )
 
-from flext_api import m, t
+from flext_api import m, t, u
 
 
 class FlextApiMiddleware:
@@ -36,7 +35,7 @@ class FlextApiMiddleware:
             try:
                 request = middleware(request)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                logging.getLogger(__name__).warning("Middleware failed: %s", e)
+                u.fetch_logger(__name__).warning("Middleware failed: %s", e)
                 continue
         return request
 
