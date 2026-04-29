@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, override
 
 from flext_api import (
     FlextApiClient,
@@ -68,6 +68,7 @@ class FlextApi(FlextApiServiceBase[bool]):
             request_kwargs=request_kwargs,
         )
 
+    @override
     def execute(
         self,
         **kwargs: t.Scalar,

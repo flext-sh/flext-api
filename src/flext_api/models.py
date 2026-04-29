@@ -146,40 +146,40 @@ class FlextApiModels(FlextModels):
             @property
             def client_error(self) -> bool:
                 """Check if response indicates client error (4xx status code)."""
-                return bool(
+                return (
                     c.Api.HTTP_CLIENT_ERROR_MIN
                     <= self.status_code
-                    < c.Api.HTTP_CLIENT_ERROR_MAX,
+                    < c.Api.HTTP_CLIENT_ERROR_MAX
                 )
 
             @u.computed_field(return_type=bool)
             @property
             def error(self) -> bool:
                 """Check if response indicates any error (4xx or 5xx status code)."""
-                return bool(self.status_code >= c.Api.HTTP_ERROR_MIN)
+                return self.status_code >= c.Api.HTTP_ERROR_MIN
 
             @u.computed_field(return_type=bool)
             @property
             def redirect(self) -> bool:
                 """Check if response indicates redirect (3xx status code)."""
-                return bool(
+                return (
                     c.Api.HTTP_REDIRECT_MIN
                     <= self.status_code
-                    < c.Api.HTTP_REDIRECT_MAX,
+                    < c.Api.HTTP_REDIRECT_MAX
                 )
 
             @u.computed_field(return_type=bool)
             @property
             def server_error(self) -> bool:
                 """Check if response indicates server error (5xx status code)."""
-                return bool(self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN)
+                return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
             @u.computed_field(return_type=bool)
             @property
             def success(self) -> bool:
                 """Check if response indicates success (2xx status code)."""
-                return bool(
-                    c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX,
+                return (
+                    c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX
                 )
 
         # =========================================================================
@@ -227,7 +227,7 @@ class FlextApiModels(FlextModels):
                 """Check if configuration is valid."""
                 if not self.base_url:
                     return False
-                return bool(self.timeout > 0)
+                return self.timeout > 0
 
         # =========================================================================
         # FACTORY METHODS - Model creation utilities

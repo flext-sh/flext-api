@@ -117,7 +117,7 @@ class FlextApiUtilitiesSettingsManager:
             )
         timeout_result = u.try_(
             lambda: t.Api.FLOAT_ADAPTER.validate_python(
-                processed.get("timeout", float(c.Api.DEFAULT_TIMEOUT))
+                processed.get("timeout", c.Api.DEFAULT_TIMEOUT)
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )

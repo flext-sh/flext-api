@@ -201,10 +201,10 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         if "timeout" in request:
             try:
                 parsed = m.Api.TimeoutRequest.model_validate(request)
-                return float(parsed.timeout)
+                return parsed.timeout
             except c.ValidationError:
-                return float(c.Api.DEFAULT_TIMEOUT)
-        return float(c.Api.DEFAULT_TIMEOUT)
+                return c.Api.DEFAULT_TIMEOUT
+        return c.Api.DEFAULT_TIMEOUT
 
     def _extract_url(self, request: t.JsonMapping) -> p.Result[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
@@ -239,7 +239,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         """
         content_type_key = "content-type"
         if content_type_key in headers:
-            return str(headers[content_type_key])
+            return headers[content_type_key]
         return str(c.Api.ContentType.JSON)
 
     def _client_error(self, status_code: int) -> bool:
@@ -252,7 +252,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         True if status code indicates client error (4xx range)
 
         """
-        return bool(
+        return (
             status_code >= c.Api.HTTP_CLIENT_ERROR_MIN
             and status_code < c.Api.HTTP_CLIENT_ERROR_MAX
         )
@@ -267,7 +267,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         True if status code indicates server error (5xx range)
 
         """
-        return bool(status_code >= c.Api.HTTP_SERVER_ERROR_MIN)
+        return status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
     def _success_status(self, status_code: int) -> bool:
         """Check if status code indicates success (RFC 7231).
@@ -279,7 +279,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         True if status code indicates success (2xx range)
 
         """
-        return bool(
+        return (
             status_code >= c.Api.HTTP_SUCCESS_MIN
             and status_code < c.Api.HTTP_SUCCESS_MAX
         )

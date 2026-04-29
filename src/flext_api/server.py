@@ -25,6 +25,7 @@ from collections.abc import (
     MutableSequence,
     Sequence,
 )
+from typing import override
 
 from fastapi import FastAPI
 
@@ -105,7 +106,7 @@ class FlextApiServer(s[bool]):
             if route_key in self._routes:
                 return r[bool].fail(f"Route already registered: {route_key}")
             options_json: t.ConfigurationMapping = {
-                str(key): value for key, value in options.items() if key != "prefix"
+                key: value for key, value in options.items() if key != "prefix"
             }
             route_dict: MutableMapping[
                 str,
@@ -418,6 +419,7 @@ class FlextApiServer(s[bool]):
         )
         return r[bool].ok(value=True)
 
+    @override
     def execute(self) -> p.Result[bool]:
         """Execute server service (required by s)."""
         return r[bool].ok(True)

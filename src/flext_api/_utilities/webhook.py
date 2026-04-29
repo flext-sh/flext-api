@@ -15,6 +15,7 @@ from collections.abc import (
     MutableMapping,
     MutableSequence,
 )
+from typing import override
 
 from flext_api import c, m, p, r, s, t
 from flext_web import u
@@ -52,6 +53,7 @@ class FlextApiWebhookHandler(s[bool]):
         """Return canonical webhook settings."""
         return self._settings
 
+    @override
     def execute(self) -> p.Result[bool]:
         """Execute webhook lifecycle parity with other FLEXT services."""
         return r[bool].ok(True)

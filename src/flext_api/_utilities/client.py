@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, override
 
 import httpx
 
@@ -55,7 +55,8 @@ class FlextApiClient(FlextApiServiceBase[bool]):
     @property
     def timeout(self) -> float:
         """Access timeout from configuration."""
-        return self.settings.timeout
+        timeout_value: float = self.settings.timeout
+        return timeout_value
 
     @staticmethod
     def _deserialize_body(
@@ -147,14 +148,16 @@ class FlextApiClient(FlextApiServiceBase[bool]):
             )
         return result
 
+    @override
     def execute(
         self,
         **kwargs: t.Scalar,
-    ) -> p.Result[FlextApiSettings]:
-        """Execute s interface - return configuration."""
+    ) -> p.Result[bool]:
+        """Execute service lifecycle parity after validating configured settings."""
         if kwargs:
             self.logger.info(f"Execute called with kwargs keys: {list(kwargs.keys())}")
-        return r[FlextApiSettings].ok(self.settings)
+        _ = self.settings
+        return r[bool].ok(True)
 
     def request(
         self,
