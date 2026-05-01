@@ -239,7 +239,7 @@ from flext_api import ErrorResponse
 class ValidationErrorResponse(ErrorResponse):
     """Validation error response."""
 
-    field_errors: Mapping[str, t.StringList]
+    field_errors: t.MappingKV[str, t.StringList]
 
 
 class AuthenticationErrorResponse(ErrorResponse):
@@ -443,7 +443,7 @@ async def list_users(
     limit: int = 10,
     offset: int = 0,
     user_service: UserService = Depends(get_user_service),
-) -> Sequence[UserResponse]:
+) -> t.SequenceOf[UserResponse]:
     """List users with pagination."""
     result = user_service.get_users(limit=limit, offset=offset)
 

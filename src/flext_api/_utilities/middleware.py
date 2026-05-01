@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Callable,
-    Sequence,
 )
 
 from flext_api import m, t, u
@@ -28,7 +27,7 @@ class FlextApiMiddleware:
     @staticmethod
     def apply_pipeline(
         request: m.Api.HttpRequest,
-        middleware_list: Sequence[Callable[[m.Api.HttpRequest], m.Api.HttpRequest]],
+        middleware_list: t.SequenceOf[Callable[[m.Api.HttpRequest], m.Api.HttpRequest]],
     ) -> m.Api.HttpRequest:
         """Apply middleware pipeline to request."""
         for middleware in middleware_list:

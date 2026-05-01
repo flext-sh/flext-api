@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Callable,
-    Mapping,
 )
 
 from flext_api import FlextApiTypingsSerialization, c
@@ -28,15 +27,15 @@ class FlextApiTypes(FlextWebTypes):
         """API types namespace for cross-project access."""
 
         type WebHeaders = t.ScalarOrStrSequenceMapping
-        type WebParams = Mapping[str, str | t.StrSequence]
+        type WebParams = t.MappingKV[str, str | t.StrSequence]
         type RequestBody = t.JsonValue | t.StrictBytes
         type ResponseBody = t.JsonValue | t.StrictBytes | None
-        type HttpResponseDict = Mapping[
+        type HttpResponseDict = t.MappingKV[
             str,
             t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type RouteData = Mapping[
+        type RouteData = t.MappingKV[
             str,
             t.JsonValue
             | t.ConfigurationMapping
@@ -52,11 +51,11 @@ class FlextApiTypes(FlextWebTypes):
             [t.JsonMapping],
             t.JsonValue | p.ResultLike[bool] | None,
         ]
-        type RequestKwargs = Mapping[
+        type RequestKwargs = t.MappingKV[
             str,
             t.StrMapping | t.JsonMapping | t.ScalarOrStrSequenceMapping | float | None,
         ]
-        type CacheDict = Mapping[str, t.Primitives]
+        type CacheDict = t.MappingKV[str, t.Primitives]
         API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = t.json_value_adapter()
         BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.StrictBytes] = (
             t.binary_content_adapter()

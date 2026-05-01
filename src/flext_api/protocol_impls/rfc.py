@@ -157,7 +157,7 @@ class FlextApiRfcProtocolImplementation(FlextApiBaseProtocolImplementation):
         Dictionary of headers (normalized to lowercase keys per RFC 7230)
 
         """
-        empty_headers: Mapping[str, str] = {}
+        empty_headers: t.MappingKV[str, str] = {}
         if "headers" not in request:
             return empty_headers
         try:

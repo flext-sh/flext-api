@@ -20,10 +20,8 @@ from __future__ import annotations
 
 from collections.abc import (
     Callable,
-    Mapping,
     MutableMapping,
     MutableSequence,
-    Sequence,
 )
 from typing import override
 
@@ -73,7 +71,7 @@ class FlextApiServer(s[bool]):
             return len(self._routes)
 
         @property
-        def routes(self) -> Mapping[str, t.Api.RouteData]:
+        def routes(self) -> t.MappingKV[str, t.Api.RouteData]:
             """Get all registered routes."""
             return dict(self._routes)
 
@@ -232,7 +230,7 @@ class FlextApiServer(s[bool]):
 
         def apply_middleware(
             self,
-            middleware_pipeline: Sequence[Callable[..., None]],
+            middleware_pipeline: t.SequenceOf[Callable[..., None]],
         ) -> p.Result[bool]:
             """Apply middleware to application."""
             try:
@@ -260,7 +258,7 @@ class FlextApiServer(s[bool]):
                 return r[FastAPI].fail(f"Failed to create app: {exc}")
 
         def register_routes(
-            self, routes: Mapping[str, t.Api.RouteData]
+            self, routes: t.MappingKV[str, t.Api.RouteData]
         ) -> p.Result[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
@@ -307,9 +305,9 @@ class FlextApiServer(s[bool]):
 
         def start(
             self,
-            middleware_pipeline: Sequence[Callable[..., None]],
-            routes: Mapping[str, t.Api.RouteData],
-            protocol_handlers: Mapping[
+            middleware_pipeline: t.SequenceOf[Callable[..., None]],
+            routes: t.MappingKV[str, t.Api.RouteData],
+            protocol_handlers: t.MappingKV[
                 str,
                 p.Api.ProtocolHandler,
             ],
@@ -403,7 +401,7 @@ class FlextApiServer(s[bool]):
         return list(self._protocol_handlers.keys())
 
     @property
-    def routes(self) -> Mapping[str, t.Api.RouteData]:
+    def routes(self) -> t.MappingKV[str, t.Api.RouteData]:
         """Get registered routes."""
         return self._route_registry.routes
 

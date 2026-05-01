@@ -25,7 +25,9 @@ class FlextApiStorage:
 
     def __init__(
         self,
-        settings: m.Api.Storage.Settings | Mapping[str, t.JsonPayload] | None = None,
+        settings: m.Api.Storage.Settings
+        | t.MappingKV[str, t.JsonPayload]
+        | None = None,
         **overrides: t.JsonPayload,
     ) -> None:
         """Create one storage instance from the canonical settings model."""

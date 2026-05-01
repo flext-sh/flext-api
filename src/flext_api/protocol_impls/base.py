@@ -10,10 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
-
 from flext_api import c, p, r, t, u
 
 
@@ -84,7 +80,7 @@ class FlextApiBaseProtocolImplementation:
             )
         return r[bool].ok(value=True)
 
-    def protocol_info(self) -> Mapping[str, t.JsonValue | t.StrSequence]:
+    def protocol_info(self) -> t.MappingKV[str, t.JsonValue | t.StrSequence]:
         """Get protocol configuration information.
 
         Returns:

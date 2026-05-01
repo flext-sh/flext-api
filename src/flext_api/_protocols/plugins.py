@@ -13,7 +13,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import (
     MutableMapping,
-    Sequence,
 )
 
 from flext_core import p, r, t
@@ -207,7 +206,7 @@ class FlextApiProtocolPlugins:
         def resolve_plugins_by_type(
             self,
             plugin_type: type[FlextApiProtocolPlugins.Plugin],
-        ) -> Sequence[FlextApiProtocolPlugins.Plugin]:
+        ) -> t.SequenceOf[FlextApiProtocolPlugins.Plugin]:
             """Get all loaded plugins of specific type."""
             return [
                 plugin

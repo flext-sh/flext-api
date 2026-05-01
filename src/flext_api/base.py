@@ -7,7 +7,6 @@ preserving flext-web service runtime behavior.
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import Sequence
 from typing import Annotated, override
 
 from flext_api import t
@@ -17,7 +16,7 @@ from flext_web import u
 
 
 class FlextApiServiceBase[
-    TDomainResult: t.JsonPayload | Sequence[t.JsonPayload],
+    TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload],
 ](s[TDomainResult], ABC):
     """Base class for flext-api services with typed API settings access."""
 

@@ -11,7 +11,6 @@ import hmac
 import time
 import uuid
 from collections.abc import (
-    Mapping,
     MutableMapping,
     MutableSequence,
 )
@@ -32,7 +31,9 @@ class FlextApiWebhookHandler(s[bool]):
 
     def __init__(
         self,
-        settings: m.Api.Webhook.Settings | Mapping[str, t.JsonPayload] | None = None,
+        settings: m.Api.Webhook.Settings
+        | t.MappingKV[str, t.JsonPayload]
+        | None = None,
         **overrides: t.JsonPayload,
     ) -> None:
         """Create one webhook handler from the canonical webhook settings model."""

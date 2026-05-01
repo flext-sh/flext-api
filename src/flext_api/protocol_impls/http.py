@@ -100,7 +100,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
         )
 
     @override
-    def protocol_info(self) -> Mapping[str, t.JsonValue | t.StrSequence]:
+    def protocol_info(self) -> t.MappingKV[str, t.JsonValue | t.StrSequence]:
         """Get protocol configuration information."""
         return {
             **super().protocol_info(),
