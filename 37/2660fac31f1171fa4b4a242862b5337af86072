@@ -1,0 +1,30 @@
+src/flext_api/_utilities/webhook.py
+  h_9db9d35f50cf33 35
+docs/api/core.md
+  h_9db9d35f50cf33 242,446
+src/flext_api/_utilities/storage.py
+  h_9db9d35f50cf33 28
+src/flext_api/history.json
+  h_9db9d35f50cf33 1
+docs/guides/troubleshooting.md
+  h_9db9d35f50cf33 797
+src/flext_api/_protocols/plugins.py
+  h_9db9d35f50cf33 209
+src/flext_api/server.py
+  h_9db9d35f50cf33 310
+src/flext_api/protocol_impls/rfc.py
+  h_9db9d35f50cf33 160
+src/flext_api/protocol_impls/http.py
+  h_9db9d35f50cf33 103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "372660fac31f1171fa4b4a242862b5337af86072",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
