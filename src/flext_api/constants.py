@@ -22,6 +22,8 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
+from httpx import HTTPError as _HttpxError
+
 from flext_web import FlextWebConstants, c, t
 
 
@@ -34,6 +36,15 @@ class FlextApiConstants(FlextWebConstants):
         All API-specific constants are organized here for better namespace
         organization and to enable composition with other domain constants.
         """
+
+        EXC_HTTPX: Final[tuple[type[Exception], ...]] = (
+            ConnectionError,
+            KeyError,
+            TypeError,
+            ValueError,
+            _HttpxError,
+        )
+        """HTTP boundary catch including httpx.HTTPError for httpx-based clients."""
 
         @unique
         class Method(StrEnum):
