@@ -254,7 +254,7 @@ class FlextApiServer(s[bool]):
                     openapi_url="/openapi.json",
                 )
                 return r[FastAPI].ok(app)
-            except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            except c.EXC_HTTP_PROCESSING as exc:
                 return r[FastAPI].fail(f"Failed to create app: {exc}")
 
         def register_routes(

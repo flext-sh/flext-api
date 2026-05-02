@@ -387,7 +387,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 compression=self._compression,
             )
             return r[bool].ok(value=True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+        except c.EXC_HTTP_PROCESSING as e:
             self._connected = False
             self._connection = None
             return r[bool].fail(f"WebSocket connection error: {e}")

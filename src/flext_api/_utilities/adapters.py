@@ -183,7 +183,7 @@ class FlextApiAdapters:
                     lambda: packed_data,
                     catch=(TypeError, ValueError),
                 ).map_error(lambda _: "MessagePack.packb did not return bytes")
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 return r[bytes].fail_op("JSON to MessagePack conversion", e)
 
     class RequestTransformer:
