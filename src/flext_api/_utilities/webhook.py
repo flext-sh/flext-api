@@ -346,7 +346,7 @@ class FlextApiWebhookHandler(s[bool]):
         for handler in handlers:
             try:
                 outcome = handler(event.data)
-            except (TypeError, ValueError, KeyError, AttributeError) as exc:
+            except c.EXC_ATTR_KEY_TYPE_VALUE as exc:
                 return r[bool].fail_op("Handler execution", exc)
             if isinstance(outcome, p.ResultLike) and outcome.failure:
                 return r[bool].fail(outcome.error or "handler failed")
