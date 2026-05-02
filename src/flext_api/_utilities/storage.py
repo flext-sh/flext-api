@@ -13,7 +13,7 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_api import c, m, p, r, t
+from flext_api import c, e, m, p, r, t
 from flext_web import u
 
 
@@ -94,7 +94,7 @@ class FlextApiStorage:
         self._record_operation()
         normalized_key = key_result.value
         if normalized_key not in self.state.entries:
-            return r[bool].fail(f"Key not found: {normalized_key}")
+            return e.fail_not_found("Key", normalized_key, result_type=r[bool])
         del self.state.entries[normalized_key]
         return r[bool].ok(True)
 
@@ -128,7 +128,7 @@ class FlextApiStorage:
         entry = self.state.entries.get(normalized_key)
         if entry is None:
             self.state.cache_misses += 1
-            return r[t.JsonValue].fail(f"Key not found: {normalized_key}")
+            return e.fail_not_found("Key", normalized_key, result_type=r[t.JsonValue])
         self.state.cache_hits += 1
         return r[t.JsonValue].ok(entry.value)
 
