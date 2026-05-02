@@ -447,7 +447,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         for handler in self._on_message_handlers:
             try:
                 handler(message)
-            except (ValueError, TypeError, KeyError, ConnectionError):
+            except c.EXC_HTTP_PROCESSING:
                 self.logger.exception("Message handler error")
 
     def _dispatch_receive_error(self, error: Exception) -> None:
@@ -455,7 +455,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         for error_handler in self._on_error_handlers:
             try:
                 error_handler(error)
-            except (ValueError, TypeError, KeyError, ConnectionError):
+            except c.EXC_HTTP_PROCESSING:
                 self.logger.exception("Error handler error")
 
     def _receive_loop(self) -> None:
@@ -468,7 +468,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 except c.ValidationError:
                     continue
                 self._dispatch_inbound_message(inbound.message)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 self.logger.exception("WebSocket receive error")
                 self._dispatch_receive_error(e)
                 if self._auto_reconnect:
@@ -529,7 +529,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 size=len(message),
             )
             return r[bool].ok(value=True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+        except c.EXC_HTTP_PROCESSING as e:
             return r[bool].fail(f"WebSocket send error: {e}")
 
 

@@ -238,7 +238,7 @@ class FlextApiAdapters:
                 return r[m.Api.HttpResponse].ok(
                     m.Api.HttpResponse.model_validate(response)
                 )
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 return r[m.Api.HttpResponse].fail_op("Response transformation", e)
 
 
