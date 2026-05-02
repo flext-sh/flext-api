@@ -240,7 +240,7 @@ class FlextApiServer(s[bool]):
                         middleware=middleware.__class__.__name__,
                     )
                 return r[bool].ok(value=True)
-            except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            except c.EXC_HTTP_PROCESSING as exc:
                 return r[bool].fail(f"Failed to apply middleware: {exc}")
 
         def create_app(self) -> p.Result[FastAPI]:

@@ -378,7 +378,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             for handler in self._on_connect_handlers:
                 try:
                     handler()
-                except (ValueError, TypeError, KeyError, ConnectionError):
+                except c.EXC_HTTP_PROCESSING:
                     self.logger.exception("Connect handler error")
             self.logger.info(
                 "WebSocket connected",

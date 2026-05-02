@@ -170,7 +170,7 @@ class FlextApiAdapters:
             try:
                 packed: bytes = cbor2.dumps(data)
                 return r[bytes].ok(packed)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 return r[bytes].fail_op("JSON to CBOR conversion", e)
 
         @staticmethod
