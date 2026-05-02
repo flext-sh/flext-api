@@ -242,13 +242,7 @@ class FlextApiClient(FlextApiServiceBase[bool]):
                     catch=(c.ValidationError, ValueError, TypeError),
                 ).map_error(lambda e: f"Response model validation failed: {e}"),
             )
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            httpx.HTTPError,
-            ConnectionError,
-        ) as exc:
+        except c.Api.EXC_HTTPX as exc:
             return r[m.Api.HttpResponse].fail_op("HTTP client request", exc)
 
 

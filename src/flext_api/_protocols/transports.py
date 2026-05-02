@@ -58,13 +58,7 @@ class FlextApiProtocolsTransports:
                     max_redirects=max_redirects,
                 )
                 return r[str].ok(url)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as e:
+            except c.Api.EXC_HTTPX as e:
                 return r[str].fail_op("HTTP connect", e)
 
         @override
@@ -76,13 +70,7 @@ class FlextApiProtocolsTransports:
                     self._client.close()
                 self._client = None
                 return r[bool].ok(value=True)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as e:
+            except c.Api.EXC_HTTPX as e:
                 return r[bool].fail_op("HTTP disconnect", e)
 
         @override
@@ -132,13 +120,7 @@ class FlextApiProtocolsTransports:
                             "Unsupported HTTP request payload type",
                         )
                 return r[m.Api.HttpRequest].ok(request_model)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as e:
+            except c.Api.EXC_HTTPX as e:
                 return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
 
         def _request_model(
@@ -183,13 +165,7 @@ class FlextApiProtocolsTransports:
                             "Unsupported HTTP request body type",
                         )
                 return r[m.Api.HttpResponse].ok(self._response_model(response))
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as e:
+            except c.Api.EXC_HTTPX as e:
                 return r[m.Api.HttpResponse].fail_op("HTTP request", e)
 
         def request_model(

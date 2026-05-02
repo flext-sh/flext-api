@@ -196,13 +196,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
                     break
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                httpx.HTTPError,
-                ConnectionError,
-            ) as exc:
+            except c.Api.EXC_HTTPX as exc:
                 self._notify_error_handlers(exc)
                 if not auto_reconnect or attempts >= max_attempts:
                     return r[t.JsonMapping].fail_op("SSE stream", exc)
@@ -282,21 +276,21 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         for handler in self._on_connect_handlers:
             try:
                 handler()
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+            except c.Api.EXC_HTTPX:
                 self.logger.exception("SSE connect handler error")
 
     def _notify_disconnect_handlers(self) -> None:
         for handler in self._on_disconnect_handlers:
             try:
                 handler()
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+            except c.Api.EXC_HTTPX:
                 self.logger.exception("SSE disconnect handler error")
 
     def _notify_error_handlers(self, exc: Exception) -> None:
         for handler in self._on_error_handlers:
             try:
                 handler(exc)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+            except c.Api.EXC_HTTPX:
                 self.logger.exception("SSE error handler error")
 
     def _notify_event_handlers(self, event: t.JsonMapping) -> None:
@@ -307,7 +301,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
         for handler in handlers:
             try:
                 handler(event)
-            except (ValueError, TypeError, KeyError, httpx.HTTPError, ConnectionError):
+            except c.Api.EXC_HTTPX:
                 self.logger.exception("SSE event handler error")
 
     def _parse_sse_event(

@@ -185,13 +185,7 @@ class FlextWebClientImplementation(p.Api.HttpClient):
             error_msg = f"HTTP network error: {exc}"
             self.logger.warning(error_msg)
             return r[t.Api.HttpResponseDict].fail(error_msg)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            httpx.HTTPError,
-            ConnectionError,
-        ) as exc:
+        except c.Api.EXC_HTTPX as exc:
             error_msg = f"HTTP protocol request failed: {exc}"
             self.logger.exception(error_msg)
             return r[t.Api.HttpResponseDict].fail(error_msg)
