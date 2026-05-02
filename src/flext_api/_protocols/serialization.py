@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from flext_api import t
 
 
+@runtime_checkable
 class FlextApiProtocolsSerialization(Protocol):
     """Serialization-domain protocol mixins."""
 
