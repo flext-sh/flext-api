@@ -66,7 +66,9 @@ class FlextApiWebhookHandler(s[bool]):
             return r[t.JsonMapping].fail(key_result.error or "Invalid event id")
         delivery = self.state.deliveries.get(key_result.value)
         if delivery is None:
-            return e.fail_not_found("Event", key_result.value, result_type=r[t.JsonMapping])
+            return e.fail_not_found(
+                "Event", key_result.value, result_type=r[t.JsonMapping]
+            )
         return r[t.JsonMapping].ok(self._delivery_payload(delivery))
 
     def queue_stats(self) -> t.JsonMapping:
