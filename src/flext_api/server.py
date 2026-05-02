@@ -565,11 +565,11 @@ class FlextApiServer(s[bool]):
         try:
             t.Api.HOSTNAME_ADAPTER.validate_python(host)
         except c.ValidationError as error:
-            return r[bool].fail(f"Host validation failed: {error}")
+            return r[bool].fail_op("Host validation", error)
         try:
             t.Api.PORT_NUMBER_ADAPTER.validate_python(port)
         except c.ValidationError as error:
-            return r[bool].fail(f"Port validation failed: {error}")
+            return r[bool].fail_op("Port validation", error)
         title_result: p.Result[str]
         if not title.strip():
             title_result = r[str].fail("Title cannot be empty")

@@ -205,9 +205,7 @@ class FlextApiSseProtocolPlugin(FlextApiRfcProtocolImplementation):
             ) as exc:
                 self._notify_error_handlers(exc)
                 if not auto_reconnect or attempts >= max_attempts:
-                    return r[t.JsonMapping].fail(
-                        f"SSE stream failed: {exc}",
-                    )
+                    return r[t.JsonMapping].fail_op("SSE stream", exc)
                 attempts += 1
                 self._sleep_before_reconnect(retry_timeout_ms, attempts, backoff_factor)
         response: t.MutableJsonMapping = {

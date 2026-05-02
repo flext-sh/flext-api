@@ -212,7 +212,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             self.logger.info("WebSocket disconnected", url=self._url)
             return r[bool].ok(value=True)
         except (ValueError, TypeError, KeyError, ConnectionError) as e:
-            return r[bool].fail(f"WebSocket disconnect failed: {e}")
+            return r[bool].fail_op("WebSocket disconnect", e)
 
     @override
     def supported_protocols(self) -> t.StrSequence:
@@ -310,13 +310,13 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         message_type = self._extract_message_type(options)
         connect_result = self._ensure_connected(request)
         if connect_result.failure:
-            return r[t.Api.HttpResponseDict].fail(
-                f"WebSocket connection failed: {connect_result.error}",
+            return r[t.Api.HttpResponseDict].fail_op(
+                "WebSocket connection", connect_result.error
             )
         send_result = self._send_message(message_result.value, message_type)
         if send_result.failure:
-            return r[t.Api.HttpResponseDict].fail(
-                f"WebSocket send failed: {send_result.error}",
+            return r[t.Api.HttpResponseDict].fail_op(
+                "WebSocket send", send_result.error
             )
         url_result = self._extract_url(request)
         if url_result.failure:

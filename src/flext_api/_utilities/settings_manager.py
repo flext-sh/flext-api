@@ -122,8 +122,8 @@ class FlextApiUtilitiesSettingsManager:
             catch=(c.ValidationError, TypeError, ValueError),
         )
         if timeout_result.failure:
-            return r[m.Api.ClientConfig].fail(
-                f"Client configuration validation failed: {timeout_result.error}",
+            return r[m.Api.ClientConfig].fail_op(
+                "Client configuration validation", timeout_result.error
             )
         retries_result = u.try_(
             lambda: t.Api.INTEGER_ADAPTER.validate_python(
@@ -132,24 +132,24 @@ class FlextApiUtilitiesSettingsManager:
             catch=(c.ValidationError, TypeError, ValueError),
         )
         if retries_result.failure:
-            return r[m.Api.ClientConfig].fail(
-                f"Client configuration validation failed: {retries_result.error}",
+            return r[m.Api.ClientConfig].fail_op(
+                "Client configuration validation", retries_result.error
             )
         headers_result = u.try_(
             lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(headers_value),
             catch=(c.ValidationError, TypeError, ValueError),
         )
         if headers_result.failure:
-            return r[m.Api.ClientConfig].fail(
-                f"Client configuration validation failed: {headers_result.error}",
+            return r[m.Api.ClientConfig].fail_op(
+                "Client configuration validation", headers_result.error
             )
         verify_result = u.try_(
             lambda: t.bool_adapter().validate_python(processed.get("verify_ssl", True)),
             catch=(c.ValidationError, TypeError, ValueError),
         )
         if verify_result.failure:
-            return r[m.Api.ClientConfig].fail(
-                f"Client configuration validation failed: {verify_result.error}",
+            return r[m.Api.ClientConfig].fail_op(
+                "Client configuration validation", verify_result.error
             )
         config_model = m.Api.ClientConfig(
             base_url=str(processed.get("base_url", c.Api.DEFAULT_BASE_URL)),

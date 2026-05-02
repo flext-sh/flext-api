@@ -65,7 +65,7 @@ class FlextApiProtocolsTransports:
                 httpx.HTTPError,
                 ConnectionError,
             ) as e:
-                return r[str].fail(f"HTTP connect failed: {e}")
+                return r[str].fail_op("HTTP connect", e)
 
         @override
         def disconnect(self, connection: str) -> p.Result[bool]:
@@ -83,7 +83,7 @@ class FlextApiProtocolsTransports:
                 httpx.HTTPError,
                 ConnectionError,
             ) as e:
-                return r[bool].fail(f"HTTP disconnect failed: {e}")
+                return r[bool].fail_op("HTTP disconnect", e)
 
         @override
         def send(
@@ -190,7 +190,7 @@ class FlextApiProtocolsTransports:
                 httpx.HTTPError,
                 ConnectionError,
             ) as e:
-                return r[m.Api.HttpResponse].fail(f"HTTP request failed: {e}")
+                return r[m.Api.HttpResponse].fail_op("HTTP request", e)
 
         def request_model(
             self,

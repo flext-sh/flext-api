@@ -101,8 +101,8 @@ class FlextApiWebhookHandler(s[bool]):
         if self._settings.secret is not None:
             signature_result = self._verify_signature(payload, headers)
             if signature_result.failure:
-                return r[t.JsonMapping].fail(
-                    f"Signature verification failed: {signature_result.error}",
+                return r[t.JsonMapping].fail_op(
+                    "Signature verification", signature_result.error
                 )
         event_data_result = self._parse_payload(payload)
         if event_data_result.failure:
@@ -276,8 +276,8 @@ class FlextApiWebhookHandler(s[bool]):
             event_type=event.type,
             error=process_result.error or "Webhook processing failed",
         )
-        return r[t.JsonMapping].fail(
-            f"Processing failed: {process_result.error or 'Webhook processing failed'}",
+        return r[t.JsonMapping].fail_op(
+            "Processing", process_result.error or "Webhook processing failed"
         )
 
     def _handle_processing_success(
@@ -347,7 +347,7 @@ class FlextApiWebhookHandler(s[bool]):
             try:
                 outcome = handler(event.data)
             except (TypeError, ValueError, KeyError, AttributeError) as exc:
-                return r[bool].fail(f"Handler execution failed: {exc}")
+                return r[bool].fail_op("Handler execution", exc)
             if isinstance(outcome, p.ResultLike) and outcome.failure:
                 return r[bool].fail(outcome.error or "handler failed")
         return r[bool].ok(True)

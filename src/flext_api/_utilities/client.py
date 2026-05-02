@@ -113,9 +113,7 @@ class FlextApiClient(FlextApiServiceBase[bool]):
             ConnectionError,
             c.ValidationError,
         ) as e:
-            return r[t.Api.ResponseBody].fail(
-                f"JSON deserialization failed: {e}",
-            )
+            return r[t.Api.ResponseBody].fail_op("JSON deserialization", e)
 
     @staticmethod
     def _deserialize_text(
@@ -251,9 +249,7 @@ class FlextApiClient(FlextApiServiceBase[bool]):
             httpx.HTTPError,
             ConnectionError,
         ) as exc:
-            return r[m.Api.HttpResponse].fail(
-                f"HTTP client request failed: {exc}",
-            )
+            return r[m.Api.HttpResponse].fail_op("HTTP client request", exc)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiClient"]

@@ -69,8 +69,8 @@ class FlextApiAdapters:
                 }
                 return r[t.Api.HttpResponseDict | m.Api.HttpRequest].ok(message)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
-                    f"HTTP to WebSocket adaptation failed: {e}",
+                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail_op(
+                    "HTTP to WebSocket adaptation", e
                 )
 
         @staticmethod
@@ -117,9 +117,7 @@ class FlextApiAdapters:
                 KeyError,
                 ConnectionError,
             ) as e:
-                return r[m.Api.HttpResponse].fail(
-                    f"WebSocket to HTTP adaptation failed: {e}",
-                )
+                return r[m.Api.HttpResponse].fail_op("WebSocket to HTTP adaptation", e)
 
     class Schema:
         """Schema adaptation following SOLID principles.
@@ -149,9 +147,7 @@ class FlextApiAdapters:
                 }
                 return r[t.JsonMapping].ok(graphql_schema)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.JsonMapping].fail(
-                    f"OpenAPI to GraphQL conversion failed: {e}",
-                )
+                return r[t.JsonMapping].fail_op("OpenAPI to GraphQL conversion", e)
 
     class FormatConverter:
         """Format conversion following SOLID principles.
@@ -175,7 +171,7 @@ class FlextApiAdapters:
                 packed: bytes = cbor2.dumps(data)
                 return r[bytes].ok(packed)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[bytes].fail(f"JSON to CBOR conversion failed: {e}")
+                return r[bytes].fail_op("JSON to CBOR conversion", e)
 
         @staticmethod
         def convert_json_to_messagepack(data: t.JsonMapping) -> p.Result[bytes]:
@@ -188,7 +184,7 @@ class FlextApiAdapters:
                     catch=(TypeError, ValueError),
                 ).map_error(lambda _: "MessagePack.packb did not return bytes")
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
+                return r[bytes].fail_op("JSON to MessagePack conversion", e)
 
     class RequestTransformer:
         """Request/response transformation following SOLID principles.
@@ -215,8 +211,8 @@ class FlextApiAdapters:
                     )
                 return r[t.Api.HttpResponseDict | m.Api.HttpRequest].ok(request)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail(
-                    f"Request transformation failed: {e}",
+                return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail_op(
+                    "Request transformation", e
                 )
 
         @staticmethod
@@ -243,9 +239,7 @@ class FlextApiAdapters:
                     m.Api.HttpResponse.model_validate(response)
                 )
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
-                return r[m.Api.HttpResponse].fail(
-                    f"Response transformation failed: {e}"
-                )
+                return r[m.Api.HttpResponse].fail_op("Response transformation", e)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiAdapters"]
