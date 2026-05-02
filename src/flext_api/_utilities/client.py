@@ -138,7 +138,7 @@ class FlextApiClient(FlextApiServiceBase[bool]):
         elif isinstance(body, dict):
             try:
                 result = r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
-            except (TypeError, ValueError) as e:
+            except c.EXC_TYPE_VALIDATION as e:
                 result = r[bytes].fail(f"Failed to serialize body: {e}")
         else:
             result = r[bytes].fail(

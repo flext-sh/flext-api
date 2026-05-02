@@ -94,7 +94,7 @@ class FlextApiUtilities(
                 """Coerce timeout to a positive float."""
                 try:
                     timeout_float = float(timeout_value)
-                except (ValueError, TypeError):
+                except c.EXC_TYPE_VALIDATION:
                     return r[float].fail(f"Invalid timeout value: {timeout_value}")
                 if timeout_float <= 0:
                     return r[float].fail("Invalid timeout value: must be positive")
