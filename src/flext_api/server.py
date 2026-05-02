@@ -300,7 +300,7 @@ class FlextApiServer(s[bool]):
                             app.options(path)(route_handler)
                     self.logger.debug("Route registered", method=method, path=path)
                 return r[bool].ok(value=True)
-            except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            except c.EXC_HTTP_PROCESSING as exc:
                 return r[bool].fail(f"Failed to register routes: {exc}")
 
         def start(

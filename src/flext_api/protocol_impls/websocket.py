@@ -438,7 +438,7 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
                 time.sleep(self._ping_interval)
                 if self._connection:
                     self.logger.debug("WebSocket heartbeat")
-            except (ValueError, TypeError, KeyError, ConnectionError):
+            except c.EXC_HTTP_PROCESSING:
                 self.logger.exception("Heartbeat error")
                 break
 
