@@ -158,7 +158,7 @@ class FlextApiServer(s[bool]):
                     close_method = getattr(connection, "close", None)
                     if callable(close_method):
                         close_method()
-                except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+                except c.EXC_HTTP_PROCESSING as exc:
                     self.logger.warning(
                         "Failed to close WebSocket %s",
                         conn_id,
@@ -169,7 +169,7 @@ class FlextApiServer(s[bool]):
                     close_method = getattr(connection, "close", None)
                     if callable(close_method):
                         close_method()
-                except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+                except c.EXC_HTTP_PROCESSING as exc:
                     self.logger.warning(
                         "Failed to close SSE %s",
                         conn_id,

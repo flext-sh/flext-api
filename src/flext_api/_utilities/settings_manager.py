@@ -54,7 +54,7 @@ class FlextApiUtilitiesSettingsManager:
                 )
             self._client_config = client_config_result.value
             return r[bool].ok(True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+        except c.EXC_HTTP_PROCESSING as e:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 

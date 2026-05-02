@@ -68,7 +68,7 @@ class FlextApiAdapters:
                     "body": message_body,
                 }
                 return r[t.Api.HttpResponseDict | m.Api.HttpRequest].ok(message)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 return r[t.Api.HttpResponseDict | m.Api.HttpRequest].fail_op(
                     "HTTP to WebSocket adaptation", e
                 )
@@ -146,7 +146,7 @@ class FlextApiAdapters:
                     "mutation": "Mutation",
                 }
                 return r[t.JsonMapping].ok(graphql_schema)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 return r[t.JsonMapping].fail_op("OpenAPI to GraphQL conversion", e)
 
     class FormatConverter:

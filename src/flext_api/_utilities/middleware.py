@@ -14,7 +14,7 @@ from collections.abc import (
     Callable,
 )
 
-from flext_api import m, t, u
+from flext_api import c, m, t, u
 
 
 class FlextApiMiddleware:
@@ -33,7 +33,7 @@ class FlextApiMiddleware:
         for middleware in middleware_list:
             try:
                 request = middleware(request)
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 u.fetch_logger(__name__).warning("Middleware failed: %s", e)
                 continue
         return request

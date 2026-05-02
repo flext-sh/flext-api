@@ -210,7 +210,7 @@ class FlextWebProtocolPlugin(FlextApiRfcProtocolImplementation):
                 )
             except c.ValidationError as e:
                 last_error = f"Invalid request argument type: {e}"
-            except (ValueError, TypeError, KeyError, ConnectionError) as e:
+            except c.EXC_HTTP_PROCESSING as e:
                 last_error = self._handle_request_exception(
                     e,
                     url,

@@ -409,7 +409,7 @@ class FlextApiUtilities(
                 if page < 1 or page_size < 1:
                     return r[t.IntPair].fail("Page and page_size must be >= 1")
                 return r[t.IntPair].ok((page, page_size))
-            except (ValueError, TypeError):
+            except c.EXC_TYPE_VALIDATION:
                 return r[t.IntPair].fail("Invalid page or page_size parameters")
 
         @staticmethod

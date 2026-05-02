@@ -207,11 +207,11 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
             for handler in self._on_disconnect_handlers:
                 try:
                     handler()
-                except (ValueError, TypeError, KeyError, ConnectionError):
+                except c.EXC_HTTP_PROCESSING:
                     self.logger.exception("Disconnect handler error")
             self.logger.info("WebSocket disconnected", url=self._url)
             return r[bool].ok(value=True)
-        except (ValueError, TypeError, KeyError, ConnectionError) as e:
+        except c.EXC_HTTP_PROCESSING as e:
             return r[bool].fail_op("WebSocket disconnect", e)
 
     @override
