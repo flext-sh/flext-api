@@ -47,5 +47,5 @@ class FlextApiUtilitiesSerializers:
             result = msgpack.unpackb(data)
             normalized = t.Api.API_JSON_VALUE_ADAPTER.validate_python(result)
             return r[t.JsonValue].ok(normalized)
-        except (TypeError, c.ValidationError, ValueError) as e:
+        except c.EXC_VALIDATION_TYPE_VALUE as e:
             return r[t.JsonValue].fail_op("msgpack deserialization", e)
