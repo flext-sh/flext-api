@@ -91,43 +91,8 @@ class FlextApiConstants(FlextWebConstants):
             GRAPHQL = "GRAPHQL"
 
         # ===== HTTP Method Literals =====
-        METHOD_LITERALS_GET_LOWER: Final[str] = "get"
-        "Lowercase GET method literal."
-        METHOD_LITERALS_POST_LOWER: Final[str] = "post"
-        "Lowercase POST method literal."
-        METHOD_LITERALS_PUT_LOWER: Final[str] = "put"
-        "Lowercase PUT method literal."
-        METHOD_LITERALS_DELETE_LOWER: Final[str] = "delete"
-        "Lowercase DELETE method literal."
-        METHOD_LITERALS_PATCH_LOWER: Final[str] = "patch"
-        "Lowercase PATCH method literal."
         METHOD_LITERALS_HEAD_LOWER: Final[str] = "head"
         "Lowercase HEAD method literal."
-        METHOD_LITERALS_OPTIONS_LOWER: Final[str] = "options"
-        "Lowercase OPTIONS method literal."
-
-        VALID_HTTP_METHODS_LOWER: Final[frozenset[str]] = frozenset({
-            "get",
-            "post",
-            "put",
-            "delete",
-            "patch",
-            "head",
-            "options",
-            "connect",
-            "trace",
-        })
-        "Lowercase HTTP methods for validation."
-
-        VALID_PROTOCOL_METHODS: Final[frozenset[str]] = frozenset({
-            member.value for member in ProtocolMethod.__members__.values()
-        })
-        "Valid protocol route methods (WS, SSE, GRAPHQL)."
-
-        HTTP_METHOD_PATTERN: Final[str] = (
-            r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$"
-        )
-        "Regex pattern for HTTP method validation - matches all Method enum values."
 
         @unique
         class Status(StrEnum):
@@ -204,18 +169,6 @@ class FlextApiConstants(FlextWebConstants):
             OAUTH2 = "oauth2"
             OPEN_ID_CONNECT = "openIdConnect"
 
-        VALID_OPENAPI_SECURITY_SCHEME_TYPES: Final[frozenset[str]] = frozenset({
-            member.value for member in OpenApiSecuritySchemeType.__members__.values()
-        })
-        "Immutable set of valid OpenAPI security scheme types."
-
-        ACTIVE_METHODS: Final[frozenset[str]] = frozenset({
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-        })
-        "Active HTTP methods for operations."
         SAFE_METHODS: Final[frozenset[str]] = frozenset({
             "GET",
             "HEAD",
@@ -229,8 +182,6 @@ class FlextApiConstants(FlextWebConstants):
             "error",
         })
         "Terminal operation statuses."
-        SUCCESS_STATUSES: Final[frozenset[str]] = frozenset({"success", "completed"})
-        "Success operation statuses."
         "Immutable set of all valid HTTP methods for O(1) validation."
         VALID_STATUSES: Final[frozenset[str]] = frozenset(
             member.value for member in Status.__members__.values()
@@ -252,8 +203,6 @@ class FlextApiConstants(FlextWebConstants):
         "Minimum port number."
         MAX_PORT: Final[int] = 65535
         "Maximum port number."
-        BACKOFF_FACTOR: Final[float] = 0.5
-        "Exponential backoff factor."
         HTTP_SUCCESS_MIN: Final[int] = 200
         "Minimum HTTP success status code."
         HTTP_SUCCESS_MAX: Final[int] = 300
@@ -309,78 +258,15 @@ class FlextApiConstants(FlextWebConstants):
             HTTP_2 = "http/2"
             HTTP_3 = "http/3"
 
-        HTTP_PROTOCOL_SUPPORTED: Final[frozenset[str]] = frozenset({
-            HttpProtocol.HTTP.value,
-            HttpProtocol.HTTPS.value,
-            HttpProtocol.HTTP_1_1.value,
-            HttpProtocol.HTTP_2.value,
-        })
-        "Supported HTTP protocols (without HTTP/3)."
-        HTTP_PROTOCOL_SUPPORTED_WITH_HTTP3: Final[frozenset[str]] = frozenset({
-            HttpProtocol.HTTP.value,
-            HttpProtocol.HTTPS.value,
-            HttpProtocol.HTTP_1_1.value,
-            HttpProtocol.HTTP_2.value,
-            HttpProtocol.HTTP_3.value,
-        })
-        "Supported HTTP protocols (including HTTP/3)."
-
         # ===== Server Configuration =====
-        SERVER_DEFAULT_HOST: Final[str] = c.LOCALHOST
-        "Default server host."
-        SERVER_DEFAULT_PORT: Final[int] = 8000
-        "Default server port."
 
         # ===== WebSocket Protocol =====
 
-        WEBSOCKET_DEFAULT_PING_INTERVAL: Final[float] = 20.0
-        "Default WebSocket ping interval in seconds."
-        WEBSOCKET_DEFAULT_PING_TIMEOUT: Final[float] = 20.0
-        "Default WebSocket ping timeout in seconds."
-        WEBSOCKET_DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
-        "Default WebSocket close timeout in seconds."
-        WEBSOCKET_DEFAULT_MAX_SIZE: Final[int] = 2**20
-        "Default WebSocket maximum message size in bytes (1 MiB)."
-        WEBSOCKET_DEFAULT_MAX_QUEUE: Final[int] = 16
-        "Default WebSocket maximum queue size for outgoing messages."
-        WEBSOCKET_COMPRESSION_DEFLATE: Final[str] = "deflate"
-        "WebSocket deflate compression method identifier."
-        WEBSOCKET_DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
-        "Default WebSocket maximum reconnection attempts."
-        WEBSOCKET_DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
-        "Default WebSocket reconnection backoff multiplier."
-        WEBSOCKET_STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
-        "HTTP 101 Switching Protocols status code for WebSocket upgrade."
-
         # ===== Server-Sent Events (SSE) Protocol =====
 
-        SSE_DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
-        "Default SSE retry timeout in milliseconds."
-        SSE_DEFAULT_CONNECT_TIMEOUT: Final[float] = 10.0
-        "Default SSE connect timeout in seconds."
-        SSE_DEFAULT_READ_TIMEOUT: Final[float] = 60.0
-        "Default SSE read timeout in seconds."
-        SSE_DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
-        "Default SSE maximum reconnection attempts."
-        SSE_DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
-        "Default SSE reconnection backoff multiplier."
-
         # ===== HTTP Retry =====
-        HTTP_RETRY_RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
-            408,
-            429,
-            500,
-            502,
-            503,
-            504,
-        })
-        "HTTP status codes eligible for automatic retry."
 
         # ===== HTTP Client =====
-        HTTP_CLIENT_DEFAULT_MAX_CONNECTIONS: Final[int] = 100
-        "Default maximum number of HTTP client connections in the pool."
-        HTTP_CLIENT_DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
-        "Default maximum number of HTTP client keepalive connections."
 
 
 c = FlextApiConstants
