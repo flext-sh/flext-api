@@ -266,28 +266,6 @@ class FlextApiModels(FlextModels):
             )
 
         # =========================================================================
-        # SCHEMA u.FIELD MODELS - Moved from schemas/_shared.py
-        # =========================================================================
-
-        class DictField(m.Value):
-            """Pydantic model for validating dictionary fields (immutable value object)."""
-
-            value: Annotated[
-                t.MutableJsonMapping,
-                u.Field(description="Dictionary value"),
-            ] = u.Field(default_factory=dict)
-
-        class StringField(m.Value):
-            """Pydantic model for validating string fields (immutable value object)."""
-
-            value: Annotated[str, u.Field(..., description="String value")]
-
-        class IntField(m.Value):
-            """Pydantic model for validating integer fields (immutable value object)."""
-
-            value: Annotated[int, u.Field(..., description="Integer value")]
-
-        # =========================================================================
         # PRIVATE INTERNAL MODELS (moved from protocol_impls for MRO compliance)
         # =========================================================================
 

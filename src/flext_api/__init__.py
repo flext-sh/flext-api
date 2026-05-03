@@ -35,7 +35,6 @@ if _t.TYPE_CHECKING:
     from flext_api.api import FlextApi, api
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.constants import FlextApiConstants, c
-    from flext_api.errors import FlextApiErrors
     from flext_api.models import FlextApiModels, m
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocol_impls.http import FlextWebProtocolPlugin
@@ -90,7 +89,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextApiConstants",
                 "c",
             ),
-            ".errors": ("FlextApiErrors",),
             ".models": (
                 "FlextApiModels",
                 "m",
@@ -154,7 +152,6 @@ __all__: list[str] = [
     "FlextApiBaseProtocolImplementation",
     "FlextApiClient",
     "FlextApiConstants",
-    "FlextApiErrors",
     "FlextApiModels",
     "FlextApiProtocolPlugins",
     "FlextApiProtocols",

@@ -191,20 +191,6 @@ class FlextApiConstants(FlextWebConstants):
             OCTET_STREAM = "application/octet-stream"
 
         @unique
-        class HttpSerializationFormat(StrEnum):
-            """HTTP-specific serialization formats (extends parent SerializationFormat).
-
-            DRY Pattern:
-                StrEnum is the single source of truth. Use HttpSerializationFormat.JSON.value
-                or HttpSerializationFormat.JSON directly - no base strings needed.
-            """
-
-            JSON = "json"
-            MSGPACK = "msgpack"
-            CBOR = "cbor"
-            CUSTOM = "custom"
-
-        @unique
         class OpenApiSecuritySchemeType(StrEnum):
             """OpenAPI security scheme type enumeration.
 
@@ -399,14 +385,6 @@ class FlextApiConstants(FlextWebConstants):
         "Default SSE maximum reconnection attempts."
         SSE_DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
         "Default SSE reconnection backoff multiplier."
-
-        # ===== GraphQL Protocol =====
-        @unique
-        class GraphqlProtocol(StrEnum):
-            """GraphQL protocol enumeration."""
-
-            GRAPHQL = "graphql"
-            GQL = "gql"
 
         # ===== HTTP Retry =====
         HTTP_RETRY_RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
