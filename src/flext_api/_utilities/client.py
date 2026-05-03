@@ -122,20 +122,23 @@ class FlextApiClient(FlextApiServiceBase[bool]):
         body: t.Api.RequestBody | None,
     ) -> p.Result[bytes]:
         """Serialize request body to bytes - None and empty dict map to empty bytes."""
+        result: p.Result[bytes]
         if body is None or (isinstance(body, dict) and not body):
-            return r[bytes].ok(b"")
-        if isinstance(body, bytes):
-            return r[bytes].ok(body)
-        if isinstance(body, str):
-            return r[bytes].ok(body.encode(c.DEFAULT_ENCODING))
-        if isinstance(body, dict):
+            result = r[bytes].ok(b"")
+        elif isinstance(body, bytes):
+            result = r[bytes].ok(body)
+        elif isinstance(body, str):
+            result = r[bytes].ok(body.encode(c.DEFAULT_ENCODING))
+        elif isinstance(body, dict):
             try:
-                return r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
+                result = r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
             except c.EXC_TYPE_VALIDATION as e:
-                return r[bytes].fail(f"Failed to serialize body: {e}")
-        return r[bytes].fail(
-            "Request body must be bytes, str, or JSON object",
-        )
+                result = r[bytes].fail(f"Failed to serialize body: {e}")
+        else:
+            result = r[bytes].fail(
+                "Request body must be bytes, str, or JSON object",
+            )
+        return result
 
     @override
     def execute(
