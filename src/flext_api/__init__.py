@@ -34,7 +34,6 @@ if _t.TYPE_CHECKING:
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.constants import FlextApiConstants, c
     from flext_api.models import FlextApiModels, m
-    from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
     from flext_api.protocols import FlextApiProtocols, p
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
@@ -83,7 +82,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextApiModels",
                 "m",
             ),
-            ".protocol_impls.base": ("FlextApiBaseProtocolImplementation",),
             ".protocols": (
                 "FlextApiProtocols",
                 "p",
@@ -133,7 +131,6 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
     "FlextApi",
-    "FlextApiBaseProtocolImplementation",
     "FlextApiClient",
     "FlextApiConstants",
     "FlextApiModels",

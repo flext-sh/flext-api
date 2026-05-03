@@ -18,7 +18,8 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""
         return (
-            u.Api.RequestUtils.coerce_positive_timeout(str(self.settings.timeout))
+            u.Api.RequestUtils
+            .coerce_positive_timeout(str(self.settings.timeout))
             .flat_map(
                 lambda timeout: u.Api.RequestUtils.build_request_payload(
                     method=c.Api.Method.GET,
@@ -86,9 +87,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
                 response_result.error or "failed to build response"
             )
         response = response_result.value
-        print(
-            f"Response ok: status={response.status_code}, success={response.success}"
-        )
+        print(f"Response ok: status={response.status_code}, success={response.success}")
 
         print("\n4. Storage models + railway result ergonomics")
         entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
