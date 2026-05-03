@@ -9,8 +9,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".test_serializers": ("TestsFlextApiSerializers",),
         ".test_smoke": ("TestsFlextApiSmoke",),
-        ".test_storage": ("TestsFlextApiStorage",),
-        ".test_webhook": ("TestsFlextApiWebhook",),
     },
 )
 

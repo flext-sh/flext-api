@@ -10,8 +10,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".client": ("FlextApiClient",),
         ".serializers": ("FlextApiUtilitiesSerializers",),
         ".settings_manager": ("FlextApiUtilitiesSettingsManager",),
-        ".storage": ("FlextApiStorage",),
-        ".webhook": ("FlextApiWebhookHandler",),
     },
 )
 

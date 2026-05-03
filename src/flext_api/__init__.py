@@ -30,20 +30,12 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.client import FlextApiClient
     from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
     from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
-    from flext_api._utilities.storage import FlextApiStorage
-    from flext_api._utilities.webhook import FlextApiWebhookHandler
     from flext_api.api import FlextApi, api
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.constants import FlextApiConstants, c
     from flext_api.models import FlextApiModels, m
     from flext_api.protocol_impls.base import FlextApiBaseProtocolImplementation
-    from flext_api.protocol_impls.http import FlextWebProtocolPlugin
-    from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.rfc import FlextApiRfcProtocolImplementation
-    from flext_api.protocol_impls.sse import FlextApiSseProtocolPlugin
-    from flext_api.protocol_impls.websocket import FlextApiWebsocketProtocolPlugin
     from flext_api.protocols import FlextApiProtocols, p
-    from flext_api.server import FlextApiServer
     from flext_api.settings import FlextApiSettings
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
@@ -75,8 +67,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._utilities.client": ("FlextApiClient",),
             "._utilities.serializers": ("FlextApiUtilitiesSerializers",),
             "._utilities.settings_manager": ("FlextApiUtilitiesSettingsManager",),
-            "._utilities.storage": ("FlextApiStorage",),
-            "._utilities.webhook": ("FlextApiWebhookHandler",),
             ".api": (
                 "FlextApi",
                 "api",
@@ -94,16 +84,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "m",
             ),
             ".protocol_impls.base": ("FlextApiBaseProtocolImplementation",),
-            ".protocol_impls.http": ("FlextWebProtocolPlugin",),
-            ".protocol_impls.http_client": ("FlextWebClientImplementation",),
-            ".protocol_impls.rfc": ("FlextApiRfcProtocolImplementation",),
-            ".protocol_impls.sse": ("FlextApiSseProtocolPlugin",),
-            ".protocol_impls.websocket": ("FlextApiWebsocketProtocolPlugin",),
             ".protocols": (
                 "FlextApiProtocols",
                 "p",
             ),
-            ".server": ("FlextApiServer",),
             ".settings": ("FlextApiSettings",),
             ".typings": (
                 "FlextApiTypes",
@@ -158,21 +142,13 @@ __all__: list[str] = [
     "FlextApiProtocolsBase",
     "FlextApiProtocolsSerialization",
     "FlextApiProtocolsTransports",
-    "FlextApiRfcProtocolImplementation",
-    "FlextApiServer",
     "FlextApiServiceBase",
     "FlextApiSettings",
-    "FlextApiSseProtocolPlugin",
-    "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiTypingsSerialization",
     "FlextApiUtilities",
     "FlextApiUtilitiesSerializers",
     "FlextApiUtilitiesSettingsManager",
-    "FlextApiWebhookHandler",
-    "FlextApiWebsocketProtocolPlugin",
-    "FlextWebClientImplementation",
-    "FlextWebProtocolPlugin",
     "__author__",
     "__author_email__",
     "__description__",

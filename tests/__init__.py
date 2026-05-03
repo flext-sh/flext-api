@@ -21,8 +21,6 @@ if _t.TYPE_CHECKING:
     from tests.typings import TestsFlextApiTypes, t
     from tests.unit.test_serializers import TestsFlextApiSerializers
     from tests.unit.test_smoke import TestsFlextApiSmoke
-    from tests.unit.test_storage import TestsFlextApiStorage
-    from tests.unit.test_webhook import TestsFlextApiWebhook
     from tests.utilities import TestsFlextApiUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
     (".unit",),
@@ -46,8 +44,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ),
             ".unit.test_serializers": ("TestsFlextApiSerializers",),
             ".unit.test_smoke": ("TestsFlextApiSmoke",),
-            ".unit.test_storage": ("TestsFlextApiStorage",),
-            ".unit.test_webhook": ("TestsFlextApiWebhook",),
             ".utilities": (
                 "TestsFlextApiUtilities",
                 "u",
@@ -100,10 +96,8 @@ __all__: list[str] = [
     "TestsFlextApiProtocols",
     "TestsFlextApiSerializers",
     "TestsFlextApiSmoke",
-    "TestsFlextApiStorage",
     "TestsFlextApiTypes",
     "TestsFlextApiUtilities",
-    "TestsFlextApiWebhook",
     "c",
     "d",
     "e",
