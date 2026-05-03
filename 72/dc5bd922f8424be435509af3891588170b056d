@@ -1,0 +1,14 @@
+src/flext_api/server.py
+  h_9db9d35f50cf33 26,262-280,283-289,291,294-295,315-316,318-319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "72dc5bd922f8424be435509af3891588170b056d",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
