@@ -71,33 +71,41 @@ class FlextApiUtilitiesSettingsManager:
         value: t.Scalar,
     ) -> p.Result[t.JsonPayload]:
         """Normalize configuration value based on key type - no fallbacks."""
+        result: p.Result[t.JsonPayload]
         match key:
             case "headers" if isinstance(value, Mapping):
                 validated_result = u.try_(
                     lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(value),
                     catch=(c.ValidationError, TypeError, ValueError),
                 ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
-                if validated_result.failure:
-                    return r[t.JsonPayload].fail(validated_result.error)
-                return r[t.JsonPayload].ok(validated_result.value)
+                result = (
+                    r[t.JsonPayload].fail(validated_result.error)
+                    if validated_result.failure
+                    else r[t.JsonPayload].ok(validated_result.value)
+                )
             case "headers" if isinstance(value, str):
                 parsed_result = u.try_(
                     lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),
                     catch=(c.ValidationError, TypeError, ValueError),
                 ).map_error(lambda e: f"Failed to parse headers JSON: {e}")
-                if parsed_result.failure:
-                    return r[t.JsonPayload].fail(parsed_result.error)
-                return r[t.JsonPayload].ok(parsed_result.value)
+                result = (
+                    r[t.JsonPayload].fail(parsed_result.error)
+                    if parsed_result.failure
+                    else r[t.JsonPayload].ok(parsed_result.value)
+                )
             case "log_requests" | "log_responses" | "verify_ssl":
                 bool_result = u.try_(
                     lambda: t.bool_adapter().validate_python(value),
                     catch=(c.ValidationError, TypeError, ValueError),
                 ).map_error(lambda e: f"Invalid {key} value: {e}")
-                if bool_result.failure:
-                    return r[t.JsonPayload].fail(bool_result.error)
-                return r[t.JsonPayload].ok(bool_result.value)
+                result = (
+                    r[t.JsonPayload].fail(bool_result.error)
+                    if bool_result.failure
+                    else r[t.JsonPayload].ok(bool_result.value)
+                )
             case _:
-                return r[t.JsonPayload].ok(u.normalize_to_container(value))
+                result = r[t.JsonPayload].ok(u.normalize_to_container(value))
+        return result
 
     def _build_client_config(
         self,
