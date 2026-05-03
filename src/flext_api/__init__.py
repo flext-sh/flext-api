@@ -27,11 +27,7 @@ if _t.TYPE_CHECKING:
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
     from flext_api._protocols.transports import FlextApiProtocolsTransports
     from flext_api._typings.serialization import FlextApiTypingsSerialization
-    from flext_api._utilities.adapters import FlextApiAdapters
     from flext_api._utilities.client import FlextApiClient
-    from flext_api._utilities.lifecycle_manager import FlextApiLifecycleManager
-    from flext_api._utilities.middleware import FlextApiMiddleware
-    from flext_api._utilities.registry import FlextApiRegistry
     from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
     from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
     from flext_api._utilities.storage import FlextApiStorage
@@ -77,11 +73,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._protocols.serialization": ("FlextApiProtocolsSerialization",),
             "._protocols.transports": ("FlextApiProtocolsTransports",),
             "._typings.serialization": ("FlextApiTypingsSerialization",),
-            "._utilities.adapters": ("FlextApiAdapters",),
             "._utilities.client": ("FlextApiClient",),
-            "._utilities.lifecycle_manager": ("FlextApiLifecycleManager",),
-            "._utilities.middleware": ("FlextApiMiddleware",),
-            "._utilities.registry": ("FlextApiRegistry",),
             "._utilities.serializers": ("FlextApiUtilitiesSerializers",),
             "._utilities.settings_manager": ("FlextApiUtilitiesSettingsManager",),
             "._utilities.storage": ("FlextApiStorage",),
@@ -159,20 +151,16 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
     "FlextApi",
-    "FlextApiAdapters",
     "FlextApiBaseProtocolImplementation",
     "FlextApiClient",
     "FlextApiConstants",
     "FlextApiErrors",
-    "FlextApiLifecycleManager",
-    "FlextApiMiddleware",
     "FlextApiModels",
     "FlextApiProtocolPlugins",
     "FlextApiProtocols",
     "FlextApiProtocolsBase",
     "FlextApiProtocolsSerialization",
     "FlextApiProtocolsTransports",
-    "FlextApiRegistry",
     "FlextApiRfcProtocolImplementation",
     "FlextApiServer",
     "FlextApiServiceBase",
