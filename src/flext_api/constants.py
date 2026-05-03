@@ -86,9 +86,7 @@ class FlextApiConstants(FlextWebConstants):
                 or ProtocolMethod.WS directly in route registration and dispatching.
             """
 
-            WS = "WS"
             SSE = "SSE"
-            GRAPHQL = "GRAPHQL"
 
         # ===== HTTP Method Literals =====
         METHOD_LITERALS_HEAD_LOWER: Final[str] = "head"
@@ -122,8 +120,6 @@ class FlextApiConstants(FlextWebConstants):
             This enum defines all possible states for webhook event delivery attempts.
             """
 
-            DELIVERED = "delivered"
-            DELIVERED_AFTER_RETRY = "delivered_after_retry"
             FAILED = "failed"
 
         @unique
@@ -136,7 +132,6 @@ class FlextApiConstants(FlextWebConstants):
             """
 
             SHA256 = "sha256"
-            SHA512 = "sha512"
 
         @unique
         class ContentType(StrEnum):
@@ -151,9 +146,6 @@ class FlextApiConstants(FlextWebConstants):
             XML = "application/xml"
             TEXT = "text/plain"
             HTML = "text/html"
-            FORM = "application/x-www-form-urlencoded"
-            MULTIPART = "multipart/form-data"
-            OCTET_STREAM = "application/octet-stream"
 
         @unique
         class OpenApiSecuritySchemeType(StrEnum):
@@ -167,7 +159,6 @@ class FlextApiConstants(FlextWebConstants):
             API_KEY = "apiKey"
             HTTP = "http"
             OAUTH2 = "oauth2"
-            OPEN_ID_CONNECT = "openIdConnect"
 
         SAFE_METHODS: Final[frozenset[str]] = frozenset({
             "GET",
@@ -254,9 +245,6 @@ class FlextApiConstants(FlextWebConstants):
 
             HTTP = "http"
             HTTPS = "https"
-            HTTP_1_1 = "http/1.1"
-            HTTP_2 = "http/2"
-            HTTP_3 = "http/3"
 
         # ===== Server Configuration =====
 
