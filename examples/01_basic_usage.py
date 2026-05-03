@@ -17,20 +17,27 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
 
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""
-        return (
-            u.Api.RequestUtils
-            .coerce_positive_timeout(str(self.settings.timeout))
-            .flat_map(
-                lambda timeout: u.Api.RequestUtils.build_request_payload(
-                    method=c.Api.Method.GET,
-                    url=f"{self.settings.base_url.rstrip('/')}/resources",
-                    headers={"accept": c.Api.ContentType.JSON.value},
-                    request_kwargs={"params": {"page": 1, "active": True}},
-                    timeout=timeout,
-                )
-            )
-            .flat_map(lambda payload: u.parse_model(payload.root, m.Api.HttpRequest))
+        timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
+            str(self.settings.timeout)
         )
+        if timeout_result.failure:
+            return r[m.Api.HttpRequest].fail(
+                timeout_result.error or "failed to normalize timeout"
+            )
+
+        payload_result = u.Api.RequestUtils.build_request_payload(
+            method=c.Api.Method.GET,
+            url=f"{self.settings.base_url.rstrip('/')}/resources",
+            headers={"accept": c.Api.ContentType.JSON.value},
+            request_kwargs={"params": {"page": 1, "active": True}},
+            timeout=timeout_result.value,
+        )
+        if payload_result.failure:
+            return r[m.Api.HttpRequest].fail(
+                payload_result.error or "failed to build request payload"
+            )
+
+        return u.parse_model(payload_result.value.root, m.Api.HttpRequest)
 
     @staticmethod
     def build_response(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
@@ -63,7 +70,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         }
         print(runtime_snapshot)
 
-        api = FlextApi(settings=self.settings)
+        api = FlextApi()
         execute_result = api.execute(example="basic-usage")
         if execute_result.failure:
             return r[t.JsonMapping].fail(

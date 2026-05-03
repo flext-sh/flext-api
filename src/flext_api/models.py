@@ -100,12 +100,16 @@ class FlextApiModels(FlextModels):
             def content_type(self) -> str:
                 """Get content type from headers."""
                 if c.Api.HEADER_CONTENT_TYPE in self.headers:
-                    return self.headers[c.Api.HEADER_CONTENT_TYPE]
+                    header_value: str = self.headers[c.Api.HEADER_CONTENT_TYPE]
+                    return header_value
                 # Check lowercase variant
                 if c.Api.HEADER_CONTENT_TYPE.lower() in self.headers:
-                    return self.headers[c.Api.HEADER_CONTENT_TYPE.lower()]
+                    lowercase_header_value: str = self.headers[
+                        c.Api.HEADER_CONTENT_TYPE.lower()
+                    ]
+                    return lowercase_header_value
                 # Default from Constants
-                return c.Api.ContentType.JSON
+                return str(c.Api.ContentType.JSON)
 
         class HttpResponse(m.Value):
             """Immutable HTTP response value object.
@@ -146,41 +150,46 @@ class FlextApiModels(FlextModels):
             @property
             def client_error(self) -> bool:
                 """Check if response indicates client error (4xx status code)."""
-                return (
+                is_client_error: bool = (
                     c.Api.HTTP_CLIENT_ERROR_MIN
                     <= self.status_code
                     < c.Api.HTTP_CLIENT_ERROR_MAX
                 )
+                return is_client_error
 
             @u.computed_field(return_type=bool)
             @property
             def error(self) -> bool:
                 """Check if response indicates any error (4xx or 5xx status code)."""
-                return self.status_code >= c.Api.HTTP_ERROR_MIN
+                has_error: bool = self.status_code >= c.Api.HTTP_ERROR_MIN
+                return has_error
 
             @u.computed_field(return_type=bool)
             @property
             def redirect(self) -> bool:
                 """Check if response indicates redirect (3xx status code)."""
-                return (
+                is_redirect: bool = (
                     c.Api.HTTP_REDIRECT_MIN
                     <= self.status_code
                     < c.Api.HTTP_REDIRECT_MAX
                 )
+                return is_redirect
 
             @u.computed_field(return_type=bool)
             @property
             def server_error(self) -> bool:
                 """Check if response indicates server error (5xx status code)."""
-                return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
+                has_server_error: bool = self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
+                return has_server_error
 
             @u.computed_field(return_type=bool)
             @property
             def success(self) -> bool:
                 """Check if response indicates success (2xx status code)."""
-                return (
+                is_success: bool = (
                     c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX
                 )
+                return is_success
 
         # =========================================================================
         # CONFIGURATION MODELS
@@ -227,7 +236,8 @@ class FlextApiModels(FlextModels):
                 """Check if configuration is valid."""
                 if not self.base_url:
                     return False
-                return self.timeout > 0
+                is_configured: bool = self.timeout > 0
+                return is_configured
 
         # =========================================================================
         # FACTORY METHODS - Model creation utilities
