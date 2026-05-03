@@ -23,7 +23,8 @@ from collections.abc import (
     MutableMapping,
     MutableSequence,
 )
-from typing import override
+from types import MappingProxyType
+from typing import ClassVar, override
 
 from fastapi import FastAPI
 
@@ -257,6 +258,41 @@ class FlextApiServer(s[bool]):
             except c.EXC_HTTP_PROCESSING as exc:
                 return r[FastAPI].fail(f"Failed to create app: {exc}")
 
+        _HTTP_METHOD_MAP: ClassVar[MappingProxyType[str, Callable[..., None]]] = (
+            MappingProxyType({
+                c.Api.ProtocolMethod.WS.value: lambda app, path, handler: app.websocket(
+                    path
+                )(handler),
+                c.Api.ProtocolMethod.SSE.value: lambda app, path, handler: app.get(
+                    path
+                )(handler),
+                c.Api.ProtocolMethod.GRAPHQL.value: lambda app, path, handler: app.post(
+                    path
+                )(handler),
+                c.Api.METHOD_LITERALS_GET_LOWER: lambda app, path, handler: app.get(
+                    path
+                )(handler),
+                c.Api.METHOD_LITERALS_POST_LOWER: lambda app, path, handler: app.post(
+                    path
+                )(handler),
+                c.Api.METHOD_LITERALS_PUT_LOWER: lambda app, path, handler: app.put(
+                    path
+                )(handler),
+                c.Api.METHOD_LITERALS_DELETE_LOWER: lambda app, path, handler: (
+                    app.delete(path)(handler)
+                ),
+                c.Api.METHOD_LITERALS_PATCH_LOWER: lambda app, path, handler: app.patch(
+                    path
+                )(handler),
+                c.Api.METHOD_LITERALS_HEAD_LOWER: lambda app, path, handler: app.head(
+                    path
+                )(handler),
+                c.Api.METHOD_LITERALS_OPTIONS_LOWER: lambda app, path, handler: (
+                    app.options(path)(handler)
+                ),
+            })
+        )
+
         def register_routes(
             self, routes: t.MappingKV[str, t.Api.RouteData]
         ) -> p.Result[bool]:
@@ -276,28 +312,11 @@ class FlextApiServer(s[bool]):
                             route_handler = handler
                         case _:
                             continue
-                    if method == c.Api.ProtocolMethod.WS.value:
-                        app.websocket(path)(route_handler)
-                    elif method == c.Api.ProtocolMethod.SSE.value:
-                        app.get(path)(route_handler)
-                    elif method == c.Api.ProtocolMethod.GRAPHQL.value:
-                        app.post(path)(route_handler)
-                    else:
-                        method_lower = method.lower()
-                        if method_lower == c.Api.METHOD_LITERALS_GET_LOWER:
-                            app.get(path)(route_handler)
-                        elif method_lower == c.Api.METHOD_LITERALS_POST_LOWER:
-                            app.post(path)(route_handler)
-                        elif method_lower == c.Api.METHOD_LITERALS_PUT_LOWER:
-                            app.put(path)(route_handler)
-                        elif method_lower == c.Api.METHOD_LITERALS_DELETE_LOWER:
-                            app.delete(path)(route_handler)
-                        elif method_lower == c.Api.METHOD_LITERALS_PATCH_LOWER:
-                            app.patch(path)(route_handler)
-                        elif method_lower == c.Api.METHOD_LITERALS_HEAD_LOWER:
-                            app.head(path)(route_handler)
-                        elif method_lower == c.Api.METHOD_LITERALS_OPTIONS_LOWER:
-                            app.options(path)(route_handler)
+                    method_key = (
+                        method if method in self._HTTP_METHOD_MAP else method.lower()
+                    )
+                    if registrator := self._HTTP_METHOD_MAP.get(method_key):
+                        registrator(app, path, route_handler)
                     self.logger.debug("Route registered", method=method, path=path)
                 return r[bool].ok(value=True)
             except c.EXC_HTTP_PROCESSING as exc:

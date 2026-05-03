@@ -64,27 +64,22 @@ class FlextApiClient(FlextApiServiceBase[bool]):
     ) -> p.Result[t.Api.ResponseBody]:
         """Deserialize response body based on content-type."""
         content_type = response.headers.get("content-type", "").lower()
-        if "application/octet-stream" in content_type or "binary" in content_type:
-            bytes_result = FlextApiClient._deserialize_bytes(response)
-            if bytes_result.success:
-                return bytes_result
-        if "application/json" in content_type or "application/vnd" in content_type:
-            json_result = FlextApiClient._deserialize_json(response)
-            if json_result.success:
-                return json_result
-        json_result = FlextApiClient._deserialize_json(response)
-        if json_result.success:
-            return json_result
+        bytes_tokens = ("application/octet-stream", "binary")
+        if any(token in content_type for token in bytes_tokens):
+            return FlextApiClient._deserialize_bytes(response)
+        for token in ("application/json", "application/vnd"):
+            if token in content_type:
+                return FlextApiClient._deserialize_json(response)
         if "text/" in content_type:
-            text_result = FlextApiClient._deserialize_text(response)
-            if text_result.success:
-                return text_result
-        text_result = FlextApiClient._deserialize_text(response)
-        if text_result.success:
-            return text_result
-        bytes_result = FlextApiClient._deserialize_bytes(response)
-        if bytes_result.success:
-            return bytes_result
+            return FlextApiClient._deserialize_text(response)
+        for strategy in (
+            FlextApiClient._deserialize_json,
+            FlextApiClient._deserialize_text,
+            FlextApiClient._deserialize_bytes,
+        ):
+            result = strategy(response)
+            if result.success:
+                return result
         return r[t.Api.ResponseBody].fail(
             "Failed to deserialize response body: no valid format found",
         )
@@ -127,24 +122,20 @@ class FlextApiClient(FlextApiServiceBase[bool]):
         body: t.Api.RequestBody | None,
     ) -> p.Result[bytes]:
         """Serialize request body to bytes - None and empty dict map to empty bytes."""
-        result: p.Result[bytes]
-        is_empty_mapping = isinstance(body, dict) and not body
-        if body is None or is_empty_mapping:
-            result = r[bytes].ok(b"")
-        elif isinstance(body, bytes):
-            result = r[bytes].ok(body)
-        elif isinstance(body, str):
-            result = r[bytes].ok(body.encode(c.DEFAULT_ENCODING))
-        elif isinstance(body, dict):
+        if body is None or (isinstance(body, dict) and not body):
+            return r[bytes].ok(b"")
+        if isinstance(body, bytes):
+            return r[bytes].ok(body)
+        if isinstance(body, str):
+            return r[bytes].ok(body.encode(c.DEFAULT_ENCODING))
+        if isinstance(body, dict):
             try:
-                result = r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
+                return r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
             except c.EXC_TYPE_VALIDATION as e:
-                result = r[bytes].fail(f"Failed to serialize body: {e}")
-        else:
-            result = r[bytes].fail(
-                "Request body must be bytes, str, or JSON object",
-            )
-        return result
+                return r[bytes].fail(f"Failed to serialize body: {e}")
+        return r[bytes].fail(
+            "Request body must be bytes, str, or JSON object",
+        )
 
     @override
     def execute(

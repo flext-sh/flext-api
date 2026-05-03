@@ -71,31 +71,33 @@ class FlextApiUtilitiesSettingsManager:
         value: t.Scalar,
     ) -> p.Result[t.JsonPayload]:
         """Normalize configuration value based on key type - no fallbacks."""
-        if key == "headers" and isinstance(value, Mapping):
-            validated_result = u.try_(
-                lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(value),
-                catch=(c.ValidationError, TypeError, ValueError),
-            ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
-            if validated_result.failure:
-                return r[t.JsonPayload].fail(validated_result.error)
-            return r[t.JsonPayload].ok(validated_result.value)
-        if key == "headers" and isinstance(value, str):
-            parsed_result = u.try_(
-                lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),
-                catch=(c.ValidationError, TypeError, ValueError),
-            ).map_error(lambda e: f"Failed to parse headers JSON: {e}")
-            if parsed_result.failure:
-                return r[t.JsonPayload].fail(parsed_result.error)
-            return r[t.JsonPayload].ok(parsed_result.value)
-        if key in {"log_requests", "log_responses", "verify_ssl"}:
-            bool_result = u.try_(
-                lambda: t.bool_adapter().validate_python(value),
-                catch=(c.ValidationError, TypeError, ValueError),
-            ).map_error(lambda e: f"Invalid {key} value: {e}")
-            if bool_result.failure:
-                return r[t.JsonPayload].fail(bool_result.error)
-            return r[t.JsonPayload].ok(bool_result.value)
-        return r[t.JsonPayload].ok(u.normalize_to_container(value))
+        match key:
+            case "headers" if isinstance(value, Mapping):
+                validated_result = u.try_(
+                    lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(value),
+                    catch=(c.ValidationError, TypeError, ValueError),
+                ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
+                if validated_result.failure:
+                    return r[t.JsonPayload].fail(validated_result.error)
+                return r[t.JsonPayload].ok(validated_result.value)
+            case "headers" if isinstance(value, str):
+                parsed_result = u.try_(
+                    lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),
+                    catch=(c.ValidationError, TypeError, ValueError),
+                ).map_error(lambda e: f"Failed to parse headers JSON: {e}")
+                if parsed_result.failure:
+                    return r[t.JsonPayload].fail(parsed_result.error)
+                return r[t.JsonPayload].ok(parsed_result.value)
+            case "log_requests" | "log_responses" | "verify_ssl":
+                bool_result = u.try_(
+                    lambda: t.bool_adapter().validate_python(value),
+                    catch=(c.ValidationError, TypeError, ValueError),
+                ).map_error(lambda e: f"Invalid {key} value: {e}")
+                if bool_result.failure:
+                    return r[t.JsonPayload].fail(bool_result.error)
+                return r[t.JsonPayload].ok(bool_result.value)
+            case _:
+                return r[t.JsonPayload].ok(u.normalize_to_container(value))
 
     def _build_client_config(
         self,
@@ -121,36 +123,25 @@ class FlextApiUtilitiesSettingsManager:
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )
-        if timeout_result.failure:
-            return r[m.Api.ClientConfig].fail_op(
-                "Client configuration validation", timeout_result.error
-            )
         retries_result = u.try_(
             lambda: t.Api.INTEGER_ADAPTER.validate_python(
                 processed.get("max_retries", c.MAX_RETRY_ATTEMPTS)
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )
-        if retries_result.failure:
-            return r[m.Api.ClientConfig].fail_op(
-                "Client configuration validation", retries_result.error
-            )
         headers_result = u.try_(
             lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(headers_value),
             catch=(c.ValidationError, TypeError, ValueError),
         )
-        if headers_result.failure:
-            return r[m.Api.ClientConfig].fail_op(
-                "Client configuration validation", headers_result.error
-            )
         verify_result = u.try_(
             lambda: t.bool_adapter().validate_python(processed.get("verify_ssl", True)),
             catch=(c.ValidationError, TypeError, ValueError),
         )
-        if verify_result.failure:
-            return r[m.Api.ClientConfig].fail_op(
-                "Client configuration validation", verify_result.error
-            )
+        for result in (timeout_result, retries_result, headers_result, verify_result):
+            if result.failure:
+                return r[m.Api.ClientConfig].fail_op(
+                    "Client configuration validation", result.error
+                )
         config_model = m.Api.ClientConfig(
             base_url=str(processed.get("base_url", c.Api.DEFAULT_BASE_URL)),
             timeout=timeout_result.value,
