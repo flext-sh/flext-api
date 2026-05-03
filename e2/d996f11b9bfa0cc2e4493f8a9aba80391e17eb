@@ -1,0 +1,24 @@
+pyproject.toml
+  59721e408c0da1b2 8,12-39,41,58-130,143,150,154-155,166-174,181,184-185,206-222,224-237,329-351,387,392,397,403-433,435-436,440-459,465,475-529,534,538-700,706
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "e2d996f11b9bfa0cc2e4493f8a9aba80391e17eb",
+  "prompts": {
+    "59721e408c0da1b2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "556b2347-c380-4f70-8574-35960061b3be",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 450,
+      "total_deletions": 3511,
+      "accepted_lines": 450,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/4d7a1ff26073ae3c909c3e3086213df899e23d43377216508f7de6e0c473a083"
+    }
+  }
+}
