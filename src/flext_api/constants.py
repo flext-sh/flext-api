@@ -332,20 +332,6 @@ class FlextApiConstants(FlextWebConstants):
         "Default server port."
 
         # ===== WebSocket Protocol =====
-        @unique
-        class WebsocketMessageType(StrEnum):
-            """WebSocket message type enumeration."""
-
-            TEXT = "text"
-            BINARY = "binary"
-
-        @unique
-        class WebsocketProtocol(StrEnum):
-            """WebSocket protocol enumeration."""
-
-            WS = "ws"
-            WSS = "wss"
-            WEBSOCKET = "websocket"
 
         WEBSOCKET_DEFAULT_PING_INTERVAL: Final[float] = 20.0
         "Default WebSocket ping interval in seconds."
@@ -367,13 +353,6 @@ class FlextApiConstants(FlextWebConstants):
         "HTTP 101 Switching Protocols status code for WebSocket upgrade."
 
         # ===== Server-Sent Events (SSE) Protocol =====
-        @unique
-        class SseProtocol(StrEnum):
-            """Server-Sent Events (SSE) protocol enumeration."""
-
-            SSE = "sse"
-            SERVER_SENT_EVENTS = "server-sent-events"
-            EVENTSOURCE = "eventsource"
 
         SSE_DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
         "Default SSE retry timeout in milliseconds."
