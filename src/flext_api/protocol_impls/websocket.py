@@ -295,42 +295,55 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         r containing response or error
 
         """
+        result: p.Result[t.Api.HttpResponseDict]
         try:
             options = m.Api.SendRequestWsOptions.model_validate(kwargs)
         except c.ValidationError as exc:
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[t.Api.HttpResponseDict].fail(details)
-        message_result = self._extract_message(request, options)
-        if message_result.failure:
-            return r[t.Api.HttpResponseDict].fail(
-                message_result.error or "Message extraction failed",
-            )
-        message_type = self._extract_message_type(options)
-        connect_result = self._ensure_connected(request)
-        if connect_result.failure:
-            return r[t.Api.HttpResponseDict].fail_op(
-                "WebSocket connection", connect_result.error
-            )
-        send_result = self._send_message(message_result.value, message_type)
-        if send_result.failure:
-            return r[t.Api.HttpResponseDict].fail_op(
-                "WebSocket send", send_result.error
-            )
-        url_result = self._extract_url(request)
-        if url_result.failure:
-            return r[t.Api.HttpResponseDict].fail(
-                f"Failed to extract URL: {url_result.error}",
-            )
-        response: t.Api.HttpResponseDict = {
-            "status_code": c.Api.WEBSOCKET_STATUS_SWITCHING_PROTOCOLS,
-            "url": url_result.value,
-            "method": "WEBSOCKET",
-            "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
-            "body": {"status": "message_sent", "message_type": message_type},
-        }
-        return r[t.Api.HttpResponseDict].ok(response)
+            result = r[t.Api.HttpResponseDict].fail(details)
+        else:
+            message_result = self._extract_message(request, options)
+            if message_result.failure:
+                result = r[t.Api.HttpResponseDict].fail(
+                    message_result.error or "Message extraction failed",
+                )
+            else:
+                message_type = self._extract_message_type(options)
+                connect_result = self._ensure_connected(request)
+                if connect_result.failure:
+                    result = r[t.Api.HttpResponseDict].fail_op(
+                        "WebSocket connection", connect_result.error
+                    )
+                else:
+                    send_result = self._send_message(message_result.value, message_type)
+                    if send_result.failure:
+                        result = r[t.Api.HttpResponseDict].fail_op(
+                            "WebSocket send", send_result.error
+                        )
+                    else:
+                        url_result = self._extract_url(request)
+                        if url_result.failure:
+                            result = r[t.Api.HttpResponseDict].fail(
+                                f"Failed to extract URL: {url_result.error}",
+                            )
+                        else:
+                            response: t.Api.HttpResponseDict = {
+                                "status_code": c.Api.WEBSOCKET_STATUS_SWITCHING_PROTOCOLS,
+                                "url": url_result.value,
+                                "method": "WEBSOCKET",
+                                "headers": {
+                                    "Connection": "Upgrade",
+                                    "Upgrade": "websocket",
+                                },
+                                "body": {
+                                    "status": "message_sent",
+                                    "message_type": message_type,
+                                },
+                            }
+                            result = r[t.Api.HttpResponseDict].ok(response)
+        return result
 
     @override
     def supports_protocol(self, protocol: str) -> bool:
@@ -408,24 +421,29 @@ class FlextApiWebsocketProtocolPlugin(FlextApiRfcProtocolImplementation):
         options: m.Api.SendRequestWsOptions,
     ) -> p.Result[str | bytes]:
         """Extract message from request or kwargs."""
+        result: p.Result[str | bytes]
         if options.message is not None:
-            return r[str | bytes].ok(options.message)
-        body = self._extract_body(request)
-        match body:
-            case None:
-                return r[str | bytes].fail("Message or body is required")
-            case str() | bytes():
-                try:
-                    parsed = m.Api.InboundMessage(message=body)
-                except c.ValidationError:
-                    return r[str | bytes].ok(body)
-                return r[str | bytes].ok(parsed.message)
-            case _:
-                try:
-                    serialized_body = t.Api.API_JSON_VALUE_ADAPTER.dump_json(body)
-                except c.ValidationError:
-                    return r[str | bytes].fail("Unsupported WebSocket body type")
-                return r[str | bytes].ok(serialized_body.decode("utf-8"))
+            result = r[str | bytes].ok(options.message)
+        else:
+            body = self._extract_body(request)
+            match body:
+                case None:
+                    result = r[str | bytes].fail("Message or body is required")
+                case str() | bytes():
+                    try:
+                        parsed = m.Api.InboundMessage(message=body)
+                    except c.ValidationError:
+                        result = r[str | bytes].ok(body)
+                    else:
+                        result = r[str | bytes].ok(parsed.message)
+                case _:
+                    try:
+                        serialized_body = t.Api.API_JSON_VALUE_ADAPTER.dump_json(body)
+                    except c.ValidationError:
+                        result = r[str | bytes].fail("Unsupported WebSocket body type")
+                    else:
+                        result = r[str | bytes].ok(serialized_body.decode("utf-8"))
+        return result
 
     def _extract_message_type(self, options: m.Api.SendRequestWsOptions) -> str:
         """Extract message type from kwargs."""
