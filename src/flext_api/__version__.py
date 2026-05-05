@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from importlib.metadata import metadata
+from importlib.metadata import PackageMetadata, metadata
 
 from flext_core.__version__ import FlextVersion
 
@@ -19,7 +19,7 @@ from flext_core.__version__ import FlextVersion
 class FlextApiVersion(FlextVersion):
     """flext-api version — MRO-derived from FlextVersion."""
 
-    _metadata = metadata("flext-api")
+    _metadata: PackageMetadata = metadata("flext-api")
 
 
 __version__ = FlextApiVersion.__version__
