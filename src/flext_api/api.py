@@ -191,7 +191,4 @@ class FlextApi(FlextApiServiceBase[bool]):
         return chain
 
 
-api = FlextApi()
-
-
-__all__: t.MutableSequenceOf[str] = ["FlextApi", "api"]
+__all__: t.MutableSequenceOf[str] = ["FlextApi"]
