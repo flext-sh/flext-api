@@ -56,9 +56,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._utilities.client": ("FlextApiClient",),
             "._utilities.serializers": ("FlextApiUtilitiesSerializers",),
             "._utilities.settings_manager": ("FlextApiUtilitiesSettingsManager",),
-            ".api": (
-                "FlextApi",
-            ),
+            ".api": ("FlextApi",),
             ".base": (
                 "FlextApiServiceBase",
                 "s",
