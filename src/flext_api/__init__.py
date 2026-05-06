@@ -30,7 +30,7 @@ if _t.TYPE_CHECKING:
     from flext_api._utilities.client import FlextApiClient
     from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
     from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
-    from flext_api.api import FlextApi
+    from flext_api.api import FlextApi, api
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.constants import FlextApiConstants, c
     from flext_api.models import FlextApiModels, m
@@ -56,7 +56,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._utilities.client": ("FlextApiClient",),
             "._utilities.serializers": ("FlextApiUtilitiesSerializers",),
             "._utilities.settings_manager": ("FlextApiUtilitiesSettingsManager",),
-            ".api": ("FlextApi",),
+            ".api": (
+                "FlextApi",
+                "api",
+            ),
             ".base": (
                 "FlextApiServiceBase",
                 "s",
@@ -155,6 +158,7 @@ __all__: list[str] = [
     "__url__",
     "__version__",
     "__version_info__",
+    "api",
     "c",
     "d",
     "e",

@@ -9,9 +9,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import Annotated, override
 
-from flext_api import t
-from flext_api.settings import FlextApiSettings
-from flext_core import FlextSettings, s
+from flext_api import FlextApiSettings, p, t
+from flext_core import s
 from flext_web import u
 
 
@@ -25,6 +24,22 @@ class FlextApiServiceBase[
         u.Field(description="Settings class for API service initialization"),
     ] = FlextApiSettings
 
+    def __init__(
+        self,
+        *,
+        settings_type: type | None = None,
+        runtime_settings: p.Settings | None = None,
+        settings_overrides: t.JsonMapping | None = None,
+        initial_context: p.Context | None = None,
+    ) -> None:
+        """Bootstrap API services with one concrete runtime settings contract."""
+        super().__init__(
+            settings_type=settings_type,
+            runtime_settings=runtime_settings,
+            settings_overrides=settings_overrides,
+            initial_context=initial_context,
+        )
+
     @property
     @override
     def settings(self) -> FlextApiSettings:
@@ -32,7 +47,7 @@ class FlextApiServiceBase[
         settings = self.runtime_settings
         if settings is not None:
             return FlextApiSettings.model_validate(settings)
-        return FlextSettings.fetch_global().fetch_namespace("api", FlextApiSettings)
+        return FlextApiSettings.fetch_global()
 
 
 s = FlextApiServiceBase

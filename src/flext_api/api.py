@@ -14,6 +14,8 @@ from typing import ClassVar, override
 
 from flext_api import (
     FlextApiClient,
+    FlextApiServiceBase,
+    FlextApiSettings,
     c,
     m,
     p,
@@ -21,8 +23,6 @@ from flext_api import (
     t,
     u,
 )
-from flext_api.base import FlextApiServiceBase
-from flext_api.settings import FlextApiSettings
 
 
 class FlextApi(FlextApiServiceBase[bool]):
@@ -191,4 +191,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         return chain
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApi"]
+api = FlextApi.fetch_global()
+
+
+__all__: list[str] = ["FlextApi", "api"]
