@@ -39,7 +39,7 @@ class FlextApiProtocolsTransports:
                 raw_timeout = options.get("timeout")
                 timeout = (
                     float(raw_timeout)
-                    if isinstance(raw_timeout, (int, float))
+                    if isinstance(raw_timeout, t.NUMERIC_TYPES)
                     else c.Api.DEFAULT_TIMEOUT
                 )
                 raw_follow_redirects = options.get("follow_redirects")
