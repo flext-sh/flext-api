@@ -14,10 +14,12 @@ from flext_core.lazy import (
 if _t.TYPE_CHECKING:
     from flext_tests import td, tf, tk, tm, tv
 
-    from flext_api import d, e, h, r, s, x
+    from flext_api import d, e, h, r, x
+    from tests.base import TestsFlextApiServiceBase, s
     from tests.constants import TestsFlextApiConstants, c
     from tests.models import TestsFlextApiModels, m
     from tests.protocols import TestsFlextApiProtocols, p
+    from tests.settings import TestsFlextApiSettings
     from tests.typings import TestsFlextApiTypes, t
     from tests.unit.test_serializers import TestsFlextApiSerializers
     from tests.unit.test_smoke import TestsFlextApiSmoke
@@ -26,6 +28,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
     (".unit",),
     build_lazy_import_map(
         {
+            ".base": (
+                "TestsFlextApiServiceBase",
+                "s",
+            ),
             ".constants": (
                 "TestsFlextApiConstants",
                 "c",
@@ -38,6 +44,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextApiProtocols",
                 "p",
             ),
+            ".settings": ("TestsFlextApiSettings",),
             ".typings": (
                 "TestsFlextApiTypes",
                 "t",
@@ -53,7 +60,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "e",
                 "h",
                 "r",
-                "s",
                 "x",
             ),
             "flext_tests": (
@@ -95,6 +101,8 @@ __all__: list[str] = [
     "TestsFlextApiModels",
     "TestsFlextApiProtocols",
     "TestsFlextApiSerializers",
+    "TestsFlextApiServiceBase",
+    "TestsFlextApiSettings",
     "TestsFlextApiSmoke",
     "TestsFlextApiTypes",
     "TestsFlextApiUtilities",
