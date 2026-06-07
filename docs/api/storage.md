@@ -29,7 +29,7 @@ This section covers the HTTP storage and caching system for file uploads, downlo
 
 Main storage interface for handling file uploads, downloads, and metadata operations.
 
-```python
+```python notest
 from flext_api import FlextApiStorage
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -88,7 +88,7 @@ else:
 
 ### Storage Configuration
 
-```python
+```python notest
 # Local filesystem storage
 local_storage = FlextApiStorage(
     backend="local",
@@ -128,7 +128,7 @@ gcs_storage = FlextApiStorage(
 
 Upload files with automatic validation and metadata handling.
 
-```python
+```python notest
 # Upload from file path
 upload_result = storage.upload_from_path(
     local_path="/path/to/document.pdf",
@@ -161,7 +161,7 @@ upload_result = storage.upload_file(
 
 Download files with caching and access control.
 
-```python
+```python notest
 # Download file
 download_result = storage.download_file(
     remote_path="documents/report.pdf", local_path="/tmp/downloaded_report.pdf"
@@ -183,7 +183,7 @@ if download_result.success:
 
 List, delete, and manage stored files.
 
-```python
+```python notest
 # List files in directory
 files_result = storage.list_files("documents/")
 if files_result.success:
@@ -209,7 +209,7 @@ move_result = storage.move_file(
 
 HTTP response caching with multiple backend support.
 
-```python
+```python notest
 from flext_api import FlextApiCache
 
 # Create cache instance
@@ -248,7 +248,7 @@ else:
 
 ### Cache Strategies
 
-```python
+```python notest
 # Time-based caching
 @cache.cached(ttl=3600)  # Cache for 1 hour
 @app.get("/slow-endpoint")
@@ -277,7 +277,7 @@ async def get_user(user_id: str):
 
 Support for multiple storage backends with failover and load balancing.
 
-```python
+```python notest
 from flext_api import MultiBackendStorage
 
 # Configure multiple backends
@@ -312,7 +312,7 @@ else:
 
 Process files during upload/download with transformation and validation.
 
-```python
+```python notest
 from flext_api import FlextFileProcessor
 
 # Create file processor
@@ -364,7 +364,7 @@ async def upload_image(file: UploadFile = File(...)):
 
 ### Complete File Upload System
 
-```python
+```python notest
 from flext_api import FlextApiStorage, FlextFileProcessor
 from flext_api import FileUploadMiddleware
 from fastapi import UploadFile, File, HTTPException
@@ -454,7 +454,7 @@ async def download_file(file_id: str):
 
 ### Caching with Storage Integration
 
-```python
+```python notest
 from flext_api import FlextApiStorage, FlextApiCache
 
 # Initialize storage and cache

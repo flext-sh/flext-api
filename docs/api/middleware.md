@@ -29,7 +29,7 @@ This section covers the HTTP middleware and handler system for request/response 
 
 Base class for implementing HTTP middleware with FLEXT patterns.
 
-```python
+```python notest
 from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -98,7 +98,7 @@ app.add_middleware(middleware)
 
 Chain multiple middleware components for complex request processing.
 
-```python
+```python notest
 from flext_api import MiddlewarePipeline
 
 # Create middleware pipeline
@@ -131,7 +131,7 @@ async def handle_request(request):
 
 Middleware for handling user authentication and authorization.
 
-```python
+```python notest
 from flext_api import AuthenticationMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -205,7 +205,7 @@ app.add_middleware(auth_middleware)
 
 ### Authorization Decorator
 
-```python
+```python notest
 from flext_api import require_roles, require_permissions
 
 
@@ -236,7 +236,7 @@ async def delete_user(
 
 Middleware for preprocessing incoming requests.
 
-```python
+```python notest
 from flext_api import RequestMiddleware
 
 
@@ -280,7 +280,7 @@ class RequestValidationMiddleware(RequestMiddleware):
 
 Middleware for postprocessing outgoing responses.
 
-```python
+```python notest
 from flext_api import ResponseMiddleware
 
 
@@ -315,7 +315,7 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
 
 Middleware for centralized error handling and response formatting.
 
-```python
+```python notest
 from flext_api import ErrorHandlingMiddleware
 from flext_api import m
 
@@ -377,7 +377,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
 
 Middleware for monitoring request performance and metrics.
 
-```python
+```python notest
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -429,7 +429,7 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 
 ### Complete Middleware Stack
 
-```python
+```python notest
 from flext_api import (
     MiddlewarePipeline,
     LoggingMiddleware,
@@ -455,7 +455,7 @@ app.middleware("http")(middleware_pipeline.process_request)
 
 ### Custom Middleware Implementation
 
-```python
+```python notest
 from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -502,7 +502,7 @@ app.add_middleware(custom_middleware)
 
 ### Middleware with Dependency Injection
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants

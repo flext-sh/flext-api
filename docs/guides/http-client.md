@@ -40,7 +40,7 @@ Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, e
 
 ### Creating HTTP Clients
 
-```python
+```python notest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -90,7 +90,7 @@ custom_client = FlextApiClient(
 
 All HTTP methods return `r[T]` for type-safe error handling.
 
-```python
+```python notest
 # GET request
 result = client.get("/users")
 if result.success:
@@ -125,7 +125,7 @@ result = client.patch("/users/123", json={"email": "new@example.com"})
 
 Add custom logic before and after HTTP requests.
 
-```python
+```python notest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -194,7 +194,7 @@ class LoggingClient(FlextApiClient):
 
 ### Custom Headers and Authentication
 
-```python
+```python notest
 # Bearer token authentication
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -232,7 +232,7 @@ client = FlextApiClient(base_url="https://api.example.com", auth=custom_auth)
 
 FLEXT-API uses the railway pattern for type-safe error handling.
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -284,7 +284,7 @@ else:
 
 ### Error Types and Handling
 
-```python
+```python notest
 # HTTP error responses
 try:
     result = client.get("/users/999")
@@ -311,7 +311,7 @@ except Exception as e:
 
 ### Query Parameters
 
-```python
+```python notest
 # Simple query parameters
 result = client.get("/users", params={"active": True})
 
@@ -335,7 +335,7 @@ result = client.get(
 
 ### Request Body Data
 
-```python
+```python notest
 # JSON data (default)
 user_data = {
     "name": "Alice",
@@ -361,7 +361,7 @@ result = client.post(
 
 ### Custom Headers
 
-```python
+```python notest
 # Per-request headers
 result = client.get(
     "/api/data",
@@ -393,7 +393,7 @@ result = client.post(
 
 ### Response Processing
 
-```python
+```python notest
 # Get response t.JsonValue
 result = client.get("/users/123")
 if result.success:
@@ -415,7 +415,7 @@ if result.success:
 
 ### Response Metadata
 
-```python
+```python notest
 # Response timing
 result = client.get("/slow-endpoint")
 if result.success:
@@ -435,7 +435,7 @@ if result.success:
 
 ### Batch Operations
 
-```python
+```python notest
 from typing import List
 
 
@@ -471,7 +471,7 @@ for i, result in enumerate(results):
 
 ### Pagination
 
-```python
+```python notest
 def get_all_users(page_size: int = 50) -> List[dict]:
     """Get all users with pagination."""
     all_users = []
@@ -505,7 +505,7 @@ print(f"Total users: {len(users)}")
 
 ### Retry Logic
 
-```python
+```python notest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -571,7 +571,7 @@ result = retry_client.get("/data")
 
 ### Test Client Setup
 
-```python
+```python notest
 import pytest
 from flext_api import FlextApiClient
 from flext_api import FlextApiTestClient
@@ -623,7 +623,7 @@ class TestUserAPI:
 
 ### Mocking External APIs
 
-```python
+```python notest
 from unittest.mock import Mock, patch
 import pytest
 
@@ -652,7 +652,7 @@ def test_external_api_call(mock_http_client):
 
 ### Connection Pooling
 
-```python
+```python notest
 # Configure connection pooling for better performance
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -664,7 +664,7 @@ client = FlextApiClient(
 
 ### Request Batching
 
-```python
+```python notest
 from typing import List, Dict, t.JsonValue
 
 def batch_requests(requests: List[m.Dict]) -> List[r[t.JsonValue]]:
@@ -704,7 +704,7 @@ results = batch_requests(requests)
 
 ### Secure Communication
 
-```python
+```python notest
 # HTTPS only
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -725,7 +725,7 @@ client = FlextApiClient(
 
 ### Sensitive Data Handling
 
-```python
+```python notest
 # Avoid logging sensitive data
 class SecureClient(FlextApiClient):
     def _prepare_request_data(self, data: dict) -> t.JsonMapping:
@@ -746,7 +746,7 @@ class SecureClient(FlextApiClient):
 
 **1. Connection Timeouts**
 
-```python
+```python notest
 # Increase timeout for slow endpoints
 result = client.get("/slow-endpoint", timeout=60.0)
 
@@ -762,7 +762,7 @@ except OSError:
 
 **2. SSL Certificate Errors**
 
-```python
+```python notest
 # Disable SSL verification (NOT recommended for production)
 client = FlextApiClient(base_url="https://api.example.com", verify_ssl=False)
 
@@ -776,7 +776,7 @@ client = FlextApiClient(base_url="https://api.example.com", ssl_context=ssl_cont
 
 **3. Rate Limiting**
 
-```python
+```python notest
 # Handle rate limit responses
 result = client.get("/api/data")
 

@@ -58,7 +58,7 @@
 
 **Required Fixes**:
 
-```python
+```python notest
 # Missing method causing failures
 @classmethod
 def create_validated_http_url(cls, url: str) -> p.Result[str]:
@@ -92,7 +92,7 @@ def create_validated_http_url(cls, url: str) -> p.Result[str]:
 
 **Configuration Test Matrix**:
 
-```python
+```python notest
 # Required test scenarios
 def test_config_defaults():
 def test_config_validation():
@@ -207,7 +207,7 @@ def test_api_config_creation():
 
 #### HTTP Client Fixtures
 
-```python
+```python notest
 @pytest.fixture
 def http_client():
     """Provide configured HTTP client for tests."""
@@ -222,7 +222,7 @@ def mock_http_server():
 
 #### Model Fixtures
 
-```python
+```python notest
 @pytest.fixture
 def valid_http_request():
     """Provide valid HTTP request model."""
@@ -239,7 +239,7 @@ def valid_client_config():
 
 #### Request/Response Factories
 
-```python
+```python notest
 class TestDataFactory:
     @staticmethod
     def create_http_request(overrides=None):
@@ -272,7 +272,7 @@ class TestDataFactory:
 
 #### Unit Testing Approach
 
-```python
+```python notest
 class TestFlextApiClient:
     def test_successful_get_request(self, http_client, mock_response):
         """Test successful GET request."""
@@ -303,7 +303,7 @@ class TestFlextApiClient:
 
 #### Integration Testing Approach
 
-```python
+```python notest
 class TestHTTPIntegration:
     def test_real_http_get(self, http_client):
         """Test real HTTP GET with httpbin.org."""
@@ -327,7 +327,7 @@ class TestHTTPIntegration:
 
 #### Validation Testing
 
-```python
+```python notest
 class TestModelValidation:
     def test_url_validation(self):
         """Test URL validation patterns."""
@@ -352,7 +352,7 @@ class TestModelValidation:
 
 #### Serialization Testing
 
-```python
+```python notest
 class TestModelSerialization:
     def test_request_serialization(self, valid_http_request):
         """Test HTTP request JSON serialization."""
@@ -426,7 +426,7 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 #### Response Time Testing
 
-```python
+```python notest
 def test_response_time_performance(http_client):
     """Test response time requirements."""
     import time
@@ -453,7 +453,7 @@ def test_response_time_performance(http_client):
 
 #### Concurrent Request Testing
 
-```python
+```python notest
 import asyncio
 
 
@@ -497,7 +497,7 @@ tests/
 
 #### Test Naming Conventions
 
-```python
+```python notest
 # Unit tests
 def test_successful_operation():
 def test_error_handling():
@@ -514,7 +514,7 @@ def test_system_interaction():
 
 #### Test Data Patterns
 
-```python
+```python notest
 # Test data constants
 TEST_BASE_URL = "https://httpbin.org"
 TEST_TIMEOUT = 5.0

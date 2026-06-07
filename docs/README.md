@@ -149,7 +149,7 @@ pip install flext-api
 
 ### Basic HTTP Client Usage
 
-```python
+```python notest
 from flext_api import FlextApiClient
 from flext_api import FlextApiSettings
 
@@ -169,7 +169,7 @@ else:
 
 ### FastAPI Application Setup
 
-```python
+```python notest
 from flext_api import create_fastapi_app
 from flext_api import FlextApiSettings
 

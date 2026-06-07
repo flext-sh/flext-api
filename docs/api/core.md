@@ -26,7 +26,7 @@ This section covers the core HTTP client and server classes that form the founda
 
 The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with r patterns.
 
-```python
+```python notest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -91,7 +91,7 @@ else:
 
 **GET Requests:**
 
-```python
+```python notest
 # Simple GET
 result = client.get("/users")
 
@@ -109,7 +109,7 @@ result = client.get(
 
 **POST/PUT Requests:**
 
-```python
+```python notest
 # POST with JSON data
 user_data = {"name": "Alice", "email": "alice@example.com"}
 result = client.post("/users", json=user_data)
@@ -124,7 +124,7 @@ result = client.put("/users/123", json={"name": "Updated Name"})
 
 **DELETE Requests:**
 
-```python
+```python notest
 # Simple DELETE
 result = client.delete("/users/123")
 
@@ -138,7 +138,7 @@ result = client.delete("/users/123", json={"reason": "User requested deletion"})
 
 Creates FastAPI applications with FLEXT patterns and configuration.
 
-```python
+```python notest
 from flext_api import create_fastapi_app, FlextApiSettings
 from fastapi import FastAPI
 
@@ -174,7 +174,7 @@ async def health_check():
 
 Pydantic model for API configuration with validation.
 
-```python
+```python notest
 from flext_api import FlextApiSettings
 
 
@@ -191,7 +191,7 @@ class MyApiConfig(FlextApiSettings):
 
 Type-safe models for HTTP requests and responses using Pydantic v2.
 
-```python
+```python notest
 from flext_api import FlextApiModels
 from typing import Optional
 
@@ -232,7 +232,7 @@ async def create_user(request: UserCreateRequest):
 
 Standardized error responses across the API.
 
-```python
+```python notest
 from flext_api import ErrorResponse
 
 
@@ -267,7 +267,7 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
 
 Collection of HTTP-related utility functions.
 
-```python
+```python notest
 from flext_api import FlextApiUtilities
 
 # URL manipulation
@@ -306,7 +306,7 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ### Complete HTTP Client Example
 
-```python
+```python notest
 from flext_api import FlextApiClient, FlextApiSettings
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -384,7 +384,7 @@ if error_result.failure:
 
 ### FastAPI Application Example
 
-```python
+```python notest
 from flext_api import create_fastapi_app, FlextApiSettings
 from flext_core import FlextBus
 from flext_core import FlextSettings

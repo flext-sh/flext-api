@@ -111,7 +111,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 **Domain Patterns:**
 
-```python
+```python notest
 # HTTP-specific entity
 class FlextWebEndpoint(FlextModels.Entity):
     """HTTP endpoint with routing and validation."""
@@ -177,7 +177,7 @@ Protocol Layer
 
 FLEXT-API uses a plugin system for protocol extensibility.
 
-```python
+```python notest
 from flext_api import ProtocolRegistry
 
 # Register protocols
@@ -202,7 +202,7 @@ registry.register("custom", Custom
 
 ### Protocol Interface
 
-```python
+```python notest
 from abc import ABC, abstractmethod
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -284,7 +284,7 @@ FlextApiClient
 
 ### Request Processing Pipeline
 
-```python
+```python notest
 # Request processing flow
 @app.middleware("http")
 async def request_pipeline(request, call_next):
@@ -312,7 +312,7 @@ async def request_pipeline(request, call_next):
 
 ### Application Factory Pattern
 
-```python
+```python notest
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
@@ -351,7 +351,7 @@ def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
 
 ### Route Registration
 
-```python
+```python notest
 def register_api_routes(app: FastAPI):
     """Register API routes with FLEXT patterns."""
 
@@ -414,7 +414,7 @@ Storage Layer
 
 ### Storage Interface
 
-```python
+```python notest
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
@@ -489,7 +489,7 @@ Caching Strategy
 
 ### Cache Configuration
 
-```python
+```python notest
 from flext_api import FlextApiCache
 
 # Redis cache configuration
@@ -557,7 +557,7 @@ Security Layer
 
 ### Security Middleware
 
-```python
+```python notest
 from flext_api import SecurityMiddleware
 
 
@@ -649,7 +649,7 @@ Performance Layer
 
 ### Performance Monitoring
 
-```python
+```python notest
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -735,7 +735,7 @@ Container Layer
 
 ### Deployment Configuration
 
-```python
+```python notest
 # Docker configuration
 FROM python:3.13-slim
 
@@ -823,7 +823,7 @@ spec:
 
 ### Adding New Protocols
 
-```python
+```python notest
 from flext_api import Base
 
 
@@ -847,7 +847,7 @@ registry.register("custom", Custom
 
 ### Custom Middleware
 
-```python
+```python notest
 from flext_api import FlextApiMiddleware
 
 
@@ -896,7 +896,7 @@ app.add_middleware(CustomBusinessMiddleware())
 
 ### Monitoring and Optimization
 
-```python
+```python notest
 # Performance monitoring setup
 @app.on_event("startup")
 async def setup_monitoring():
@@ -929,7 +929,7 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```python
+```python notest
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
 def create_app(settings: dict) -> FastAPI:

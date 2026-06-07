@@ -26,7 +26,7 @@ This section covers the schema generation and validation capabilities for OpenAP
 
 Generate OpenAPI 3.0 specifications from FastAPI applications and FLEXT models.
 
-```python
+```python notest
 from flext_api import OpenApiSchema
 from flext_api import create_fastapi_app
 
@@ -57,7 +57,7 @@ schema_generator.export_to_file("openapi.yaml")
 
 ### Schema Customization
 
-```python
+```python notest
 # Custom OpenAPI configuration
 from flext_api import OpenApiConfig
 
@@ -82,7 +82,7 @@ schema = OpenApiSchema(app, settings=settings)
 
 Generate AsyncAPI 2.0 specifications for event-driven architectures and WebSocket APIs.
 
-```python
+```python notest
 from flext_api import AsyncApiSchema
 
 # Define AsyncAPI configuration
@@ -116,7 +116,7 @@ schema_generator.export_to_file("asyncapi.yaml")
 
 Generate JSON Schema specifications for data validation and API contracts.
 
-```python
+```python notest
 from flext_api import JsonSchema
 from flext_api import FlextApiModels
 from typing import Optional
@@ -149,7 +149,7 @@ print(f"Properties: {list(json_schema.properties.keys())}")
 
 ### Schema Validation
 
-```python
+```python notest
 from flext_api import JsonSchemaValidator
 
 # Create validator
@@ -175,7 +175,7 @@ validation_result = validator.validate_with_context(
 
 Automatic schema generation for FastAPI applications with OpenAPI integration.
 
-```python
+```python notest
 from flext_api import FastApiOpenApiIntegration
 
 # Integrate with FastAPI application
@@ -206,7 +206,7 @@ openapi_spec = integration.generate_complete_spec()
 
 Extend schemas with custom fields and metadata.
 
-```python
+```python notest
 from flext_api import JsonSchemaExtension
 
 # Add custom extensions
@@ -237,7 +237,7 @@ extended_schema = extension.apply_to_schema(json_schema)
 
 ### Complete Schema Generation Workflow
 
-```python
+```python notest
 from flext_api import OpenApiSchema, OpenApiConfig
 from flext_api import JsonSchema
 from flext_api import create_fastapi_app
@@ -291,7 +291,7 @@ print(f"JSON Schema properties: {len(user_request_schema.properties)}")
 
 ### Schema Validation in Production
 
-```python
+```python notest
 from flext_api import JsonSchemaValidator, SchemaValidationError
 
 

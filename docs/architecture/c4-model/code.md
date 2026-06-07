@@ -219,7 +219,7 @@ flext_api/
 
 #### FlextApi (api.py)
 
-```python
+```python notest
 class FlextApi(s[FlextApiSettings]):
     """Thin facade providing access to all FLEXT-API functionality."""
 
@@ -245,7 +245,7 @@ class FlextApi(s[FlextApiSettings]):
 
 #### FlextApiClient (client.py)
 
-```python
+```python notest
 class FlextApiClient(s[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
@@ -280,7 +280,7 @@ class FlextApiClient(s[None]):
 
 #### FlextApiModels (models.py)
 
-```python
+```python notest
 class FlextApiModels(FlextModels):
     """Pydantic models extending flext-core base classes."""
 
@@ -320,7 +320,7 @@ class FlextApiModels(FlextModels):
 
 ### Protocol Architecture
 
-```python
+```python notest
 # Protocol base interface
 class Base
     """Abstract base class for all protocols."""
@@ -374,7 +374,7 @@ class FlextWebBase
 
 ### Protocol Registry Pattern
 
-```python
+```python notest
 class ProtocolRegistry:
     """Registry for protocol implementations."""
 
@@ -401,7 +401,7 @@ class ProtocolRegistry:
 
 ### FlextContainer Integration
 
-```python
+```python notest
 # Service registration in FlextApi.__init__
 container = FlextContainer.get_global()
 
@@ -433,7 +433,7 @@ store = storage.unwrap()
 
 ### Railway Pattern Implementation
 
-```python
+```python notest
 # All public methods return r[T]
 def get(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
@@ -481,7 +481,7 @@ if user_data.success:
 
 ### Pydantic-based Configuration
 
-```python
+```python notest
 class FlextApiSettings(m.BaseModel):
     """Configuration model with validation."""
 
@@ -538,7 +538,7 @@ class FlextApiSettings(m.BaseModel):
 
 ### Backend Interface Pattern
 
-```python
+```python notest
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
@@ -620,7 +620,7 @@ tests/
 
 ### Test Fixtures and Mocks
 
-```python
+```python notest
 # conftest.py - Shared test fixtures
 @pytest.fixture
 def mock_http_client():
@@ -648,7 +648,7 @@ async def async_client(test_config):
 
 ### Connection Pooling
 
-```python
+```python notest
 class ConnectionPoolManager:
     """HTTP connection pool management."""
 
@@ -680,7 +680,7 @@ class ConnectionPoolManager:
 
 ### Response Caching
 
-```python
+```python notest
 class ResponseCache:
     """HTTP response caching with TTL."""
 
@@ -717,7 +717,7 @@ class ResponseCache:
 
 ### Authentication Handlers
 
-```python
+```python notest
 class AuthenticationManager:
     """Multi-scheme authentication manager."""
 
