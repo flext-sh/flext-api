@@ -1,0 +1,53 @@
+docs/guides/troubleshooting.md
+  s_73cbfc60e45e37::t_b2f164d2522e29 722,733,784,795,808
+  s_73cbfc60e45e37::t_c6114eba95f0e8 88,118,139,148,175,196,210,225,255,291,300,315,325,348,357,372,380,397,408,430,442,453,490,527,558,619,642,771
+docs/architecture/overview.md
+  s_73cbfc60e45e37::t_f952bed6472c86 114,180,205,287,315,354,417,492,560,652,738,826,850,899,932
+docs/guides/http-client.md
+  s_73cbfc60e45e37::t_5600f4d95235fa 43,93,128,197,235,287,314,338,364,396,418,438,474,508,574,626,655,667,707,728,749,765,779
+docs/api/core.md
+  s_73cbfc60e45e37::t_f952bed6472c86 29,94,112,127,141,177,194,235,270,309,387
+docs/guides/testing.md
+  s_73cbfc60e45e37::t_c6114eba95f0e8 76,128,176,219,292,333,357,396,439,471,517,588,611,638,658
+  s_73cbfc60e45e37::t_b2f164d2522e29 700
+docs/api/middleware.md
+  s_73cbfc60e45e37::t_f952bed6472c86 32,101,134,208,239,283,318,380,432,458,505
+docs/architecture/c4-model/code.md
+  s_73cbfc60e45e37::t_f952bed6472c86 222,248,283,323,377,404,436,484,541,623,651,683,720
+docs/api/storage.md
+  s_73cbfc60e45e37::t_f952bed6472c86 32,91,131,164,186,212,251,280,315,367,457
+docs/architecture/decisions/002-railway-pattern.md
+  s_73cbfc60e45e37::t_f952bed6472c86 85,98,121,136,159,219
+docs/README.md
+  s_73cbfc60e45e37::t_f952bed6472c86 152,172
+docs/guides/configuration.md
+  s_73cbfc60e45e37::t_c6114eba95f0e8 106,144,164,178,231,264,308,344,380,417,455
+docs/api/protocols.md
+  s_73cbfc60e45e37::t_f952bed6472c86 51,101,133,172,214,257,296,346,374,404,469
+docs/architecture/decisions/003-protocol-abstraction.md
+  s_73cbfc60e45e37::t_f952bed6472c86 129,156,187,213,259,297,307,325,336,365,410,425,432
+docs/guides/development.md
+  s_73cbfc60e45e37::t_c6114eba95f0e8 152,169,189,228,313,404,432
+docs/guides/getting-started.md
+  s_73cbfc60e45e37::t_c6114eba95f0e8 101,133,154,207,278
+docs/api/schemas.md
+  s_73cbfc60e45e37::t_f952bed6472c86 29,60,85,119,152,178,209,240,294
+docs/testing.md
+  s_73cbfc60e45e37::t_f952bed6472c86 61,95,210,225,242,275,306,330,355,429,456,500,517
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "06e2c706197247490976a5e2a8e57bd35d9cf2fb",
+  "prompts": {},
+  "sessions": {
+    "s_73cbfc60e45e37": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "80f2c44c-f1f2-49a0-8035-ccac60ac602b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
