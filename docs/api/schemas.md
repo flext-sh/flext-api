@@ -1,23 +1,5 @@
 # Schema API Reference
 
-<!-- TOC START -->
-- [OpenAPI Schema Generation](#openapi-schema-generation)
-  - [OpenApiSchema - OpenAPI 3.0 Specification](#openapischema-openapi-30-specification)
-  - [Schema Customization](#schema-customization)
-- [AsyncAPI Schema Generation](#asyncapi-schema-generation)
-  - [AsyncApiSchema - AsyncAPI 2.0 Specification](#asyncapischema-asyncapi-20-specification)
-- [JSON Schema Generation](#json-schema-generation)
-  - [JsonSchema - JSON Schema Draft 2020-12](#jsonschema-json-schema-draft-2020-12)
-  - [Schema Validation](#schema-validation)
-- [Schema Integration](#schema-integration)
-  - [FastAPI Integration](#fastapi-integration)
-  - [Custom Schema Extensions](#custom-schema-extensions)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete Schema Generation Workflow](#complete-schema-generation-workflow)
-  - [Schema Validation in Production](#schema-validation-in-production)
-<!-- TOC END -->
-
 This section covers the schema generation and validation capabilities for OpenAPI, AsyncAPI, and JSON Schema specifications.
 
 ## OpenAPI Schema Generation
@@ -26,7 +8,7 @@ This section covers the schema generation and validation capabilities for OpenAP
 
 Generate OpenAPI 3.0 specifications from FastAPI applications and FLEXT models.
 
-```python notest
+```python
 from flext_api import OpenApiSchema
 from flext_api import create_fastapi_app
 
@@ -57,7 +39,7 @@ schema_generator.export_to_file("openapi.yaml")
 
 ### Schema Customization
 
-```python notest
+```python
 # Custom OpenAPI configuration
 from flext_api import OpenApiConfig
 
@@ -82,7 +64,7 @@ schema = OpenApiSchema(app, settings=settings)
 
 Generate AsyncAPI 2.0 specifications for event-driven architectures and WebSocket APIs.
 
-```python notest
+```python
 from flext_api import AsyncApiSchema
 
 # Define AsyncAPI configuration
@@ -116,7 +98,7 @@ schema_generator.export_to_file("asyncapi.yaml")
 
 Generate JSON Schema specifications for data validation and API contracts.
 
-```python notest
+```python
 from flext_api import JsonSchema
 from flext_api import FlextApiModels
 from typing import Optional
@@ -149,7 +131,7 @@ print(f"Properties: {list(json_schema.properties.keys())}")
 
 ### Schema Validation
 
-```python notest
+```python
 from flext_api import JsonSchemaValidator
 
 # Create validator
@@ -175,7 +157,7 @@ validation_result = validator.validate_with_context(
 
 Automatic schema generation for FastAPI applications with OpenAPI integration.
 
-```python notest
+```python
 from flext_api import FastApiOpenApiIntegration
 
 # Integrate with FastAPI application
@@ -206,7 +188,7 @@ openapi_spec = integration.generate_complete_spec()
 
 Extend schemas with custom fields and metadata.
 
-```python notest
+```python
 from flext_api import JsonSchemaExtension
 
 # Add custom extensions
@@ -237,7 +219,7 @@ extended_schema = extension.apply_to_schema(json_schema)
 
 ### Complete Schema Generation Workflow
 
-```python notest
+```python
 from flext_api import OpenApiSchema, OpenApiConfig
 from flext_api import JsonSchema
 from flext_api import create_fastapi_app
@@ -291,7 +273,7 @@ print(f"JSON Schema properties: {len(user_request_schema.properties)}")
 
 ### Schema Validation in Production
 
-```python notest
+```python
 from flext_api import JsonSchemaValidator, SchemaValidationError
 
 

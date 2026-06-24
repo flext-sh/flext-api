@@ -1,40 +1,5 @@
 # Testing Plan & Strategy
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Test Categories & Structure](#test-categories-structure)
-  - [1. Unit Tests (Primary Focus)](#1-unit-tests-primary-focus)
-  - [2. Integration Tests (Secondary Priority)](#2-integration-tests-secondary-priority)
-  - [3. End-to-End Tests (Future Phase)](#3-end-to-end-tests-future-phase)
-- [Critical Test Failures (Priority Fixes)](#critical-test-failures-priority-fixes)
-  - [High Priority (Blocking Phase 1 Completion)](#high-priority-blocking-phase-1-completion)
-  - [Medium Priority (Quality Improvements)](#medium-priority-quality-improvements)
-- [Test Infrastructure Requirements](#test-infrastructure-requirements)
-  - [Test Fixtures & Setup](#test-fixtures-setup)
-  - [Test Data Factories](#test-data-factories)
-- [Testing Strategy by Component](#testing-strategy-by-component)
-  - [HTTP Client Testing Strategy](#http-client-testing-strategy)
-  - [Model Testing Strategy](#model-testing-strategy)
-- [Test Execution Strategy](#test-execution-strategy)
-  - [Development Testing Workflow](#development-testing-workflow)
-  - [CI/CD Testing Integration](#cicd-testing-integration)
-- [Performance & Load Testing](#performance-load-testing)
-  - [HTTP Performance Benchmarks](#http-performance-benchmarks)
-- [Test Maintenance & Evolution](#test-maintenance-evolution)
-  - [Test Organization Principles](#test-organization-principles)
-  - [Test Data Management](#test-data-management)
-- [Testing Roadmap](#testing-roadmap)
-  - [Phase 1: Foundation (Current - 28% → 75%)](#phase-1-foundation-current-28-75)
-  - [Phase 2: Advanced Testing (Future)](#phase-2-advanced-testing-future)
-- [Success Metrics](#success-metrics)
-  - [Quantitative Metrics](#quantitative-metrics)
-  - [Qualitative Metrics](#qualitative-metrics)
-- [Risk Mitigation](#risk-mitigation)
-  - [Test Reliability Risks](#test-reliability-risks)
-  - [Coverage Gaps](#coverage-gaps)
-  - [Maintenance Overhead](#maintenance-overhead)
-<!-- TOC END -->
-
 ## Overview
 
 **Current Status**: 23 tests passing, 76 failing (28% pass rate) · Target: 75%+ coverage with real HTTP functionality
@@ -58,7 +23,7 @@
 
 **Required Fixes**:
 
-```python notest
+```python
 # Missing method causing failures
 @classmethod
 def create_validated_http_url(cls, url: str) -> p.Result[str]:
@@ -92,7 +57,7 @@ def create_validated_http_url(cls, url: str) -> p.Result[str]:
 
 **Configuration Test Matrix**:
 
-```python notest
+```python
 # Required test scenarios
 def test_config_defaults():
 def test_config_validation():
@@ -207,7 +172,7 @@ def test_api_config_creation():
 
 #### HTTP Client Fixtures
 
-```python notest
+```python
 @pytest.fixture
 def http_client():
     """Provide configured HTTP client for tests."""
@@ -222,7 +187,7 @@ def mock_http_server():
 
 #### Model Fixtures
 
-```python notest
+```python
 @pytest.fixture
 def valid_http_request():
     """Provide valid HTTP request model."""
@@ -239,7 +204,7 @@ def valid_client_config():
 
 #### Request/Response Factories
 
-```python notest
+```python
 class TestDataFactory:
     @staticmethod
     def create_http_request(overrides=None):
@@ -272,7 +237,7 @@ class TestDataFactory:
 
 #### Unit Testing Approach
 
-```python notest
+```python
 class TestFlextApiClient:
     def test_successful_get_request(self, http_client, mock_response):
         """Test successful GET request."""
@@ -303,7 +268,7 @@ class TestFlextApiClient:
 
 #### Integration Testing Approach
 
-```python notest
+```python
 class TestHTTPIntegration:
     def test_real_http_get(self, http_client):
         """Test real HTTP GET with httpbin.org."""
@@ -327,7 +292,7 @@ class TestHTTPIntegration:
 
 #### Validation Testing
 
-```python notest
+```python
 class TestModelValidation:
     def test_url_validation(self):
         """Test URL validation patterns."""
@@ -352,7 +317,7 @@ class TestModelValidation:
 
 #### Serialization Testing
 
-```python notest
+```python
 class TestModelSerialization:
     def test_request_serialization(self, valid_http_request):
         """Test HTTP request JSON serialization."""
@@ -426,7 +391,7 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 #### Response Time Testing
 
-```python notest
+```python
 def test_response_time_performance(http_client):
     """Test response time requirements."""
     import time
@@ -453,7 +418,7 @@ def test_response_time_performance(http_client):
 
 #### Concurrent Request Testing
 
-```python notest
+```python
 import asyncio
 
 
@@ -497,7 +462,7 @@ tests/
 
 #### Test Naming Conventions
 
-```python notest
+```python
 # Unit tests
 def test_successful_operation():
 def test_error_handling():
@@ -514,7 +479,7 @@ def test_system_interaction():
 
 #### Test Data Patterns
 
-```python notest
+```python
 # Test data constants
 TEST_BASE_URL = "https://httpbin.org"
 TEST_TIMEOUT = 5.0

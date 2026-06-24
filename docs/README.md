@@ -1,28 +1,5 @@
 # FLEXT-API
 
-<!-- TOC START -->
-- [🚀 Overview](#overview)
-  - [🎯 Core Features](#core-features)
-  - [🏢 Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
-- [🏗️ Current Source Structure](#current-source-structure)
-  - [🎯 Key Architectural Patterns](#key-architectural-patterns)
-- [📚 Documentation Structure](#documentation-structure)
-  - [🏗️ Architecture & Design](#architecture-design)
-  - [🔧 Development & Integration](#development-integration)
-- [🚀 Quick Start](#quick-start)
-  - [Installation](#installation)
-  - [Basic HTTP Client Usage](#basic-http-client-usage)
-  - [FastAPI Application Setup](#fastapi-application-setup)
-- [🧪 Testing](#testing)
-- [📈 Current Status](#current-status)
-  - [🎯 Production Readiness](#production-readiness)
-- [🤝 Contributing](#contributing)
-- [📋 Roadmap](#roadmap)
-  - [Immediate (Next Release)](#immediate-next-release)
-  - [Short-term (Next Month)](#short-term-next-month)
-  - [Long-term (Next Quarter)](#long-term-next-quarter)
-<!-- TOC END -->
-
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Current](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
@@ -149,7 +126,7 @@ pip install flext-api
 
 ### Basic HTTP Client Usage
 
-```python notest
+```python
 from flext_api import FlextApiClient
 from flext_api import FlextApiSettings
 
@@ -169,7 +146,7 @@ else:
 
 ### FastAPI Application Setup
 
-```python notest
+```python
 from flext_api import create_fastapi_app
 from flext_api import FlextApiSettings
 

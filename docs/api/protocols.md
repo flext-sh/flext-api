@@ -1,28 +1,5 @@
 # Protocols API Reference
 
-<!-- TOC START -->
-- [Protocol Architecture](#protocol-architecture)
-- [HTTP Protocol Implementation](#http-protocol-implementation)
-  - [FlextWebREST Implementation](#flextwebrest-implementation)
-  - [HTTP Request/Response Models](#http-requestresponse-models)
-- [GraphQL Protocol Implementation](#graphql-protocol-implementation)
-  - [GraphQLQL Support](#graphqlql-support)
-  - [GraphQL Operations](#graphql-operations)
-- [WebSocket Protocol Implementation](#websocket-protocol-implementation)
-  - [WebSockettime Communication](#websockettime-communication)
-- [Server-Sent Events Protocol](#server-sent-events-protocol)
-  - [ServerSentEventay Streaming](#serversenteventay-streaming)
-- [Storage Backend Protocol](#storage-backend-protocol)
-  - [StorageBackendObject Storage](#storagebackendobject-storage)
-- [Protocol Stubs](#protocol-stubs)
-  - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub-grpc-protocol-buffers)
-  - [Protobuf Stub - Binary Serialization](#protobuf-stub-binary-serialization)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Multi-Protocol API Client](#multi-protocol-api-client)
-  - [Protocol Plugin System](#protocol-plugin-system)
-<!-- TOC END -->
-
 This section covers the protocol implementations and stubs that enable FLEXT-API to support multiple communication protocols through a plugin architecture.
 
 ## Protocol Architecture
@@ -48,7 +25,7 @@ Protocol Layer
 
 Primary protocol implementation for REST APIs and HTTP-based communication.
 
-```python notest
+```python
 from flext_api import FlextWeb
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -98,7 +75,7 @@ if result.success:
 
 ### HTTP Request/Response Models
 
-```python notest
+```python
 from flext_api import (
     FlextApiModels.HttpRequest,
     FlextApiModels.HttpResponse,
@@ -130,7 +107,7 @@ if response.success:
 
 Protocol implementation for GraphQL APIs with query and mutation support.
 
-```python notest
+```python
 from flext_api import GraphQL
 
 # Create GraphQL protocol
@@ -169,7 +146,7 @@ if result.success:
 
 ### GraphQL Operations
 
-```python notest
+```python
 # Query with fragments
 fragment_query = """
     query GetUserWithPosts($id: ID!) {
@@ -211,7 +188,7 @@ result = graphql_protocol.execute_mutation(mutation, mutation_variables)
 
 Protocol implementation for WebSocket connections and real-time messaging.
 
-```python notest
+```python
 from flext_api import WebSocket
 
 # Create WebSocket protocol
@@ -254,7 +231,7 @@ if connection_result.success:
 
 Protocol implementation for Server-Sent Events (SSE) for real-time data streaming.
 
-```python notest
+```python
 from flext_api import ServerSentEvent
 
 # Create SSE protocol
@@ -293,7 +270,7 @@ if stream_result.success:
 
 Protocol implementation for various storage backends (local filesystem, cloud storage, etc.).
 
-```python notest
+```python
 from flext_api import StorageBackend
 
 # Create storage protocol
@@ -343,7 +320,7 @@ if list_result.success:
 
 Stub implementation for gRPC services using Protocol Buffers.
 
-```python notest
+```python
 from flext_api import GrpcStub
 
 # Create gRPC stub
@@ -371,7 +348,7 @@ if response.success:
 
 Stub for Protocol Buffer serialization/deserialization.
 
-```python notest
+```python
 from flext_api import ProtobufStub
 
 # Create protobuf stub
@@ -401,7 +378,7 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ### Multi-Protocol API Client
 
-```python notest
+```python
 from flext_api import FlextApiClient
 from flext_api import FlextWeb
 from flext_api import GraphQL
@@ -466,7 +443,7 @@ print(f"GraphQL user: {user_graphql['name']}")
 
 ### Protocol Plugin System
 
-```python notest
+```python
 from flext_api import ProtocolRegistry
 from flext_api import FlextWeb
 from flext_api import GraphQL

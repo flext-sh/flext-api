@@ -1,26 +1,5 @@
 # Middleware API Reference
 
-<!-- TOC START -->
-- [HTTP Middleware System](#http-middleware-system)
-  - [FlextApiMiddleware - Base Middleware Class](#flextapimiddleware-base-middleware-class)
-  - [Middleware Pipeline](#middleware-pipeline)
-- [Authentication Middleware](#authentication-middleware)
-  - [AuthenticationMiddleware - User Authentication](#authenticationmiddleware-user-authentication)
-  - [Authorization Decorator](#authorization-decorator)
-- [Request/Response Processing](#requestresponse-processing)
-  - [RequestMiddleware - Request Processing](#requestmiddleware-request-processing)
-  - [ResponseMiddleware - Response Processing](#responsemiddleware-response-processing)
-- [Error Handling Middleware](#error-handling-middleware)
-  - [ErrorHandlingMiddleware - Exception Processing](#errorhandlingmiddleware-exception-processing)
-- [Performance Middleware](#performance-middleware)
-  - [PerformanceMonitoringMiddleware - Performance Tracking](#performancemonitoringmiddleware-performance-tracking)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete Middleware Stack](#complete-middleware-stack)
-  - [Custom Middleware Implementation](#custom-middleware-implementation)
-  - [Middleware with Dependency Injection](#middleware-with-dependency-injection)
-<!-- TOC END -->
-
 This section covers the HTTP middleware and handler system for request/response processing, authentication, logging, and cross-cutting concerns.
 
 ## HTTP Middleware System
@@ -29,7 +8,7 @@ This section covers the HTTP middleware and handler system for request/response 
 
 Base class for implementing HTTP middleware with FLEXT patterns.
 
-```python notest
+```python
 from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -98,7 +77,7 @@ app.add_middleware(middleware)
 
 Chain multiple middleware components for complex request processing.
 
-```python notest
+```python
 from flext_api import MiddlewarePipeline
 
 # Create middleware pipeline
@@ -131,7 +110,7 @@ async def handle_request(request):
 
 Middleware for handling user authentication and authorization.
 
-```python notest
+```python
 from flext_api import AuthenticationMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -205,7 +184,7 @@ app.add_middleware(auth_middleware)
 
 ### Authorization Decorator
 
-```python notest
+```python
 from flext_api import require_roles, require_permissions
 
 
@@ -236,7 +215,7 @@ async def delete_user(
 
 Middleware for preprocessing incoming requests.
 
-```python notest
+```python
 from flext_api import RequestMiddleware
 
 
@@ -280,7 +259,7 @@ class RequestValidationMiddleware(RequestMiddleware):
 
 Middleware for postprocessing outgoing responses.
 
-```python notest
+```python
 from flext_api import ResponseMiddleware
 
 
@@ -315,7 +294,7 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
 
 Middleware for centralized error handling and response formatting.
 
-```python notest
+```python
 from flext_api import ErrorHandlingMiddleware
 from flext_api import m
 
@@ -377,7 +356,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
 
 Middleware for monitoring request performance and metrics.
 
-```python notest
+```python
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -429,7 +408,7 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 
 ### Complete Middleware Stack
 
-```python notest
+```python
 from flext_api import (
     MiddlewarePipeline,
     LoggingMiddleware,
@@ -455,7 +434,7 @@ app.middleware("http")(middleware_pipeline.process_request)
 
 ### Custom Middleware Implementation
 
-```python notest
+```python
 from flext_api import FlextApiMiddleware
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -502,7 +481,7 @@ app.add_middleware(custom_middleware)
 
 ### Middleware with Dependency Injection
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants

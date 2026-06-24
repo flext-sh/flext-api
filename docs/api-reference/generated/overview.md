@@ -3,15 +3,15 @@
 # flext-api API Overview
 
 - Package: `flext_api`
-- Version: ``
+- Version: `0.12.0-dev`
 - Description: FLEXT API - High-Performance REST API with FastAPI
 - Project class: `platform`
 - Keywords: `enterprise`, `fastapi`, `flext`, `http`, `rest`, `typed`
-- Main facades: `FlextApiRegistry`, `FlextApiSettings`, `FlextApiSseProtocolPlugin`, `FlextApiProtocolsTransports`, `FlextApiProtocolPlugins`, `FlextApiRfcProtocolImplementation`, `FlextApiConstants`, `FlextApiWebhookHandler` (+22 more)
+- Main facades: _none_
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextApiRegistry`, `FlextApiSettings`, `FlextApiSseProtocolPlugin`, `FlextApiProtocolsTransports`, `FlextApiProtocolPlugins`, `FlextApiRfcProtocolImplementation`, `FlextApiConstants`, `FlextApiWebhookHandler`, `FlextWebClientImplementation`, `FlextApiLifecycleManager` (+20 more)
+- Public symbol exports: `FlextApiTypingsSerialization`, `FlextApiTypes`, `FlextApiUtilitiesSerializers`, `FlextApiConstants`, `FlextApi`, `FlextApiClient`, `FlextApiSettings`, `FlextApiProtocolsSerialization`, `FlextApiProtocolPlugins`, `FlextApiProtocolsTransports` (+6 more)
 - Exported module shortcuts: `api`
-- Generated module pages: `16`
+- Generated module pages: `8`
 
 ## Next Pages
 

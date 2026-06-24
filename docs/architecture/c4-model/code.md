@@ -1,32 +1,5 @@
 # C4 Model - Code
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Code Diagram](#code-diagram)
-- [Code Structure Analysis](#code-structure-analysis)
-  - [Core Module Relationships](#core-module-relationships)
-  - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-- [Protocol Implementation Details](#protocol-implementation-details)
-  - [Protocol Architecture](#protocol-architecture)
-  - [Protocol Registry Pattern](#protocol-registry-pattern)
-- [Dependency Injection Pattern](#dependency-injection-pattern)
-  - [FlextContainer Integration](#flextcontainer-integration)
-- [Error Handling Architecture](#error-handling-architecture)
-  - [Railway Pattern Implementation](#railway-pattern-implementation)
-- [Configuration Management](#configuration-management)
-  - [Pydantic-based Configuration](#pydantic-based-configuration)
-- [Storage Abstraction](#storage-abstraction)
-  - [Backend Interface Pattern](#backend-interface-pattern)
-- [Testing Architecture](#testing-architecture)
-  - [Test Structure](#test-structure)
-  - [Test Fixtures and Mocks](#test-fixtures-and-mocks)
-- [Performance Optimizations](#performance-optimizations)
-  - [Connection Pooling](#connection-pooling)
-  - [Response Caching](#response-caching)
-- [Security Implementation](#security-implementation)
-  - [Authentication Handlers](#authentication-handlers)
-<!-- TOC END -->
-
 ## Overview
 
 This document describes the **Code** level of the C4 model for FLEXT-API, showing the actual implementation details, class relationships, and code organization.
@@ -219,7 +192,7 @@ flext_api/
 
 #### FlextApi (api.py)
 
-```python notest
+```python
 class FlextApi(s[FlextApiSettings]):
     """Thin facade providing access to all FLEXT-API functionality."""
 
@@ -245,7 +218,7 @@ class FlextApi(s[FlextApiSettings]):
 
 #### FlextApiClient (client.py)
 
-```python notest
+```python
 class FlextApiClient(s[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
@@ -280,7 +253,7 @@ class FlextApiClient(s[None]):
 
 #### FlextApiModels (models.py)
 
-```python notest
+```python
 class FlextApiModels(FlextModels):
     """Pydantic models extending flext-core base classes."""
 
@@ -320,7 +293,7 @@ class FlextApiModels(FlextModels):
 
 ### Protocol Architecture
 
-```python notest
+```python
 # Protocol base interface
 class Base
     """Abstract base class for all protocols."""
@@ -374,7 +347,7 @@ class FlextWebBase
 
 ### Protocol Registry Pattern
 
-```python notest
+```python
 class ProtocolRegistry:
     """Registry for protocol implementations."""
 
@@ -401,7 +374,7 @@ class ProtocolRegistry:
 
 ### FlextContainer Integration
 
-```python notest
+```python
 # Service registration in FlextApi.__init__
 container = FlextContainer.get_global()
 
@@ -433,7 +406,7 @@ store = storage.unwrap()
 
 ### Railway Pattern Implementation
 
-```python notest
+```python
 # All public methods return r[T]
 def get(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
@@ -481,7 +454,7 @@ if user_data.success:
 
 ### Pydantic-based Configuration
 
-```python notest
+```python
 class FlextApiSettings(m.BaseModel):
     """Configuration model with validation."""
 
@@ -538,7 +511,7 @@ class FlextApiSettings(m.BaseModel):
 
 ### Backend Interface Pattern
 
-```python notest
+```python
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
@@ -620,7 +593,7 @@ tests/
 
 ### Test Fixtures and Mocks
 
-```python notest
+```python
 # conftest.py - Shared test fixtures
 @pytest.fixture
 def mock_http_client():
@@ -648,7 +621,7 @@ async def async_client(test_config):
 
 ### Connection Pooling
 
-```python notest
+```python
 class ConnectionPoolManager:
     """HTTP connection pool management."""
 
@@ -680,7 +653,7 @@ class ConnectionPoolManager:
 
 ### Response Caching
 
-```python notest
+```python
 class ResponseCache:
     """HTTP response caching with TTL."""
 
@@ -717,7 +690,7 @@ class ResponseCache:
 
 ### Authentication Handlers
 
-```python notest
+```python
 class AuthenticationManager:
     """Multi-scheme authentication manager."""
 

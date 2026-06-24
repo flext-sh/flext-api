@@ -1,23 +1,5 @@
 # Core API Reference
 
-<!-- TOC START -->
-- [Core HTTP Client](#core-http-client)
-  - [FlextApiClient - Main HTTP Client](#flextapiclient-main-http-client)
-  - [HTTP Methods](#http-methods)
-- [FastAPI Application Factory](#fastapi-application-factory)
-  - [create_fastapi_app() - Application Factory](#createfastapiapp-application-factory)
-  - [FlextApiSettings - Configuration Model](#flextapisettings-configuration-model)
-- [HTTP Models and Schemas](#http-models-and-schemas)
-  - [Request/Response Models](#requestresponse-models)
-  - [Error Response Models](#error-response-models)
-- [HTTP Utilities](#http-utilities)
-  - [FlextApiUtilities - Helper Functions](#flextapiutilities-helper-functions)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete HTTP Client Example](#complete-http-client-example)
-  - [FastAPI Application Example](#fastapi-application-example)
-<!-- TOC END -->
-
 This section covers the core HTTP client and server classes that form the foundation of FLEXT-API.
 
 ## Core HTTP Client
@@ -26,7 +8,7 @@ This section covers the core HTTP client and server classes that form the founda
 
 The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with r patterns.
 
-```python notest
+```python
 from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -91,7 +73,7 @@ else:
 
 **GET Requests:**
 
-```python notest
+```python
 # Simple GET
 result = client.get("/users")
 
@@ -109,7 +91,7 @@ result = client.get(
 
 **POST/PUT Requests:**
 
-```python notest
+```python
 # POST with JSON data
 user_data = {"name": "Alice", "email": "alice@example.com"}
 result = client.post("/users", json=user_data)
@@ -124,7 +106,7 @@ result = client.put("/users/123", json={"name": "Updated Name"})
 
 **DELETE Requests:**
 
-```python notest
+```python
 # Simple DELETE
 result = client.delete("/users/123")
 
@@ -138,7 +120,7 @@ result = client.delete("/users/123", json={"reason": "User requested deletion"})
 
 Creates FastAPI applications with FLEXT patterns and configuration.
 
-```python notest
+```python
 from flext_api import create_fastapi_app, FlextApiSettings
 from fastapi import FastAPI
 
@@ -174,7 +156,7 @@ async def health_check():
 
 Pydantic model for API configuration with validation.
 
-```python notest
+```python
 from flext_api import FlextApiSettings
 
 
@@ -191,7 +173,7 @@ class MyApiConfig(FlextApiSettings):
 
 Type-safe models for HTTP requests and responses using Pydantic v2.
 
-```python notest
+```python
 from flext_api import FlextApiModels
 from typing import Optional
 
@@ -232,7 +214,7 @@ async def create_user(request: UserCreateRequest):
 
 Standardized error responses across the API.
 
-```python notest
+```python
 from flext_api import ErrorResponse
 
 
@@ -267,7 +249,7 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
 
 Collection of HTTP-related utility functions.
 
-```python notest
+```python
 from flext_api import FlextApiUtilities
 
 # URL manipulation
@@ -306,7 +288,7 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ### Complete HTTP Client Example
 
-```python notest
+```python
 from flext_api import FlextApiClient, FlextApiSettings
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -384,7 +366,7 @@ if error_result.failure:
 
 ### FastAPI Application Example
 
-```python notest
+```python
 from flext_api import create_fastapi_app, FlextApiSettings
 from flext_core import FlextBus
 from flext_core import FlextSettings

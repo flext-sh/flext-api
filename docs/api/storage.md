@@ -1,26 +1,5 @@
 # Storage API Reference
 
-<!-- TOC START -->
-- [HTTP Storage System](#http-storage-system)
-  - [FlextApiStorage - File Storage Management](#flextapistorage-file-storage-management)
-  - [Storage Configuration](#storage-configuration)
-- [File Operations](#file-operations)
-  - [Upload Operations](#upload-operations)
-  - [Download Operations](#download-operations)
-  - [File Management](#file-management)
-- [Caching System](#caching-system)
-  - [FlextApiCache - Response Caching](#flextapicache-response-caching)
-  - [Cache Strategies](#cache-strategies)
-- [Distributed Storage](#distributed-storage)
-  - [Multi-Backend Storage](#multi-backend-storage)
-- [File Processing](#file-processing)
-  - [FlextFileProcessor - File Processing Pipeline](#flextfileprocessor-file-processing-pipeline)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete File Upload System](#complete-file-upload-system)
-  - [Caching with Storage Integration](#caching-with-storage-integration)
-<!-- TOC END -->
-
 This section covers the HTTP storage and caching system for file uploads, downloads, and distributed storage backends.
 
 ## HTTP Storage System
@@ -29,7 +8,7 @@ This section covers the HTTP storage and caching system for file uploads, downlo
 
 Main storage interface for handling file uploads, downloads, and metadata operations.
 
-```python notest
+```python
 from flext_api import FlextApiStorage
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -88,7 +67,7 @@ else:
 
 ### Storage Configuration
 
-```python notest
+```python
 # Local filesystem storage
 local_storage = FlextApiStorage(
     backend="local",
@@ -128,7 +107,7 @@ gcs_storage = FlextApiStorage(
 
 Upload files with automatic validation and metadata handling.
 
-```python notest
+```python
 # Upload from file path
 upload_result = storage.upload_from_path(
     local_path="/path/to/document.pdf",
@@ -161,7 +140,7 @@ upload_result = storage.upload_file(
 
 Download files with caching and access control.
 
-```python notest
+```python
 # Download file
 download_result = storage.download_file(
     remote_path="documents/report.pdf", local_path="/tmp/downloaded_report.pdf"
@@ -183,7 +162,7 @@ if download_result.success:
 
 List, delete, and manage stored files.
 
-```python notest
+```python
 # List files in directory
 files_result = storage.list_files("documents/")
 if files_result.success:
@@ -209,7 +188,7 @@ move_result = storage.move_file(
 
 HTTP response caching with multiple backend support.
 
-```python notest
+```python
 from flext_api import FlextApiCache
 
 # Create cache instance
@@ -248,7 +227,7 @@ else:
 
 ### Cache Strategies
 
-```python notest
+```python
 # Time-based caching
 @cache.cached(ttl=3600)  # Cache for 1 hour
 @app.get("/slow-endpoint")
@@ -277,7 +256,7 @@ async def get_user(user_id: str):
 
 Support for multiple storage backends with failover and load balancing.
 
-```python notest
+```python
 from flext_api import MultiBackendStorage
 
 # Configure multiple backends
@@ -312,7 +291,7 @@ else:
 
 Process files during upload/download with transformation and validation.
 
-```python notest
+```python
 from flext_api import FlextFileProcessor
 
 # Create file processor
@@ -364,7 +343,7 @@ async def upload_image(file: UploadFile = File(...)):
 
 ### Complete File Upload System
 
-```python notest
+```python
 from flext_api import FlextApiStorage, FlextFileProcessor
 from flext_api import FileUploadMiddleware
 from fastapi import UploadFile, File, HTTPException
@@ -454,7 +433,7 @@ async def download_file(file_id: str):
 
 ### Caching with Storage Integration
 
-```python notest
+```python
 from flext_api import FlextApiStorage, FlextApiCache
 
 # Initialize storage and cache

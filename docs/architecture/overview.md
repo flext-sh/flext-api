@@ -1,50 +1,5 @@
 # Architecture Overview
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Layer Details](#layer-details)
-  - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
-  - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
-  - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
-- [Protocol Plugin System](#protocol-plugin-system)
-  - [Protocol Registry](#protocol-registry)
-  - [Protocol Interface](#protocol-interface)
-- [HTTP Client Architecture](#http-client-architecture)
-  - [FlextApiClient Design](#flextapiclient-design)
-  - [Request Processing Pipeline](#request-processing-pipeline)
-- [FastAPI Integration Architecture](#fastapi-integration-architecture)
-  - [Application Factory Pattern](#application-factory-pattern)
-  - [Route Registration](#route-registration)
-- [Storage Architecture](#storage-architecture)
-  - [Multi-Backend Storage](#multi-backend-storage)
-  - [Storage Interface](#storage-interface)
-- [Caching Architecture](#caching-architecture)
-  - [Multi-Level Caching](#multi-level-caching)
-  - [Cache Configuration](#cache-configuration)
-- [Security Architecture](#security-architecture)
-  - [Authentication and Authorization](#authentication-and-authorization)
-  - [Security Middleware](#security-middleware)
-- [Performance Architecture](#performance-architecture)
-  - [Performance Optimization Strategies](#performance-optimization-strategies)
-  - [Performance Monitoring](#performance-monitoring)
-- [Deployment Architecture](#deployment-architecture)
-  - [Container Architecture](#container-architecture)
-  - [Deployment Configuration](#deployment-configuration)
-  - [Kubernetes Deployment](#kubernetes-deployment)
-- [Quality Metrics](#quality-metrics)
-  - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
-  - [Coverage by Layer](#coverage-by-layer)
-- [Extension Points](#extension-points)
-  - [Adding New Protocols](#adding-new-protocols)
-  - [Custom Middleware](#custom-middleware)
-- [Performance Considerations](#performance-considerations)
-  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
-  - [Monitoring and Optimization](#monitoring-and-optimization)
-- [Migration Guidelines](#migration-guidelines)
-  - [Version Compatibility](#version-compatibility)
-- [References](#references)
-<!-- TOC END -->
-
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
 
 ## Overview
@@ -111,7 +66,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 **Domain Patterns:**
 
-```python notest
+```python
 # HTTP-specific entity
 class FlextWebEndpoint(FlextModels.Entity):
     """HTTP endpoint with routing and validation."""
@@ -177,7 +132,7 @@ Protocol Layer
 
 FLEXT-API uses a plugin system for protocol extensibility.
 
-```python notest
+```python
 from flext_api import ProtocolRegistry
 
 # Register protocols
@@ -202,7 +157,7 @@ registry.register("custom", Custom
 
 ### Protocol Interface
 
-```python notest
+```python
 from abc import ABC, abstractmethod
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -284,7 +239,7 @@ FlextApiClient
 
 ### Request Processing Pipeline
 
-```python notest
+```python
 # Request processing flow
 @app.middleware("http")
 async def request_pipeline(request, call_next):
@@ -312,7 +267,7 @@ async def request_pipeline(request, call_next):
 
 ### Application Factory Pattern
 
-```python notest
+```python
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
@@ -351,7 +306,7 @@ def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
 
 ### Route Registration
 
-```python notest
+```python
 def register_api_routes(app: FastAPI):
     """Register API routes with FLEXT patterns."""
 
@@ -414,7 +369,7 @@ Storage Layer
 
 ### Storage Interface
 
-```python notest
+```python
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
@@ -489,7 +444,7 @@ Caching Strategy
 
 ### Cache Configuration
 
-```python notest
+```python
 from flext_api import FlextApiCache
 
 # Redis cache configuration
@@ -557,7 +512,7 @@ Security Layer
 
 ### Security Middleware
 
-```python notest
+```python
 from flext_api import SecurityMiddleware
 
 
@@ -649,7 +604,7 @@ Performance Layer
 
 ### Performance Monitoring
 
-```python notest
+```python
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -735,7 +690,7 @@ Container Layer
 
 ### Deployment Configuration
 
-```python notest
+```python
 # Docker configuration
 FROM python:3.13-slim
 
@@ -823,7 +778,7 @@ spec:
 
 ### Adding New Protocols
 
-```python notest
+```python
 from flext_api import Base
 
 
@@ -847,7 +802,7 @@ registry.register("custom", Custom
 
 ### Custom Middleware
 
-```python notest
+```python
 from flext_api import FlextApiMiddleware
 
 
@@ -896,7 +851,7 @@ app.add_middleware(CustomBusinessMiddleware())
 
 ### Monitoring and Optimization
 
-```python notest
+```python
 # Performance monitoring setup
 @app.on_event("startup")
 async def setup_monitoring():
@@ -929,7 +884,7 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```python notest
+```python
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
 def create_app(settings: dict) -> FastAPI:

@@ -2,7 +2,7 @@
 
 # flext-api
 
-**Version**: `unknown` | **Python**: 3.13+ | **Project class**: `platform`
+**Version**: `0.12.0-dev` | **Python**: 3.13+ | **Project class**: `platform`
 
 ## Purpose
 
@@ -30,12 +30,12 @@ Read [`/flext/AGENTS.md`](../AGENTS.md) §9 — Agent Execution Pre-requisites �
 ## Integration Points
 
 - Parent MRO chain: read this project's `pyproject.toml` `dependencies` array filtered by `flext-*`. The MRO cascade is encoded in the inheritance lists of the facade classes listed under Module Map above.
-- Public extensions exposed by this project: `FlextApiRegistry`, `FlextApiSettings`, `FlextApiSseProtocolPlugin`, `FlextApiProtocolsTransports`, `FlextApiProtocolPlugins`, `FlextApiRfcProtocolImplementation` (+24 more).
+- Public extensions exposed by this project: _none_.
 - Library abstraction boundaries: see AGENTS.md §2.7.
 
 ## Quality Gates
 
-Canonical `make` verbs (`check`, `test`, `val`, `docs`) — see `AGENTS.md` §5 (Make Contract) and the [`flext-quality-gates`](../../.agents/skills/flext-quality-gates/SKILL.md) skill for selectors and thresholds.
+Canonical `make` verbs (`check`, `test`, `val`, `docs`) — see `AGENTS.md` §5 (Make Contract) and the [`flext-quality-gates`](../.agents/skills/flext-quality-gates/SKILL.md) skill for selectors and thresholds.
 
 ## Governance Pointer
 

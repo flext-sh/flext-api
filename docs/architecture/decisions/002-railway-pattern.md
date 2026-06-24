@@ -1,32 +1,5 @@
 # 002. Railway-Oriented Error Handling
 
-<!-- TOC START -->
-- [Status](#status)
-- [Context](#context)
-- [Decision](#decision)
-- [Consequences](#consequences)
-  - [Positive](#positive)
-  - [Negative](#negative)
-  - [Risks](#risks)
-- [Alternatives Considered](#alternatives-considered)
-  - [Option 1: Traditional Exceptions](#option-1-traditional-exceptions)
-  - [Option 2: Result Pattern (Custom Implementation)](#option-2-result-pattern-custom-implementation)
-  - [Option 3: Hybrid Approach](#option-3-hybrid-approach)
-- [Implementation Examples](#implementation-examples)
-  - [Basic HTTP Operation](#basic-http-operation)
-  - [Usage in Application Code](#usage-in-application-code)
-  - [Testing Railway Code](#testing-railway-code)
-- [Migration Strategy](#migration-strategy)
-  - [Phase 1: Core Implementation](#phase-1-core-implementation)
-  - [Phase 2: Ecosystem Migration](#phase-2-ecosystem-migration)
-  - [Phase 3: Ecosystem Adoption](#phase-3-ecosystem-adoption)
-- [Best Practices](#best-practices)
-  - [Railway Pattern Guidelines](#railway-pattern-guidelines)
-  - [Error Message Standards](#error-message-standards)
-  - [Performance Considerations](#performance-considerations)
-- [References](#references)
-<!-- TOC END -->
-
 Date: 2025-01-01
 
 ## Status
@@ -82,7 +55,7 @@ FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP ope
 
 ### Option 1: Traditional Exceptions
 
-```python notest
+```python
 def get_user(user_id: int) -> User:
     response = httpx.get(f"/users/{user_id}")
     response.raise_for_status()
@@ -95,7 +68,7 @@ def get_user(user_id: int) -> User:
 
 ### Option 2: Result Pattern (Custom Implementation)
 
-```python notest
+```python
 class Result:
     def __init__(self, success: bool, value=None, error=None):
         self.success = success
@@ -118,7 +91,7 @@ class Result:
 
 ### Basic HTTP Operation
 
-```python notest
+```python
 def get_user(user_id: int) -> p.Result[User]:
     """Get user with railway error handling."""
     return (
@@ -133,7 +106,7 @@ def get_user(user_id: int) -> p.Result[User]:
 
 ### Usage in Application Code
 
-```python notest
+```python
 # Success path
 result = get_user(123)
 if result.success:
@@ -156,7 +129,7 @@ user_profile = (
 
 ### Testing Railway Code
 
-```python notest
+```python
 def test_get_user_success():
     # Given
     mock_response = MockHttpResponse(status_code=200, body='{"name": "John"}')
@@ -216,7 +189,7 @@ def test_get_user_not_found():
 
 ### Error Message Standards
 
-```python notest
+```python
 # Good error messages
 r.fail("Invalid user ID: must be positive integer")
 r.fail("HTTP request timeout after 30 seconds")
