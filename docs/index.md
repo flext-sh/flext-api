@@ -2,7 +2,7 @@
 
 # flext-api Documentation
 
-- Version: `unknown`
+- Version: `0.12.0-dev`
 - Project class: `platform`
 - Package: `flext_api`
 - Description: FLEXT API - High-Performance REST API with FastAPI

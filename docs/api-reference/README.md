@@ -19,7 +19,7 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextApiRegistry`, `FlextApiSettings`, `FlextApiSseProtocolPlugin`, `FlextApiProtocolsTransports`, `FlextApiProtocolPlugins`, `FlextApiRfcProtocolImplementation` (+24 more)
-- Generated module pages: `16`
+- Primary facades: _none_
+- Generated module pages: `8`
 
 - [Back to project docs](../index.md)
