@@ -29,8 +29,6 @@
 - [Support](#support)
 <!-- TOC END -->
 
-
-
 <!-- Generated from docs/guides/development.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -38,8 +36,6 @@
 # flext-api - FLEXT Development Guide
 
 > Project profile: `flext-api`
-
-
 
 This guide covers setting up a development environment for FLEXT contributions and understanding the development workflow.
 
@@ -144,6 +140,7 @@ git push origin feature/amazing-feature
 
 ```python
 ```
+
 ## Adding New Projects
 
 ### 1. Create Project Structure
@@ -161,6 +158,7 @@ cd flext-newlib
 
 ```python
 ```
+
 ### Test Failures
 
 ```bash

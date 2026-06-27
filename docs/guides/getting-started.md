@@ -21,8 +21,6 @@
 - [What's Next](#whats-next)
 <!-- TOC END -->
 
-
-
 <!-- Generated from docs/guides/getting-started.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -30,8 +28,6 @@
 # flext-api - Getting Started with FLEXT
 
 > Project profile: `flext-api`
-
-
 
 ## What is FLEXT
 

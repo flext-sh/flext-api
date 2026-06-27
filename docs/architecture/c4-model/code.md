@@ -1,11 +1,5 @@
 # C4 Model - Code
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [Overview](#overview)
 - [Code Diagram](#code-diagram)
@@ -214,6 +208,7 @@ flext_api/
 
 ```python
 ```
+
 ### Test Fixtures and Mocks
 
 ```python

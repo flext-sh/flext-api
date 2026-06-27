@@ -32,8 +32,6 @@
 - [Resources](#resources)
 <!-- TOC END -->
 
-
-
 <!-- Generated from docs/guides/troubleshooting.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -41,8 +39,6 @@
 # flext-api - FLEXT Troubleshooting Guide
 
 > Project profile: `flext-api`
-
-
 
 This guide covers common issues, their solutions, and debugging techniques for FLEXT applications and libraries.
 
@@ -90,6 +86,7 @@ git status
 
 ```python
 ```
+
 **Check Poetry environment:**
 
 ```bash
@@ -101,12 +98,14 @@ poetry install
 
 ```python
 ```
+
 ### 3. Test Failures
 
 #### Problem: Tests failing
 
 ```python
 ```
+
 **Check test data:**
 
 ```python

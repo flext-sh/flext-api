@@ -1,11 +1,5 @@
 # Architecture Overview
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [Overview](#overview)
 - [Layer Details](#layer-details)
@@ -102,6 +96,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 ```python
 ```
+
 **Key Components:**
 
 - **FlextApiClient**: Main HTTP client implementation
@@ -117,26 +112,32 @@ FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
 ```
+
 ### Request Processing Pipeline
 
 ```python
 ```
+
 ### Storage Interface
 
 ```python
 ```
+
 ### Cache Configuration
 
 ```python
 ```
+
 ### Security Middleware
 
 ```python
 ```
+
 ### Performance Monitoring
 
 ```python
 ```
+
 ### Deployment Configuration
 
 ```python

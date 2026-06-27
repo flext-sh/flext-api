@@ -19,8 +19,6 @@
 - [Resources](#resources)
 <!-- TOC END -->
 
-
-
 <!-- Generated from docs/guides/testing.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -28,8 +26,6 @@
 # flext-api - FLEXT Testing Guide
 
 > Project profile: `flext-api`
-
-
 
 This guide covers testing strategies, best practices, and procedures for FLEXT applications and libraries.
 
@@ -64,6 +60,7 @@ Test individual functions and classes in isolation:
 
 ```python
 ```
+
 ### Parallel Test Execution
 
 ```bash
@@ -80,6 +77,7 @@ pytest -n 4
 
 ```python
 ```
+
 ### Loading Test Data
 
 ```python

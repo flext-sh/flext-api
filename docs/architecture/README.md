@@ -1,11 +1,5 @@
 # Architecture Documentation
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [📚 Documentation Structure](#documentation-structure)
 - [🏗️ Architecture Framework](#architecture-framework)

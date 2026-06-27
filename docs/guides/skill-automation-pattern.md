@@ -9,8 +9,6 @@
 - [Adoption Rule](#adoption-rule)
 <!-- TOC END -->
 
-
-
 <!-- Generated from docs/guides/skill-automation-pattern.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -18,8 +16,6 @@
 # flext-api - Skill Automation Pattern
 
 > Project profile: `flext-api`
-
-
 
 This guide defines the standard way to create reusable automation skills in this repository.
 

@@ -1,11 +1,5 @@
 # Testing Plan & Strategy
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [Overview](#overview)
 - [Test Categories & Structure](#test-categories-structure)
@@ -51,6 +45,7 @@
 
 ```python
 ```
+
 > Coverage thresholds are configured in `pyproject.toml` under `[tool.coverage.report]`.
 
 ### CI/CD Testing Integration
@@ -77,6 +72,7 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 ```python
 ```
+
 #### Test Naming Conventions
 
 ```python

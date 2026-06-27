@@ -1,11 +1,5 @@
 # HTTP Client Guide
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [HTTP Client Basics](#http-client-basics)
   - [Creating HTTP Clients](#creating-http-clients)

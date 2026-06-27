@@ -1,11 +1,5 @@
 # C4 Model - Components
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [Overview](#overview)
 - [Component Diagram](#component-diagram)

@@ -1,11 +1,5 @@
 # FLEXT-API
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [🚀 Overview](#overview)
   - [🎯 Core Features](#core-features)

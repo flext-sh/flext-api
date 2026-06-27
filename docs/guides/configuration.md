@@ -20,8 +20,6 @@
 - [Reference](#reference)
 <!-- TOC END -->
 
-
-
 <!-- Generated from docs/guides/configuration.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -29,8 +27,6 @@
 # flext-api - FLEXT Configuration Guide
 
 > Project profile: `flext-api`
-
-
 
 This guide covers how to configure FLEXT for your specific environment and requirements.
 
@@ -102,6 +98,7 @@ Configure FLEXT programmatically in your code:
 
 ```python
 ```
+
 ## Configuration Validation
 
 All configuration is validated using Pydantic v2 models:

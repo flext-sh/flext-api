@@ -1,11 +1,5 @@
 # C4 Model - Containers
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [Overview](#overview)
 - [Container Diagram](#container-diagram)

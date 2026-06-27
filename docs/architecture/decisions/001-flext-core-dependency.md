@@ -1,11 +1,5 @@
 # 001. Mandatory FLEXT-Core Dependency
 
-
-
-
-
-
-
 <!-- TOC START -->
 - [Status](#status)
 - [Context](#context)
