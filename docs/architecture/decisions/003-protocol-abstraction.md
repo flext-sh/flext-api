@@ -1,5 +1,11 @@
 # 003. Protocol Plugin Architecture
 
+
+
+
+
+
+
 <!-- TOC START -->
 - [Status](#status)
 - [Context](#context)

@@ -9,6 +9,10 @@
 - [Adoption Rule](#adoption-rule)
 <!-- TOC END -->
 
+
+
+
+
 <!-- Generated from docs/guides/skill-automation-pattern.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->

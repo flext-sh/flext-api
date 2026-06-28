@@ -1,5 +1,11 @@
 # Architecture Decision Records (ADRs)
 
+
+
+
+
+
+
 <!-- TOC START -->
 - [What are ADRs](#what-are-adrs)
 - [ADR Template](#adr-template)

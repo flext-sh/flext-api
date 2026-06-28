@@ -22,23 +22,35 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
-    from flext_api._protocols.base import FlextApiProtocolsBase
-    from flext_api._protocols.plugins import FlextApiProtocolPlugins
-    from flext_api._protocols.serialization import FlextApiProtocolsSerialization
-    from flext_api._protocols.transports import FlextApiProtocolsTransports
-    from flext_api._typings.serialization import FlextApiTypingsSerialization
-    from flext_api._utilities.client import FlextApiClient
-    from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
-    from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
-    from flext_api.api import FlextApi, api
-    from flext_api.base import FlextApiServiceBase, s
-    from flext_api.constants import FlextApiConstants, c
-    from flext_api.models import FlextApiModels, m
-    from flext_api.protocols import FlextApiProtocols, p
-    from flext_api.settings import FlextApiSettings
-    from flext_api.typings import FlextApiTypes, t
-    from flext_api.utilities import FlextApiUtilities, u
-    from flext_web import d, e, h, r, x
+    from flext_api._protocols.base import FlextApiProtocolsBase as FlextApiProtocolsBase
+    from flext_api._protocols.plugins import (
+        FlextApiProtocolPlugins as FlextApiProtocolPlugins,
+    )
+    from flext_api._protocols.serialization import (
+        FlextApiProtocolsSerialization as FlextApiProtocolsSerialization,
+    )
+    from flext_api._protocols.transports import (
+        FlextApiProtocolsTransports as FlextApiProtocolsTransports,
+    )
+    from flext_api._typings.serialization import (
+        FlextApiTypingsSerialization as FlextApiTypingsSerialization,
+    )
+    from flext_api._utilities.client import FlextApiClient as FlextApiClient
+    from flext_api._utilities.serializers import (
+        FlextApiUtilitiesSerializers as FlextApiUtilitiesSerializers,
+    )
+    from flext_api._utilities.settings_manager import (
+        FlextApiUtilitiesSettingsManager as FlextApiUtilitiesSettingsManager,
+    )
+    from flext_api.api import FlextApi as FlextApi, api as api
+    from flext_api.base import FlextApiServiceBase as FlextApiServiceBase, s as s
+    from flext_api.constants import FlextApiConstants as FlextApiConstants, c as c
+    from flext_api.models import FlextApiModels as FlextApiModels, m as m
+    from flext_api.protocols import FlextApiProtocols as FlextApiProtocols, p as p
+    from flext_api.settings import FlextApiSettings as FlextApiSettings
+    from flext_api.typings import FlextApiTypes as FlextApiTypes, t as t
+    from flext_api.utilities import FlextApiUtilities as FlextApiUtilities, u as u
+    from flext_web import d as d, e as e, h as h, r as r, x as x
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._protocols",
@@ -135,21 +147,13 @@ install_lazy_exports(
 
 __all__: list[str] = [
     "FlextApi",
-    "FlextApiClient",
     "FlextApiConstants",
     "FlextApiModels",
-    "FlextApiProtocolPlugins",
     "FlextApiProtocols",
-    "FlextApiProtocolsBase",
-    "FlextApiProtocolsSerialization",
-    "FlextApiProtocolsTransports",
     "FlextApiServiceBase",
     "FlextApiSettings",
     "FlextApiTypes",
-    "FlextApiTypingsSerialization",
     "FlextApiUtilities",
-    "FlextApiUtilitiesSerializers",
-    "FlextApiUtilitiesSettingsManager",
     "__author__",
     "__author_email__",
     "__description__",
