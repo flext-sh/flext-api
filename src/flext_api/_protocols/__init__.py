@@ -8,6 +8,14 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".base": ("FlextApiProtocolsBase",),
+        ".base_grpc": ("FlextApiProtocolsGrpc",),
+        ".base_http": ("FlextApiProtocolsHttpClient",),
+        ".base_resources": ("FlextApiProtocolsResources",),
+        ".base_serialization": ("FlextApiProtocolsSerializer",),
+        ".base_storage": ("FlextApiProtocolsStorage",),
+        ".base_transport": ("FlextApiProtocolsTransport",),
+        ".plugin_manager": ("FlextApiProtocolPluginManager",),
+        ".plugin_types": ("FlextApiProtocolPluginTypes",),
         ".plugins": ("FlextApiProtocolPlugins",),
         ".serialization": ("FlextApiProtocolsSerialization",),
         ".transports": ("FlextApiProtocolsTransports",),
@@ -15,4 +23,9 @@ _LAZY_IMPORTS = build_lazy_import_map(
 )
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
+install_lazy_exports(
+    __name__,
+    globals(),
+    _LAZY_IMPORTS,
+    publish_all=False,
+)

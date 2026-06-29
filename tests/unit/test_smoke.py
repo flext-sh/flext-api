@@ -13,9 +13,9 @@ import pytest
 
 from flext_api import (
     FlextApi,
-    FlextApiClient,
     FlextApiSettings,
 )
+from flext_api._utilities.client import FlextApiClient
 from tests import c, m, t, u
 
 

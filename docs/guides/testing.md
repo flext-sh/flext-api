@@ -176,10 +176,12 @@ def test_parse_result():
     assert entries[0].dn == "cn=test,dc=example,dc=com"
     assert "cn" in entries[0].attributes
 
+
 # ❌ BAD - Vague assertions
 def test_parse_result():
     result = ldif.parse(content)
     assert result  # Too vague```
+
 
 ### 4. Test Independence
 ```python

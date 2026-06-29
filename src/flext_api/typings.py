@@ -16,7 +16,8 @@ from collections.abc import (
     Callable,
 )
 
-from flext_api import FlextApiTypingsSerialization, c
+from flext_api import c
+from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_web import FlextWebTypes, p, t, u
 
 

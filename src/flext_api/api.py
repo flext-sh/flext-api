@@ -13,7 +13,6 @@ from __future__ import annotations
 from typing import ClassVar, override
 
 from flext_api import (
-    FlextApiClient,
     FlextApiServiceBase,
     FlextApiSettings,
     c,
@@ -23,6 +22,7 @@ from flext_api import (
     t,
     u,
 )
+from flext_api._utilities.client import FlextApiClient
 
 
 class FlextApi(FlextApiServiceBase[bool]):

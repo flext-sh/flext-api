@@ -537,6 +537,7 @@ def process(data: dict) -> ProcessedData:
    def process(items: t.SequenceOf[Item]) -> p.Result[Sequence[ProcessedItem]]:
        pass
 
+
    # ❌ BAD
    def process(items):
        pass
