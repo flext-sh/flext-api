@@ -9,7 +9,7 @@ from __future__ import annotations
 from flext_tests import FlextTestsConstants
 
 from flext_api import c
-from tests import t
+from tests.typings import t
 
 
 class TestsFlextApiConstants(FlextTestsConstants, c):
