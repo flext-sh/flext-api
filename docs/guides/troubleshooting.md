@@ -1,41 +1,3 @@
-<!-- TOC START -->
-- [Quick Diagnosis](#quick-diagnosis)
-  - [Health Check Commands](#health-check-commands)
-  - [System Status](#system-status)
-- [Common Issues](#common-issues)
-  - [1. Import Errors](#1-import-errors)
-  - [r](#r)
-  - [3. Test Failures](#3-test-failures)
-  - [4. Configuration Issues](#4-configuration-issues)
-  - [5. LDIF Processing Issues](#5-ldif-processing-issues)
-  - [6. Migration Issues](#6-migration-issues)
-  - [7. Performance Issues](#7-performance-issues)
-- [Debugging Techniques](#debugging-techniques)
-  - [1. Logging Configuration](#1-logging-configuration)
-  - [2. Exception Handling](#2-exception-handling)
-  - [3. Debug Mode](#3-debug-mode)
-  - [4. Step-by-Step Debugging](#4-step-by-step-debugging)
-- [Error Codes Reference](#error-codes-reference)
-  - [FLEXT Core Errors](#flext-core-errors)
-  - [LDIF Processing Errors](#ldif-processing-errors)
-  - [API Errors](#api-errors)
-- [Performance Troubleshooting](#performance-troubleshooting)
-  - [Memory Issues](#memory-issues)
-  - [CPU Issues](#cpu-issues)
-- [Getting Help](#getting-help)
-  - [Self-Service Resources](#self-service-resources)
-  - [Community Support](#community-support)
-  - [Reporting Issues](#reporting-issues)
-  - [Your minimal example here](#your-minimal-example-here)
-- [Prevention](#prevention)
-  - [Best Practices](#best-practices)
-- [Resources](#resources)
-<!-- TOC END -->
-
-
-
-
-
 <!-- Generated from docs/guides/troubleshooting.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -268,7 +230,6 @@ import os
 
 import psutil
 
-
 def profile_memory():
     process = psutil.Process(os.getpid())
     initial_memory = process.memory_info().rss
@@ -279,7 +240,6 @@ def profile_memory():
     memory_used = final_memory - initial_memory
 
     print(f"Memory used: {memory_used / 1024 / 1024:.2f} MB")
-
 
 profile_memory()```
 **Optimize batch size:**
@@ -321,7 +281,6 @@ logger.error("Error message")```
 
 ```python
 from flext_core import p, r
-
 
 def safe_operation(data: dict) -> p.Result[dict]:
     try:
@@ -412,7 +371,6 @@ import os
 
 import psutil
 
-
 def monitor_memory():
     process = psutil.Process(os.getpid())
     memory_info = process.memory_info()
@@ -424,7 +382,6 @@ def monitor_memory():
     if memory_info.rss > 500 * 1024 * 1024:  # 500MB
         print("WARNING: High memory usage detected")
 
-
 monitor_memory()```
 ### CPU Issues
 
@@ -434,7 +391,6 @@ import time
 
 import psutil
 
-
 def monitor_cpu():
     process = psutil.Process(os.getpid())
 
@@ -443,7 +399,6 @@ def monitor_cpu():
         cpu_percent = process.cpu_percent()
         print(f"CPU usage: {cpu_percent}%")
         time.sleep(1)
-
 
 monitor_cpu()```
 ## Getting Help
@@ -561,7 +516,6 @@ from flext_core import u
 def process(data: dict) -> p.Result[ProcessedData]:
     return r.ok(ProcessedData(**data))
 
-
 # ❌ BAD
 def process(data: dict) -> ProcessedData:
     return ProcessedData(**data)```
@@ -582,7 +536,6 @@ def process(data: dict) -> ProcessedData:
    # ✅ GOOD
    def process(items: t.SequenceOf[Item]) -> p.Result[Sequence[ProcessedItem]]:
        pass
-
 
    # ❌ BAD
    def process(items):

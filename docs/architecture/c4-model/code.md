@@ -1,25 +1,5 @@
 # C4 Model - Code
 
-
-
-
-
-
-
-<!-- TOC START -->
-- [Overview](#overview)
-- [Code Diagram](#code-diagram)
-- [Code Structure Analysis](#code-structure-analysis)
-  - [Core Module Relationships](#core-module-relationships)
-  - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-  - [Test Fixtures and Mocks](#test-fixtures-and-mocks)
-- [Performance Optimizations](#performance-optimizations)
-  - [Connection Pooling](#connection-pooling)
-  - [Response Caching](#response-caching)
-- [Security Implementation](#security-implementation)
-  - [Authentication Handlers](#authentication-handlers)
-<!-- TOC END -->
-
 ## Overview
 
 This document describes the **Code** level of the C4 model for FLEXT-API, showing the actual implementation details, class relationships, and code organization.
@@ -226,12 +206,10 @@ def mock_http_client():
     client.get.return_value = r.ok(MockHttpResponse())
     return client
 
-
 @pytest.fixture
 def test_config():
     """Test configuration fixture."""
     return FlextApiSettings(base_url="https://httpbin.org", timeout=10.0, max_retries=1)
-
 
 @pytest.fixture
 async def async_client(test_config):

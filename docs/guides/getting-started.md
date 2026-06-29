@@ -1,30 +1,3 @@
-<!-- TOC START -->
-- [What is FLEXT](#what-is-flext)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [Basic Installation](#basic-installation)
-  - [Development Installation](#development-installation)
-  - [Docker Installation](#docker-installation)
-- [Your First FLEXT Application](#your-first-flext-application)
-  - [1. Basic Setup](#1-basic-setup)
-  - [2. Using flext-ldif for LDIF Processing](#2-using-flext-ldif-for-ldif-processing)
-  - [3. Railway-Oriented Error Handling](#3-railway-oriented-error-handling)
-  - [4. CQRS Pattern with Commands and Queries](#4-cqrs-pattern-with-commands-and-queries)
-- [Configuration](#configuration)
-  - [Basic Configuration](#basic-configuration)
-  - [Programmatic Configuration](#programmatic-configuration)
-- [Next Steps](#next-steps)
-  - [Explore the Ecosystem](#explore-the-ecosystem)
-  - [Learn Key Patterns](#learn-key-patterns)
-  - [Build Real Applications](#build-real-applications)
-- [Getting Help](#getting-help)
-- [What's Next](#whats-next)
-<!-- TOC END -->
-
-
-
-
-
 <!-- Generated from docs/guides/getting-started.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -136,7 +109,6 @@ else:
 ```python
 from flext_core import p, r
 
-
 def process_ldif_data(content: str) -> p.Result[str, Exception]:
     # Parse LDIF
     parse_result = ldif.parse(content)
@@ -152,11 +124,9 @@ def process_ldif_data(content: str) -> p.Result[str, Exception]:
     except Exception as e:
         return r.failure(e)
 
-
 def process_entries(entries: list) -> str:
     # Your processing logic here
     return f"Processed {len(entries)} entries"
-
 
 # Usage
 result = process_ldif_data(ldif_content)
@@ -171,17 +141,14 @@ from dataclasses import dataclass
 
 from flext_core import FlextDispatcher, p, r
 
-
 @dataclass
 class CreateUserCommand:
     username: str
     email: str
 
-
 @dataclass
 class GetUserQuery:
     user_id: str
-
 
 class UserService:
     def create_user(self, cmd: CreateUserCommand) -> p.Result[str, Exception]:
@@ -191,7 +158,6 @@ class UserService:
     def get_user(self, query: GetUserQuery) -> p.Result[str, Exception]:
         # Get user logic
         return r.success(f"User {query.user_id} data")
-
 
 # Setup dispatcher
 dispatcher = FlextDispatcher()

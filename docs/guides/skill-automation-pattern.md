@@ -1,18 +1,3 @@
-<!-- TOC START -->
-- [Goal](#goal)
-- [Required Outputs](#required-outputs)
-- [Standard Skill Contract](#standard-skill-contract)
-- [Standard Skill Format](#standard-skill-format)
-- [Implementation Checklist](#implementation-checklist)
-- [Example (Current Pattern)](#example-current-pattern)
-- [Verification Commands](#verification-commands)
-- [Adoption Rule](#adoption-rule)
-<!-- TOC END -->
-
-
-
-
-
 <!-- Generated from docs/guides/skill-automation-pattern.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->

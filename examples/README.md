@@ -21,8 +21,7 @@ from __future__ import annotations
 
 from typing import override
 
-from examples import c, m, p, r, s, t, u
-from flext_api import FlextApi
+from flext_api import FlextApi, c, m, p, r, s, t, u
 
 
 class FlextApiExamplesDemo(s[t.JsonMapping]):

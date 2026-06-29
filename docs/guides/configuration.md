@@ -1,29 +1,3 @@
-<!-- TOC START -->
-- [Overview](#overview)
-- [Configuration Sources](#configuration-sources)
-- [Basic Configuration](#basic-configuration)
-  - [Environment Variables](#environment-variables)
-  - [Configuration Files](#configuration-files)
-  - [Programmatic Configuration](#programmatic-configuration)
-- [Configuration Validation](#configuration-validation)
-- [Configuration Inheritance](#configuration-inheritance)
-- [Best Practices](#best-practices)
-  - [1. Use Environment Variables for Secrets](#1-use-environment-variables-for-secrets)
-  - [2. Validate Configuration Early](#2-validate-configuration-early)
-  - [3. Use Configuration Classes](#3-use-configuration-classes)
-  - [4. Document Configuration Options](#4-document-configuration-options)
-- [Troubleshooting](#troubleshooting)
-  - [Common Configuration Issues](#common-configuration-issues)
-  - [Debug Configuration](#debug-configuration)
-- [Examples](#examples)
-  - [Complete Configuration Example](#complete-configuration-example)
-- [Reference](#reference)
-<!-- TOC END -->
-
-
-
-
-
 <!-- Generated from docs/guides/configuration.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -145,7 +119,6 @@ export FLEXT_API_KEY=your_api_key```
 ```python
 from flext_core import FlextSettings
 
-
 def main():
     # Validate configuration at startup
     settings = FlextSettings()
@@ -160,7 +133,6 @@ def main():
 
 ```python
 from flext_core import FlextSettings, u
-
 
 class MyAppConfig(FlextSettings):
     custom_setting: str = "default_value"
@@ -240,7 +212,6 @@ from flext_core import (
     FlextSettings,
 )
 
-
 def main():
     # Load configuration from environment
     settings = FlextSettings()
@@ -262,7 +233,6 @@ def main():
     print(f"Log level: {settings.log_level}")
     print(f"LDIF batch size: {ldif_config.batch_size}")
     print(f"API base URL: {api_config.base_url}")
-
 
 if __name__ == "__main__":
     main()```

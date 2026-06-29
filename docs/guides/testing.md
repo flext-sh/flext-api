@@ -1,28 +1,3 @@
-<!-- TOC START -->
-- [Overview](#overview)
-- [Test Structure](#test-structure)
-- [Test Categories](#test-categories)
-  - [Unit Tests](#unit-tests)
-  - [Parallel Test Execution](#parallel-test-execution)
-- [Test Fixtures](#test-fixtures)
-  - [Pytest Fixtures](#pytest-fixtures)
-  - [Loading Test Data](#loading-test-data)
-- [Continuous Integration](#continuous-integration)
-  - [GitHub Actions Workflow](#github-actions-workflow)
-- [Best Practices](#best-practices)
-  - [1. Test Naming](#1-test-naming)
-  - [2. Test Organization](#2-test-organization)
-  - [3. Assertion Quality](#3-assertion-quality)
-  - [4. Test Independence](#4-test-independence)
-- [Troubleshooting](#troubleshooting)
-  - [Common Test Issues](#common-test-issues)
-- [Resources](#resources)
-<!-- TOC END -->
-
-
-
-
-
 <!-- Generated from docs/guides/testing.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->
@@ -88,18 +63,15 @@ pytest -n 4
 import json
 from pathlib import Path
 
-
 def load_test_fixture(fixture_name: str) -> str:
     """Load test fixture from fixtures directory."""
     fixture_path = Path(__file__).parent / "fixtures" / fixture_name
     return fixture_path.read_text()
 
-
 def load_json_fixture(fixture_name: str) -> t.JsonMapping:
     """Load JSON test fixture."""
     fixture_path = Path(__file__).parent / "fixtures" / fixture_name
     return json.loads(fixture_path.read_text())
-
 
 # Usage
 def test_with_fixture():
@@ -157,16 +129,13 @@ def test_parse_valid_ldif_returns_success():
     """Test that parsing valid LDIF returns success result."""
     pass
 
-
 def test_parse_invalid_ldif_returns_failure():
     """Test that parsing invalid LDIF returns failure result."""
     pass
 
-
 # ❌ BAD - Vague test names
 def test_parse():
     pass
-
 
 def test_ldif():
     pass```
@@ -188,7 +157,6 @@ class TestLdifParsing:
         """Test parsing invalid LDIF format."""
         pass
 
-
 class TestLdifMigration:
     """Test LDIF migration functionality."""
 
@@ -208,13 +176,12 @@ def test_parse_result():
     assert entries[0].dn == "cn=test,dc=example,dc=com"
     assert "cn" in entries[0].attributes
 
-
 # ❌ BAD - Vague assertions
 def test_parse_result():
     result = ldif.parse(content)
     assert result  # Too vague```
-### 4. Test Independence
 
+### 4. Test Independence
 ```python
 # ✅ GOOD - Independent tests
 def test_parse_valid_ldif():
@@ -222,21 +189,17 @@ def test_parse_valid_ldif():
     result = ldif.parse("dn: test")
     assert result.success
 
-
 def test_parse_invalid_ldif():
     ldif = ldif()  # Fresh instance
     result = ldif.parse("invalid")
     assert result.failure
 
-
 # ❌ BAD - Dependent tests
 ldif = ldif()  # Shared instance
-
 
 def test_parse_valid_ldif():
     result = ldif.parse("dn: test")
     assert result.success
-
 
 def test_parse_invalid_ldif():
     result = ldif.parse("invalid")

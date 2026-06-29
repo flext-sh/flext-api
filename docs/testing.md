@@ -1,31 +1,5 @@
 # Testing Plan & Strategy
 
-
-
-
-
-
-
-<!-- TOC START -->
-- [Overview](#overview)
-- [Test Categories & Structure](#test-categories-structure)
-  - [1. Unit Tests (Primary Focus)](#1-unit-tests-primary-focus)
-  - [CI/CD Testing Integration](#cicd-testing-integration)
-- [Performance & Load Testing](#performance-load-testing)
-  - [HTTP Performance Benchmarks](#http-performance-benchmarks)
-  - [Test Data Management](#test-data-management)
-- [Testing Roadmap](#testing-roadmap)
-  - [Phase 1: Foundation (Current - 28% → 75%)](#phase-1-foundation-current-28-75)
-  - [Phase 2: Advanced Testing (Future)](#phase-2-advanced-testing-future)
-- [Success Metrics](#success-metrics)
-  - [Quantitative Metrics](#quantitative-metrics)
-  - [Qualitative Metrics](#qualitative-metrics)
-- [Risk Mitigation](#risk-mitigation)
-  - [Test Reliability Risks](#test-reliability-risks)
-  - [Coverage Gaps](#coverage-gaps)
-  - [Maintenance Overhead](#maintenance-overhead)
-<!-- TOC END -->
-
 ## Overview
 
 **Current Status**: 23 tests passing, 76 failing (28% pass rate) · Target: 75%+ coverage with real HTTP functionality
@@ -101,14 +75,12 @@ def test_system_interaction():```
 TEST_BASE_URL = "https://httpbin.org"
 TEST_TIMEOUT = 5.0
 
-
 # Test data factories
 def create_test_user_data(**overrides):
     """Create test user data with defaults."""
     base = {"name": "Test User", "email": "test@example.com", "age": 30}
     base.update(overrides)
     return base
-
 
 # Parameterized test data
 VALID_HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"]

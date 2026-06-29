@@ -1,34 +1,5 @@
 # FLEXT-API
 
-
-
-
-
-
-
-<!-- TOC START -->
-- [🚀 Overview](#overview)
-  - [🎯 Core Features](#core-features)
-  - [🏢 Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
-- [🏗️ Current Source Structure](#current-source-structure)
-  - [🎯 Key Architectural Patterns](#key-architectural-patterns)
-- [📚 Documentation Structure](#documentation-structure)
-  - [🏗️ Architecture & Design](#architecture-design)
-  - [🔧 Development & Integration](#development-integration)
-- [🚀 Quick Start](#quick-start)
-  - [Installation](#installation)
-  - [Basic HTTP Client Usage](#basic-http-client-usage)
-  - [FastAPI Application Setup](#fastapi-application-setup)
-- [🧪 Testing](#testing)
-- [📈 Current Status](#current-status)
-  - [🎯 Production Readiness](#production-readiness)
-- [🤝 Contributing](#contributing)
-- [📋 Roadmap](#roadmap)
-  - [Immediate (Next Release)](#immediate-next-release)
-  - [Short-term (Next Month)](#short-term-next-month)
-  - [Long-term (Next Quarter)](#long-term-next-quarter)
-<!-- TOC END -->
-
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Current](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
@@ -154,20 +125,22 @@ pip install flext-api
 ### Basic HTTP Client Usage
 
 ```python
-from flext_api import FlextApiClient, FlextApiSettings
+from flext_api import FlextApi, FlextApiSettings
 
 # Configure client
 settings = FlextApiSettings(base_url="https://api.example.com")
-client = FlextApiClient(settings)
+api = FlextApi(settings=settings)
 
 # Make requests with automatic error handling
-result = client.get("/users")
-if result.success():
+result = api.get("/users")
+if result.success:
     users = result.unwrap()
     print(f"Found {len(users)} users")
 else:
-    error = result.unwrap_failure()
-    print(f"Error: {error}")```
+    error = result.error or "unknown error"
+    print(f"Error: {error}")
+```
+
 ### FastAPI Application Setup
 
 ```python
@@ -177,11 +150,12 @@ from flext_api import FlextApiSettings, create_fastapi_app
 settings = FlextApiSettings(title="My API", version="1.0.0")
 app = create_fastapi_app(settings)
 
-
 # Add your routes
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}```
+    return {"status": "healthy"}
+```
+
 ______________________________________________________________________
 
 ## 🧪 Testing
@@ -196,7 +170,9 @@ pytest --cov=flext_api --cov-report=html
 # Run specific test categories
 pytest tests/unit/        # Unit tests
 pytest tests/integration/ # Integration tests
-pytest tests/e2e/         # End-to-end tests```
+pytest tests/e2e/         # End-to-end tests
+```
+
 **Current Coverage**: 100% test pass rate, MyPy strict mode passes
 
 ______________________________________________________________________

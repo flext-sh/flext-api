@@ -1,38 +1,3 @@
-<!-- TOC START -->
-- [Prerequisites](#prerequisites)
-- [Development Environment Setup](#development-environment-setup)
-  - [1. Clone the Repository](#1-clone-the-repository)
-  - [2. Install Dependencies](#2-install-dependencies)
-  - [3. Verify Installation](#3-verify-installation)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-  - [1. Create a Feature Branch](#1-create-a-feature-branch)
-  - [2. Make Changes](#2-make-changes)
-  - [3. Run Quality Gates](#3-run-quality-gates)
-  - [4. Commit Changes](#4-commit-changes)
-- [Code Standards](#code-standards)
-  - [Type Safety (ZERO TOLERANCE)](#type-safety-zero-tolerance)
-- [Adding New Projects](#adding-new-projects)
-  - [1. Create Project Structure](#1-create-project-structure)
-  - [2. Implement Core Patterns](#2-implement-core-patterns)
-  - [Test Failures](#test-failures)
-  - [Import Issues](#import-issues)
-- [Documentation](#documentation)
-  - [Code Documentation](#code-documentation)
-  - [README Updates](#readme-updates)
-- [Contributing](#contributing)
-  - [Pull Request Process](#pull-request-process)
-  - [Code Review Guidelines](#code-review-guidelines)
-- [Troubleshooting](#troubleshooting)
-  - [Common Issues](#common-issues)
-- [Resources](#resources)
-- [Support](#support)
-<!-- TOC END -->
-
-
-
-
-
 <!-- Generated from docs/guides/development.md for flext-api. -->
 
 <!-- Source of truth: workspace docs/guides/. -->

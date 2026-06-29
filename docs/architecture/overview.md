@@ -1,39 +1,5 @@
 # Architecture Overview
 
-
-
-
-
-
-
-<!-- TOC START -->
-- [Overview](#overview)
-- [Layer Details](#layer-details)
-  - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
-  - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
-- [Protocol Plugin System](#protocol-plugin-system)
-  - [Protocol Registry](#protocol-registry)
-  - [Request Processing Pipeline](#request-processing-pipeline)
-  - [Storage Interface](#storage-interface)
-  - [Cache Configuration](#cache-configuration)
-  - [Security Middleware](#security-middleware)
-  - [Performance Monitoring](#performance-monitoring)
-  - [Deployment Configuration](#deployment-configuration)
-  - [Kubernetes Deployment](#kubernetes-deployment)
-- [Quality Metrics](#quality-metrics)
-  - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
-  - [Coverage by Layer](#coverage-by-layer)
-- [Extension Points](#extension-points)
-  - [Adding New Protocols](#adding-new-protocols)
-  - [Custom Middleware](#custom-middleware)
-- [Performance Considerations](#performance-considerations)
-  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
-  - [Monitoring and Optimization](#monitoring-and-optimization)
-- [Migration Guidelines](#migration-guidelines)
-  - [Version Compatibility](#version-compatibility)
-- [References](#references)
-<!-- TOC END -->
-
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
 
 ## Overview
@@ -233,7 +199,6 @@ spec:
 ```python
 from flext_api import Base
 
-
 class CustomBase
     """Custom protocol implementation."""
 
@@ -246,7 +211,6 @@ class CustomBase
         # Custom protocol implementation
         pass
 
-
 # Register new protocol
 registry = ProtocolRegistry()
 registry.register("custom", Custom```
@@ -254,7 +218,6 @@ registry.register("custom", Custom```
 
 ```python
 from flext_api import FlextApiMiddleware
-
 
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""
@@ -268,7 +231,6 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
         }
 
         return r[dict].ok({})
-
 
 # Register middleware
 app.add_middleware(CustomBusinessMiddleware())```
@@ -308,7 +270,6 @@ async def setup_monitoring():
 
     # Setup tracing
     tracer.setup(service_name="flext-api")
-
 
 # Performance metrics endpoint
 @app.get("/metrics")
