@@ -4,22 +4,14 @@
 from __future__ import annotations
 
 from flext_api._exports_lazy_part_01 import FLEXT_API_LAZY_IMPORTS_PART_01
-from flext_api._exports_lazy_part_02 import FLEXT_API_LAZY_IMPORTS_PART_02
 from flext_core.lazy import merge_lazy_imports
 
 _LOCAL_LAZY_IMPORTS = {
     **FLEXT_API_LAZY_IMPORTS_PART_01,
-    **FLEXT_API_LAZY_IMPORTS_PART_02,
 }
 
 FLEXT_API_LAZY_IMPORTS = merge_lazy_imports(
-    (
-        "._constants",
-        "._models",
-        "._protocols",
-        "._typings",
-        "._utilities",
-    ),
+    (),
     _LOCAL_LAZY_IMPORTS,
     exclude_names=(
         "cleanup_submodule_namespace",
