@@ -8,6 +8,12 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_api._protocols._transports_config import (
+        FlextApiTransportsConfigMixin as FlextApiTransportsConfigMixin,
+    )
+    from flext_api._protocols._transports_request import (
+        FlextApiTransportsRequestMixin as FlextApiTransportsRequestMixin,
+    )
     from flext_api._protocols.base import FlextApiProtocolsBase as FlextApiProtocolsBase
     from flext_api._protocols.base_grpc import (
         FlextApiProtocolsGrpc as FlextApiProtocolsGrpc,
@@ -44,6 +50,8 @@ if TYPE_CHECKING:
     )
 _LAZY_IMPORTS = build_lazy_import_map(
     {
+        "._transports_config": ("FlextApiTransportsConfigMixin",),
+        "._transports_request": ("FlextApiTransportsRequestMixin",),
         ".base": ("FlextApiProtocolsBase",),
         ".base_grpc": ("FlextApiProtocolsGrpc",),
         ".base_http": ("FlextApiProtocolsHttpClient",),

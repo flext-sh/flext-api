@@ -35,6 +35,9 @@ if TYPE_CHECKING:
         TestsFlextApiSerializers as TestsFlextApiSerializers,
     )
     from tests.unit.test_smoke import TestsFlextApiSmoke as TestsFlextApiSmoke
+    from tests.unit.test_transports_characterization import (
+        TestsFlextApiTransportsCharacterization as TestsFlextApiTransportsCharacterization,
+    )
     from tests.utilities import TestsFlextApiUtilities as TestsFlextApiUtilities, u as u
 _LAZY_IMPORTS = merge_lazy_imports(
     (".unit",),
@@ -65,6 +68,9 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".unit": ("unit",),
             ".unit.test_serializers": ("TestsFlextApiSerializers",),
             ".unit.test_smoke": ("TestsFlextApiSmoke",),
+            ".unit.test_transports_characterization": (
+                "TestsFlextApiTransportsCharacterization",
+            ),
             ".utilities": (
                 "TestsFlextApiUtilities",
                 "u",
