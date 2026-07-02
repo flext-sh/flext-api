@@ -121,12 +121,12 @@
 
 ### r Integration
 
-| Component        | Status | Coverage                               |
-| ---------------- | ------ | -------------------------------------- |
-| HTTP Client      | ✅ 90% | All operations return r[T]   |
-| Model Validation | ✅ 80% | Domain models use r patterns |
-| Configuration    | ⚠️ 60% | Partial integration, some gaps         |
-| Error Handling   | ✅ 85% | Railway patterns throughout            |
+| Component        | Status | Coverage                       |
+| ---------------- | ------ | ------------------------------ |
+| HTTP Client      | ✅ 90% | All operations return r[T]     |
+| Model Validation | ✅ 80% | Domain models use r patterns   |
+| Configuration    | ⚠️ 60% | Partial integration, some gaps |
+| Error Handling   | ✅ 85% | Railway patterns throughout    |
 
 ## Quality Metrics
 
