@@ -7,75 +7,34 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_api.protocol_impls._lazy_exports import (
+    __all__ as __all__,
+    __dir__ as __dir__,
+    __getattr__ as __getattr__,
+)
 
 if TYPE_CHECKING:
-    from flext_api.protocol_impls.base import BaseProtocolImplementation
-    from flext_api.protocol_impls.http import FlextWebProtocolPlugin
-    from flext_api.protocol_impls.http_client import FlextWebClientImplementation
-    from flext_api.protocol_impls.logger import LoggerProtocolImplementation
-    from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-    from flext_api.protocol_impls.sse import SSEProtocolPlugin
-    from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
-    from flext_api.protocol_impls.websocket import WebSocketProtocolPlugin
-
-# Lazy import mapping: export_name -> (module_path, attr_name)
-_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "BaseProtocolImplementation": (
-        "flext_api.protocol_impls.base",
-        "BaseProtocolImplementation",
-    ),
-    "FlextWebClientImplementation": (
-        "flext_api.protocol_impls.http_client",
-        "FlextWebClientImplementation",
-    ),
-    "FlextWebProtocolPlugin": (
-        "flext_api.protocol_impls.http",
-        "FlextWebProtocolPlugin",
-    ),
-    "LoggerProtocolImplementation": (
-        "flext_api.protocol_impls.logger",
-        "LoggerProtocolImplementation",
-    ),
-    "RFCProtocolImplementation": (
-        "flext_api.protocol_impls.rfc",
-        "RFCProtocolImplementation",
-    ),
-    "SSEProtocolPlugin": ("flext_api.protocol_impls.sse", "SSEProtocolPlugin"),
-    "StorageBackendImplementation": (
-        "flext_api.protocol_impls.storage_backend",
-        "StorageBackendImplementation",
-    ),
-    "WebSocketProtocolPlugin": (
-        "flext_api.protocol_impls.websocket",
-        "WebSocketProtocolPlugin",
-    ),
-}
-
-__all__ = [
-    "BaseProtocolImplementation",
-    "FlextWebClientImplementation",
-    "FlextWebProtocolPlugin",
-    "LoggerProtocolImplementation",
-    "RFCProtocolImplementation",
-    "SSEProtocolPlugin",
-    "StorageBackendImplementation",
-    "WebSocketProtocolPlugin",
-]
-
-
-def __getattr__(
-    name: str,
-) -> Any:  # JUSTIFIED: Ruff (any-type) with PEP 562 dynamic module exports — https://docs.astral.sh/ruff/rules/any-type/
-    """Lazy-load module attributes on first access (PEP 562)."""
-    return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-
-
-def __dir__() -> list[str]:
-    """Return list of available attributes for dir() and autocomplete."""
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+    from flext_api.protocol_impls.base import (
+        BaseProtocolImplementation as BaseProtocolImplementation,
+    )
+    from flext_api.protocol_impls.http import (
+        FlextWebProtocolPlugin as FlextWebProtocolPlugin,
+    )
+    from flext_api.protocol_impls.http_client import (
+        FlextWebClientImplementation as FlextWebClientImplementation,
+    )
+    from flext_api.protocol_impls.logger import (
+        LoggerProtocolImplementation as LoggerProtocolImplementation,
+    )
+    from flext_api.protocol_impls.rfc import (
+        RFCProtocolImplementation as RFCProtocolImplementation,
+    )
+    from flext_api.protocol_impls.sse import SSEProtocolPlugin as SSEProtocolPlugin
+    from flext_api.protocol_impls.storage_backend import (
+        StorageBackendImplementation as StorageBackendImplementation,
+    )
+    from flext_api.protocol_impls.websocket import (
+        WebSocketProtocolPlugin as WebSocketProtocolPlugin,
+    )
