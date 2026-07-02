@@ -29,7 +29,7 @@ from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from flext_api import m, t
 
-_JSON_VALUE_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_VALUE_ADAPTER: TypeAdapter[t.ApiJsonValue] = TypeAdapter(t.ApiJsonValue)
 _STORAGE_ENTRY_ADAPTER: TypeAdapter[dict[str, t.ApiJsonValue]] = TypeAdapter(
     dict[str, t.ApiJsonValue]
 )
@@ -153,9 +153,10 @@ class FlextApiStorage:
             self._cleanup_expired()
             return initial_size - len(self._storage)
 
-        return u.try_(
-            _cleanup, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(lambda e: f"Cleanup failed: {e}")
+        try:
+            return r[int].ok(_cleanup())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[int].fail(f"Cleanup failed: {exc}")
 
     def clear(self) -> r[bool]:
         """Clear all storage."""
@@ -182,10 +183,16 @@ class FlextApiStorage:
 
     def deserialize_json(self, json_str: str) -> r[t.ApiJsonValue]:
         """Deserialize from JSON using Pydantic TypeAdapter."""
-        return u.try_(
-            lambda: _JSON_VALUE_ADAPTER.validate_json(json_str),
-            catch=(ValueError, TypeError, KeyError, ConnectionError, ValidationError),
-        ).map_error(lambda e: f"JSON deserialization failed: {e}")
+        try:
+            return r[t.ApiJsonValue].ok(_JSON_VALUE_ADAPTER.validate_json(json_str))
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            ConnectionError,
+            ValidationError,
+        ) as exc:
+            return r[t.ApiJsonValue].fail(f"JSON deserialization failed: {exc}")
 
     def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
         """Service lifecycle execution."""
@@ -245,9 +252,10 @@ class FlextApiStorage:
                 "misses": self._stats.cache_misses,
             }
 
-        return u.try_(
-            _get_stats, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(str)
+        try:
+            return r[t.Api.CacheDict].ok(_get_stats())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[t.Api.CacheDict].fail(str(exc))
 
     def get_storage_metrics(self) -> r[t.Api.MetricsDict]:
         """Get complete storage metrics."""
@@ -259,9 +267,10 @@ class FlextApiStorage:
                 "cache_misses": self._stats.cache_misses,
             }
 
-        return u.try_(
-            _get_metrics, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(str)
+        try:
+            return r[t.Api.MetricsDict].ok(_get_metrics())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[t.Api.MetricsDict].fail(str(exc))
 
     def get_storage_statistics(self) -> r[Mapping[str, float]]:
         """Get storage statistics with hit ratio calculation."""
@@ -281,9 +290,10 @@ class FlextApiStorage:
                 "memory_usage": float(len(str(self._storage))),
             }
 
-        return u.try_(
-            _get_statistics, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(str)
+        try:
+            return r[Mapping[str, float]].ok(_get_statistics())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[Mapping[str, float]].fail(str(exc))
 
     def health_check(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Perform health check with metrics."""
@@ -297,9 +307,10 @@ class FlextApiStorage:
                 "operations_count": self._operations_count,
             }
 
-        return u.try_(
-            _check_health, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(str)
+        try:
+            return r[Mapping[str, t.ApiJsonValue]].ok(_check_health())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(exc))
 
     def info(self) -> r[Mapping[str, t.ApiJsonValue]]:
         """Get storage information using Pydantic model."""
@@ -315,9 +326,10 @@ class FlextApiStorage:
                 "operations_count": self._operations_count,
             }
 
-        return u.try_(
-            _get_info, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(str)
+        try:
+            return r[Mapping[str, t.ApiJsonValue]].ok(_get_info())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(exc))
 
     def items(self) -> r[list[tuple[str, t.ApiJsonValue]]]:
         """Get all key-value pairs."""
@@ -361,16 +373,18 @@ class FlextApiStorage:
             }
             return stats_dict
 
-        return u.try_(
-            _get_metrics, catch=(ValueError, TypeError, KeyError, ConnectionError)
-        ).map_error(str)
+        try:
+            return r[Mapping[str, t.ApiJsonValue]].ok(_get_metrics())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[Mapping[str, t.ApiJsonValue]].fail(str(exc))
 
     def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using Pydantic TypeAdapter."""
-        return u.try_(
-            lambda: _JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8"),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"JSON serialization failed: {e}")
+        try:
+            serialized = _JSON_VALUE_ADAPTER.dump_json(data).decode("utf-8")
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[str].fail(f"JSON serialization failed: {exc}")
+        return r[str].ok(serialized)
 
     def set(
         self,
@@ -389,18 +403,15 @@ class FlextApiStorage:
             if ttl is not None
             else self._default_ttl
         )
-        metadata_result = u.try_(
-            lambda: m.Storage.Metadata(
+        try:
+            metadata = m.Storage.Metadata(
                 value=value,
                 timestamp=u.generate_iso_timestamp(),
                 ttl=ttl_val,
                 created_at=time.time(),
-            ),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Metadata validation failed: {e}")
-        if metadata_result.is_failure:
-            return r[bool].fail(metadata_result.error)
-        metadata = metadata_result.value
+            )
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[bool].fail(f"Metadata validation failed: {exc}")
         json_value = value
         self._storage[key] = json_value
         value_json = metadata.value
@@ -518,24 +529,20 @@ class FlextApiStorage:
         The caller should check for -1 to determine if default_ttl was not set.
         """
         if default_ttl_val is not None:
-            ttl_result = u.try_(
-                lambda: int(str(default_ttl_val)), catch=(ValueError, TypeError)
-            ).map_error(lambda e: f"Invalid default_ttl value: {e}")
-            if ttl_result.is_failure:
-                return ttl_result
-            ttl_int = ttl_result.value
+            try:
+                ttl_int = int(str(default_ttl_val))
+            except (ValueError, TypeError) as exc:
+                return r[int].fail(f"Invalid default_ttl value: {exc}")
             if ttl_int > 0:
                 return r[int].ok(ttl_int)
             return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
         if "default_ttl" in config_dict:
             default_ttl_config = config_dict["default_ttl"]
             if default_ttl_config is not None:
-                ttl_result = u.try_(
-                    lambda: int(str(default_ttl_config)), catch=(ValueError, TypeError)
-                ).map_error(lambda e: f"Invalid default_ttl value: {e}")
-                if ttl_result.is_failure:
-                    return ttl_result
-                ttl_int = ttl_result.value
+                try:
+                    ttl_int = int(str(default_ttl_config))
+                except (ValueError, TypeError) as exc:
+                    return r[int].fail(f"Invalid default_ttl value: {exc}")
                 if ttl_int > 0:
                     return r[int].ok(ttl_int)
                 return r[int].fail(f"Default TTL must be positive, got: {ttl_int}")
@@ -564,24 +571,20 @@ class FlextApiStorage:
         The caller should check for -1 to determine if max_size was not set.
         """
         if max_size_val is not None:
-            max_size_result = u.try_(
-                lambda: int(str(max_size_val)), catch=(ValueError, TypeError)
-            ).map_error(lambda e: f"Invalid max_size value: {e}")
-            if max_size_result.is_failure:
-                return max_size_result
-            max_size_int = max_size_result.value
+            try:
+                max_size_int = int(str(max_size_val))
+            except (ValueError, TypeError) as exc:
+                return r[int].fail(f"Invalid max_size value: {exc}")
             if max_size_int > 0:
                 return r[int].ok(max_size_int)
             return r[int].fail(f"Max size must be positive, got: {max_size_int}")
         if "max_size" in config_dict:
             max_size_config = config_dict["max_size"]
             if max_size_config is not None:
-                max_size_result = u.try_(
-                    lambda: int(str(max_size_config)), catch=(ValueError, TypeError)
-                ).map_error(lambda e: f"Invalid max_size value: {e}")
-                if max_size_result.is_failure:
-                    return max_size_result
-                max_size_int = max_size_result.value
+                try:
+                    max_size_int = int(str(max_size_config))
+                except (ValueError, TypeError) as exc:
+                    return r[int].fail(f"Invalid max_size value: {exc}")
                 if max_size_int > 0:
                     return r[int].ok(max_size_int)
                 return r[int].fail(f"Max size must be positive, got: {max_size_int}")
