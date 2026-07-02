@@ -26,10 +26,10 @@ from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
 
-def _is_container_value(value: t.ContainerValue) -> TypeGuard[object]:
+def _is_container_value(value: t.ContainerValue) -> TypeGuard[t.ContainerValue]:
     return isinstance(value, (str, int, float, bool, type(None), list, Mapping))
 
 
@@ -245,23 +245,37 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return ""
         return str(info["title"])
 
-    def _load_schema_document(self, schema_source: str) -> r[object]:
+    def _load_schema_document(self, schema_source: str) -> r[t.ContainerValue]:
         schema_path = Path(schema_source)
         if not schema_path.exists() or not schema_path.is_file():
-            return r[object].fail(f"Schema file not found: {schema_source}")
+            return r[t.ContainerValue].fail(f"Schema file not found: {schema_source}")
         suffix = schema_path.suffix.lower()
         try:
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
-                    return u.try_(lambda: yaml.safe_load(schema_file)).map_error(
-                        lambda e: f"Failed to parse YAML schema: {e}"
+                    try:
+                        yaml_value = _JSON_OBJECT_ADAPTER.validate_python(
+                            yaml.safe_load(schema_file)
+                        )
+                    except (
+                        ValidationError,
+                        TypeError,
+                        ValueError,
+                        yaml.YAMLError,
+                    ) as exc:
+                        return r[t.ContainerValue].fail(
+                            f"Failed to parse YAML schema: {exc}"
+                        )
+                    return r[t.ContainerValue].ok(yaml_value)
+                try:
+                    json_value = _JSON_OBJECT_ADAPTER.validate_json(schema_file.read())
+                except ValidationError as exc:
+                    return r[t.ContainerValue].fail(
+                        f"Failed to parse JSON schema: {exc}"
                     )
-                return u.try_(
-                    lambda: _JSON_OBJECT_ADAPTER.validate_json(schema_file.read()),
-                    catch=ValidationError,
-                ).map_error(lambda e: f"Failed to parse JSON schema: {e}")
+                return r[t.ContainerValue].ok(json_value)
         except OSError as e:
-            return r[object].fail(f"Failed to read schema file: {e}")
+            return r[t.ContainerValue].fail(f"Failed to read schema file: {e}")
 
     def _normalize_json_object(
         self, value: Mapping[str, t.ContainerValue]
