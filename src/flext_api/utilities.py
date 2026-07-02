@@ -57,7 +57,7 @@ class FlextApiUtilities(FlextWebUtilities):
             """Annotated type factories."""
 
             @staticmethod
-            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> t.ContainerValue:
+            def coerced_enum[E: StrEnum](enum_cls: type[E]) -> type[E]:
                 """Create Annotated type with automatic enum coercion."""
                 return Annotated[
                     enum_cls,

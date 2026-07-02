@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import cbor2
-from flext_core import r, u
+from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t
@@ -145,9 +145,11 @@ class FlextApiAdapters:
             """Convert JSON data to MessagePack format."""
             try:
                 packed_data = FlextApiSerializers.MessagePack.packb(data)
-                return u.try_(
-                    lambda: bytes(packed_data), catch=(TypeError, ValueError)
-                ).map_error(lambda _: "MessagePack.packb did not return bytes")
+                try:
+                    packed_bytes = bytes(packed_data)
+                except (TypeError, ValueError):
+                    return r[bytes].fail("MessagePack.packb did not return bytes")
+                return r[bytes].ok(packed_bytes)
             except (ValueError, TypeError, KeyError, ConnectionError) as e:
                 return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
 
