@@ -14,12 +14,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TypeGuard
 
-from flext_core import r, u
+from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api import m, t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
 
 def _is_object_mapping(
@@ -144,15 +144,12 @@ class FlextApiSettingsManager:
         if isinstance(max_retries_raw, int):
             max_retries_value = max_retries_raw
         elif isinstance(max_retries_raw, float | str):
-            retries_result = u.try_(
-                lambda: int(max_retries_raw),
-                catch=(ValueError, TypeError),
-            ).map_error(
-                lambda _e: f"Max retries must be a valid integer: {max_retries_raw}"
-            )
-            if retries_result.is_failure:
-                return retries_result
-            max_retries_value = retries_result.value
+            try:
+                max_retries_value = int(max_retries_raw)
+            except (ValueError, TypeError):
+                return r[int].fail(
+                    f"Max retries must be a valid integer: {max_retries_raw}"
+                )
         else:
             return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
         if max_retries_value < 0:
@@ -171,15 +168,12 @@ class FlextApiSettingsManager:
         if isinstance(timeout_value_raw, int | float):
             timeout_value = float(timeout_value_raw)
         elif isinstance(timeout_value_raw, str):
-            timeout_result = u.try_(
-                lambda: float(timeout_value_raw),
-                catch=ValueError,
-            ).map_error(
-                lambda _e: f"Timeout must be a valid number: {timeout_value_raw}"
-            )
-            if timeout_result.is_failure:
-                return timeout_result
-            timeout_value = timeout_result.value
+            try:
+                timeout_value = float(timeout_value_raw)
+            except ValueError:
+                return r[float].fail(
+                    f"Timeout must be a valid number: {timeout_value_raw}"
+                )
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
         if timeout_value <= 0:
@@ -196,46 +190,33 @@ class FlextApiSettingsManager:
         if isinstance(timeout_raw, int | float):
             timeout_value = float(timeout_raw)
         elif isinstance(timeout_raw, str):
-            timeout_result = u.try_(
-                lambda: float(timeout_raw),
-                catch=ValueError,
-            ).map_error(lambda _e: f"Timeout must be a valid number: {timeout_raw}")
-            if timeout_result.is_failure:
-                return timeout_result
-            timeout_value = timeout_result.value
+            try:
+                timeout_value = float(timeout_raw)
+            except ValueError:
+                return r[float].fail(f"Timeout must be a valid number: {timeout_raw}")
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_raw)}")
         if timeout_value <= 0:
             return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
         return r[float].ok(timeout_value)
 
-    def _normalize_value(self, key: str, *, value: str | float | bool) -> r[object]:
+    def _normalize_value(
+        self, key: str, *, value: str | float | bool
+    ) -> r[t.ApiJsonValue]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
-            timeout_result = u.try_(
-                lambda: float(value),
-                catch=ValueError,
-            ).map_error(lambda _e: f"Invalid timeout value: {value}")
-            return timeout_result.fold(
-                on_failure=lambda e: r[object].fail(
-                    e or f"Invalid timeout value: {value}"
-                ),
-                on_success=lambda v: r[object].ok(v),
-            )
+            try:
+                return r[t.ApiJsonValue].ok(float(value))
+            except ValueError:
+                return r[t.ApiJsonValue].fail(f"Invalid timeout value: {value}")
         if key == "max_retries" and isinstance(value, str):
-            retries_result = u.try_(
-                lambda: int(value),
-                catch=ValueError,
-            ).map_error(lambda _e: f"Invalid max_retries value: {value}")
-            return retries_result.fold(
-                on_failure=lambda e: r[object].fail(
-                    e or f"Invalid max_retries value: {value}"
-                ),
-                on_success=lambda v: r[object].ok(v),
-            )
+            try:
+                return r[t.ApiJsonValue].ok(int(value))
+            except ValueError:
+                return r[t.ApiJsonValue].fail(f"Invalid max_retries value: {value}")
         if key in {"log_requests", "log_responses"}:
-            return r[object].ok(bool(value))
-        return r[object].ok(value)
+            return r[t.ApiJsonValue].ok(bool(value))
+        return r[t.ApiJsonValue].ok(value)
 
     def _process_config(
         self, config: Mapping[str, str | float | bool]
