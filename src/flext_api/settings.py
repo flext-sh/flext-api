@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_api import c, t
-from flext_core import FlextSettingsBase, m, u
+from flext_api import c, m, t, u
+from flext_core import FlextSettingsBase
 
 
 class FlextApiSettings(FlextSettingsBase):
