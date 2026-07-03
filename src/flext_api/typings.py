@@ -52,7 +52,7 @@ class FlextApiTypes(FlextWebTypes):
         type WebData = FlextTypes.FileContent | dict[str, FlextTypes.ContainerValue]
         type WebHeaders = dict[str, FlextTypes.Scalar | list[str]]
         type WebParamValue = str | list[str]
-        type WebParams = dict[str, WebParamValue]
+        type WebParams = dict[str, str | list[str]]
         type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
         type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
         type RequestConfig = dict[str, FlextTypes.ContainerValue]

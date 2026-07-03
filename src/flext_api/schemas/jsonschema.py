@@ -26,7 +26,9 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import FlextApiPlugins, t as t_api
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[t_api.ContainerValue] = TypeAdapter(
+    t_api.ContainerValue
+)
 
 
 def _is_api_json_value(value: t_api.ContainerValue) -> TypeGuard[t_api.ApiJsonValue]:
@@ -129,8 +131,15 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             with schema_path.open("r", encoding="utf-8") as schema_file:
                 if suffix in {".yaml", ".yml"}:
                     try:
-                        loaded_schema = yaml.safe_load(schema_file)
-                    except Exception as e:
+                        loaded_schema = _JSON_OBJECT_ADAPTER.validate_python(
+                            yaml.safe_load(schema_file)
+                        )
+                    except (
+                        ValidationError,
+                        TypeError,
+                        ValueError,
+                        yaml.YAMLError,
+                    ) as e:
                         return r[object].fail(f"Failed to parse YAML schema: {e}")
                 else:
                     try:

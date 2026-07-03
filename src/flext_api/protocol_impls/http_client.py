@@ -91,28 +91,31 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         self._client.close()
 
     @override
-    def delete(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+    def delete(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP DELETE request."""
         return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)
 
     @override
-    def get(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+    def get(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP GET request."""
         return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
 
     @override
-    def post(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+    def post(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP POST request."""
         return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
 
     @override
-    def put(self, url: str, **kwargs: t.Scalar) -> r[t.Api.HttpResponseDict]:
+    def put(self, url: str, **kwargs: t.ApiJsonValue) -> r[t.Api.HttpResponseDict]:
         """Execute HTTP PUT request."""
         return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
 
     @override
     def request(
-        self, method: str, url: str, **kwargs: t.Scalar
+        self,
+        method: FlextApiConstants.Api.Method | str,
+        url: str,
+        **kwargs: t.ApiJsonValue,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         full_url_result = self._build_full_url(url)
@@ -148,7 +151,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClient):
         return r[str].ok(full_url)
 
     def _build_request_options(
-        self, kwargs: Mapping[str, t.ContainerValue]
+        self, kwargs: Mapping[str, t.ApiJsonValue]
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:

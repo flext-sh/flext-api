@@ -479,19 +479,14 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
     def restart(self) -> r[bool]:
         """Restart server (orchestrate stop/start)."""
-
-        def _log_restart(_: t.ContainerValue) -> None:
-            FlextLogger(__name__).info("Server restarted")
-
-        return (
-            self
-            .stop()
-            .map_error(lambda e: f"Failed to stop: {e}")
-            .flat_map(
-                lambda _: self.start().map_error(lambda e: f"Failed to start: {e}")
-            )
-            .tap(_log_restart)
-        )
+        stop_result = self.stop()
+        if stop_result.is_failure:
+            return r[bool].fail(f"Failed to stop: {stop_result.error}")
+        start_result = self.start()
+        if start_result.is_failure:
+            return r[bool].fail(f"Failed to start: {start_result.error}")
+        FlextLogger(__name__).info("Server restarted")
+        return r[bool].ok(True)
 
     def start(self) -> r[bool]:
         """Start server (delegates to LifecycleManager)."""

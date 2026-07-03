@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextLogger, FlextRuntime, r, u
+from flext_core import FlextLogger, FlextRuntime, r
 
 from flext_api import p, t
 
@@ -31,10 +31,10 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
             self.logger.debug("Cleared all storage data")
             return True
 
-        return u.try_(
-            _clear,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Clear operation failed: {e}")
+        try:
+            return r[bool].ok(_clear())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[bool].fail(f"Clear operation failed: {exc}")
 
     @override
     def delete(self, key: str) -> r[bool]:
@@ -55,10 +55,10 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
     @override
     def exists(self, key: str) -> r[bool]:
         """Check if key exists."""
-        return u.try_(
-            lambda: str(key) in self._storage,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Exists check failed: {e}")
+        try:
+            return r[bool].ok(str(key) in self._storage)
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[bool].fail(f"Exists check failed: {exc}")
 
     @override
     def get(self, key: str) -> r[t.ApiJsonValue]:
@@ -77,10 +77,10 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
     @override
     def keys(self) -> r[list[str]]:
         """Get all keys."""
-        return u.try_(
-            lambda: list(self._storage),
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Keys operation failed: {e}")
+        try:
+            return r[list[str]].ok(list(self._storage))
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[list[str]].fail(f"Keys operation failed: {exc}")
 
     @override
     def set(
@@ -98,7 +98,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackend):
             self.logger.debug("Stored data with key: %s", key)
             return True
 
-        return u.try_(
-            _set,
-            catch=(ValueError, TypeError, KeyError, ConnectionError),
-        ).map_error(lambda e: f"Storage operation failed: {e}")
+        try:
+            return r[bool].ok(_set())
+        except (ValueError, TypeError, KeyError, ConnectionError) as exc:
+            return r[bool].fail(f"Storage operation failed: {exc}")

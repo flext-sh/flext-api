@@ -15,7 +15,7 @@
   - [ServerSentEventay Streaming](#serversenteventprotocol-one-way-streaming)
 - [Storage Backend Protocol](#storage-backend-protocol)
   - [StorageBackendObject Storage](#storagebackendprotocol-fileobject-storage)
-- [#protocol-stubs)
+- \[#protocol-stubs)
   - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub-grpc-protocol-buffers)
   - [Protobuf Stub - Binary Serialization](#protobuf-stub-binary-serialization)
 - [Quality Metrics](#quality-metrics)

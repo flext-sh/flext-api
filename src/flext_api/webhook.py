@@ -30,7 +30,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_api import t
 
-_JSON_OBJECT_ADAPTER: TypeAdapter[object] = TypeAdapter(object)
+_JSON_OBJECT_ADAPTER: TypeAdapter[t.ContainerValue] = TypeAdapter(t.ContainerValue)
 
 
 def _is_object_mapping(
