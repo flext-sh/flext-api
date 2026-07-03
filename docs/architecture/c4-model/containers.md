@@ -1,33 +1,5 @@
 # C4 Model - Containers
 
-<!-- TOC START -->
-
-- [Overview](#overview)
-- [Container Diagram](#container-diagram)
-- [Container Descriptions](#container-descriptions)
-  - [HTTP Client Container](#http-client-container)
-  - [FastAPI Application Container](#fastapi-application-container)
-  - [Layer Container](#protocol-layer-container)
-  - [Storage Layer Container](#storage-layer-container)
-  - [Configuration Layer Container](#configuration-layer-container)
-- [Technology Choices](#technology-choices)
-  - [Core Technologies](#core-technologies)
-  - [Infrastructure Dependencies](#infrastructure-dependencies)
-- [Deployment Considerations](#deployment-considerations)
-  - [Container Packaging](#container-packaging)
-  - [Environment Configuration](#environment-configuration)
-- [Quality Attributes](#quality-attributes)
-  - [Performance](#performance)
-  - [Reliability](#reliability)
-  - [Security](#security)
-  - [Maintainability](#maintainability)
-- [Monitoring and Observability](#monitoring-and-observability)
-  - [Metrics Collection](#metrics-collection)
-  - [Logging Strategy](#logging-strategy)
-  - [Health Checks](#health-checks)
-
-<!-- TOC END -->
-
 ## Overview
 
 This document describes the **Container** level of the C4 model for FLEXT-API, showing the high-level technology choices and how responsibilities are distributed across containers.
@@ -64,7 +36,7 @@ System_Ext(websockets_lib, "websockets Library", "Python WebSocket library")
 System_Ext(ldap_server, "LDAP Directory", "User authentication")
 System_Ext(database, "Database", "Data persistence")
 System_Ext(message_queue, "Message Queue", "Async communication")
-System_Ext(storage_backend, "Storage Backend", "File/object storage")
+System_Ext(storage_backend, "Storage Backend", "File/t.JsonValue storage")
 System_Ext(external_api, "External API", "Third-party services")
 
 Rel(developer, api_client, "Configures and uses", "Python imports")
@@ -92,7 +64,7 @@ Rel(api_client, external_api, "Makes requests", "REST")
 Rel(fastapi_app, api_client, "Uses internally", "library calls")
 Rel(fastapi_app, protocol_layer, "Routes to", "protocol dispatch")
 Rel(fastapi_app, storage_layer, "Handles files", "storage operations")
-Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
+Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 @enduml
 ```
@@ -226,7 +198,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && poetry config virtualenvs.create false
+RUN pip install poetry && poetry settings virtualenvs.create false
 RUN poetry install --only=main --no-dev
 
 # Copy application code

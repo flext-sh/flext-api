@@ -25,7 +25,7 @@
 - **test_config_comprehensive.py** - Configuration management
 - **test_constants_core.py** - Project constants
 - **test_exceptions_comprehensive.py** - Exception handling
-- **test_fields_core.py** - Field definitions
+- **test_fields_core.py** - u.Field definitions
 - **test_main_core.py** - Application entry point
 - **test_storage_core.py** - Storage implementation
 - **test_types_core.py** - Type definitions

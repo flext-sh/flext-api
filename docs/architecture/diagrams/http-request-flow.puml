@@ -40,13 +40,13 @@ HTTPX --> Protocol: Raw HTTP response
 deactivate HTTPX
 
 Protocol -> Protocol: Response validation\n& parsing
-Protocol --> ClientLib: r[FlextApiModels.HttpResponse]
+Protocol --> ClientLib: p.Result[FlextApiModels.HttpResponse]
 deactivate Protocol
 
 == Result Processing ==
 ClientLib -> ClientLib: Apply response middleware
 ClientLib -> ClientLib: Error handling & transformation
-ClientLib --> FastAPI: r[UserData]
+ClientLib --> FastAPI: p.Result[UserData]
 deactivate ClientLib
 
 FastAPI -> FastAPI: Response formatting\n& serialization
@@ -67,7 +67,7 @@ group Error Scenario
     Protocol --> ClientLib: r.fail("HTTP 404")
 
     ClientLib -> ClientLib: Apply error middleware
-    ClientLib --> FastAPI: r[UserData] (failure)
+    ClientLib --> FastAPI: p.Result[UserData] (failure)
 
     FastAPI -> FastAPI: Error response formatting
     FastAPI --> Client: JSON Error Response\n(404 Not Found)

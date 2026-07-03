@@ -1,27 +1,5 @@
 # C4 Model - Components
 
-<!-- TOC START -->
-
-- [Overview](#overview)
-- [Component Diagram](#component-diagram)
-- [Component Descriptions](#component-descriptions)
-  - [HTTP Client Components](#http-client-components)
-  - [FastAPI Application Components](#fastapi-application-components)
-  - [Layer Components](#protocol-layer-components)
-  - [Storage Layer Components](#storage-layer-components)
-  - [Configuration Layer Components](#configuration-layer-components)
-- [Component Interactions](#component-interactions)
-  - [Request Processing Flow](#request-processing-flow)
-  - [Application Startup Flow](#application-startup-flow)
-  - [Storage Operation Flow](#storage-operation-flow)
-- [Quality Attributes Mapping](#quality-attributes-mapping)
-  - [Performance](#performance)
-  - [Reliability](#reliability)
-  - [Security](#security)
-  - [Maintainability](#maintainability)
-
-<!-- TOC END -->
-
 ## Overview
 
 This document describes the **Component** level of the C4 model for FLEXT-API, showing the key components within each container and their relationships.
@@ -109,7 +87,7 @@ Rel(storage_router, gcs_backend, "Routes to", "GCS operations")
 Rel(storage_router, azure_backend, "Routes to", "Azure operations")
 Rel(storage_router, local_backend, "Routes to", "local operations")
 
-Rel(config_loader, config_validator, "Validates", "config data")
+Rel(config_loader, config_validator, "Validates", "settings data")
 Rel(config_validator, flext_models, "Uses", "validation models")
 Rel(config_loader, secret_manager, "Loads", "secure credentials")
 Rel(secret_manager, flext_container, "Stores", "encrypted secrets")

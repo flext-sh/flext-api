@@ -1,38 +1,13 @@
 # FLEXT-API
 
-<!-- TOC START -->
-
-- [🚀 Overview](#overview)
-  - [🎯 Core Features](#core-features)
-  - [🏢 Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
-- [🏗️ Current Source Structure](#current-source-structure)
-  - [🎯 Key Architectural Patterns](#key-architectural-patterns)
-- [📚 Documentation Structure](#documentation-structure)
-  - [🏗️ Architecture & Design](#architecture-design)
-  - [🔧 Development & Integration](#development-integration)
-- [🚀 Quick Start](#quick-start)
-  - [Installation](#installation)
-  - [Basic HTTP Client Usage](#basic-http-client-usage)
-  - [FastAPI Application Setup](#fastapi-application-setup)
-- [🧪 Testing](#testing)
-- [📈 Current Status](#current-status)
-  - [🎯 Production Readiness](#production-readiness)
-- [🤝 Contributing](#contributing)
-- [📋 Roadmap](#roadmap)
-  - [Immediate (Next Release)](#immediate-next-release)
-  - [Short-term (Next Month)](#short-term-next-month)
-  - [Long-term (Next Quarter)](#long-term-next-quarter)
-
-<!-- TOC END -->
-
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
+[![Current](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
 [![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](../)
 
 **HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with r patterns and synchronous architecture.
 
-> **✅ STATUS**: Version 0.9.9 - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
+> **✅ STATUS**: Version 0.12.0-dev - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
 
 ______________________________________________________________________
 
@@ -51,7 +26,7 @@ FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data integrat
 
 ### 🏢 Integration with FLEXT Ecosystem
 
-- **flext-core** → Foundation patterns (r, FlextService, FlextModels)
+- **flext-core** → Foundation patterns (r, s, FlextModels)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
@@ -69,7 +44,7 @@ src/flext_api/
 ├── api.py                   # Main API interface
 ├── app.py                   # FastAPI application factory
 ├── client.py                # HTTP client implementation (605 lines)
-├── config.py                # Configuration management (187 lines)
+├── settings.py                # Configuration management (187 lines)
 ├── constants.py             # Configuration constants
 ├── exceptions.py            # HTTP-specific exceptions
 ├── handlers.py              # Request/response handlers
@@ -118,12 +93,10 @@ ______________________________________________________________________
 ### 🏗️ Architecture & Design
 
 - **[Architecture Overview](architecture/overview.md)** - System design and patterns
-- **[API Reference](api/)** - Complete API documentation
-  - **[Core API](api/core.md)** - Main API interface
-  - **[Middleware](api/middleware.md)** - HTTP middleware implementations
-  - **[Protocols](api/protocols.md)** - Protocol implementations
-  - **[Schemas](api/schemas.md)** - Schema definitions
-  - **[Storage](api/storage.md)** - Storage abstraction
+- **[API Reference](api-reference/)** - Complete API documentation
+  - **[Overview](api-reference/generated/overview.md)** - Generated API overview
+  - **[Public API](api-reference/generated/public-api.md)** - Public API surface
+  - **[Modules](api-reference/generated/modules/index.md)** - Module-level reference
 
 ### 🔧 Development & Integration
 
@@ -152,32 +125,30 @@ pip install flext-api
 ### Basic HTTP Client Usage
 
 ```python
-from flext_api import FlextApiClient
-from flext_api import FlextApiSettings
+from flext_api import FlextApi, FlextApiSettings
 
 # Configure client
-config = FlextApiSettings(base_url="https://api.example.com")
-client = FlextApiClient(config)
+settings = FlextApiSettings(base_url="https://api.example.com")
+api = FlextApi(settings=settings)
 
 # Make requests with automatic error handling
-result = client.get("/users")
-if result.is_success():
+result = api.get("/users")
+if result.success:
     users = result.unwrap()
     print(f"Found {len(users)} users")
 else:
-    error = result.unwrap_failure()
+    error = result.error or "unknown error"
     print(f"Error: {error}")
 ```
 
 ### FastAPI Application Setup
 
 ```python
-from flext_api import create_fastapi_app
-from flext_api import FlextApiSettings
+from flext_api import FlextApiSettings, create_fastapi_app
 
 # Create FastAPI application
-config = FlextApiSettings(title="My API", version="1.0.0")
-app = create_fastapi_app(config)
+settings = FlextApiSettings(title="My API", version="1.0.0")
+app = create_fastapi_app(settings)
 
 
 # Add your routes
@@ -209,8 +180,8 @@ ______________________________________________________________________
 
 ## 📈 Current Status
 
-| Metric                 | Status        | Details                                     |
-| ---------------------- | ------------- | ------------------------------------------- |
+| Metric                 | Status       | Details                                     |
+| ---------------------- | ------------ | ------------------------------------------- |
 | **Core Functionality** | ✅ Complete   | HTTP client and FastAPI integration working |
 | **Test Coverage**      | ✅ 100%       | All tests passing, comprehensive coverage   |
 | **Type Safety**        | ✅ Strict     | MyPy strict mode passes                     |
@@ -219,7 +190,7 @@ ______________________________________________________________________
 
 ### 🎯 Production Readiness
 
-- **Enterprise Patterns**: Complete r, FlextService integration
+- **Enterprise Patterns**: Complete r, s integration
 - **Error Handling**: Comprehensive railway-oriented error management
 - **Configuration**: Environment-aware settings with validation
 - **Documentation**: Complete API reference and guides

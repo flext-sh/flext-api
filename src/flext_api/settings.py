@@ -1,6 +1,6 @@
-"""Generic HTTP Configuration - Pure Pydantic v2.
+"""Generic HTTP Configuration - FlextSettings-based.
 
-Minimal HTTP configuration using Pydantic v2 with flext-core constants.
+HTTP configuration using FlextSettings with env var support (FLEXT_API_ prefix).
 100% GENERIC - no domain coupling. Single responsibility.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -10,63 +10,52 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, ClassVar
 
-from flext_core import FlextModels
-from pydantic import Field
-
-from flext_api.constants import FlextApiConstants as c
+from flext_api import c, m, t, u
+from flext_core import FlextSettingsBase
 
 
-class FlextApiSettings(FlextModels.Value):
+class FlextApiSettings(FlextSettingsBase):
     """Validated settings consumed by API facade and HTTP client."""
+
+    model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
+        env_prefix="FLEXT_API_",
+        extra="ignore",
+    )
 
     base_url: Annotated[
         str,
-        Field(
-            default=c.Api.DEFAULT_BASE_URL,
-            description="Base URL for relative requests",
-        ),
-    ]
+        u.Field(description="Base URL for relative requests"),
+    ] = c.Api.DEFAULT_BASE_URL
     timeout: Annotated[
-        float,
-        Field(
-            default=c.Api.DEFAULT_TIMEOUT,
-            gt=0.0,
-            description="Default request timeout in seconds",
-        ),
-    ]
+        t.PositiveTimeout,
+        u.Field(description="Default request timeout in seconds"),
+    ] = c.Api.DEFAULT_TIMEOUT
     max_retries: Annotated[
-        int,
-        Field(
-            default=c.Api.DEFAULT_MAX_RETRIES,
-            ge=0,
-            description="Maximum retry attempts",
-        ),
-    ]
+        t.RetryCount,
+        u.Field(description="Maximum retry attempts"),
+    ] = c.MAX_RETRY_ATTEMPTS
     verify_ssl: Annotated[
-        bool, Field(default=True, description="Enable TLS certificate check")
-    ]
+        bool,
+        u.Field(description="Enable TLS certificate check"),
+    ] = True
     default_headers: Annotated[
-        dict[str, str],
-        Field(
-            default_factory=dict,
-            description="Default headers applied to all requests",
-        ),
-    ]
+        t.StrMapping,
+        u.Field(description="Default headers applied to all requests"),
+    ] = u.Field(default_factory=dict)
     headers: Annotated[
-        dict[str, str],
-        Field(
-            default_factory=dict,
-            description="Compatibility headers bag",
-        ),
-    ]
+        t.StrMapping,
+        u.Field(description="Compatibility headers bag"),
+    ] = u.Field(default_factory=dict)
     log_requests: Annotated[
-        bool, Field(default=False, description="Log outbound requests")
-    ]
+        bool,
+        u.Field(description="Log outbound requests"),
+    ] = False
     log_responses: Annotated[
-        bool, Field(default=False, description="Log inbound responses")
-    ]
+        bool,
+        u.Field(description="Log inbound responses"),
+    ] = False
 
 
-__all__ = ["FlextApiSettings"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiSettings"]

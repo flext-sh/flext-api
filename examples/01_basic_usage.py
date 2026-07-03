@@ -1,7 +1,4 @@
-"""FLEXT API - Basic usage example.
-
-This example demonstrates basic FLEXT API usage using ONLY the refactored classes
-following flext-core patterns. No helpers, no aliases, no legacy APIs.
+"""Public-facade basic-usage example for flext-api.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,167 +6,169 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants
+from typing import override
 
-from flext_api import (
-    FlextApi,
-    FlextApiModels,
-    FlextApiSettings,
-    FlextApiStorage,
-    FlextApiUtilities,
-)
+from flext_api import FlextApi, c, m, p, r, s, t, u
 
 
-def example_api_creation() -> None:
-    """Demonstrate basic API instance creation using refactored classes."""
-    print("=== API Creation Example ===")
-    api = FlextApi()
-    print(f"✅ API created: flext-api v0.9.0 - {api.__class__.__name__}")
+class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
+    """Minimal guided tour of flext-api through public aliases and facades."""
 
+    @staticmethod
+    def _emit(message: object) -> None:
+        """Render example output through the canonical CLI facade."""
+        u.Cli.formatters_print(str(message))
 
-def example_client_creation() -> None:
-    """Demonstrate HTTP client creation using enhanced singleton pattern."""
-    print("\n=== Client Creation Example ===")
-    FlextApi()
-    client_config = FlextApiSettings(
-        base_url="https://httpbin.org", timeout=FlextConstants.Network.DEFAULT_TIMEOUT
-    )
-    print(f"✅ Client config created: {client_config.base_url}")
-    print(f"   Timeout: {client_config.timeout}s")
-    print(f"   Max retries: {client_config.max_retries}")
-
-
-def example_direct_client() -> None:
-    """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
-    print("\n=== Direct Client Example ===")
-    config = FlextApiSettings(
-        base_url="https://httpbin.org", timeout=FlextConstants.Network.DEFAULT_TIMEOUT
-    )
-    print(f"✅ Client config: {config.base_url}")
-    print(f"   Timeout: {config.timeout}")
-    print(f"   Default headers: {config.headers}")
-
-
-def example_storage_usage() -> None:
-    """Demonstrate storage usage with refactored FlextApiStorage."""
-    print("\n=== Storage Example ===")
-    storage = FlextApiStorage()
-    cache_value: dict[str, object] = {
-        "data": {"message": "Hello FlextAPI!"},
-        "headers": {},
-        "status_code": 200,
-    }
-    set_result = storage.set("example_key", cache_value, timeout=300)
-    if set_result.is_success:
-        print("✅ Data stored successfully")
-        get_result = storage.get("example_key")
-        if get_result.is_success:
-            print(f"✅ Data retrieved: {get_result.value}")
-        else:
-            print(f"❌ Data retrieval failed: {get_result.error}")
-    else:
-        print(f"❌ Data storage failed: {set_result.error}")
-
-
-def example_utilities_usage() -> None:
-    """Demonstrate utilities usage with refactored FlextApiUtilities."""
-    print("\n=== Utilities Example ===")
-    url_result = FlextApiUtilities.FlextWebValidator.validate_url(
-        "https://example.com/api/v1"
-    )
-    if url_result.is_success:
-        print(f"✅ URL validation successful: {url_result.value}")
-    else:
-        print(f"❌ URL validation failed: {url_result.error}")
-    response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
-        data={"users": [{"id": 1, "name": "John"}]},
-        message="Users retrieved successfully",
-    )
-    if response_result.is_success:
-        print("✅ Response built successfully")
-        print(f"   Status: {response_result.value['status']}")
-        print(f"   Message: {response_result.value['message']}")
-    else:
-        print(f"❌ Response building failed: {response_result.error}")
-
-
-def example_app_creation() -> None:
-    """Demonstrate FastAPI app creation using refactored classes."""
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    print("✅ App creation example - not implemented")
-    "Demonstrate models usage with refactored FlextApiModels."
-    print("\n=== Models Example ===")
-    try:
-        request = FlextApiModels.HttpRequest(
-            method="GET",
-            url="https://httpbin.org/get",
-            headers={"Accept": "application/json"},
-            timeout=int(FlextConstants.Network.DEFAULT_TIMEOUT),
+    def build_request(self) -> p.Result[m.Api.HttpRequest]:
+        """Build a validated HTTP request through the public utility facade."""
+        timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
+            str(self.settings.timeout)
         )
-        print(f"✅ Request model created: {request.method} {request.url}")
-        print(f"   Timeout: {request.timeout}s")
-        response = FlextApiModels.HttpResponse(
-            status_code=200,
-            headers={"Content-Type": "application/json"},
-            body=b'{"message": "Success"}',
-            content_type="application/json",
-        )
-        print(f"✅ Response model created: {response.status_code}")
-        print(f"   Status: {response.status_code}")
-        print(f"   Content-Type: {response.headers.get('content-type', 'unknown')}")
-    except Exception as e:
-        print(f"❌ Model creation failed: {e}")
-
-
-def example_batch_operations() -> None:
-    """Demonstrate batch operations with refactored classes."""
-    print("\n=== Batch Operations Example ===")
-    storage = FlextApiStorage()
-    try:
-        print("✅ Storage ready for batch operations")
-        keys = ["key1", "key2", "key3"]
-        for i, key in enumerate(keys):
-            result = storage.set(
-                key, {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200}
+        if timeout_result.failure:
+            timeout_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
+                timeout_result.error or "failed to normalize timeout"
             )
-            if result.is_success:
-                print(f"✅ Set {key} successfully")
-            else:
-                print(f"❌ Failed to set {key}: {result.error}")
-        size_result = storage.size()
-        if size_result.is_success:
-            print(f"✅ Cache size: {size_result.value} items")
-        else:
-            print(f"❌ Failed to get cache size: {size_result.error}")
-    except Exception as e:
-        print(f"❌ Batch operations failed: {e}")
+            return timeout_failure
+
+        payload_result = u.Api.RequestUtils.build_request_payload(
+            method=c.Api.Method.GET,
+            url=f"{self.settings.base_url.rstrip('/')}/resources",
+            headers={"accept": c.Api.ContentType.JSON.value},
+            request_kwargs={"params": {"page": 1, "active": True}},
+            timeout=timeout_result.value,
+        )
+        if payload_result.failure:
+            payload_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
+                payload_result.error or "failed to build request payload"
+            )
+            return payload_failure
+
+        request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
+            payload_result.value.root,
+            m.Api.HttpRequest,
+        )
+        return request_result
+
+    @staticmethod
+    def build_response(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+        """Build a response model without leaving the public API surface."""
+        response_payload: t.JsonMapping = {
+            "status_code": c.Api.HTTP_SUCCESS_MIN,
+            "body": {
+                "method": str(request.method),
+                "url": request.url,
+                "headers": dict(request.headers),
+            },
+            "request_id": "example-request",
+        }
+        response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
+            m.Api.HttpResponse.model_validate(response_payload)
+        )
+        return response_result
+
+    @override
+    def execute(self) -> p.Result[t.JsonMapping]:
+        """Run the public basic-usage flow through typed examples aliases."""
+        self._emit("FLEXT API - Basic Usage")
+        self._emit("=======================")
+
+        self._emit("\n1. Setup via s/base.py")
+        runtime_snapshot: t.JsonMapping = {
+            "base_url": self.settings.base_url,
+            "timeout": self.settings.timeout,
+            "max_retries": self.settings.max_retries,
+            "verify_ssl": self.settings.verify_ssl,
+        }
+        self._emit(runtime_snapshot)
+
+        api = FlextApi()
+        execute_result = api.execute(example="basic-usage")
+        if execute_result.failure:
+            execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].fail(
+                execute_result.error or "flext-api execute failed"
+            )
+            return execute_failure
+        self._emit(f"Facade ready: base_url={api.settings.base_url}")
+
+        self._emit("\n2. Request normalization via u.Api.RequestUtils")
+        request_result = self.build_request()
+        if request_result.failure:
+            request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].fail(
+                request_result.error or "failed to build request"
+            )
+            return request_failure
+        request = request_result.value
+        self._emit(f"Request ok: {request.method} {request.url}")
+
+        self._emit("\n3. Pydantic 2 models via m.Api")
+        response_result = self.build_response(request)
+        if response_result.failure:
+            response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].fail(
+                response_result.error or "failed to build response"
+            )
+            return response_failure
+        response = response_result.value
+        self._emit(
+            f"Response ok: status={response.status_code}, success={response.success}"
+        )
+
+        self._emit("\n4. Storage models + railway result ergonomics")
+        entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
+            response.body or {}
+        )
+        namespace = type(self).__name__.lower()
+        ttl = int(self.settings.timeout)
+        settings = m.Api.Storage.Settings(namespace=namespace, default_ttl=ttl)
+        entry = m.Api.Storage.Metadata(
+            value=entry_value,
+            timestamp=u.generate_iso_timestamp(),
+            ttl=settings.default_ttl,
+        )
+        state = m.Api.Storage.State(
+            entries={"latest-response": entry},
+            operations_count=2,
+            cache_hits=1,
+            cache_misses=0,
+        )
+        stats = m.Api.Storage.Stats(
+            total_operations=state.operations_count,
+            cache_hits=state.cache_hits,
+            cache_misses=state.cache_misses,
+            storage_size=len(state.entries),
+            memory_usage=len(repr(state.entries)),
+            namespace=settings.namespace,
+        )
+        self._emit(f"Storage entry: {state.entries['latest-response'].value}")
+        self._emit(f"Stats: {stats.model_dump(mode='python')}")
+        self._emit(
+            "Result contract: "
+            f"ok.success={r[str].ok('ready').success}, "
+            f"fail.failure={r[str].fail('example failure').failure}"
+        )
+
+        summary: t.JsonMapping = {
+            "base_url": self.settings.base_url,
+            "request_method": str(request.method),
+            "response_status": response.status_code,
+            "storage_entries": len(state.entries),
+            "result_contract": "public-r",
+        }
+        self._emit("\nExamples completed")
+        summary_result: p.Result[t.JsonMapping] = r[t.JsonMapping].ok(summary)
+        return summary_result
+
+    @classmethod
+    def main(cls) -> None:
+        """Run the example and render failures through the public result contract."""
+        result = cls().execute()
+        if result.success:
+            return
+        cls._emit(f"Example failed: {result.error or 'unexpected failure'}")
 
 
 def main() -> None:
-    """Run all examples using ONLY refactored classes."""
-    print("FLEXT API - Basic Usage Examples (Refactored Classes Only)")
-    print("=========================================================")
-    example_api_creation()
-    example_client_creation()
-    example_direct_client()
-    example_storage_usage()
-    example_utilities_usage()
-    example_app_creation()
-    example_batch_operations()
-    print("\n🎉 All examples completed successfully using refactored classes!")
-    print("✅ r pattern used throughout")
-    print("✅ flext-core compliance maintained")
-    print("✅ No legacy APIs or helpers used")
-    print("✅ Synchronous architecture - no /await needed")
+    """Main entry point for the basic usage example."""
+    FlextApiExamplesBasicUsage.main()
 
 
 if __name__ == "__main__":

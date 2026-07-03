@@ -12,105 +12,73 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import (
+    Callable,
+)
 
-from flext_core import FlextTypes
-from flext_web import FlextWebTypes
+from flext_api import c
+from flext_api._typings.serialization import FlextApiTypingsSerialization
+from flext_web import FlextWebTypes, p, t, u
 
 
 class FlextApiTypes(FlextWebTypes):
-    """Unified API type definitions extending t with composition.
+    """Unified API type definitions extending FlextWebTypes via MRO."""
 
-    Single namespace containing ALL API types.
-    NO module-level aliases, NO weak types.
-    Python 3.13+ syntax with maximum code reduction.
-    Only TypeVar loose outside class.
-    """
+    class Api(FlextApiTypingsSerialization):
+        """API types namespace for cross-project access."""
 
-    type JsonObject = dict[str, FlextTypes.ContainerValue]
-    type ApiJsonValue = FlextTypes.ContainerValue | None
-
-    class Api:
-        """API types namespace for cross-project access.
-
-        Provides organized access to all API types for other FLEXT projects.
-        Usage: Other projects can reference `t.Api.RequestData`, `t.Api.ResponseData`, etc.
-        This enables consistent namespace patterns for cross-project type access.
-
-        Examples:
-            from flext_api import t
-            request_data: t.Api.RequestData = ...
-            response_data: t.Api.ResponseData = ...
-
-        Note: Namespace composition via inheritance - no aliases needed.
-        Access parent namespaces directly through inheritance.
-
-        """
-
-        type JsonObject = dict[str, FlextTypes.ContainerValue]
-        type ApiJsonValue = FlextTypes.ContainerValue | None
-        type WebData = FlextTypes.FileContent | dict[str, FlextTypes.ContainerValue]
-        type WebHeaders = dict[str, FlextTypes.Scalar | list[str]]
-        type WebParamValue = str | list[str]
-        type WebParams = dict[str, str | list[str]]
-        type ResponseList = list[dict[str, FlextTypes.ContainerValue]]
-        type ResponseDict = Mapping[str, FlextTypes.ContainerValue]
-        type RequestConfig = dict[str, FlextTypes.ContainerValue]
-        type ResponseConfig = dict[str, FlextTypes.ContainerValue]
-        type RequestBody = dict[str, FlextTypes.ContainerValue] | str | bytes
-        type ResponseBody = dict[str, FlextTypes.ContainerValue] | str | bytes | None
-        type HttpResponseDict = dict[
+        type WebHeaders = t.ScalarOrStrSequenceMapping
+        type WebParams = t.MappingKV[str, str | t.StrSequence]
+        type RequestBody = t.JsonValue | t.StrictBytes
+        type ResponseBody = t.JsonValue | t.StrictBytes | None
+        type HttpResponseDict = t.MappingKV[
             str,
-            FlextTypes.ContainerValue | dict[str, str] | bytes | None,
+            t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type ValidationResult = dict[str, FlextTypes.ContainerValue]
-        type EndpointConfig = dict[str, FlextTypes.ContainerValue]
-        type EndpointMetadata = dict[str, FlextTypes.ContainerValue]
-        type RouteConfig = dict[str, FlextTypes.ContainerValue]
-        type RouteData = dict[
+        type RouteData = t.MappingKV[
             str,
-            FlextTypes.ContainerValue | FlextTypes.ResourceCallable | None,
-        ]
-        "Route registration data structure."
-        type SchemaValue = dict[str, FlextTypes.ContainerValue] | str
-        type AuthConfig = Mapping[str, FlextTypes.ContainerValue]
-        type AuthCredentials = Mapping[str, FlextTypes.ContainerValue]
-        type AuthTokenData = Mapping[str, FlextTypes.ContainerValue]
-        type SecurityConfig = Mapping[str, FlextTypes.ContainerValue]
-        type ClientConfig = Mapping[str, FlextTypes.ContainerValue]
-        type ConnectionPool = Mapping[
-            str, FlextTypes.Primitives | Mapping[str, FlextTypes.Primitives]
-        ]
-        type TimeoutConfig = Mapping[
-            str, FlextTypes.Scalar | Mapping[str, FlextTypes.Scalar]
-        ]
-        type RequestKwargs = Mapping[
-            str,
-            Mapping[str, str]
-            | Mapping[str, FlextTypes.ContainerValue]
-            | Mapping[str, FlextTypes.Scalar | list[str]]
-            | float
+            t.JsonValue
+            | t.ConfigurationMapping
+            | t.JsonMapping
+            | t.ResourceCallable
+            | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
             | None,
         ]
-        type StorageDict = dict[str, FlextTypes.Primitives | None]
-        type CacheDict = dict[str, FlextTypes.Primitives]
-        type MetricsDict = dict[str, int]
-        type ProtocolConfig = dict[str, FlextTypes.ContainerValue]
-        type ProtocolMessage = dict[str, FlextTypes.ContainerValue] | str | bytes
-        type SchemaDefinition = dict[str, FlextTypes.ContainerValue]
-        type ValidationErrors = list[dict[str, FlextTypes.ContainerValue]]
-        type ServiceConfig = dict[str, dict[str, FlextTypes.Scalar]]
-        type ServiceHealth = dict[str, FlextTypes.Primitives]
-        type RequestPipeline = list[dict[str, FlextTypes.ContainerValue]]
-        type ResponsePipeline = list[dict[str, FlextTypes.ContainerValue]]
-        type ProcessingResult = dict[str, FlextTypes.ContainerValue]
-        type ErrorInfo = dict[str, FlextTypes.ContainerValue]
-        type ErrorCategory = str
-        type ErrorRecovery = dict[str, FlextTypes.ContainerValue]
-        type RetryStrategy = dict[str, FlextTypes.Scalar]
-        type CircuitBreaker = dict[str, FlextTypes.Primitives]
+        "Route registration data structure."
+        type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
+        type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
+        type WebhookHandler = Callable[
+            [t.JsonMapping],
+            t.JsonValue | p.ResultLike[bool] | None,
+        ]
+        type RequestKwargs = t.MappingKV[
+            str,
+            t.StrMapping | t.JsonMapping | t.ScalarOrStrSequenceMapping | float | None,
+        ]
+        type CacheDict = t.MappingKV[str, t.Primitives]
+        API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = t.json_value_adapter()
+        BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.StrictBytes] = (
+            t.binary_content_adapter()
+        )
+        STR_MAPPING_ADAPTER: u.TypeAdapter[t.StrMapping] = t.str_mapping_adapter()
+        HOSTNAME_ADAPTER: u.TypeAdapter[t.HostnameStr] = t.hostname_str_adapter()
+        PORT_NUMBER_ADAPTER: u.TypeAdapter[t.PortNumber] = t.port_number_adapter()
+        STRING_ADAPTER: u.TypeAdapter[t.StrictStr] = t.str_adapter()
+        INTEGER_ADAPTER: u.TypeAdapter[t.StrictInt] = t.int_adapter()
+        FLOAT_ADAPTER: u.TypeAdapter[t.StrictFloat] = t.float_adapter()
+        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(
+            RequestBody,
+        )
+
+        RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(
+            ResponseBody,
+        )
+        DICT_BODY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        JSON_HEADERS_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
 
 
 t = FlextApiTypes
-__all__ = ["FlextApiTypes", "t"]
+
+__all__: list[str] = ["FlextApiTypes", "t"]

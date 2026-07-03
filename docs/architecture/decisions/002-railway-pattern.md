@@ -1,34 +1,5 @@
 # 002. Railway-Oriented Error Handling
 
-<!-- TOC START -->
-
-- [Status](#status)
-- [Context](#context)
-- [Decision](#decision)
-- [Consequences](#consequences)
-  - [Positive](#positive)
-  - [Negative](#negative)
-  - [Risks](#risks)
-- [Alternatives Considered](#alternatives-considered)
-  - [Option 1: Traditional Exceptions](#option-1-traditional-exceptions)
-  - [Option 2: Result Pattern (Custom Implementation)](#option-2-result-pattern-custom-implementation)
-  - [Option 3: Hybrid Approach](#option-3-hybrid-approach)
-- [Implementation Examples](#implementation-examples)
-  - [Basic HTTP Operation](#basic-http-operation)
-  - [Usage in Application Code](#usage-in-application-code)
-  - [Testing Railway Code](#testing-railway-code)
-- [Migration Strategy](#migration-strategy)
-  - [Phase 1: Core Implementation](#phase-1-core-implementation)
-  - [Phase 2: Ecosystem Migration](#phase-2-ecosystem-migration)
-  - [Phase 3: Ecosystem Adoption](#phase-3-ecosystem-adoption)
-- [Best Practices](#best-practices)
-  - [Railway Pattern Guidelines](#railway-pattern-guidelines)
-  - [Error Message Standards](#error-message-standards)
-  - [Performance Considerations](#performance-considerations)
-- [References](#references)
-
-<!-- TOC END -->
-
 Date: 2025-01-01
 
 ## Status
@@ -88,9 +59,7 @@ FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP ope
 def get_user(user_id: int) -> User:
     response = httpx.get(f"/users/{user_id}")
     response.raise_for_status()
-    return User(**response.json())
-```
-
+    return User(**response.json())```
 - **Pros**: Familiar, concise for success paths
 - **Cons**: Silent failures, complex error handling, hard to test
 - **Rejected**: Not suitable for enterprise HTTP operations
@@ -102,9 +71,7 @@ class Result:
     def __init__(self, success: bool, value=None, error=None):
         self.success = success
         self.value = value
-        self.error = error
-```
-
+        self.error = error```
 - **Pros**: Simple implementation, explicit error handling
 - **Cons**: No composability, reinventing the wheel, less type-safe
 - **Rejected**: r from flext-core is more robust and feature-complete
@@ -121,7 +88,7 @@ class Result:
 ### Basic HTTP Operation
 
 ```python
-def get_user(user_id: int) -> r[User]:
+def get_user(user_id: int) -> p.Result[User]:
     """Get user with railway error handling."""
     return (
         FlextApiClient()
@@ -130,20 +97,18 @@ def get_user(user_id: int) -> r[User]:
         .flat_map(lambda resp: parse_json_response(resp))
         .map(lambda data: User(**data))
         .map_error(lambda err: f"User fetch failed: {err}")
-    )
-```
-
+    )```
 ### Usage in Application Code
 
 ```python
 # Success path
 result = get_user(123)
-if result.is_success:
+if result.success:
     user = result.unwrap()
     print(f"Found user: {user.name}")
 
 # Error handling
-if result.is_failure:
+if result.failure:
     logger.error(result.error)
     return None
 
@@ -153,9 +118,7 @@ user_profile = (
     .flat_map(lambda user: get_user_profile(user.id))
     .flat_map(lambda profile: enrich_profile(profile))
     .map_error(lambda err: log_and_notify(err))
-)
-```
-
+)```
 ### Testing Railway Code
 
 ```python
@@ -168,9 +131,8 @@ def test_get_user_success():
     result = get_user(123)
 
     # Then
-    assert result.is_success
+    assert result.success
     assert result.unwrap().name == "John"
-
 
 def test_get_user_not_found():
     # Given
@@ -180,10 +142,8 @@ def test_get_user_not_found():
     result = get_user(123)
 
     # Then
-    assert result.is_failure
-    assert "404" in result.error
-```
-
+    assert result.failure
+    assert "404" in result.error```
 ## Migration Strategy
 
 ### Phase 1: Core Implementation
@@ -226,9 +186,7 @@ r.fail("JSON parsing failed: invalid response format")
 
 # Avoid generic messages
 r.fail("Error")  # Too vague
-r.fail("Something went wrong")  # Not helpful
-```
-
+r.fail("Something went wrong")  # Not helpful```
 ### Performance Considerations
 
 - **Short-Circuiting**: Failed operations don't execute subsequent operations

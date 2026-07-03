@@ -23,10 +23,10 @@ src/flext_api/
 ├── app.py                   # FastAPI application factory
 ├── builder.py               # Query/response builders
 ├── client.py                # HTTP client with plugins
-├── config.py                # Configuration management
+├── settings.py                # Configuration management
 ├── constants.py             # Project constants
 ├── exceptions.py            # Custom exceptions
-├── fields.py                # Field definitions
+├── fields.py                # u.Field definitions
 ├── main.py                  # Application entry point
 ├── storage.py               # Storage utilities
 ├── types.py
@@ -37,7 +37,7 @@ src/flext_api/
 │   └── value_objects.py    # Value objects
 └── infrastructure/         # Infrastructure layer
     ├── __init__.py
-    └── config.py           # Infrastructure config
+    └── settings.py           # Infrastructure settings
 ```
 
 ## Main Components
@@ -53,14 +53,14 @@ src/flext_api/
 
 - **builder.py** - Query and response builders with fluent interfaces
 - **storage.py** - Simple in-memory storage implementation
-- **config.py** - Configuration settings management
+- **settings.py** - Configuration settings management
 
 ### Supporting Modules
 
 - **types.py** - Type definitions and generic types
 - **constants.py** - Project constants and enumerations
 - **exceptions.py** - Custom exception classes
-- **fields.py** - Field validation and definitions
+- **fields.py** - u.Field validation and definitions
 
 ### Architecture Layers
 

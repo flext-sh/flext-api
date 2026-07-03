@@ -1,142 +1,60 @@
 # FLEXT API Examples
 
-<!-- TOC START -->
+Examples in this folder show the public `flext_api` surface through the local `examples` aliases and the typed `s` service base. The goal is to demonstrate request normalization, model validation, and response or storage ergonomics without depending on an external HTTP service.
 
-- [Example Files (REAL Classes Only)](#example-files-real-classes-only)
-  - [Basic Usage](#basic-usage)
-  - [Advanced Features](#advanced-features)
-- [Key Patterns Demonstrated](#key-patterns-demonstrated)
-  - [REAL Classes Usage](#real-classes-usage)
-  - [No Aliases or Helpers](#no-aliases-or-helpers)
-- [Running Examples](#running-examples)
-- [Example Patterns](#example-patterns)
-  - [r Usage (REAL Pattern)](#flextresult-usage-real-pattern)
-  - [REAL Classes Import Pattern](#real-classes-import-pattern)
-  - [Error Handling with REAL Classes](#error-handling-with-real-classes)
-  - [Model Validation using REAL Classes](#model-validation-using-real-classes)
-- [Development Guidelines](#development-guidelines)
+## Example Files
 
-<!-- TOC END -->
-
-**Usage examples demonstrating REAL classes and functionality**
-
-## Example Files (REAL Classes Only)
-
-### Basic Usage
-
-- **01_basic_usage.py** - Basic API usage patterns using REAL classes
-  - FlextApiClient creation and configuration
-  - HTTP client creation and setup
-  - Model instantiation and validation
-  - Error handling with r
-
-### Advanced Features
-
-- **02_advanced.py** - Advanced usage patterns using REAL classes
-  - Plugin system demonstration
-  - Storage backends usage
-  - Query builder with filters
-  - Response builder patterns
-  - Model validation examples
-  - Synchronous HTTP client patterns
-
-## Key Patterns Demonstrated
-
-### REAL Classes Usage
-
-- **FlextApiClient** - Core API service class
-- **FlextApiClient** - HTTP client with support
-- **FlextApiModels** - Domain models and data structures
-- **FlextApiStorage** - Storage backends (Memory, File)
-- **FlextApiPlugins** - Extensible plugin system
-- **create_flext_api()** - Factory function
-- **create_flext_api_app()** - FastAPI application factory
-
-### No Aliases or Helpers
-
-All examples use REAL classes directly from their modules:
-
-```python
-from flext_api import FlextApiClient, FlextApiClient, FlextApiModels
-# NOT helpers, NOT aliases, ONLY real functionality
-```
+- `01_basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and the railway result contract
 
 ## Running Examples
 
 ```bash
-# Run basic usage example
-python examples/01_basic_usage.py
-
-# Run advanced features example
-python examples/02_advanced.py
-
-# Run from project root
-cd ..flext-api
-PYTHONPATH=src python examples/01_basic_usage.py
-PYTHONPATH=src python examples/02_advanced.py
+PYTHONPATH=src python -m examples.01_basic_usage
 ```
 
-## Example Patterns
+Run commands from the `flext-api` project root.
 
-### r Usage (REAL Pattern)
+## Core Pattern
 
 ```python
-# Always check success/failure using REAL r methods
-result = api_operation()
-if result.success:
-    data = result.data
-    logger.info("Operation successful", data=data)
-else:
-    logger.error("Operation failed", error=result.error)
-    return result  # Return the failure result
+from __future__ import annotations
+
+from typing import override
+
+from flext_api import FlextApi, c, m, p, r, s, t, u
+
+
+class FlextApiExamplesDemo(s[t.JsonMapping]):
+    @override
+    def execute(self) -> p.Result[t.JsonMapping]:
+        api = FlextApi(settings=self.settings)
+        return api.execute().map(
+            lambda ready: {
+                "ready": ready,
+                "base_url": self.settings.base_url,
+            }
+        )
 ```
 
-### REAL Classes Import Pattern
+## Public Surfaces To Prefer
 
-```python
-# CORRECT: Import REAL classes directly
-from flext_api import FlextApiClient, FlextApiClient, FlextApiModels
+- `s` for example setup through `base.py` and typed `self.settings`
+- `FlextApi` for facade ergonomics
+- `m.Api.*` for request, response, and storage models
+- `u.Api.RequestUtils` for normalized request payload construction
+- `r` and `p.Result` for explicit success and failure flow
 
-# INCORRECT: Don't use aliases or helpers
-# from flext_api import create_client  # This is a helper, not a REAL class
-```
+## What The Basic Example Demonstrates
 
-### Error Handling with REAL Classes
+- runtime settings through the local `examples` package
+- request normalization before model parsing
+- Pydantic 2 validation through `m.Api`
+- storage and stats models without ad-hoc helper layers
+- result handling with `success` and `failure`
 
-```python
-# Create API using REAL class
-api = FlextApiClient()
+## Best Practices
 
-# Create client using REAL method that returns r
-client_result = api.create_client({"base_url": "https://api.example.com"})
-
-if client_result.success:
-    client = client_result.data
-    # Use REAL client instance
-else:
-    print(f"Failed: {client_result.error}")
-```
-
-### Model Validation using REAL Classes
-
-```python
-# Use REAL nested model classes
-request = FlextApiModels.ApiRequest(
-    method=FlextApiModels.FlextWebMethod.GET, url="https://api.example.com/data"
-)
-
-# Use REAL nested storage classes
-storage = FlextApiStorage.MemoryBackend()
-result = storage.set("key", {"data": "value"})
-```
-
-## Development Guidelines
-
-- **Use ONLY REAL classes** - No helpers, no aliases, no compatibility layers
-- **Import from root level** - Always `from flext_api import ClassName`
-- **Check r patterns** - Always handle `.success` and `.error`
-- **Use REAL nested classes** - Access via `ParentClass.NestedClass`
-- **Test examples regularly** - Ensure they work with actual implementation
-- **No placeholder code** - All examples must use working functionality
-
-See project documentation for complete API reference and architectural patterns.
+- import aliases from `examples`, not private modules
+- keep examples executable from the project root
+- prefer public facades and typed models over ad-hoc dict plumbing
+- update this README whenever example filenames or flows change

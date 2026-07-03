@@ -1,35 +1,5 @@
 # Architecture Decision Records (ADRs)
 
-<!-- TOC START -->
-
-- [What are ADRs](#what-are-adrs)
-- [ADR Template](#adr-template)
-- [Status](#status)
-- [Context](#context)
-- [Decision](#decision)
-- [Consequences](#consequences)
-  - [Positive](#positive)
-  - [Negative](#negative)
-  - [Risks](#risks)
-- [Alternatives Considered](#alternatives-considered)
-- [References](#references)
-- [Current ADRs](#current-adrs)
-- [ADR Workflow](#adr-workflow)
-  - [Creating a New ADR](#creating-a-new-adr)
-  - [ADR Status Definitions](#adr-status-definitions)
-- [Tools and Automation](#tools-and-automation)
-  - [ADR Generation Script](#adr-generation-script)
-  - [Integration with Development](#integration-with-development)
-- [Best Practices](#best-practices)
-  - [Writing Effective ADRs](#writing-effective-adrs)
-  - [When to Write an ADR](#when-to-write-an-adr)
-  - [ADR Maintenance](#adr-maintenance)
-- [Examples from Other Projects](#examples-from-other-projects)
-  - [Successful ADR Implementations](#successful-adr-implementations)
-  - [Lessons Learned](#lessons-learned)
-
-<!-- TOC END -->
-
 This directory contains Architecture Decision Records (ADRs) that document important architectural decisions made for the FLEXT-API project.
 
 ## What are ADRs
@@ -71,7 +41,7 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[object references to external documents, issues, or discussions]
+[t.JsonValue references to external documents, issues, or discussions]
 ```
 
 ## Current ADRs
@@ -81,9 +51,9 @@ Date: [YYYY-MM-DD]
 | [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency | Accepted | 2025-01-01 |
 | [ADR-002](002-railway-pattern.md) | Railway-Oriented Error Handling | Accepted | 2025-01-01 |
 | [ADR-003](003-protocol-abstraction.md) | Protocol Plugin Architecture | Accepted | 2025-01-01 |
-| ADR-004 | Pydantic v2 Adoption | Accepted | 2025-01-15 | _Documentation coming soon_ |
-| ADR-005 | HTTPX as HTTP Client | Accepted | 2025-01-15 | _Documentation coming soon_ |
-| ADR-006 | Clean Architecture Implementation | Accepted | 2025-01-20 | _Documentation coming soon_ |
+| ADR-004 | Pydantic v2 Adoption | Draft | 2025-01-15 | Pending |
+| ADR-005 | HTTPX as HTTP Client | Draft | 2025-01-15 | Pending |
+| ADR-006 | Clean Architecture Implementation | Draft | 2025-01-20 | Pending |
 
 ## ADR Workflow
 
