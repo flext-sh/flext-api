@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from flext_api.protocols import p
 from flext_api.typings import t
 from flext_core import r
+from flext_core.protocols import p
 from flext_web import u
 
 

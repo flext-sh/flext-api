@@ -6,9 +6,9 @@ from abc import ABC
 from collections.abc import MutableMapping
 
 from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
-from flext_api.protocols import p
 from flext_api.typings import t
 from flext_core import r
+from flext_core.protocols import p
 from flext_web import u
 
 
