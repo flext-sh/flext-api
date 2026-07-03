@@ -6,11 +6,19 @@ from flext_api._utilities.api_pydantic import FlextApiUtilitiesApiPydantic
 from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
 from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
 from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
+from flext_core import (
+    FlextUtilitiesArgs,
+    FlextUtilitiesModel,
+    FlextUtilitiesReliability,
+)
 from flext_web import u
 
 
 class FlextApiUtilities(
     u,
+    FlextUtilitiesArgs,
+    FlextUtilitiesModel,
+    FlextUtilitiesReliability,
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
 ):
