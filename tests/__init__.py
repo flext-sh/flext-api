@@ -25,20 +25,35 @@ if TYPE_CHECKING:
         x as x,
     )
 
-    from tests.base import TestsFlextApiServiceBase as TestsFlextApiServiceBase, s as s
-    from tests.constants import TestsFlextApiConstants as TestsFlextApiConstants, c as c
-    from tests.models import TestsFlextApiModels as TestsFlextApiModels, m as m
-    from tests.protocols import TestsFlextApiProtocols as TestsFlextApiProtocols, p as p
-    from tests.settings import TestsFlextApiSettings as TestsFlextApiSettings
-    from tests.typings import TestsFlextApiTypes as TestsFlextApiTypes, t as t
-    from tests.unit.test_serializers import (
+    from flext_api.tests.base import (
+        TestsFlextApiServiceBase as TestsFlextApiServiceBase,
+        s as s,
+    )
+    from flext_api.tests.constants import (
+        TestsFlextApiConstants as TestsFlextApiConstants,
+        c as c,
+    )
+    from flext_api.tests.models import (
+        TestsFlextApiModels as TestsFlextApiModels,
+        m as m,
+    )
+    from flext_api.tests.protocols import (
+        TestsFlextApiProtocols as TestsFlextApiProtocols,
+        p as p,
+    )
+    from flext_api.tests.settings import TestsFlextApiSettings as TestsFlextApiSettings
+    from flext_api.tests.typings import TestsFlextApiTypes as TestsFlextApiTypes, t as t
+    from flext_api.tests.unit.test_serializers import (
         TestsFlextApiSerializers as TestsFlextApiSerializers,
     )
-    from tests.unit.test_smoke import TestsFlextApiSmoke as TestsFlextApiSmoke
-    from tests.unit.test_transports_characterization import (
+    from flext_api.tests.unit.test_smoke import TestsFlextApiSmoke as TestsFlextApiSmoke
+    from flext_api.tests.unit.test_transports_characterization import (
         TestsFlextApiTransportsCharacterization as TestsFlextApiTransportsCharacterization,
     )
-    from tests.utilities import TestsFlextApiUtilities as TestsFlextApiUtilities, u as u
+    from flext_api.tests.utilities import (
+        TestsFlextApiUtilities as TestsFlextApiUtilities,
+        u as u,
+    )
 _LAZY_IMPORTS = merge_lazy_imports(
     (".unit",),
     build_lazy_import_map(
