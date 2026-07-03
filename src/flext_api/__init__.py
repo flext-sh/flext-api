@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_api.__version__ import (
     __author__,
     __author_email__,
