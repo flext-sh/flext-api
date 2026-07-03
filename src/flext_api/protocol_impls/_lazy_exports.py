@@ -8,7 +8,11 @@ from types import ModuleType
 from typing import Final
 
 from flext_core import FlextTypes
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import (
+    build_lazy_import_map,
+    cleanup_submodule_namespace,
+    lazy_getattr,
+)
 
 type LazyModuleExport = (
     FlextTypes.JsonValue
@@ -23,39 +27,9 @@ type LazyModuleExport = (
 
 _MODULE_NAME: Final = "flext_api.protocol_impls"
 
-_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "BaseProtocolImplementation": (
-        "flext_api.protocol_impls.base",
-        "BaseProtocolImplementation",
-    ),
-    "FlextWebClientImplementation": (
-        "flext_api.protocol_impls.http_client",
-        "FlextWebClientImplementation",
-    ),
-    "FlextWebProtocolPlugin": (
-        "flext_api.protocol_impls.http",
-        "FlextWebProtocolPlugin",
-    ),
-    "LoggerProtocolImplementation": (
-        "flext_api.protocol_impls.logger",
-        "LoggerProtocolImplementation",
-    ),
-    "RFCProtocolImplementation": (
-        "flext_api.protocol_impls.rfc",
-        "RFCProtocolImplementation",
-    ),
-    "SSEProtocolPlugin": ("flext_api.protocol_impls.sse", "SSEProtocolPlugin"),
-    "StorageBackendImplementation": (
-        "flext_api.protocol_impls.storage_backend",
-        "StorageBackendImplementation",
-    ),
-    "WebSocketProtocolPlugin": (
-        "flext_api.protocol_impls.websocket",
-        "WebSocketProtocolPlugin",
-    ),
-}
+_LAZY_IMPORTS = build_lazy_import_map({".rfc": ("rfc",)})
 
-__all__ = list(_LAZY_IMPORTS)
+__all__: list[str] = ["LazyModuleExport"]
 
 
 def __getattr__(name: str) -> LazyModuleExport:
@@ -67,7 +41,7 @@ def __getattr__(name: str) -> LazyModuleExport:
 
 def __dir__() -> list[str]:
     """Return available protocol implementation exports for autocomplete."""
-    return sorted(__all__)
+    return sorted(_LAZY_IMPORTS)
 
 
 cleanup_submodule_namespace(_MODULE_NAME, _LAZY_IMPORTS)
