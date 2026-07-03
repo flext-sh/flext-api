@@ -7,10 +7,8 @@
 build-backend = "hatchling.build"
 requires = [ "hatchling" ]
 
-# [CUSTOM] project metadata
 [project]
 classifiers = [
-  "Development Status :: 4 - Beta",
   "Development Status :: 5 - Production/Stable",
   "Framework :: FastAPI",
   "Intended Audience :: Developers",
@@ -57,12 +55,23 @@ name = "FLEXT Team"
 [project.optional-dependencies]
 dev = [
   "autoflake>=2.3.1",
-  "bandit>=1.8",
   "black>=25.1",
   "blacken-docs>=1.19",
   "codespell>=2.3",
   "deptry>=0.23",
-  "django-stubs>=5.2.2",
+  "isort>=6.0.1",
+  "pre-commit>=4.0.1",
+  "pylint>=3.3",
+  "pyupgrade>=3.19",
+  "radon>=6.0.1",
+  "ruff>=0.12.3",
+  "vulture>=2.13",
+]
+optional-dependencies.security = [
+  "bandit>=1.8",
+  "pip-audit>=2.7.3",
+]
+optional-dependencies.test = [
   "factory-boy>=3.3.1",
   "faker>=37.4",
   "hypothesis>=6.125",
@@ -126,7 +135,6 @@ dev = [
   "types-setuptools>=80.9",
   "types-tabulate>=0.10",
   "types-toml>=0.10.8.20240310",
-  "vulture>=2.13",
 ]
 
 [project.urls]
@@ -149,7 +157,6 @@ skip_covered = false
 [tool.coverage.run]
 omit = [ "*/dependency_injector/providers.pyx" ]
 
-# [MANAGED] deptry
 [tool.deptry]
 known_first_party = [ "flext_api", "flext_core", "flext_web" ]
 pep621_dev_dependency_groups = [ "dev" ]

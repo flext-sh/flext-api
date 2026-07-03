@@ -62,6 +62,15 @@ _PUBLIC_EXPORTS: tuple[str, ...] = (
     "x",
 )
 
+if TYPE_CHECKING:
+    from flext_core import (
+        FlextDecorators as d,
+        FlextExceptions as e,
+        FlextHandlers as h,
+        FlextMixins as x,
+        FlextService as s,
+        r as r,
+    )
 
 install_lazy_exports(
     __name__,
