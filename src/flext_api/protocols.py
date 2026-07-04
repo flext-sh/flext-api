@@ -19,9 +19,6 @@ from flext_core import FlextProtocols
 
 class FlextApiProtocols(
     FlextProtocols,
-    FlextApiProtocolsBase,
-    FlextApiProtocolsSerialization,
-    FlextApiProtocolsTransports,
 ):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 

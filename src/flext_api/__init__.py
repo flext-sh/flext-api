@@ -3,8 +3,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_api.__version__ import (
     __author__,
     __author_email__,
@@ -64,15 +62,6 @@ _PUBLIC_EXPORTS: tuple[str, ...] = (
     "x",
 )
 
-if TYPE_CHECKING:
-    from flext_core import (
-        d as d,
-        e as e,
-        h as h,
-        r as r,
-        s as s,
-        x as x,
-    )
 
 install_lazy_exports(
     __name__,

@@ -39,9 +39,21 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     )
     DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
     DEFAULT_BASE_URL: Final[str] = "http://localhost:8000"
+    MAX_HOSTNAME_LENGTH: Final[int] = 253
     MAX_URL_LENGTH: Final[int] = 2048
     MIN_PORT: Final[int] = 1
     MAX_PORT: Final[int] = 65535
+    VALID_HTTP_METHODS: Final[frozenset[str]] = frozenset({
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "CONNECT",
+        "TRACE",
+    })
     HTTP_SUCCESS_MIN: Final[int] = 200
     HTTP_SUCCESS_MAX: Final[int] = 300
     HTTP_REDIRECT_MIN: Final[int] = 300
