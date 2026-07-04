@@ -6,7 +6,7 @@ import time
 from collections.abc import MutableMapping
 from typing import Annotated, ClassVar
 
-from flext_api.typings import t
+from flext_api import t
 from flext_web import m, u
 
 

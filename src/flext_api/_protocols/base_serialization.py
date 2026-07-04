@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_api.typings import t
+from flext_api import t
 
 
 class FlextApiProtocolsSerializer:
