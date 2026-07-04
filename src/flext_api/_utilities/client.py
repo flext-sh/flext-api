@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, override
+from typing import TYPE_CHECKING, ClassVar, override
 
-from flext_api import p, t
 from flext_api._utilities.client_request import FlextApiClientRequestMixin
 from flext_api.base import FlextApiServiceBase
 from flext_api.settings import FlextApiSettings
 from flext_core.result import r
+
+if TYPE_CHECKING:
+    from flext_api import p, t
 
 
 class FlextApiClient(FlextApiClientRequestMixin, FlextApiServiceBase[bool]):

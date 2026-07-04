@@ -41,7 +41,7 @@ class FlextApiModelsResponse:
         body: Annotated[
             t.Api.ResponseBody | None,
             m.BeforeValidator(
-                lambda v: FlextApiModelsResponse._normalize_response_body(v)
+                FlextApiModelsResponse._normalize_response_body,
             ),
             u.Field(description="Response body"),
         ] = None

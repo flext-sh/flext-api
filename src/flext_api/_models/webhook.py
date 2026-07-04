@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import time
-from collections.abc import MutableMapping, MutableSequence
-from typing import Annotated, ClassVar
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
 from flext_api import c, t
 from flext_web import m, u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping, MutableSequence
 
 
 class FlextApiModelsWebhook:
@@ -124,16 +126,19 @@ class FlextApiModelsWebhook:
                 )
             )
             event_queue: MutableSequence[FlextApiModelsWebhook.Webhook.Event] = u.Field(
-                default_factory=list, description="Main event queue"
+                default_factory=list,
+                description="Main event queue",
             )
             retry_queue: MutableSequence[FlextApiModelsWebhook.Webhook.Event] = u.Field(
-                default_factory=list, description="Retry event queue"
+                default_factory=list,
+                description="Retry event queue",
             )
             deliveries: MutableMapping[
                 str,
                 FlextApiModelsWebhook.Webhook.Delivery,
             ] = u.Field(
-                default_factory=dict, description="Delivery records by event id"
+                default_factory=dict,
+                description="Delivery records by event id",
             )
 
             @property

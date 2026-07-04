@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import MutableMapping
+from typing import TYPE_CHECKING
 
 from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
-from flext_api.typings import t
 from flext_core import r
-from flext_core.protocols import p
 from flext_web import u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+
+    from flext_api.typings import t
+    from flext_core.protocols import p
 
 
 class FlextApiProtocolPluginManager:
@@ -35,7 +39,7 @@ class FlextApiProtocolPluginManager:
                     f"Plugin '{plugin_name}' not loaded",
                 )
             return r[FlextApiProtocolPluginTypes.Plugin].ok(
-                self._loaded_plugins[plugin_name]
+                self._loaded_plugins[plugin_name],
             )
 
         def resolve_plugins_by_type(
@@ -88,7 +92,7 @@ class FlextApiProtocolPluginManager:
                 return r[bool].fail(f"Plugin '{plugin_name}' not loaded")
             plugin = self._loaded_plugins[plugin_name]
             plugin.shutdown().tap_error(
-                lambda error: self._log_shutdown_warning(error, plugin_name)
+                lambda error: self._log_shutdown_warning(error, plugin_name),
             )
             del self._loaded_plugins[plugin_name]
             self.logger.info("Unloaded plugin: %s", plugin_name)

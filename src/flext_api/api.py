@@ -75,7 +75,7 @@ class FlextApi(FlextApiServiceBase[bool]):
     ) -> p.Result[bool]:
         """Execute s interface."""
         if kwargs:
-            self.logger.info(f"Execute called with kwargs: {kwargs}")
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         return r[bool].ok(True)
 
     def get(

@@ -6,10 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_tests import FlextTestsConstants
 
 from flext_api import c
-from tests.typings import t
+
+if TYPE_CHECKING:
+    from tests.typings import t
 
 
 class TestsFlextApiConstants(FlextTestsConstants, c):

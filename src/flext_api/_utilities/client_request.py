@@ -8,9 +8,11 @@ import httpx
 
 from flext_api import c, m, p, t
 from flext_api._utilities.client_codec import FlextApiClientCodecMixin
-from flext_api.settings import FlextApiSettings
 from flext_core.result import r
 from flext_web import u
+
+if TYPE_CHECKING:
+    from flext_api.settings import FlextApiSettings
 
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
@@ -28,7 +30,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         url_result = self._build_url(request.url)
         if url_result.failure:
             return r[m.Api.HttpResponse].fail(
-                url_result.error or "URL validation failed"
+                url_result.error or "URL validation failed",
             )
         request_body: t.Api.RequestBody = (
             request.body if request.body is not None else b""

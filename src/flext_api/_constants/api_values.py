@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from types import MappingProxyType
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from httpx import HTTPError as _HttpxError
 
 from flext_api._constants.api_enums import FlextApiConstantsEnums
 from flext_web import FlextWebConstants, t
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class FlextApiConstantsValues(FlextApiConstantsEnums):

@@ -127,13 +127,13 @@ class FlextApiUtilitiesSettingsManager:
             )
         timeout_result = u.try_(
             lambda: t.Api.FLOAT_ADAPTER.validate_python(
-                processed.get("timeout", c.Api.DEFAULT_TIMEOUT)
+                processed.get("timeout", c.Api.DEFAULT_TIMEOUT),
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )
         retries_result = u.try_(
             lambda: t.Api.INTEGER_ADAPTER.validate_python(
-                processed.get("max_retries", c.MAX_RETRY_ATTEMPTS)
+                processed.get("max_retries", c.MAX_RETRY_ATTEMPTS),
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )
@@ -148,7 +148,8 @@ class FlextApiUtilitiesSettingsManager:
         for result in (timeout_result, retries_result, headers_result, verify_result):
             if result.failure:
                 return r[m.Api.ClientConfig].fail_op(
-                    "Client configuration validation", result.error
+                    "Client configuration validation",
+                    result.error,
                 )
         config_model = m.Api.ClientConfig(
             base_url=str(processed.get("base_url", c.Api.DEFAULT_BASE_URL)),

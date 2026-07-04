@@ -22,11 +22,11 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
-            str(self.settings.timeout)
+            str(self.settings.timeout),
         )
         if timeout_result.failure:
             timeout_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
-                timeout_result.error or "failed to normalize timeout"
+                timeout_result.error or "failed to normalize timeout",
             )
             return timeout_failure
 
@@ -39,7 +39,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         )
         if payload_result.failure:
             payload_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
-                payload_result.error or "failed to build request payload"
+                payload_result.error or "failed to build request payload",
             )
             return payload_failure
 
@@ -62,7 +62,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             "request_id": "example-request",
         }
         response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
-            m.Api.HttpResponse.model_validate(response_payload)
+            m.Api.HttpResponse.model_validate(response_payload),
         )
         return response_result
 
@@ -85,7 +85,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         execute_result = api.execute(example="basic-usage")
         if execute_result.failure:
             execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].fail(
-                execute_result.error or "flext-api execute failed"
+                execute_result.error or "flext-api execute failed",
             )
             return execute_failure
         self._emit(f"Facade ready: base_url={api.settings.base_url}")
@@ -94,7 +94,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         request_result = self.build_request()
         if request_result.failure:
             request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].fail(
-                request_result.error or "failed to build request"
+                request_result.error or "failed to build request",
             )
             return request_failure
         request = request_result.value
@@ -104,17 +104,17 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         response_result = self.build_response(request)
         if response_result.failure:
             response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].fail(
-                response_result.error or "failed to build response"
+                response_result.error or "failed to build response",
             )
             return response_failure
         response = response_result.value
         self._emit(
-            f"Response ok: status={response.status_code}, success={response.success}"
+            f"Response ok: status={response.status_code}, success={response.success}",
         )
 
         self._emit("\n4. Storage models + railway result ergonomics")
         entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
-            response.body or {}
+            response.body or {},
         )
         namespace = type(self).__name__.lower()
         ttl = int(self.settings.timeout)
@@ -143,7 +143,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         self._emit(
             "Result contract: "
             f"ok.success={r[str].ok('ready').success}, "
-            f"fail.failure={r[str].fail('example failure').failure}"
+            f"fail.failure={r[str].fail('example failure').failure}",
         )
 
         summary: t.JsonMapping = {

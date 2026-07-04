@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api import c, t
-from flext_web import p
+if TYPE_CHECKING:
+    from flext_api import c, t
+    from flext_web import p
 
 
 class FlextApiProtocolsHttpClient:
@@ -16,25 +17,33 @@ class FlextApiProtocolsHttpClient:
         """Protocol for generic HTTP client implementations."""
 
         def delete(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP DELETE request."""
             ...
 
         def get(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP GET request."""
             ...
 
         def post(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP POST request."""
             ...
 
         def put(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP PUT request."""
             ...

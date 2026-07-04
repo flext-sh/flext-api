@@ -35,7 +35,10 @@ __all__: list[str] = ["LazyModuleExport"]
 def __getattr__(name: str) -> LazyModuleExport:
     """Lazy-load protocol implementation exports on first access."""
     return lazy_getattr(
-        name, _LAZY_IMPORTS, vars(sys.modules[_MODULE_NAME]), _MODULE_NAME
+        name,
+        _LAZY_IMPORTS,
+        vars(sys.modules[_MODULE_NAME]),
+        _MODULE_NAME,
     )
 
 
