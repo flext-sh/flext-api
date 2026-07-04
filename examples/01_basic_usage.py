@@ -119,11 +119,11 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         namespace = type(self).__name__.lower()
         ttl = int(self.settings.timeout)
         settings = m.Api.Storage.Settings(namespace=namespace, default_ttl=ttl)
-        entry = m.Api.Storage.Metadata(
-            value=entry_value,
-            timestamp=u.generate_iso_timestamp(),
-            ttl=settings.default_ttl,
-        )
+        entry = m.Api.Storage.Metadata.model_validate({
+            "value": entry_value,
+            "timestamp": u.generate_iso_timestamp(),
+            "ttl": settings.default_ttl,
+        })
         state = m.Api.Storage.State(
             entries={"latest-response": entry},
             operations_count=2,

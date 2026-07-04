@@ -96,15 +96,15 @@ class TestsFlextApiSmoke:
     def test_packb_produces_bytes(self) -> None:
         """Packb returns non-empty bytes for valid input."""
         payload: t.JsonMapping = {"key": "value"}
-        packed = u.packb(payload)
+        packed = u.Api.packb(payload)
         assert packed, "packb should return non-empty bytes"
         assert len(packed) > 0
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """Pack then unpack returns original data."""
         original: t.JsonMapping = {"hello": "world", "count": 42}
-        packed = u.packb(original)
-        result = u.unpackb(packed)
+        packed = u.Api.packb(original)
+        result = u.Api.unpackb(packed)
         assert result.success is True
         assert result.value == original
 
