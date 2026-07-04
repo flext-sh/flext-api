@@ -153,7 +153,7 @@ app = create_fastapi_app(settings)
 
 # Add your routes
 @app.get("/health")
-async def health_check():
+def health_check() -> dict[str, str]:
     return {"status": "healthy"}
 ```
 

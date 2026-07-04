@@ -67,6 +67,9 @@ Use `request_kwargs` for query parameters and request options that belong to `m.
 Every call returns `p.Result[m.Api.HttpResponse]`.
 
 ```python
+from flext_api import FlextApi
+
+result = FlextApi().get("/health")
 if result.failure:
     raise RuntimeError(result.error or "HTTP request failed")
 
