@@ -12,13 +12,6 @@ from flext_web import m, u
 class FlextApiModelsResponse:
     """Response model shard for ``m.Api``."""
 
-    @staticmethod
-    def _normalize_response_body(v: t.JsonValue) -> t.Api.ResponseBody:
-        """Normalize response body."""
-        if v is None:
-            return None
-        return t.Api.RESPONSE_BODY_ADAPTER.validate_python(v)
-
     class HttpResponse(m.Value):
         """Immutable HTTP response value object."""
 
@@ -40,15 +33,20 @@ class FlextApiModelsResponse:
         ] = u.Field(default_factory=lambda: MappingProxyType({}))
         body: Annotated[
             t.Api.ResponseBody | None,
-            m.BeforeValidator(
-                FlextApiModelsResponse._normalize_response_body,
-            ),
             u.Field(description="Response body"),
         ] = None
         request_id: Annotated[
             str,
             u.Field(default="", description="Associated request ID for tracking"),
         ]
+
+        @u.field_validator("body", mode="before")
+        @classmethod
+        def normalize_body(cls, v: t.JsonValue) -> t.Api.ResponseBody:
+            """Normalize response body."""
+            if v is None:
+                return None
+            return t.Api.RESPONSE_BODY_ADAPTER.validate_python(v)
 
         @u.computed_field(return_type=bool)
         @property

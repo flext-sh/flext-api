@@ -7,22 +7,16 @@ preserving flext-web service runtime behavior.
 from __future__ import annotations
 
 from abc import ABC
-from typing import Annotated, override
+from typing import override
 
-from flext_api import FlextApiSettings, p, t
+from flext_api import FlextApiSettings, m, p, t
 from flext_core import s
-from flext_web import u
 
 
 class FlextApiServiceBase[
     TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload],
 ](s[TDomainResult], ABC):
     """Base class for flext-api services with typed API settings access."""
-
-    settings_type: Annotated[
-        type | None,
-        u.Field(description="Settings class for API service initialization"),
-    ] = FlextApiSettings
 
     def __init__(
         self,
@@ -34,11 +28,16 @@ class FlextApiServiceBase[
     ) -> None:
         """Bootstrap API services with one concrete runtime settings contract."""
         super().__init__(
-            settings_type=settings_type,
+            settings_type=settings_type or FlextApiSettings,
             runtime_settings=runtime_settings,
             settings_overrides=settings_overrides,
             initial_context=initial_context,
         )
+
+    @classmethod
+    def _runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+        """Return runtime bootstrap options for API services."""
+        return m.RuntimeBootstrapOptions(settings_type=FlextApiSettings)
 
     @property
     @override

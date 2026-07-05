@@ -12,13 +12,6 @@ from flext_web import m, u
 class FlextApiModelsRequest:
     """Request model shard for ``m.Api``."""
 
-    @staticmethod
-    def _normalize_request_body(v: t.JsonValue) -> t.Api.RequestBody:
-        """Normalize request body."""
-        if v is None:
-            return {}
-        return t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
-
     class HttpRequest(m.Value):
         """Immutable HTTP request value object."""
 
@@ -42,9 +35,6 @@ class FlextApiModelsRequest:
         ] = u.Field(default_factory=lambda: MappingProxyType({}))
         body: Annotated[
             t.Api.RequestBody | None,
-            m.BeforeValidator(
-                FlextApiModelsRequest._normalize_request_body,
-            ),
             u.Field(description="Request body"),
         ] = None
         query_params: Annotated[
@@ -58,6 +48,14 @@ class FlextApiModelsRequest:
                 description="Request timeout in seconds",
             ),
         ]
+
+        @u.field_validator("body", mode="before")
+        @classmethod
+        def normalize_body(cls, v: t.JsonValue) -> t.Api.RequestBody:
+            """Normalize request body."""
+            if v is None:
+                return {}
+            return t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
 
         @u.computed_field(return_type=str)
         @property
