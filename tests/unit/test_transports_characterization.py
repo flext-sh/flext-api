@@ -17,7 +17,7 @@ from flext_api._protocols.base import FlextApiProtocolsBase as pb
 from flext_api._protocols.transports import FlextApiProtocolsTransports
 
 
-class TestsFlextApiTransports:
+class TestsFlextApiTransportsCharacterization:
     """Lock the observable behavior of the HTTP transport public contract."""
 
     @pytest.fixture
