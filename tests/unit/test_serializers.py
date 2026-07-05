@@ -1,7 +1,9 @@
-"""Tests for MessagePack serialization utilities.
+"""Behavioral tests for flext_api serialization utilities.
 
-Tests for flext_api.serializers module, covering success and failure paths
-for the unpackb() function with proper result type handling.
+Exercises the PUBLIC contract of ``u.Api.packb`` / ``u.Api.unpackb`` only:
+observable return values, the ``r[t.JsonValue]`` outcome of the fallible
+``unpackb`` operation, round-trip idempotence, and error propagation. No
+implementation internals are inspected.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,90 +11,150 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import pytest
+
+from flext_api import t
 from tests.utilities import u
 
 
 class TestsFlextApiSerializers:
-    """Tests for unpackb() result type conversion."""
+    """Public-contract behavior of packb/unpackb."""
 
-    def test_unpackb_success_with_dict(self) -> None:
-        """Test successful unpacking of msgpack bytes to dict."""
-        # Arrange: valid msgpack-encoded dict
-        test_data = b"\x81\xa3key\xa5value"  # {"key": "value"} in msgpack
+    # ---- unpackb success --------------------------------------------------
 
-        # Act
-        result = u.Api.unpackb(test_data)
+    @pytest.mark.parametrize(
+        ("packed", "expected"),
+        [
+            (b"\x81\xa3key\xa5value", {"key": "value"}),
+            (b"\x93\x01\x02\x03", [1, 2, 3]),
+            (b"\xa5hello", "hello"),
+            (b"\x2a", 42),
+            (b"\xc3", True),
+            (b"\xc2", False),
+            (b"\x90", []),
+            (b"\x80", {}),
+        ],
+    )
+    def test_unpackb_returns_success_carrying_decoded_value(
+        self,
+        packed: bytes,
+        expected: t.JsonValue,
+    ) -> None:
+        """Valid msgpack decodes to its JSON value inside a successful result."""
+        result = u.Api.unpackb(packed)
 
-        # Assert
         assert result.success is True
-        assert result.value == {"key": "value"}
+        assert result.failure is False
+        assert result.value == expected
+        assert result.error is None
 
-    def test_unpackb_success_with_list(self) -> None:
-        """Test successful unpacking of msgpack bytes to list."""
-        # Arrange: valid msgpack-encoded list
-        test_data = b"\x93\x01\x02\x03"  # [1, 2, 3] in msgpack
+    def test_unpackb_success_unwraps_to_value(self) -> None:
+        """unwrap() on a success yields the decoded value directly."""
+        result = u.Api.unpackb(b"\x81\xa3key\xa5value")
 
-        # Act
-        result = u.Api.unpackb(test_data)
+        assert result.unwrap() == {"key": "value"}
 
-        # Assert
+    def test_unpackb_success_supports_map_combinator(self) -> None:
+        """A successful result composes through map() over its value."""
+        result = u.Api.unpackb(b"\x2a").map(lambda value: [value])
+
         assert result.success is True
-        assert result.value == [1, 2, 3]
+        assert result.value == [42]
 
-    def test_unpackb_success_with_scalar(self) -> None:
-        """Test successful unpacking of msgpack bytes to scalar."""
-        # Arrange: valid msgpack-encoded string
-        test_data = b"\xa5hello"  # "hello" in msgpack
+    def test_unpackb_success_supports_flat_map_combinator(self) -> None:
+        """A successful result chains a further fallible step via flat_map()."""
+        result = u.Api.unpackb(b"\x2a").flat_map(
+            lambda value: u.Api.unpackb(u.Api.packb(value)),
+        )
 
-        # Act
-        result = u.Api.unpackb(test_data)
-
-        # Assert
-        assert result.success is True
-        assert result.value == "hello"
-
-    def test_unpackb_success_with_int(self) -> None:
-        """Test successful unpacking of msgpack bytes to integer."""
-        # Arrange: valid msgpack-encoded integer
-        test_data = b"\x2a"  # 42 in msgpack
-
-        # Act
-        result = u.Api.unpackb(test_data)
-
-        # Assert
         assert result.success is True
         assert result.value == 42
 
-    def test_unpackb_failure_invalid_data(self) -> None:
-        """Test failure when data is invalid/unparseable."""
-        # Arrange: invalid msgpack data
-        test_data = b"\xff\xff\xff\xff"  # Invalid msgpack bytes
+    def test_unpackb_nil_is_success_without_accessible_payload(self) -> None:
+        """Msgpack nil decodes to a success, but the None payload is guarded.
 
-        # Act
-        result = u.Api.unpackb(test_data)
+        The result contract forbids a None success payload, so any payload
+        access raises ValueError even though the operation itself succeeded.
+        """
+        result = u.Api.unpackb(b"\xc0")
 
-        # Assert
-        assert result.failure is True
-        assert result.error is not None
-        assert "msgpack deserialization failed" in result.error
-
-    def test_unpackb_failure_validation_error(self) -> None:
-        """Test failure when unpacked data is outside the public recursive contract."""
-        test_data = b"\xc7\x07\x01invalid"
-        result = u.Api.unpackb(test_data)
-        assert result.failure is True
-        assert result.error is not None
-
-    def test_unpackb_returns_result_type(self) -> None:
-        """Test that unpackb returns r with success/failure semantics."""
-        # Arrange
-        test_data = b"\x81\xa3key\xa5value"
-
-        # Act
-        result = u.Api.unpackb(test_data)
-
-        # Assert: verify r semantics (success case)
         assert result.success is True
-        assert result.failure is False
-        assert result.value == {"key": "value"}
         assert result.error is None
+        with pytest.raises(ValueError, match="non-None payload"):
+            _ = result.value
+
+    # ---- unpackb failure --------------------------------------------------
+
+    @pytest.mark.parametrize(
+        "invalid",
+        [
+            b"\xff\xff\xff\xff",  # trailing extra data
+            b"\xc1",  # msgpack "never used" opcode
+            b"\x81",  # truncated map header
+            b"",  # empty payload
+        ],
+    )
+    def test_unpackb_returns_failure_for_undecodable_bytes(
+        self,
+        invalid: bytes,
+    ) -> None:
+        """Undecodable bytes produce a failure result, never a raised error."""
+        result = u.Api.unpackb(invalid)
+
+        sentinel = "<<unreachable>>"
+        assert result.failure is True
+        assert result.success is False
+        assert result.unwrap_or(sentinel) == sentinel
+
+    def test_unpackb_failure_reports_deserialization_error(self) -> None:
+        """The failure error message names the deserialization operation."""
+        result = u.Api.unpackb(b"\xff\xff\xff\xff")
+
+        assert result.error is not None
+        assert "msgpack deserialization" in result.error
+
+    def test_unpackb_failure_recovers_via_recover(self) -> None:
+        """A failed result recovers through recover() to a caller-supplied value."""
+        recovered = u.Api.unpackb(b"\xff\xff\xff\xff").recover(
+            lambda _error: "fallback",
+        )
+
+        assert recovered.success is True
+        assert recovered.value == "fallback"
+
+    # ---- round trip / invariants -----------------------------------------
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"key": "value"},
+            {"nested": {"a": [1, 2, {"b": True}]}},
+            [1, 2, 3],
+            [],
+            {},
+            "hello",
+            42,
+            True,
+        ],
+    )
+    def test_packb_then_unpackb_is_identity(self, payload: t.JsonValue) -> None:
+        """unpackb(packb(x)) reproduces the original JSON value."""
+        result = u.Api.unpackb(u.Api.packb(payload))
+
+        assert result.success is True
+        assert result.value == payload
+
+    def test_packb_returns_bytes(self) -> None:
+        """Packb produces a bytes payload consumable by unpackb."""
+        packed = u.Api.packb({"key": "value"})
+
+        assert isinstance(packed, bytes)
+
+    def test_unpackb_is_deterministic(self) -> None:
+        """Decoding the same bytes twice yields equal values."""
+        packed = u.Api.packb([1, 2, 3])
+
+        first = u.Api.unpackb(packed)
+        second = u.Api.unpackb(packed)
+
+        assert first.value == second.value == [1, 2, 3]
