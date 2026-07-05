@@ -105,9 +105,10 @@ class TestsFlextApiSmoke:
 
     def test_http_request_preserves_supplied_method(self) -> None:
         """A supplied method survives validation unchanged."""
-        request = m.Api.HttpRequest.model_validate(
-            {"url": "https://example.com", "method": "POST"}
-        )
+        request = m.Api.HttpRequest.model_validate({
+            "url": "https://example.com",
+            "method": "POST",
+        })
         assert request.method == "POST"
 
     @pytest.mark.parametrize(
@@ -122,9 +123,10 @@ class TestsFlextApiSmoke:
         self, headers: dict[str, str], expected: str
     ) -> None:
         """content_type computed field reflects headers, defaulting to JSON."""
-        request = m.Api.HttpRequest.model_validate(
-            {"url": "https://example.com", "headers": headers}
-        )
+        request = m.Api.HttpRequest.model_validate({
+            "url": "https://example.com",
+            "headers": headers,
+        })
         assert request.content_type == expected
 
     def test_http_request_rejects_empty_url(self) -> None:
@@ -135,15 +137,17 @@ class TestsFlextApiSmoke:
     def test_http_request_rejects_unknown_method(self) -> None:
         """A method outside the allowed pattern fails validation."""
         with pytest.raises(c.ValidationError):
-            m.Api.HttpRequest.model_validate(
-                {"url": "https://example.com", "method": "FETCH"}
-            )
+            m.Api.HttpRequest.model_validate({
+                "url": "https://example.com",
+                "method": "FETCH",
+            })
 
     def test_http_request_roundtrips_through_model_dump(self) -> None:
         """model_dump preserves the observable request fields."""
-        request = m.Api.HttpRequest.model_validate(
-            {"url": "https://example.com", "method": "POST"}
-        )
+        request = m.Api.HttpRequest.model_validate({
+            "url": "https://example.com",
+            "method": "POST",
+        })
         dumped = request.model_dump()
         assert dumped["url"] == "https://example.com"
         assert dumped["method"] == "POST"
@@ -152,16 +156,15 @@ class TestsFlextApiSmoke:
 
     def test_http_response_accepts_valid_payload(self) -> None:
         """A 200 response exposes its status code and body verbatim."""
-        response = m.Api.HttpResponse.model_validate(
-            {"status_code": 200, "body": {"result": "ok"}}
-        )
+        response = m.Api.HttpResponse.model_validate({
+            "status_code": 200,
+            "body": {"result": "ok"},
+        })
         assert response.status_code == 200
         assert response.body == {"result": "ok"}
 
     @pytest.mark.parametrize("status_code", [0, 99, 600, 999])
-    def test_http_response_rejects_out_of_range_status(
-        self, status_code: int
-    ) -> None:
+    def test_http_response_rejects_out_of_range_status(self, status_code: int) -> None:
         """Status codes outside 100-599 fail validation."""
         with pytest.raises(c.ValidationError):
             m.Api.HttpResponse.model_validate({"status_code": status_code})
@@ -216,9 +219,7 @@ class TestsFlextApiSmoke:
             {},
         ],
     )
-    def test_packb_unpackb_is_lossless_roundtrip(
-        self, original: t.JsonMapping
-    ) -> None:
+    def test_packb_unpackb_is_lossless_roundtrip(self, original: t.JsonMapping) -> None:
         """Packing then unpacking reproduces the original payload."""
         result = u.Api.unpackb(u.Api.packb(original))
         assert result.success is True
