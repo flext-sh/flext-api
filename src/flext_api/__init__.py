@@ -18,15 +18,15 @@ from flext_api.__version__ import (
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.api import FlextApi, api
-    from flext_api.base import FlextApiServiceBase, s
-    from flext_api.constants import FlextApiConstants, c
-    from flext_api.models import FlextApiModels, m
-    from flext_api.protocols import FlextApiProtocols, p
-    from flext_api.settings import FlextApiSettings
-    from flext_api.typings import FlextApiTypes, t
-    from flext_api.utilities import FlextApiUtilities, u
-    from flext_web import d, e, h, r, x
+    from flext_api.api import FlextApi as FlextApi, api as api
+    from flext_api.base import FlextApiServiceBase as FlextApiServiceBase, s as s
+    from flext_api.constants import FlextApiConstants as FlextApiConstants, c as c
+    from flext_api.models import FlextApiModels as FlextApiModels, m as m
+    from flext_api.protocols import FlextApiProtocols as FlextApiProtocols, p as p
+    from flext_api.settings import FlextApiSettings as FlextApiSettings
+    from flext_api.typings import FlextApiTypes as FlextApiTypes, t as t
+    from flext_api.utilities import FlextApiUtilities as FlextApiUtilities, u as u
+    from flext_web import d as d, e as e, h as h, r as r, x as x
 _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".api": (
