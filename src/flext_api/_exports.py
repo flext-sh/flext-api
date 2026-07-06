@@ -42,7 +42,7 @@ _LOCAL_LAZY_IMPORTS = build_lazy_import_map(
             "FlextApiUtilities",
             "u",
         ),
-        "flext_core._root_typing_parts.facades": (
+        "flext_web": (
             "d",
             "e",
             "h",

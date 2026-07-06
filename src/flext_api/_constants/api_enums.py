@@ -77,4 +77,4 @@ class FlextApiConstantsEnums:
         HTTPS = "https"
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiConstantsEnums"]
+__all__: list[str] = ["FlextApiConstantsEnums"]
