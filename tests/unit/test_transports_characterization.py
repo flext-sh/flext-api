@@ -66,7 +66,7 @@ class TestsFlextApiTransportsCharacterization:
     def test_connect_accepts_documented_client_options(
         self,
         transport: FlextApiProtocolsTransports.FlextWebTransport,
-        options: dict[str, t.JsonValue],
+        options: t.JsonMapping,
     ) -> None:
         # connect's public signature accepts optional httpx client options; each
         # supported combination must still yield a successful connection.

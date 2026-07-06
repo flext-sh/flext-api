@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from flext_api import t
+
 from flext_core.lazy import build_lazy_import_map, merge_lazy_imports
 
 _LOCAL_LAZY_IMPORTS = build_lazy_import_map(
@@ -77,4 +79,4 @@ FLEXT_API_LAZY_IMPORTS = merge_lazy_imports(
     module_name="flext_api",
 )
 
-__all__: list[str] = ["FLEXT_API_LAZY_IMPORTS"]
+__all__: t.MutableSequenceOf[str] = ["FLEXT_API_LAZY_IMPORTS"]
