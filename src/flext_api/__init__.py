@@ -18,7 +18,7 @@ from flext_api.__version__ import (
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.api import FlextApi
+    from flext_api.api import FlextApi, api
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.constants import FlextApiConstants, c
     from flext_api.models import FlextApiModels, m
