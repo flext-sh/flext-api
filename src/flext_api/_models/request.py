@@ -71,4 +71,4 @@ class FlextApiModelsRequest:
             return str(c.Api.ContentType.JSON)
 
 
-__all__: list[str] = ["FlextApiModelsRequest"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsRequest"]

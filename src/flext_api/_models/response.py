@@ -102,4 +102,4 @@ class FlextApiModelsResponse:
         )
 
 
-__all__: list[str] = ["FlextApiModelsResponse"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsResponse"]

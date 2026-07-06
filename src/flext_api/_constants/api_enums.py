@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from enum import StrEnum, unique
 
+from flext_api import t
+
 
 class FlextApiConstantsEnums:
     """API enum constants mixed into ``c.Api``."""
@@ -77,4 +79,4 @@ class FlextApiConstantsEnums:
         HTTPS = "https"
 
 
-__all__: list[str] = ["FlextApiConstantsEnums"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiConstantsEnums"]

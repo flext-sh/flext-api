@@ -52,4 +52,4 @@ class FlextApiModelsClient:
             return bool(self.base_url) and self.timeout > 0
 
 
-__all__: list[str] = ["FlextApiModelsClient"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsClient"]

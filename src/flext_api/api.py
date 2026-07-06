@@ -195,4 +195,4 @@ api = FlextApi.fetch_global()
 """Global FlextApi facade instance used as the canonical runtime entrypoint."""
 
 
-__all__: list[str] = ["FlextApi", "api"]
+__all__: t.MutableSequenceOf[str] = ["FlextApi", "api"]

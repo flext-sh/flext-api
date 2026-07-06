@@ -8,6 +8,7 @@ from flext_web import m, u
 
 if TYPE_CHECKING:
     from enum import StrEnum
+from flext_api import t
 
 
 class FlextApiUtilitiesApiPydantic:
@@ -32,4 +33,4 @@ class FlextApiUtilitiesApiPydantic:
             return m.BeforeValidator(_coerce)
 
 
-__all__: list[str] = ["FlextApiUtilitiesApiPydantic"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesApiPydantic"]

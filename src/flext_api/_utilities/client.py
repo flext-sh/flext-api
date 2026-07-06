@@ -42,4 +42,4 @@ class FlextApiClient(FlextApiClientRequestMixin, FlextApiServiceBase[bool]):
         return r[bool].ok(True)
 
 
-__all__: list[str] = ["FlextApiClient"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClient"]

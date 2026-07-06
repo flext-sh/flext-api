@@ -149,4 +149,4 @@ class FlextApiModelsStorage:
                 return self.cache_hits / self.total_operations
 
 
-__all__: list[str] = ["FlextApiModelsStorage"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsStorage"]

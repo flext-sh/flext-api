@@ -164,4 +164,4 @@ class FlextApiUtilitiesRequestUtils:
             )
 
 
-__all__: list[str] = ["FlextApiUtilitiesRequestUtils"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesRequestUtils"]

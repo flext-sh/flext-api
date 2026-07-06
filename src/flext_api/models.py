@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from flext_api import t
 from flext_api._models.client import FlextApiModelsClient
 from flext_api._models.request import FlextApiModelsRequest
 from flext_api._models.response import FlextApiModelsResponse
@@ -25,4 +26,4 @@ class FlextApiModels(FlextModels):
 
 m = FlextApiModels
 
-__all__: list[str] = ["FlextApiModels", "m"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModels", "m"]

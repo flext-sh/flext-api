@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class FlextApiConstantsValues(FlextApiConstantsEnums):
     """API scalar constants mixed into ``c.Api``."""
 
-    EXC_HTTPX: Final[tuple[type[Exception], ...]] = (
+    EXC_HTTPX: Final[t.VariadicTuple[type[Exception]]] = (
         ConnectionError,
         KeyError,
         TypeError,
@@ -78,4 +78,4 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     })
 
 
-__all__: list[str] = ["FlextApiConstantsValues"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiConstantsValues"]

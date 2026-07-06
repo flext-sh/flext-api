@@ -99,4 +99,4 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
             return r[m.Api.HttpResponse].fail_op("HTTP client request", exc)
 
 
-__all__: list[str] = ["FlextApiClientRequestMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClientRequestMixin"]

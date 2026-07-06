@@ -7,6 +7,7 @@ from collections.abc import Callable, Mapping, Sequence
 from types import ModuleType
 from typing import Final
 
+from flext_api import t
 from flext_core import FlextTypes
 from flext_core.lazy import (
     build_lazy_import_map,
@@ -29,7 +30,7 @@ _MODULE_NAME: Final = "flext_api.protocol_impls"
 
 _LAZY_IMPORTS = build_lazy_import_map({".rfc": ("rfc",)})
 
-__all__: list[str] = ["LazyModuleExport"]
+__all__: t.MutableSequenceOf[str] = ["LazyModuleExport"]
 
 
 def __getattr__(name: str) -> LazyModuleExport:
@@ -42,7 +43,7 @@ def __getattr__(name: str) -> LazyModuleExport:
     )
 
 
-def __dir__() -> list[str]:
+def __dir__() -> t.MutableSequenceOf[str]:
     """Return available protocol implementation exports for autocomplete."""
     return sorted(_LAZY_IMPORTS)
 

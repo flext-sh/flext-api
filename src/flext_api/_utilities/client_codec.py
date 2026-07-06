@@ -89,4 +89,4 @@ class FlextApiClientCodecMixin:
         return result
 
 
-__all__: list[str] = ["FlextApiClientCodecMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClientCodecMixin"]

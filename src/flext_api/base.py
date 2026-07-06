@@ -51,4 +51,4 @@ class FlextApiServiceBase[
 
 s = FlextApiServiceBase
 
-__all__: list[str] = ["FlextApiServiceBase", "s"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiServiceBase", "s"]
