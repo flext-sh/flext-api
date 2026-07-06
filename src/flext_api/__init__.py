@@ -27,7 +27,13 @@ if TYPE_CHECKING:
     from flext_api.settings import FlextApiSettings as FlextApiSettings
     from flext_api.typings import FlextApiTypes as FlextApiTypes, t as t
     from flext_api.utilities import FlextApiUtilities as FlextApiUtilities, u as u
-    from flext_core._root_typing_parts import d as d, e as e, h as h, r as r, x as x
+    from flext_core._root_typing_parts.facades import (
+        d as d,
+        e as e,
+        h as h,
+        r as r,
+        x as x,
+    )
 
 
 _LAZY_IMPORTS = FLEXT_API_LAZY_IMPORTS

@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from enum import StrEnum, unique
 
-from flext_api import t
-
 
 class FlextApiConstantsEnums:
     """API enum constants mixed into ``c.Api``."""
