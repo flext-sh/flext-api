@@ -11,8 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import t
-
 from importlib.metadata import PackageMetadata, metadata
 
 from flext_core.__version__ import FlextVersion
@@ -32,7 +30,7 @@ __author__ = FlextApiVersion.__author__
 __author_email__ = FlextApiVersion.__author_email__
 __license__ = FlextApiVersion.__license__
 __url__ = FlextApiVersion.__url__
-__all__: t.MutableSequenceOf[str] = [
+__all__: list[str] = [
     "FlextApiVersion",
     "__author__",
     "__author_email__",
