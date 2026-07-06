@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from flext_api._constants.api import FlextApiConstantsApi
 from flext_web import FlextWebConstants
-from flext_api import t
 
 
 class FlextApiConstants(FlextWebConstants):
@@ -16,4 +15,4 @@ class FlextApiConstants(FlextWebConstants):
 
 c = FlextApiConstants
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiConstants", "c"]
+__all__: list[str] = ["FlextApiConstants", "c"]
