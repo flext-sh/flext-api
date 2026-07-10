@@ -18,6 +18,10 @@ from flext_api.__version__ import (
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_api._settings import (
+        FlextApiSettings as FlextApiSettings,
+        settings as settings,
+    )
     from flext_api.api import FlextApi as FlextApi, api as api
     from flext_api.base import FlextApiServiceBase as FlextApiServiceBase, s as s
     from flext_api.constants import FlextApiConstants as FlextApiConstants, c as c
