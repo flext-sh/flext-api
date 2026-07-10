@@ -2,28 +2,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import httpx
 
-from flext_api import c, m, p, t
+from flext_api import c, m, p, settings, t
 from flext_api._utilities.client_codec import FlextApiClientCodecMixin
 from flext_core.result import r
 from flext_web import u
 
-if TYPE_CHECKING:
-    from flext_api.settings import FlextApiSettings
-
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
     """Request execution helpers for FlextApiClient."""
-
-    if TYPE_CHECKING:
-
-        @property
-        def settings(self) -> FlextApiSettings:
-            """Settings contract supplied by FlextApiServiceBase at runtime."""
-            ...
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns."""
@@ -53,9 +41,9 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         path_stripped = path.strip()
         if not path_stripped:
             return r[str].fail("URL path cannot be empty")
-        if not self.settings.base_url.strip():
+        if not settings.Api.base_url.strip():
             return r[str].ok(path_stripped)
-        base = self.settings.base_url.strip().rstrip("/")
+        base = settings.Api.base_url.strip().rstrip("/")
         if path_stripped.startswith("/"):
             return r[str].ok(f"{base}{path_stripped}")
         return r[str].ok(f"{base}/{path_stripped}")
@@ -69,7 +57,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         """Execute HTTP request using httpx client."""
         try:
             headers: t.StrMapping = {
-                **self.settings.default_headers,
+                **settings.Api.default_headers,
                 **request.headers,
             }
             with httpx.Client(timeout=request.timeout) as client:

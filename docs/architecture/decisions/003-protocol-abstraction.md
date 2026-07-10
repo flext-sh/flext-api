@@ -144,7 +144,7 @@ class FlextApiClient(s[None]):
 
     def __init__(self, protocol: str = "http", **settings):
         super().__init__()
-        self.config = settings
+        config = settings
 
     async def request(self, method: str, url: str, **kwargs) -> p.Result[t.JsonValue]:
         """Unified request method that delegates to protocol."""

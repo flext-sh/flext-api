@@ -237,7 +237,7 @@ class TestsFlextApiSmoke:
     def test_client_execute_reports_success(self) -> None:
         """A configured client executes its lifecycle successfully."""
         client = FlextApiClient(
-            settings=FlextApiSettings(base_url="https://service.example")
+            settings=FlextApiSettings(Api={"base_url": "https://service.example"})
         )
         result = client.execute()
         assert result.success is True
@@ -245,16 +245,16 @@ class TestsFlextApiSmoke:
 
     def test_facade_execute_reports_success_and_retains_settings(self) -> None:
         """The facade executes successfully and preserves its settings."""
-        settings = FlextApiSettings(base_url="https://api.example", timeout=4.0)
+        settings = FlextApiSettings(Api={"base_url": "https://api.example", "timeout": 4.0})
         api = FlextApi(settings=settings)
         result = api.execute()
         assert result.success is True
         assert result.value is True
-        assert api.settings.base_url == "https://api.example"
-        assert api.settings.timeout == pytest.approx(4.0)
+        assert api.settings.Api.base_url == "https://api.example"
+        assert api.settings.Api.timeout == pytest.approx(4.0)
 
     def test_facade_default_settings_provide_base_url(self) -> None:
         """A facade built without settings still exposes a usable base_url."""
         api = FlextApi()
-        assert isinstance(api.settings.base_url, str)
+        assert isinstance(api.settings.Api.base_url, str)
         assert api.execute().success is True

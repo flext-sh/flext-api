@@ -23,12 +23,12 @@ if TYPE_CHECKING:
     from flext_api.constants import FlextApiConstants as FlextApiConstants, c as c
     from flext_api.models import FlextApiModels as FlextApiModels, m as m
     from flext_api.protocols import FlextApiProtocols as FlextApiProtocols, p as p
-    from flext_api.settings import FlextApiSettings as FlextApiSettings
     from flext_api.typings import FlextApiTypes as FlextApiTypes, t as t
     from flext_api.utilities import FlextApiUtilities as FlextApiUtilities, u as u
     from flext_web import d as d, e as e, h as h, r as r, x as x
 _LAZY_IMPORTS = build_lazy_import_map(
     {
+        "._settings": ("FlextApiSettings", "settings"),
         ".api": (
             "FlextApi",
             "api",
@@ -49,7 +49,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "FlextApiProtocols",
             "p",
         ),
-        ".settings": ("FlextApiSettings",),
         ".typings": (
             "FlextApiTypes",
             "t",
@@ -70,12 +69,13 @@ _LAZY_IMPORTS = build_lazy_import_map(
 
 
 __all__: tuple[str, ...] = (
+    "FlextApiSettings",
+    "settings",
     "FlextApi",
     "FlextApiConstants",
     "FlextApiModels",
     "FlextApiProtocols",
     "FlextApiServiceBase",
-    "FlextApiSettings",
     "FlextApiTypes",
     "FlextApiUtilities",
     "__author__",

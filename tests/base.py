@@ -17,7 +17,6 @@ class TestsFlextApiServiceBase(tests_s):
     @override
     def fetch_settings(cls) -> TestsFlextApiSettings:
         """Return the typed API+Tests settings singleton."""
-        return TestsFlextApiSettings.fetch_global()
 
     @classmethod
     @override

@@ -27,18 +27,18 @@ from flext_api import FlextApi, c, m, p, r, s, t, u
 class FlextApiExamplesDemo(s[t.JsonMapping]):
     @override
     def execute(self) -> p.Result[t.JsonMapping]:
-        api = FlextApi(settings=self.settings)
+        api = FlextApi(settings=settings)
         return api.execute().map(
             lambda ready: {
                 "ready": ready,
-                "base_url": self.settings.base_url,
+                "base_url": settings.Api.base_url,
             }
         )
 ```
 
 ## Public Surfaces To Prefer
 
-- `s` for example setup through `base.py` and typed `self.settings`
+- `s` for example setup through `base.py` and typed `settings`
 - `FlextApi` for facade ergonomics
 - `m.Api.*` for request, response, and storage models
 - `u.Api.RequestUtils` for normalized request payload construction

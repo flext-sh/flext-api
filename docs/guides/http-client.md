@@ -31,7 +31,7 @@ else:
 ```python
 from flext_api import FlextApiClient, FlextApiSettings, c, m
 
-settings = FlextApiSettings(base_url="https://api.example.com")
+settings = FlextApiSettings(Api={"base_url": "https://api.example.com"})
 client = FlextApiClient(settings=settings)
 
 request = m.Api.HttpRequest.model_validate({
@@ -39,7 +39,7 @@ request = m.Api.HttpRequest.model_validate({
     "url": "/users",
     "headers": {"Accept": "application/json"},
     "query_params": {"limit": "10"},
-    "timeout": settings.timeout,
+    "timeout": settings.Api.timeout,
 })
 
 result = client.request(request)

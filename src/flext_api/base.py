@@ -46,7 +46,7 @@ class FlextApiServiceBase[
         settings = self.runtime_settings
         if settings is not None:
             return FlextApiSettings.model_validate(settings)
-        return FlextApiSettings.fetch_global()
+        return None
 
 
 s = FlextApiServiceBase
