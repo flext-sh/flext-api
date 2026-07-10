@@ -38,7 +38,10 @@ class FlextApiSettings(FlextSettings):
 
         base_url: Annotated[
             str,
-            Field(default="http://localhost:8000", description="Base URL for relative requests"),
+            Field(
+                default="http://localhost:8000",
+                description="Base URL for relative requests",
+            ),
         ]
         timeout: Annotated[
             float,
@@ -54,7 +57,10 @@ class FlextApiSettings(FlextSettings):
         ]
         default_headers: Annotated[
             dict[str, str],
-            Field(default_factory=dict, description="Default headers applied to all requests"),
+            Field(
+                default_factory=dict,
+                description="Default headers applied to all requests",
+            ),
         ]
         headers: Annotated[
             dict[str, str],

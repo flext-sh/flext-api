@@ -69,13 +69,12 @@ _LAZY_IMPORTS = build_lazy_import_map(
 
 
 __all__: tuple[str, ...] = (
-    "FlextApiSettings",
-    "settings",
     "FlextApi",
     "FlextApiConstants",
     "FlextApiModels",
     "FlextApiProtocols",
     "FlextApiServiceBase",
+    "FlextApiSettings",
     "FlextApiTypes",
     "FlextApiUtilities",
     "__author__",
@@ -95,6 +94,7 @@ __all__: tuple[str, ...] = (
     "p",
     "r",
     "s",
+    "settings",
     "t",
     "u",
     "x",
