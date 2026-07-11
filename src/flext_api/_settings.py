@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_core import FlextSettings
@@ -82,6 +82,22 @@ class FlextApiSettings(FlextSettings):
             default_factory=_Api,
             description="Namespaced API settings.",
         )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _lift_flat_api_fields(cls, data: object) -> object:
+        """Fold top-level ``_Api`` field kwargs into the ``Api`` namespace."""
+        if not isinstance(data, dict):
+            return data
+        api_fields = cls._Api.model_fields
+        flat = {key: data[key] for key in api_fields if key in data}
+        if not flat:
+            return data
+        merged = {key: value for key, value in data.items() if key not in api_fields}
+        existing = merged.get("Api")
+        base = dict(existing) if isinstance(existing, dict) else {}
+        merged["Api"] = {**base, **flat}
+        return merged
 
 
 settings: FlextApiSettings = FlextApiSettings.fetch_global()

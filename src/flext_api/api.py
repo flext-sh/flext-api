@@ -14,6 +14,7 @@ from typing import ClassVar, override
 
 from flext_api import (
     FlextApiServiceBase,
+    FlextApiSettings,
     c,
     m,
     p,
@@ -36,9 +37,14 @@ class FlextApi(FlextApiServiceBase[bool]):
     model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
+    def __init__(self, settings: FlextApiSettings | None = None) -> None:
+        """Bind the facade to explicit settings or the global singleton."""
+        resolved = settings if settings is not None else FlextApiSettings.fetch_global()
+        super().__init__(runtime_settings=resolved)
+
     @property
     def client(self) -> FlextApiClient:
-        """Return the lazily created HTTP client bound to this facade settings."""
+        """The lazily created HTTP client bound to this facade settings."""
         client = self._client
         if client is None:
             client = FlextApiClient(settings=self.settings)

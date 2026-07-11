@@ -42,7 +42,7 @@ class FlextApiServiceBase[
     @property
     @override
     def settings(self) -> FlextApiSettings:
-        """Return the typed API settings bound to this service runtime."""
+        """The typed API settings bound to this service runtime."""
         runtime = self.runtime_settings
         if runtime is not None:
             return FlextApiSettings.model_validate(runtime)
