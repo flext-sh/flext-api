@@ -144,6 +144,8 @@ else:
 ### FastAPI Application Setup
 
 ```python
+from __future__ import annotations
+
 from flext_api import FlextApiSettings, create_fastapi_app
 
 # Create FastAPI application
