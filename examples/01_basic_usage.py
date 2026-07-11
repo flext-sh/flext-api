@@ -118,11 +118,16 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         )
         namespace = type(self).__name__.lower()
         ttl = int(settings.Api.timeout)
-        settings = m.Api.Storage.Settings(namespace=namespace, default_ttl=ttl)
+        # NOTE (multi-agent): avoid shadowing the module-level ``settings``
+        # singleton (ADR-005 namespaced settings); use a distinct local name.
+        storage_settings = m.Api.Storage.Settings(
+            namespace=namespace,
+            default_ttl=ttl,
+        )
         entry = m.Api.Storage.Metadata.model_validate({
             "value": entry_value,
             "timestamp": u.generate_iso_timestamp(),
-            "ttl": settings.default_ttl,
+            "ttl": storage_settings.default_ttl,
         })
         state = m.Api.Storage.State(
             entries={"latest-response": entry},
@@ -136,7 +141,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             cache_misses=state.cache_misses,
             storage_size=len(state.entries),
             memory_usage=len(repr(state.entries)),
-            namespace=settings.namespace,
+            namespace=storage_settings.namespace,
         )
         self._emit(f"Storage entry: {state.entries['latest-response'].value}")
         self._emit(f"Stats: {stats.model_dump(mode='python')}")
