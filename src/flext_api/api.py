@@ -18,7 +18,6 @@ from flext_api import (
     m,
     p,
     r,
-    settings,
     t,
     u,
 )
@@ -42,7 +41,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         """Return the lazily created HTTP client bound to this facade settings."""
         client = self._client
         if client is None:
-            client = FlextApiClient(settings=settings)
+            client = FlextApiClient(settings=self.settings)
             self._client = client
         return client
 
