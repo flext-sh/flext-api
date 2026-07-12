@@ -22,7 +22,7 @@ class TestsFlextApiTransportsCharacterization:
 
     @pytest.fixture
     def transport(self) -> FlextApiProtocolsTransports.FlextWebTransport:
-        """A fresh, disconnected HTTP transport."""
+        """Return a fresh, disconnected HTTP transport."""
         return FlextApiProtocolsTransports.FlextWebTransport()
 
     def test_connect_rejects_empty_url(
