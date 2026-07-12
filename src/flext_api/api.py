@@ -160,7 +160,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """Generic HTTP method executor using monadic patterns - no fallbacks.
+        """Execute a generic HTTP method using monadic patterns - no fallbacks.
 
         Args:
         method: HTTP method (GET, POST, etc.).
