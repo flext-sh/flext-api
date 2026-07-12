@@ -152,6 +152,21 @@ class TestsFlextApiSmoke:
         assert dumped["url"] == "https://example.com"
         assert dumped["method"] == "POST"
 
+    def test_http_request_defaults_sni_hostname_to_none(self) -> None:
+        """A request without an explicit SNI hostname exposes None."""
+        request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
+        assert request.sni_hostname is None
+
+    def test_http_request_preserves_sni_hostname_for_ip_targets(self) -> None:
+        """An IP-targeted request keeps the SNI hostname for TLS verification."""
+        request = m.Api.HttpRequest.model_validate({
+            "url": "https://185.199.108.153/path",
+            "headers": {"Host": "www.encode.io"},
+            "sni_hostname": "www.encode.io",
+        })
+        assert request.sni_hostname == "www.encode.io"
+        assert request.model_dump(round_trip=True)["sni_hostname"] == "www.encode.io"
+
     # ---- HttpResponse model contract ------------------------------------
 
     def test_http_response_accepts_valid_payload(self) -> None:

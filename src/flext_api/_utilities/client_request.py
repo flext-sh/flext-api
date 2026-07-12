@@ -60,6 +60,9 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
                 **settings.Api.default_headers,
                 **request.headers,
             }
+            extensions = (
+                {"sni_hostname": request.sni_hostname} if request.sni_hostname else {}
+            )
             with httpx.Client(timeout=request.timeout) as client:
                 response = client.request(
                     method=str(request.method),
@@ -67,6 +70,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
                     headers=headers,
                     params=request.query_params or {},
                     content=serialized_body or None,
+                    extensions=extensions,
                 )
             if response.status_code >= c.Api.HTTP_ERROR_MIN:
                 return r[m.Api.HttpResponse].fail(

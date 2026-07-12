@@ -48,6 +48,16 @@ class FlextApiModelsRequest:
                 description="Request timeout in seconds",
             ),
         ]
+        sni_hostname: Annotated[
+            str | None,
+            u.Field(
+                default=None,
+                description=(
+                    "TLS SNI / certificate hostname to verify when the URL "
+                    "targets an explicit IP (httpx sni_hostname extension)."
+                ),
+            ),
+        ] = None
 
         @u.field_validator("body", mode="before")
         @classmethod
@@ -60,7 +70,7 @@ class FlextApiModelsRequest:
         @u.computed_field(return_type=str)
         @property
         def content_type(self) -> str:
-            """Get content type from headers."""
+            """Content type resolved from headers."""
             if c.Api.HEADER_CONTENT_TYPE in self.headers:
                 header_value: str = self.headers[c.Api.HEADER_CONTENT_TYPE]
                 return header_value
