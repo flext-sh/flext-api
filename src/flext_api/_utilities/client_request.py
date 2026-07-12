@@ -72,18 +72,17 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
                     content=serialized_body or None,
                     extensions=extensions,
                 )
-            if response.status_code >= c.Api.HTTP_ERROR_MIN:
-                return r[m.Api.HttpResponse].fail(
-                    f"HTTP {response.status_code}: {response.reason_phrase}",
-                )
+            # Any HTTP status (incl. 4xx/5xx) is a successful transport round-trip;
+            # HttpResponse classifies it (success/client_error/server_error). Only a
+            # transport failure (connection/TLS/timeout/DNS) becomes r.fail below.
             return self._deserialize_body(response).flat_map(
                 lambda body: u.try_(
-                    lambda: m.Api.HttpResponse.model_validate({
-                        "status_code": response.status_code,
-                        "headers": dict(response.headers),
-                        "body": body,
-                        "request_id": "",
-                    }),
+                    lambda: m.Api.HttpResponse(
+                        status_code=response.status_code,
+                        headers=dict(response.headers),
+                        body=body,
+                        request_id="",
+                    ),
                     catch=(c.ValidationError, ValueError, TypeError),
                 ).map_error(lambda exc: f"Response model validation failed: {exc}"),
             )
