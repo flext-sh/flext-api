@@ -9,9 +9,9 @@
 - Keywords: `enterprise`, `fastapi`, `flext`, `http`, `rest`, `typed`
 - Main facades: _none_
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextApiConstants`, `FlextApiProtocols`, `FlextApiServiceBase`, `FlextApiSettings`, `FlextApi`, `FlextApiUtilities`, `FlextApiModels`, `FlextApiTypes`
+- Public symbol exports: `FlextApi`, `settings`, `FlextApiConstants`, `FlextApiModels`, `FlextApiUtilities`, `FlextApiProtocols`, `FlextApiServiceBase`, `FlextApiSettings`, `FlextApiTypes`
 - Exported module shortcuts: `api`
-- Generated module pages: `8`
+- Generated module pages: `7`
 
 ## Next Pages
 
