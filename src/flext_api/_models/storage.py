@@ -51,12 +51,10 @@ class FlextApiModelsStorage:
             _flext_enforcement_exempt: ClassVar[bool] = True
 
             value: Annotated[
-                t.JsonValue,
-                u.Field(description="Stored JSON-compatible value payload"),
+                t.JsonValue, u.Field(description="Stored JSON-compatible value payload")
             ]
             timestamp: Annotated[
-                str,
-                u.Field(description="Entry creation timestamp in ISO format"),
+                str, u.Field(description="Entry creation timestamp in ISO format")
             ]
             ttl: Annotated[
                 t.Numeric | None,
@@ -72,7 +70,7 @@ class FlextApiModelsStorage:
 
             @property
             def expired(self) -> bool:
-                """Return whether the entry is expired."""
+                """Whether the entry is expired."""
                 if self.ttl is None:
                     return False
                 return time.time() - self.created_at > float(self.ttl)
@@ -81,8 +79,7 @@ class FlextApiModelsStorage:
             """Mutable storage runtime state kept in one central model."""
 
             model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
-                extra="forbid",
-                validate_assignment=True,
+                extra="forbid", validate_assignment=True
             )
             entries: MutableMapping[str, FlextApiModelsStorage.Storage.Metadata] = (
                 u.Field(default_factory=dict, description="Storage entries by key")
@@ -93,14 +90,10 @@ class FlextApiModelsStorage:
                 validate_default=True,
             )
             cache_hits: int = u.Field(
-                0,
-                description="Successful cache reads",
-                validate_default=True,
+                0, description="Successful cache reads", validate_default=True
             )
             cache_misses: int = u.Field(
-                0,
-                description="Failed cache reads",
-                validate_default=True,
+                0, description="Failed cache reads", validate_default=True
             )
             created_at: str = u.Field(
                 default_factory=u.generate_iso_timestamp,
@@ -111,29 +104,19 @@ class FlextApiModelsStorage:
             """Storage statistics model."""
 
             total_operations: int = u.Field(
-                0,
-                description="Total storage operations count",
-                validate_default=True,
+                0, description="Total storage operations count", validate_default=True
             )
             cache_hits: int = u.Field(
-                0,
-                description="Number of cache hits",
-                validate_default=True,
+                0, description="Number of cache hits", validate_default=True
             )
             cache_misses: int = u.Field(
-                0,
-                description="Number of cache misses",
-                validate_default=True,
+                0, description="Number of cache misses", validate_default=True
             )
             storage_size: int = u.Field(
-                0,
-                description="Current storage size in entries",
-                validate_default=True,
+                0, description="Current storage size in entries", validate_default=True
             )
             memory_usage: int = u.Field(
-                0,
-                description="Estimated memory usage in bytes",
-                validate_default=True,
+                0, description="Estimated memory usage in bytes", validate_default=True
             )
             namespace: str = u.Field(
                 "flext",
@@ -143,7 +126,7 @@ class FlextApiModelsStorage:
 
             @property
             def hit_ratio(self) -> float:
-                """Return cache hit ratio."""
+                """Cache hit ratio."""
                 if self.total_operations == 0:
                     return 0.0
                 return self.cache_hits / self.total_operations

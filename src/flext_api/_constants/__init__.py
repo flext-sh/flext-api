@@ -15,18 +15,11 @@ if TYPE_CHECKING:
     from flext_api._constants.api_values import (
         FlextApiConstantsValues as FlextApiConstantsValues,
     )
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        ".api": ("FlextApiConstantsApi",),
-        ".api_enums": ("FlextApiConstantsEnums",),
-        ".api_values": ("FlextApiConstantsValues",),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    ".api": ("FlextApiConstantsApi",),
+    ".api_enums": ("FlextApiConstantsEnums",),
+    ".api_values": ("FlextApiConstantsValues",),
+})
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

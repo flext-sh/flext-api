@@ -12,16 +12,7 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_api import (
-    FlextApiServiceBase,
-    FlextApiSettings,
-    c,
-    m,
-    p,
-    r,
-    t,
-    u,
-)
+from flext_api import FlextApiServiceBase, FlextApiSettings, c, m, p, r, t, u
 from flext_api._utilities.client import FlextApiClient
 
 
@@ -66,10 +57,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         )
 
     @override
-    def execute(
-        self,
-        **kwargs: t.Scalar,
-    ) -> p.Result[bool]:
+    def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
         """Execute s interface."""
         if kwargs:
             self.logger.info("Execute called with kwargs: %s", kwargs)
@@ -137,10 +125,7 @@ class FlextApi(FlextApiServiceBase[bool]):
             request_kwargs=request_kwargs,
         )
 
-    def request(
-        self,
-        request: m.Api.HttpRequest,
-    ) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
         Args:

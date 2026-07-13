@@ -17,7 +17,7 @@ class FlextApiProtocolsSerializer:
 
         @property
         def content_type(self) -> str:
-            """Get content type for this serializer."""
+            """Content type for this serializer."""
             ...
 
         def deserialize(self, data: bytes) -> t.JsonValue:

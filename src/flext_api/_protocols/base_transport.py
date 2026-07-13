@@ -25,9 +25,7 @@ class FlextApiProtocolsTransport:
             ...
 
         def send(
-            self,
-            connection: str,
-            data: t.JsonMapping | t.Api.RequestBody,
+            self, connection: str, data: t.JsonMapping | t.Api.RequestBody
         ) -> p.Result[t.Api.HttpResponseDict | str]:
             """Send data through connection."""
             ...

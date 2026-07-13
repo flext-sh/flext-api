@@ -10,9 +10,7 @@ from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManag
 from flext_web import u
 
 
-class FlextApiUtilities(
-    u,
-):
+class FlextApiUtilities(u):
     """FlextApi utilities extending FlextUtilities with API-specific helpers."""
 
     class Api(

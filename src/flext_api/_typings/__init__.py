@@ -11,16 +11,9 @@ if TYPE_CHECKING:
     from flext_api._typings.serialization import (
         FlextApiTypingsSerialization as FlextApiTypingsSerialization,
     )
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        ".serialization": ("FlextApiTypingsSerialization",),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    ".serialization": ("FlextApiTypingsSerialization",)
+})
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

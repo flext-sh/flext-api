@@ -28,9 +28,7 @@ class FlextApiSettings(FlextSettings):
     """Validated settings consumed by API facade and HTTP client; all project fields under ``settings.Api.*``."""
 
     model_config = SettingsConfigDict(
-        env_prefix="FLEXT_API_",
-        env_nested_delimiter="__",
-        extra="ignore",
+        env_prefix="FLEXT_API_", env_nested_delimiter="__", extra="ignore"
     )
 
     class _Api(BaseModel):
@@ -44,16 +42,13 @@ class FlextApiSettings(FlextSettings):
             ),
         ]
         timeout: Annotated[
-            float,
-            Field(default=30.0, description="Default request timeout in seconds"),
+            float, Field(default=30.0, description="Default request timeout in seconds")
         ]
         max_retries: Annotated[
-            int,
-            Field(default=3, description="Maximum retry attempts"),
+            int, Field(default=3, description="Maximum retry attempts")
         ]
         verify_ssl: Annotated[
-            bool,
-            Field(default=True, description="Enable TLS certificate check"),
+            bool, Field(default=True, description="Enable TLS certificate check")
         ]
         default_headers: Annotated[
             dict[str, str],
@@ -67,21 +62,16 @@ class FlextApiSettings(FlextSettings):
             Field(default_factory=dict, description="Compatibility headers bag"),
         ]
         log_requests: Annotated[
-            bool,
-            Field(default=False, description="Log outbound requests"),
+            bool, Field(default=False, description="Log outbound requests")
         ]
         log_responses: Annotated[
-            bool,
-            Field(default=False, description="Log inbound responses"),
+            bool, Field(default=False, description="Log inbound responses")
         ]
 
     if TYPE_CHECKING:
         Api: _Api
     else:
-        Api: _Api = Field(
-            default_factory=_Api,
-            description="Namespaced API settings.",
-        )
+        Api: _Api = Field(default_factory=_Api, description="Namespaced API settings.")
 
     @model_validator(mode="before")
     @classmethod

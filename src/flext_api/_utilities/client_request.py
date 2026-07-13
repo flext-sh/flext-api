@@ -18,7 +18,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         url_result = self._build_url(request.url)
         if url_result.failure:
             return r[m.Api.HttpResponse].fail(
-                url_result.error or "URL validation failed",
+                url_result.error or "URL validation failed"
             )
         request_body: t.Api.RequestBody = (
             request.body if request.body is not None else b""
@@ -26,12 +26,10 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         body_result = self._serialize_body(request_body)
         if body_result.failure:
             return r[m.Api.HttpResponse].fail(
-                body_result.error or "Body serialization failed",
+                body_result.error or "Body serialization failed"
             )
         return self._execute_http_request(
-            request=request,
-            url=url_result.value,
-            serialized_body=body_result.value,
+            request=request, url=url_result.value, serialized_body=body_result.value
         )
 
     def _build_url(self, path: str) -> p.Result[str]:
@@ -49,17 +47,11 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         return r[str].ok(f"{base}/{path_stripped}")
 
     def _execute_http_request(
-        self,
-        request: m.Api.HttpRequest,
-        url: str,
-        serialized_body: bytes,
+        self, request: m.Api.HttpRequest, url: str, serialized_body: bytes
     ) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
-            headers: t.StrMapping = {
-                **settings.Api.default_headers,
-                **request.headers,
-            }
+            headers: t.StrMapping = {**settings.Api.default_headers, **request.headers}
             extensions = (
                 {"sni_hostname": request.sni_hostname} if request.sni_hostname else {}
             )
@@ -84,7 +76,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
                         request_id="",
                     ),
                     catch=(c.ValidationError, ValueError, TypeError),
-                ).map_error(lambda exc: f"Response model validation failed: {exc}"),
+                ).map_error(lambda exc: f"Response model validation failed: {exc}")
             )
         except c.Api.EXC_HTTPX as exc:
             return r[m.Api.HttpResponse].fail_op("HTTP client request", exc)

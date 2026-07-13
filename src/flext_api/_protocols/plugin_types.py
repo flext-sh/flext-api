@@ -25,10 +25,7 @@ class FlextApiProtocolPluginTypes:
         logger: p.Logger
 
         def __init__(
-            self,
-            name: str = "plugin",
-            version: str = "0.0.0",
-            description: str = "",
+            self, name: str = "plugin", version: str = "0.0.0", description: str = ""
         ) -> None:
             self.name = name
             self.version = version
@@ -55,9 +52,7 @@ class FlextApiProtocolPluginTypes:
 
         @abstractmethod
         def send_request(
-            self,
-            request: t.JsonMapping,
-            **kwargs: t.Scalar,
+            self, request: t.JsonMapping, **kwargs: t.Scalar
         ) -> p.Result[t.JsonMapping]:
             """Send request using this protocol."""
             ...
@@ -85,18 +80,14 @@ class FlextApiProtocolPluginTypes:
 
         @abstractmethod
         def validate_request(
-            self,
-            request: t.JsonMapping,
-            schema: t.JsonMapping,
+            self, request: t.JsonMapping, schema: t.JsonMapping
         ) -> p.Result[bool]:
             """Validate request against schema."""
             ...
 
         @abstractmethod
         def validate_response(
-            self,
-            response: t.JsonMapping,
-            schema: t.JsonMapping,
+            self, response: t.JsonMapping, schema: t.JsonMapping
         ) -> p.Result[bool]:
             """Validate response against schema."""
             ...
@@ -120,9 +111,7 @@ class FlextApiProtocolPluginTypes:
 
         @abstractmethod
         def receive(
-            self,
-            connection: t.JsonValue,
-            **options: t.Scalar,
+            self, connection: t.JsonValue, **options: t.Scalar
         ) -> p.Result[t.JsonMapping | str | bytes]:
             """Receive data from connection."""
             ...
@@ -146,9 +135,7 @@ class FlextApiProtocolPluginTypes:
 
         @abstractmethod
         def authenticate(
-            self,
-            request: t.JsonMapping,
-            credentials: t.JsonMapping,
+            self, request: t.JsonMapping, credentials: t.JsonMapping
         ) -> p.Result[t.JsonMapping]:
             """Add authentication to request."""
             ...
@@ -158,8 +145,7 @@ class FlextApiProtocolPluginTypes:
             return "Unknown"
 
         def refresh_credentials(
-            self,
-            credentials: t.JsonMapping,
+            self, credentials: t.JsonMapping
         ) -> p.Result[t.JsonMapping]:
             """Refresh authentication credentials."""
             _ = credentials

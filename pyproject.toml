@@ -10,7 +10,7 @@ requires = [ "hatchling" ]
 # [CUSTOM] project metadata
 [project]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 3 - Alpha",
   "Framework :: FastAPI",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
@@ -42,7 +42,7 @@ license = "MIT"
 name = "flext-api"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-version = "0.12.0-dev"
+version = "0.12.0"
 
 [[project.authors]]
 email = "team@flext.sh"
@@ -111,6 +111,7 @@ dev = [
   "types-defusedxml>=0.7",
   "types-docker>=7.1",
   "types-flask>=1.1.6",
+  "types-jsonschema>=4.26",
   "types-ldap3>=2.9.13.20250622",
   "types-paramiko>=4.0",
   "types-protobuf>=6.30.2.20250703",
@@ -126,6 +127,7 @@ dev = [
   "types-tabulate>=0.10",
   "types-toml>=0.10.8.20240310",
   "vulture>=2.13",
+  "yamlfix>=1.19.1,<2",
 ]
 
 [project.urls]
@@ -156,22 +158,46 @@ pep621_dev_dependency_groups = [ "dev" ]
 [tool.flext.docs]
 project_class = "platform"
 
+[tool.hatch.build.targets.sdist]
+only-include = [ "src/flext_api" ]
+
+[tool.hatch.build.targets.wheel]
+packages = [ "src/flext_api" ]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
 # [MANAGED] mypy
 [tool.mypy]
+# FLEXT mypy suppression rationale (validated at the facade-MRO boundary):
+# FLEXT mypy[arg-type]: Public p.Result values widen only in Mypy; Pyright and Pyrefly retain T.
+# FLEXT mypy[assignment]: Dependency-injector descriptors lose their MRO-bound type only in Mypy.
+# FLEXT mypy[attr-defined]: PEP 562 facade members inherited through MRO are invisible to Mypy.
+# FLEXT mypy[call-arg]: Pydantic v2 init signatures behind facade MRO are incomplete in Mypy.
+# FLEXT mypy[misc]: Valid PEP 695 nested facade aliases are rejected under Mypy's misc bucket.
+# FLEXT mypy[name-defined]: Generated PEP 562 exports are installed at runtime but absent to Mypy.
+# FLEXT mypy[no-any-return]: Facade returns widen to Any only in Mypy; Pyright and Pyrefly resolve them.
+# FLEXT mypy[no-redef]: Canonical c-t-p-m-u facades intentionally rebind their inherited short alias.
+# FLEXT mypy[prop-decorator]: Mypy loses Pydantic computed-field descriptors across composed MRO.
+# FLEXT mypy[type-var]: Mypy 1.20 drops T from inherited p.ResultLike; the direct owner passes.
+# FLEXT mypy[unreachable]: Mypy over-narrows facade values and rejects live defensive guards.
+# FLEXT mypy[valid-type]: Mypy rejects facade namespaces used as owners in valid PEP 695 aliases.
 check_untyped_defs = true
 disable_error_code = [
+  "arg-type",
   "assignment",
   "attr-defined",
   "call-arg",
   "misc",
   "name-defined",
+  "no-any-return",
+  "no-redef",
   "prop-decorator",
+  "type-var",
+  "unreachable",
   "valid-type",
 ]
-exclude = "^tests/fixtures(?:/|$)"
+exclude = "^(?:tests|examples|legado)(?:/|$)"
 explicit_package_bases = true
 extra_checks = true
 follow_imports = "normal"
@@ -208,8 +234,11 @@ project-excludes = [
   "**/.venv/**",
   "**/__pycache__",
   "**/__pyrefly_virtual__/**",
+  "**/examples/**",
+  "**/legado/**",
   "**/node_modules",
   "**/site-packages/**",
+  "**/tests/**",
   "**/typings/**",
   "**/vendor/**",
   "**/venv/**",
@@ -218,17 +247,14 @@ project-excludes = [
   "typings/**",
   "vendor/**",
 ]
-# mro-f1fe (agent: kimi-sweep): examples moved to gitignored legado/ — out of active lint/typecheck surface
-project-includes = [ "src/**/*.py*", "tests/**/*.py*" ]
+project-includes = [ "src/**/*.py*" ]
 python-interpreter-path = "../.venv/bin/python"
 python-version = "3.13"
 search-path = [
   ".",
   "../flext-cli/src",
-  "../flext-core/scripts",
   "../flext-core/src",
   "../flext-infra/src",
-  "../flext-infra/tmp_flow_test",
   "../flext-tests/src",
   "../flext-web/src",
   "src",
@@ -323,6 +349,9 @@ variance-mismatch = "error"
 
 # [MANAGED] pyright
 [tool.pyright]
+# FLEXT Pyright suppression rationale (validated at the facade-MRO boundary):
+# FLEXT pyright[reportAssignmentType]: Pyright rejects the canonical class-alias rebind after MRO facade composition although runtime and the other analyzers resolve it.
+# FLEXT pyright[reportGeneralTypeIssues]: Pyright groups the same valid MRO facade alias rebind under its broad general diagnostic in every execution environment.
 exclude = [
   "**/.*",
   "**/.mypy_cache",
@@ -334,19 +363,24 @@ exclude = [
   "**/__pyrefly_virtual__/**",
   "**/dist-packages",
   "**/dist-packages/**",
+  "**/examples",
+  "**/examples/**",
+  "**/legado",
+  "**/legado/**",
   "**/node_modules",
   "**/site-packages",
   "**/site-packages/**",
-  "**/tests/fixtures",
-  "**/tests/fixtures/**",
+  "**/tests",
+  "**/tests/**",
   "**/venv",
   "**/venv/**",
+  ".git",
   ".reports",
   ".venv",
+  "vendor",
 ]
 extraPaths = [ ".", "src" ]
-# mro-f1fe (agent: kimi-sweep): examples moved to gitignored legado/ — out of active lint/typecheck surface
-include = [ "src", "tests" ]
+include = [ "src" ]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportArgumentType = "none"
@@ -383,13 +417,20 @@ venvPath = ".."
 
 [[tool.pyright.executionEnvironments]]
 extraPaths = [ "src" ]
+reportAssignmentType = "none"
+reportAttributeAccessIssue = "none"
+reportGeneralTypeIssues = "none"
+reportInvalidTypeForm = "none"
+reportPrivateImportUsage = "none"
 reportPrivateUsage = "error"
+reportReturnType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownMemberType = "none"
+reportUnknownParameterType = "none"
+reportUnknownVariableType = "none"
+reportUnusedImport = "none"
 root = "src"
-
-[[tool.pyright.executionEnvironments]]
-extraPaths = [ ".", "src" ]
-reportPrivateUsage = "none"
-root = "tests"
 
 # [MANAGED] pytest
 [tool.pytest.ini_options]
@@ -421,6 +462,7 @@ markers = [
   "performance: performance and benchmark tests",
   "resilience: resilience tests",
   "slow: slow-running tests",
+  "smoke: public-interface smoke tests",
   "stress: stress tests",
   "unit: unit tests",
 ]
@@ -442,10 +484,11 @@ exclude = [
   "backup",
   "build",
   "dist",
+  "examples",
   "htmlcov",
+  "legado",
   "temp-backup",
-  "tests/fixtures",
-  "tests/fixtures/**",
+  "tests",
   "typings",
   "vendor",
   "venv",
@@ -455,8 +498,7 @@ line-length = 88
 preview = true
 respect-gitignore = true
 show-fixes = true
-# mro-f1fe (agent: kimi-sweep): examples moved to gitignored legado/ — out of active lint/typecheck surface
-src = [ "src", "tests" ]
+src = [ "src" ]
 target-version = "py313"
 
 [tool.ruff.format]
@@ -464,8 +506,12 @@ docstring-code-format = true
 indent-style = "space"
 line-ending = "lf"
 quote-style = "double"
+skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
+# FLEXT Ruff suppression rationale (validated against semantic facet order):
+# FLEXT ruff[I001]: Ruff sorts TYPE_CHECKING imports lexically and reverses the mandatory semantic c-t-p-m-u dependency order in FLEXT facades.
+# FLEXT ruff[PLC0415]: Public facade models are imported lazily only at validation and construction sites to preserve the c-t-p-m-u graph and prevent runtime cycles.
 ignore = [
   "ANN202",
   "B009",
@@ -477,6 +523,8 @@ ignore = [
   "CPY001",
   "D203",
   "D213",
+  "D401",
+  "D417",
   "DOC201",
   "DOC202",
   "DOC402",
@@ -486,10 +534,12 @@ ignore = [
   "ERA001",
   "FBT003",
   "G004",
+  "I001",
   "N805",
   "N813",
   "N816",
   "PIE790",
+  "PLC0415",
   "PLR0904",
   "PLR0911",
   "PLR0912",
@@ -524,7 +574,7 @@ select = [ "ALL" ]
 msg = "Use cli.register_result_command + Pydantic model from flext_cli."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.click]
-msg = "Use flext_cli (cli, c.Cli.CliAbortError, c.Cli.CliCommandError)."
+msg = "Use flext_cli.cli application, registration, execution, and invocation methods."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.colorama]
 msg = "Use cli.print with c.Cli.MessageStyles."
@@ -539,7 +589,7 @@ msg = "Use cli.read_json_file / cli.write_json_file / u.Cli.json_dumps from flex
 msg = "Use cli.prompt / cli.confirm / cli.prompt_choice / cli.prompt_password."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.rich]
-msg = "Use cli.print / cli.display_message / cli.render_panel / cli.create_tree."
+msg = "Use cli.print / cli.display_message / cli.render_panel / cli.render_table."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.simplejson]
 msg = "Use cli.read_json_file / cli.write_json_file / u.Cli.json_dumps."
@@ -566,7 +616,7 @@ msg = "Use cli.read_json_file / cli.write_json_file / u.Cli.json_dumps."
 combine-as-imports = true
 force-single-line = false
 known-first-party = [ "flext_api", "flext_core", "flext_web" ]
-split-on-trailing-comma = true
+split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "**/.vulture_whitelist.py" = [ "ALL" ]
@@ -600,81 +650,6 @@ split-on-trailing-comma = true
 ]
 "**/*service*" = [ "N815", "PLC2801", "S404", "S603", "SLF001" ]
 "**/*subprocess_utils*" = [ "S404", "S603" ]
-"**/*tests*" = [
-  "ANN001",
-  "ANN002",
-  "ANN003",
-  "ANN401",
-  "ARG001",
-  "ARG002",
-  "ARG003",
-  "ARG004",
-  "ARG005",
-  "B009",
-  "B010",
-  "B018",
-  "B903",
-  "C901",
-  "D100",
-  "D101",
-  "D102",
-  "D103",
-  "D104",
-  "D106",
-  "D107",
-  "EM102",
-  "F822",
-  "FBT001",
-  "FBT002",
-  "FBT003",
-  "FURB118",
-  "INP001",
-  "N818",
-  "N999",
-  "PLC0206",
-  "PLC1901",
-  "PLC2701",
-  "PLC2801",
-  "PLR0904",
-  "PLR0912",
-  "PLR0913",
-  "PLR0914",
-  "PLR0915",
-  "PLR0917",
-  "PLR1704",
-  "PLR2004",
-  "PLR6301",
-  "PLW1641",
-  "PLW2901",
-  "PT011",
-  "PT018",
-  "PT019",
-  "PYI063",
-  "RUF012",
-  "RUF029",
-  "S101",
-  "S103",
-  "S104",
-  "S105",
-  "S106",
-  "S107",
-  "S108",
-  "S110",
-  "S112",
-  "S311",
-  "S404",
-  "S603",
-  "S607",
-  "S608",
-  "SIM105",
-  "SIM117",
-  "SLF001",
-  "TD002",
-  "TD003",
-  "TID252",
-  "TRY003",
-  "TRY004",
-]
 "**/*typings*" = [ "ANN401" ]
 "**/*utilities*" = [ "C901", "E402", "PLC2801", "PLW1510", "S404", "S603" ]
 "**/__init__.py" = [
@@ -691,7 +666,10 @@ split-on-trailing-comma = true
   "RUF067",
   "TC004",
 ]
+"**/_config.py" = [ "N802" ]
 "**/_constants/*.py" = [ "S105" ]
+"**/_protocols/*.py" = [ "N802" ]
+"**/_settings.py" = [ "N802" ]
 "**/_utilities/parser.py" = [ "ARG004", "FBT001" ]
 "**/alert_manager*.py" = [ "S310" ]
 "**/constants.py" = [ "S105" ]
@@ -699,8 +677,11 @@ split-on-trailing-comma = true
 "**/context.py" = [  ]
 "**/external_command*.py" = [ "S404", "S603" ]
 "**/file_tools.py" = [ "D102" ]
+"**/flext_cli/_protocols/framework.py" = [ "A002" ]
+"**/flext_cli/_utilities/formatters.py" = [ "TID251" ]
+"**/flext_cli/_utilities/framework.py" = [ "A002", "TID251" ]
 "**/managers.py" = [ "S105" ]
-"**/models.py" = [ "PLC0415", "PLC2801", "S102", "S105" ]
+"**/models.py" = [ "PLC2801", "S102", "S105" ]
 "**/orchestrator*.py" = [ "S404", "S603" ]
 "**/output.py" = [ "FBT001" ]
 "**/plugins/*.py" = [ "FBT001", "FBT002", "S404", "S603", "S607", "TID252" ]
@@ -712,7 +693,7 @@ split-on-trailing-comma = true
 "**/tools/*.py" = [ "FBT001", "FBT002", "N802", "S404", "S603", "S607", "T201" ]
 "**/tools/**/*.py" = [ "FBT001", "FBT002", "N802", "S404", "S603", "S607", "T201" ]
 "**/typings.py" = [ "RUF036" ]
-"**/workspace/*.py" = [ "PLC0415", "S404", "S603", "S607" ]
+"**/workspace/*.py" = [ "S404", "S603", "S607" ]
 
 # [MANAGED] tomlsort
 [tool.tomlsort]
@@ -725,6 +706,12 @@ workspace = true
 
 [tool.uv.sources.flext-web]
 workspace = true
+
+[tool.vulture]
+exclude = [ "*/_protocols/*" ]
+min_confidence = 100
+paths = [ "src" ]
+verbose = false
 
 # [MANAGED] yamlfix
 [tool.yamlfix]

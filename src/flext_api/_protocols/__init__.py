@@ -48,29 +48,22 @@ if TYPE_CHECKING:
     from flext_api._protocols.transports import (
         FlextApiProtocolsTransports as FlextApiProtocolsTransports,
     )
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        "._transports_config": ("FlextApiTransportsConfigMixin",),
-        "._transports_request": ("FlextApiTransportsRequestMixin",),
-        ".base": ("FlextApiProtocolsBase",),
-        ".base_grpc": ("FlextApiProtocolsGrpc",),
-        ".base_http": ("FlextApiProtocolsHttpClient",),
-        ".base_resources": ("FlextApiProtocolsResources",),
-        ".base_serialization": ("FlextApiProtocolsSerializer",),
-        ".base_storage": ("FlextApiProtocolsStorage",),
-        ".base_transport": ("FlextApiProtocolsTransport",),
-        ".plugin_manager": ("FlextApiProtocolPluginManager",),
-        ".plugin_types": ("FlextApiProtocolPluginTypes",),
-        ".plugins": ("FlextApiProtocolPlugins",),
-        ".serialization": ("FlextApiProtocolsSerialization",),
-        ".transports": ("FlextApiProtocolsTransports",),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    "._transports_config": ("FlextApiTransportsConfigMixin",),
+    "._transports_request": ("FlextApiTransportsRequestMixin",),
+    ".base": ("FlextApiProtocolsBase",),
+    ".base_grpc": ("FlextApiProtocolsGrpc",),
+    ".base_http": ("FlextApiProtocolsHttpClient",),
+    ".base_resources": ("FlextApiProtocolsResources",),
+    ".base_serialization": ("FlextApiProtocolsSerializer",),
+    ".base_storage": ("FlextApiProtocolsStorage",),
+    ".base_transport": ("FlextApiProtocolsTransport",),
+    ".plugin_manager": ("FlextApiProtocolPluginManager",),
+    ".plugin_types": ("FlextApiProtocolPluginTypes",),
+    ".plugins": ("FlextApiProtocolPlugins",),
+    ".serialization": ("FlextApiProtocolsSerialization",),
+    ".transports": ("FlextApiProtocolsTransports",),
+})
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
