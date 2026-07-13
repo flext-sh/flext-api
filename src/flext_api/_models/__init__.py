@@ -15,20 +15,13 @@ if TYPE_CHECKING:
     )
     from flext_api._models.storage import FlextApiModelsStorage as FlextApiModelsStorage
     from flext_api._models.webhook import FlextApiModelsWebhook as FlextApiModelsWebhook
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        ".client": ("FlextApiModelsClient",),
-        ".request": ("FlextApiModelsRequest",),
-        ".response": ("FlextApiModelsResponse",),
-        ".storage": ("FlextApiModelsStorage",),
-        ".webhook": ("FlextApiModelsWebhook",),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    ".client": ("FlextApiModelsClient",),
+    ".request": ("FlextApiModelsRequest",),
+    ".response": ("FlextApiModelsResponse",),
+    ".storage": ("FlextApiModelsStorage",),
+    ".webhook": ("FlextApiModelsWebhook",),
+})
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

@@ -72,31 +72,27 @@ class FlextApiProtocolsTransports:
 
         @override
         def send(
-            self,
-            connection: str,
-            data: t.JsonMapping | t.Api.RequestBody,
+            self, connection: str, data: t.JsonMapping | t.Api.RequestBody
         ) -> p.Result[t.Api.HttpResponseDict | str]:
             """Send HTTP request."""
             params_result = self._extract_request_params(
-                data,
-                connection_url=connection,
+                data, connection_url=connection
             )
             if params_result.failure:
                 return r[t.Api.HttpResponseDict | str].fail(
-                    params_result.error or "Parameter extraction failed",
+                    params_result.error or "Parameter extraction failed"
                 )
             response_result = self._request_model(params_result.value)
             if response_result.failure:
                 return r[t.Api.HttpResponseDict | str].fail(
-                    response_result.error or "HTTP send failed",
+                    response_result.error or "HTTP send failed"
                 )
             return r[t.Api.HttpResponseDict | str].ok(
-                self._response_mapping(response_result.value),
+                self._response_mapping(response_result.value)
             )
 
         def request_model(
-            self,
-            request: m.Api.HttpRequest,
+            self, request: m.Api.HttpRequest
         ) -> p.Result[m.Api.HttpResponse]:
             """Public wrapper around request-model execution for protocol consumers."""
             return self._request_model(request)

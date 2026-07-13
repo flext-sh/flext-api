@@ -25,12 +25,7 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
         _HttpxError,
     )
     METHOD_LITERALS_HEAD_LOWER: Final[str] = "head"
-    SAFE_METHODS: Final[frozenset[str]] = frozenset({
-        "GET",
-        "HEAD",
-        "OPTIONS",
-        "TRACE",
-    })
+    SAFE_METHODS: Final[frozenset[str]] = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
     TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({
         "completed",
         "failed",

@@ -7,8 +7,7 @@ from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
 
 
 class FlextApiProtocolPlugins(
-    FlextApiProtocolPluginTypes,
-    FlextApiProtocolPluginManager,
+    FlextApiProtocolPluginTypes, FlextApiProtocolPluginManager
 ):
     """Unified plugin system for flext-api with FLEXT-pure patterns."""
 

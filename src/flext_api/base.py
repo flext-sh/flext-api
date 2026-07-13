@@ -13,9 +13,9 @@ from flext_api import FlextApiSettings, m, p, t
 from flext_core import s
 
 
-class FlextApiServiceBase[
-    TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload],
-](s[TDomainResult], ABC):
+class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload]](
+    s[TDomainResult], ABC
+):
     """Base class for flext-api services with typed API settings access."""
 
     def __init__(

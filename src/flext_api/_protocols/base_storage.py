@@ -37,10 +37,7 @@ class FlextApiProtocolsStorage:
             ...
 
         def set(
-            self,
-            key: str,
-            value: t.JsonValue,
-            timeout: int | None = None,
+            self, key: str, value: t.JsonValue, timeout: int | None = None
         ) -> p.Result[bool]:
             """Store value with optional timeout."""
             ...

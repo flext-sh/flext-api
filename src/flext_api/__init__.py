@@ -30,46 +30,17 @@ if TYPE_CHECKING:
     from flext_api.typings import FlextApiTypes as FlextApiTypes, t as t
     from flext_api.utilities import FlextApiUtilities as FlextApiUtilities, u as u
     from flext_web import d as d, e as e, h as h, r as r, x as x
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        "._settings": ("FlextApiSettings", "settings"),
-        ".api": (
-            "FlextApi",
-            "api",
-        ),
-        ".base": (
-            "FlextApiServiceBase",
-            "s",
-        ),
-        ".constants": (
-            "FlextApiConstants",
-            "c",
-        ),
-        ".models": (
-            "FlextApiModels",
-            "m",
-        ),
-        ".protocols": (
-            "FlextApiProtocols",
-            "p",
-        ),
-        ".typings": (
-            "FlextApiTypes",
-            "t",
-        ),
-        ".utilities": (
-            "FlextApiUtilities",
-            "u",
-        ),
-        "flext_web": (
-            "d",
-            "e",
-            "h",
-            "r",
-            "x",
-        ),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    "._settings": ("FlextApiSettings", "settings"),
+    ".api": ("FlextApi", "api"),
+    ".base": ("FlextApiServiceBase", "s"),
+    ".constants": ("FlextApiConstants", "c"),
+    ".models": ("FlextApiModels", "m"),
+    ".protocols": ("FlextApiProtocols", "p"),
+    ".typings": ("FlextApiTypes", "t"),
+    ".utilities": ("FlextApiUtilities", "u"),
+    "flext_web": ("d", "e", "h", "r", "x"),
+})
 
 
 __all__: tuple[str, ...] = (
@@ -105,9 +76,4 @@ __all__: tuple[str, ...] = (
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    public_exports=__all__,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

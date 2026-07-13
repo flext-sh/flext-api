@@ -35,7 +35,7 @@ class FlextApiClientCodecMixin:
             if result.success:
                 return result
         return r[t.Api.ResponseBody].fail(
-            "Failed to deserialize response body: no valid format found",
+            "Failed to deserialize response body: no valid format found"
         )
 
     @staticmethod
@@ -49,8 +49,7 @@ class FlextApiClientCodecMixin:
         try:
             json_data = response.json()
             validated: p.Result[t.Api.ResponseBody] = u.validate_value(
-                t.Api.RESPONSE_BODY_ADAPTER,
-                json_data,
+                t.Api.RESPONSE_BODY_ADAPTER, json_data
             )
             return validated
         except (

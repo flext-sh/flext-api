@@ -17,42 +17,31 @@ class FlextApiProtocolsHttpClient:
         """Protocol for generic HTTP client implementations."""
 
         def delete(
-            self,
-            url: str,
-            **kwargs: t.JsonValue,
+            self, url: str, **kwargs: t.JsonValue
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP DELETE request."""
             ...
 
         def get(
-            self,
-            url: str,
-            **kwargs: t.JsonValue,
+            self, url: str, **kwargs: t.JsonValue
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP GET request."""
             ...
 
         def post(
-            self,
-            url: str,
-            **kwargs: t.JsonValue,
+            self, url: str, **kwargs: t.JsonValue
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP POST request."""
             ...
 
         def put(
-            self,
-            url: str,
-            **kwargs: t.JsonValue,
+            self, url: str, **kwargs: t.JsonValue
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP PUT request."""
             ...
 
         def request(
-            self,
-            method: c.Api.Method | str,
-            url: str,
-            **kwargs: t.JsonValue,
+            self, method: c.Api.Method | str, url: str, **kwargs: t.JsonValue
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute an HTTP request."""
             ...

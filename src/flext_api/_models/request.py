@@ -30,16 +30,13 @@ class FlextApiModelsRequest:
             u.Field(..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"),
         ]
         headers: Annotated[
-            t.StrMapping,
-            u.Field(description="HTTP request headers"),
+            t.StrMapping, u.Field(description="HTTP request headers")
         ] = u.Field(default_factory=lambda: MappingProxyType({}))
         body: Annotated[
-            t.Api.RequestBody | None,
-            u.Field(description="Request body"),
+            t.Api.RequestBody | None, u.Field(description="Request body")
         ] = None
         query_params: Annotated[
-            t.Api.WebParams | None,
-            u.Field(description="Query parameters"),
+            t.Api.WebParams | None, u.Field(description="Query parameters")
         ] = None
         timeout: Annotated[
             t.PositiveTimeout,
