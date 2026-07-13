@@ -13,7 +13,7 @@ from flext_tests import FlextTestsConstants
 from flext_api import c
 
 if TYPE_CHECKING:
-    from tests.typings import t
+    from tests import t
 
 
 class TestsFlextApiConstants(FlextTestsConstants, c):

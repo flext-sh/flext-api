@@ -13,17 +13,15 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_api import (
-    FlextApi,
-    FlextApiSettings,
-)
+from flext_api import FlextApi, FlextApiSettings
 from flext_api._utilities.client import FlextApiClient
-from tests.constants import c
-from tests.models import m
-from tests.utilities import u
+from tests import c
+from tests import m
+from tests import u
+from flext_tests import tm
 
 if TYPE_CHECKING:
-    from tests.typings import t
+    from tests import t
 
 
 class TestsFlextApiSmoke:
@@ -45,18 +43,15 @@ class TestsFlextApiSmoke:
         self, method: c.Api.Method, expected: str
     ) -> None:
         """Each HTTP method compares equal to its wire string value."""
-        assert method == expected
+        tm.that(method, eq=expected)
 
     @pytest.mark.parametrize(
         ("status", "expected"),
-        [
-            (c.Api.Status.SUCCESS, "success"),
-            (c.Api.Status.FAILED, "failed"),
-        ],
+        [(c.Api.Status.SUCCESS, "success"), (c.Api.Status.FAILED, "failed")],
     )
     def test_status_enum_value(self, status: c.Api.Status, expected: str) -> None:
         """Status enum members expose the documented string values."""
-        assert status.value == expected
+        tm.that(status.value, eq=expected)
 
     @pytest.mark.parametrize(
         ("content_type", "expected"),
@@ -69,27 +64,27 @@ class TestsFlextApiSmoke:
         self, content_type: c.Api.ContentType, expected: str
     ) -> None:
         """ContentType members map to their MIME type strings."""
-        assert content_type.value == expected
+        tm.that(content_type.value, eq=expected)
 
     def test_safe_methods_membership_contract(self) -> None:
         """SAFE_METHODS classifies GET as safe and POST as unsafe."""
-        assert "GET" in c.Api.SAFE_METHODS
-        assert "POST" not in c.Api.SAFE_METHODS
+        tm.that(c.Api.SAFE_METHODS, has="GET")
+        tm.that(c.Api.SAFE_METHODS, lacks="POST")
 
     def test_safe_methods_is_immutable(self) -> None:
         """SAFE_METHODS is a frozenset and rejects mutation."""
-        assert isinstance(c.Api.SAFE_METHODS, frozenset)
+        tm.that(c.Api.SAFE_METHODS, is_=frozenset)
 
     def test_terminal_statuses_membership_contract(self) -> None:
         """Terminal statuses include completion/failure but not pending."""
-        assert "completed" in c.Api.TERMINAL_STATUSES
-        assert "failed" in c.Api.TERMINAL_STATUSES
-        assert "pending" not in c.Api.TERMINAL_STATUSES
+        tm.that(c.Api.TERMINAL_STATUSES, has="completed")
+        tm.that(c.Api.TERMINAL_STATUSES, has="failed")
+        tm.that(c.Api.TERMINAL_STATUSES, lacks="pending")
 
     def test_http_status_bounds_are_ordered(self) -> None:
         """HTTP status boundaries form a valid, ordered range."""
-        assert c.Api.HTTP_STATUS_MIN == 100
-        assert c.Api.HTTP_STATUS_MAX == 599
+        tm.that(c.Api.HTTP_STATUS_MIN, eq=100)
+        tm.that(c.Api.HTTP_STATUS_MAX, eq=599)
         assert c.Api.HTTP_STATUS_MIN < c.Api.HTTP_SUCCESS_MIN
         assert c.Api.HTTP_SUCCESS_MIN < c.Api.HTTP_SUCCESS_MAX <= c.Api.HTTP_STATUS_MAX
 
@@ -98,10 +93,10 @@ class TestsFlextApiSmoke:
     def test_http_request_applies_documented_defaults(self) -> None:
         """A minimal request defaults to GET with empty headers and body."""
         request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
-        assert request.method == "GET"
-        assert request.url == "https://example.com"
-        assert dict(request.headers) == {}
-        assert request.body == {}
+        tm.that(request.method, eq="GET")
+        tm.that(request.url, eq="https://example.com")
+        tm.that(dict(request.headers), eq={})
+        tm.that(request.body, eq={})
 
     def test_http_request_preserves_supplied_method(self) -> None:
         """A supplied method survives validation unchanged."""
@@ -109,7 +104,7 @@ class TestsFlextApiSmoke:
             "url": "https://example.com",
             "method": "POST",
         })
-        assert request.method == "POST"
+        tm.that(request.method, eq="POST")
 
     @pytest.mark.parametrize(
         ("headers", "expected"),
@@ -127,7 +122,7 @@ class TestsFlextApiSmoke:
             "url": "https://example.com",
             "headers": headers,
         })
-        assert request.content_type == expected
+        tm.that(request.content_type, eq=expected)
 
     def test_http_request_rejects_empty_url(self) -> None:
         """An empty URL fails validation."""
@@ -149,13 +144,13 @@ class TestsFlextApiSmoke:
             "method": "POST",
         })
         dumped = request.model_dump()
-        assert dumped["url"] == "https://example.com"
-        assert dumped["method"] == "POST"
+        tm.that(dumped["url"], eq="https://example.com")
+        tm.that(dumped["method"], eq="POST")
 
     def test_http_request_defaults_sni_hostname_to_none(self) -> None:
         """A request without an explicit SNI hostname exposes None."""
         request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
-        assert request.sni_hostname is None
+        tm.that(request.sni_hostname, none=True)
 
     def test_http_request_preserves_sni_hostname_for_ip_targets(self) -> None:
         """An IP-targeted request keeps the SNI hostname for TLS verification."""
@@ -164,8 +159,8 @@ class TestsFlextApiSmoke:
             "headers": {"Host": "www.encode.io"},
             "sni_hostname": "www.encode.io",
         })
-        assert request.sni_hostname == "www.encode.io"
-        assert request.model_dump(round_trip=True)["sni_hostname"] == "www.encode.io"
+        tm.that(request.sni_hostname, eq="www.encode.io")
+        tm.that(request.model_dump(round_trip=True)["sni_hostname"], eq="www.encode.io")
 
     # ---- HttpResponse model contract ------------------------------------
 
@@ -175,8 +170,8 @@ class TestsFlextApiSmoke:
             "status_code": 200,
             "body": {"result": "ok"},
         })
-        assert response.status_code == 200
-        assert response.body == {"result": "ok"}
+        tm.that(response.status_code, eq=200)
+        tm.that(response.body, eq={"result": "ok"})
 
     @pytest.mark.parametrize("status_code", [0, 99, 600, 999])
     def test_http_response_rejects_out_of_range_status(self, status_code: int) -> None:
@@ -213,9 +208,9 @@ class TestsFlextApiSmoke:
     def test_create_response_builds_equivalent_model(self) -> None:
         """create_response yields the same state as direct validation."""
         built = m.Api.create_response(status_code=200, body={"a": 1})
-        assert built.status_code == 200
-        assert built.body == {"a": 1}
-        assert built.success is True
+        tm.that(built.status_code, eq=200)
+        tm.that(built.body, eq={"a": 1})
+        tm.that(built.success, eq=True)
 
     # ---- Serializer contract --------------------------------------------
 
@@ -223,22 +218,17 @@ class TestsFlextApiSmoke:
         """Packb serializes a mapping into non-empty bytes."""
         payload: t.JsonMapping = {"key": "value"}
         packed = u.Api.packb(payload)
-        assert isinstance(packed, bytes)
+        tm.that(packed, is_=bytes)
         assert len(packed) > 0
 
     @pytest.mark.parametrize(
-        "original",
-        [
-            {"hello": "world", "count": 42},
-            {"nested": {"a": [1, 2, 3]}},
-            {},
-        ],
+        "original", [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}]
     )
     def test_packb_unpackb_is_lossless_roundtrip(self, original: t.JsonMapping) -> None:
         """Packing then unpacking reproduces the original payload."""
         result = u.Api.unpackb(u.Api.packb(original))
-        assert result.success is True
-        assert result.value == original
+        tm.that(result.success, eq=True)
+        tm.that(result.value, eq=original)
 
     # ---- Client / facade contract ---------------------------------------
 
@@ -246,8 +236,8 @@ class TestsFlextApiSmoke:
         """The client surfaces its configured base_url and timeout."""
         settings = FlextApiSettings(base_url="https://service.example", timeout=9.5)
         client = FlextApiClient(settings=settings)
-        assert client.base_url == "https://service.example"
-        assert client.timeout == pytest.approx(9.5)
+        tm.that(client.base_url, eq="https://service.example")
+        tm.that(client.timeout, eq=pytest.approx(9.5))
 
     def test_client_execute_reports_success(self) -> None:
         """A configured client executes its lifecycle successfully."""
@@ -255,8 +245,8 @@ class TestsFlextApiSmoke:
             settings=FlextApiSettings(Api={"base_url": "https://service.example"})
         )
         result = client.execute()
-        assert result.success is True
-        assert result.value is True
+        tm.that(result.success, eq=True)
+        tm.that(result.value, eq=True)
 
     def test_facade_execute_reports_success_and_retains_settings(self) -> None:
         """The facade executes successfully and preserves its settings."""
@@ -265,13 +255,13 @@ class TestsFlextApiSmoke:
         )
         api = FlextApi(settings=settings)
         result = api.execute()
-        assert result.success is True
-        assert result.value is True
-        assert api.settings.Api.base_url == "https://api.example"
-        assert api.settings.Api.timeout == pytest.approx(4.0)
+        tm.that(result.success, eq=True)
+        tm.that(result.value, eq=True)
+        tm.that(api.settings.Api.base_url, eq="https://api.example")
+        tm.that(api.settings.Api.timeout, eq=pytest.approx(4.0))
 
     def test_facade_default_settings_provide_base_url(self) -> None:
         """A facade built without settings still exposes a usable base_url."""
         api = FlextApi()
-        assert isinstance(api.settings.Api.base_url, str)
-        assert api.execute().success is True
+        tm.that(api.settings.Api.base_url, is_=str)
+        tm.that(api.execute().success, eq=True)
