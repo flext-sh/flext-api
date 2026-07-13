@@ -10,7 +10,7 @@ requires = [ "hatchling" ]
 # [CUSTOM] project metadata
 [project]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 3 - Alpha",
   "Framework :: FastAPI",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
@@ -42,7 +42,7 @@ license = "MIT"
 name = "flext-api"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-version = "0.12.0-dev"
+version = "0.12.0"
 
 [[project.authors]]
 email = "team@flext.sh"
