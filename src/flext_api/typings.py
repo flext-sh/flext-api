@@ -12,17 +12,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Callable,
-)
+from collections.abc import Callable
 
 from flext_api import c
 from flext_api._typings.serialization import FlextApiTypingsSerialization
-from flext_web import FlextWebTypes, p, t, u
+from flext_web import p, t, u
 
 
-class FlextApiTypes(FlextWebTypes):
-    """Unified API type definitions extending FlextWebTypes via MRO."""
+class FlextApiTypes(t):
+    """Unified API type definitions extending t via MRO."""
 
     class Api(FlextApiTypingsSerialization):
         """API types namespace for cross-project access."""
