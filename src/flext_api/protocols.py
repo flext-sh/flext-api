@@ -14,12 +14,10 @@ from flext_api._protocols.base import FlextApiProtocolsBase
 from flext_api._protocols.plugins import FlextApiProtocolPlugins
 from flext_api._protocols.serialization import FlextApiProtocolsSerialization
 from flext_api._protocols.transports import FlextApiProtocolsTransports
-from flext_core import FlextProtocols
+from flext_core import p
 
 
-class FlextApiProtocols(
-    FlextProtocols,
-):
+class FlextApiProtocols(p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api(

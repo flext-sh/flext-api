@@ -8,10 +8,10 @@ from flext_api._models.request import FlextApiModelsRequest
 from flext_api._models.response import FlextApiModelsResponse
 from flext_api._models.storage import FlextApiModelsStorage
 from flext_api._models.webhook import FlextApiModelsWebhook
-from flext_core import FlextModels
+from flext_core import m
 
 
-class FlextApiModels(FlextModels):
+class FlextApiModels(m):
     """HTTP domain models for flext-api."""
 
     class Api(
