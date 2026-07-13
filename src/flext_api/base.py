@@ -23,7 +23,7 @@ class FlextApiServiceBase[
         *,
         settings_type: type | None = None,
         runtime_settings: p.Settings | None = None,
-        settings_overrides: t.JsonMapping | None = None,
+        settings_overrides: t.ScalarMapping | None = None,
         initial_context: p.Context | None = None,
     ) -> None:
         """Bootstrap API services with one concrete runtime settings contract."""
