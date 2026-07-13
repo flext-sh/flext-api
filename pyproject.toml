@@ -702,12 +702,10 @@ in_place = true
 sort_first = [ "build-system", "dependency-groups", "project", "tool" ]
 
 [tool.uv.sources.flext-core]
-git = "https://github.com/flext-sh/flext-core.git"
-branch = "0.12.0-dev"
+workspace = true
 
 [tool.uv.sources.flext-web]
-git = "https://github.com/flext-sh/flext-web.git"
-branch = "0.12.0-dev"
+workspace = true
 
 [tool.vulture]
 exclude = [ "*/_protocols/*" ]
