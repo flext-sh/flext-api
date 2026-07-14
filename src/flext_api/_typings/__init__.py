@@ -3,6 +3,4 @@
 
 from __future__ import annotations
 
-from .serialization import FlextApiTypingsSerialization as FlextApiTypingsSerialization
-
-__all__: tuple[str, ...] = ("FlextApiTypingsSerialization",)
+__all__: tuple[str, ...] = ()

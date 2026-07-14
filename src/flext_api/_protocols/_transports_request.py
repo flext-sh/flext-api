@@ -9,14 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 
 import httpx
 
 from flext_api import c, m, r, t
 
-if TYPE_CHECKING:
-    from flext_web import p
+from flext_web import p
 
 
 class FlextApiTransportsRequestMixin:

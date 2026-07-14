@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 
 from flext_web import m, u
 
-if TYPE_CHECKING:
-    from enum import StrEnum
+from enum import StrEnum
+
 from flext_api import t
 
 
