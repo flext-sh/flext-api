@@ -7,7 +7,6 @@ preserving flext-web service runtime behavior.
 from __future__ import annotations
 
 from abc import ABC
-from typing import override
 
 from flext_api import FlextApiSettings, m, p, t
 from flext_core import s
@@ -38,15 +37,6 @@ class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayl
     def _runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
         """Return runtime bootstrap options for API services."""
         return m.RuntimeBootstrapOptions(settings_type=FlextApiSettings)
-
-    @property
-    @override
-    def settings(self) -> FlextApiSettings:
-        """The typed API settings bound to this service runtime."""
-        runtime = self.runtime_settings
-        if runtime is not None:
-            return FlextApiSettings.model_validate(runtime)
-        return FlextApiSettings.fetch_global()
 
 
 s = FlextApiServiceBase
