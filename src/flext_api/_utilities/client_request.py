@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 
-from flext_api import c, m, p, settings, t
+from flext_api import c, m, p, t
 from flext_api._utilities.client_codec import FlextApiClientCodecMixin
 from flext_core.result import r
 from flext_web import u
 
+if TYPE_CHECKING:
+    from flext_api import FlextApiSettings
+
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
     """Request execution helpers for FlextApiClient."""
+
+    settings: FlextApiSettings
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns."""
@@ -34,14 +41,17 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
 
     def _build_url(self, path: str) -> p.Result[str]:
         """Build full URL from base_url and path."""
+        # NOTE (multi-agent): mro-t9s9 — request defaults belong to this
+        # client's injected runtime settings, never the global singleton.
+        api_settings = self.settings.Api
         if not path:
             return r[str].fail("URL path cannot be empty")
         path_stripped = path.strip()
         if not path_stripped:
             return r[str].fail("URL path cannot be empty")
-        if not settings.Api.base_url.strip():
+        if not api_settings.base_url.strip():
             return r[str].ok(path_stripped)
-        base = settings.Api.base_url.strip().rstrip("/")
+        base = api_settings.base_url.strip().rstrip("/")
         if path_stripped.startswith("/"):
             return r[str].ok(f"{base}{path_stripped}")
         return r[str].ok(f"{base}/{path_stripped}")
@@ -51,7 +61,10 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
     ) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
-            headers: t.StrMapping = {**settings.Api.default_headers, **request.headers}
+            headers: t.StrMapping = {
+                **self.settings.Api.default_headers,
+                **request.headers,
+            }
             extensions = (
                 {"sni_hostname": request.sni_hostname} if request.sni_hostname else {}
             )
