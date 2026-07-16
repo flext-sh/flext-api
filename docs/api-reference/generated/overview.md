@@ -3,15 +3,15 @@
 # flext-api API Overview
 
 - Package: `flext_api`
-- Version: `0.12.0-dev`
+- Version: `0.12.0`
 - Description: FLEXT API - High-Performance REST API with FastAPI
 - Doc summary: Flext Api package.
-- Classifiers: `Development Status :: 5 - Production/Stable`, `Framework :: FastAPI`, `Intended Audience :: Developers`, `Operating System :: OS Independent`, `Programming Language :: Python :: 3 :: Only`, `Programming Language :: Python :: 3.13` (+3 more)
+- Classifiers: `Development Status :: 3 - Alpha`, `Framework :: FastAPI`, `Intended Audience :: Developers`, `Operating System :: OS Independent`, `Programming Language :: Python :: 3 :: Only`, `Programming Language :: Python :: 3.13` (+3 more)
 - Project class: `platform`
 - Keywords: `enterprise`, `fastapi`, `flext`, `http`, `rest`, `typed`
-- Main facades: _none_
+- Main facades: `FlextApi`, `FlextApiConstants`, `FlextApiModels`, `FlextApiProtocols`, `FlextApiServiceBase`, `FlextApiSettings`, `FlextApiTypes`, `FlextApiUtilities`
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextApiTypes`, `FlextApiModels`, `settings`, `FlextApiConstants`, `FlextApi`, `FlextApiUtilities`, `FlextApiSettings`, `FlextApiServiceBase`, `FlextApiProtocols`
+- Public symbol exports: `FlextApi`, `FlextApiConstants`, `FlextApiModels`, `FlextApiProtocols`, `FlextApiServiceBase`, `FlextApiSettings`, `FlextApiTypes`, `FlextApiUtilities`, `settings`
 - Exported module shortcuts: `api`
 - Generated module pages: `7`
 
