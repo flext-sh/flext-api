@@ -57,7 +57,7 @@ class FlextApiTransportsRequestMixin:
         return r[t.MappingKV[str, t.Api.RequestBody | t.JsonValue]].ok(request_payload)
 
     def _request_model(
-        self, request: m.Api.HttpRequest
+        self, request: p.Api.HttpRequest
     ) -> p.Result[p.Api.HttpResponse]:
         """Execute one validated HTTP request model through the active transport."""
         client = self._client
@@ -71,7 +71,7 @@ class FlextApiTransportsRequestMixin:
         return r[p.Api.HttpResponse].ok(self._response_model(response_result.value))
 
     def _httpx_response(
-        self, client: httpx.Client, request: m.Api.HttpRequest
+        self, client: httpx.Client, request: p.Api.HttpRequest
     ) -> p.Result[httpx.Response]:
         """Dispatch one request body shape to httpx."""
         match request.body:
@@ -86,7 +86,7 @@ class FlextApiTransportsRequestMixin:
 
     @staticmethod
     def _request_json_body(
-        client: httpx.Client, request: m.Api.HttpRequest, body_json: t.JsonMapping
+        client: httpx.Client, request: p.Api.HttpRequest, body_json: t.JsonMapping
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with JSON body semantics."""
         try:
@@ -104,7 +104,7 @@ class FlextApiTransportsRequestMixin:
 
     @staticmethod
     def _request_content_body(
-        client: httpx.Client, request: m.Api.HttpRequest, body_content: str | bytes
+        client: httpx.Client, request: p.Api.HttpRequest, body_content: str | bytes
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with raw content body semantics."""
         try:

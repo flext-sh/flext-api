@@ -24,7 +24,7 @@ class FlextApiUtilitiesSettingsManager:
     following railway-oriented error handling throughout. Domain-agnostic.
     """
 
-    _client_config: m.Api.ClientConfig | None
+    _client_config: p.Api.ClientConfig | None
 
     def __init__(self) -> None:
         """Initialize configuration manager."""

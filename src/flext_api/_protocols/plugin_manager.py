@@ -10,7 +10,7 @@ from flext_web import u
 
 from collections.abc import MutableMapping
 
-from flext_api import t
+from flext_api import p, t
 from flext_core import p
 
 

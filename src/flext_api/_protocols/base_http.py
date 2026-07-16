@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_api import c, t
+from flext_api import c, p, t
 from flext_web import p
 
 

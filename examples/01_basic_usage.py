@@ -50,7 +50,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         return request_result
 
     @staticmethod
-    def build_response(request: m.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
+    def build_response(request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Build a response model without leaving the public API surface."""
         response_payload: t.JsonMapping = {
             "status_code": c.Api.HTTP_SUCCESS_MIN,

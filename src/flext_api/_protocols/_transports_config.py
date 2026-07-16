@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import c, m, t
+from flext_api import c, p, t
 
 
 class FlextApiTransportsConfigMixin:
@@ -38,7 +38,7 @@ class FlextApiTransportsConfigMixin:
         return raw_max_redirects if isinstance(raw_max_redirects, int) else 20
 
     @staticmethod
-    def _response_mapping(response: m.Api.HttpResponse) -> t.Api.HttpResponseDict:
+    def _response_mapping(response: p.Api.HttpResponse) -> t.Api.HttpResponseDict:
         """Convert the central response model to the public mapping contract."""
         return {
             "status_code": response.status_code,

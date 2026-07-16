@@ -16,7 +16,7 @@ from typing import override
 
 import httpx
 
-from flext_api import c, m, r, t
+from flext_api import c, r, t
 from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
 from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
 from flext_api._protocols.base import FlextApiProtocolsBase as pb
@@ -91,7 +91,7 @@ class FlextApiProtocolsTransports:
             )
 
         def request_model(
-            self, request: m.Api.HttpRequest
+            self, request: p.Api.HttpRequest
         ) -> p.Result[p.Api.HttpResponse]:
             """Public wrapper around request-model execution for protocol consumers."""
             return self._request_model(request)

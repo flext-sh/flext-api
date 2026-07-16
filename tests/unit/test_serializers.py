@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import t
+from flext_api import p, t
 from tests import u
 from flext_tests import tm
 

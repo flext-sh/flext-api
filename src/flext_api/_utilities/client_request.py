@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from flext_api import c, m, p, t
+from flext_api import c, p, t
 from flext_api._utilities.client_codec import FlextApiClientCodecMixin
 from flext_core.result import r
 from flext_web import u
@@ -20,7 +20,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
 
     settings: FlextApiSettings
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns."""
         url_result = self._build_url(request.url)
         if url_result.failure:
@@ -57,7 +57,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         return r[str].ok(f"{base}/{path_stripped}")
 
     def _execute_http_request(
-        self, request: m.Api.HttpRequest, url: str, serialized_body: bytes
+        self, request: p.Api.HttpRequest, url: str, serialized_body: bytes
     ) -> p.Result[p.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
@@ -82,7 +82,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
             # transport failure (connection/TLS/timeout/DNS) becomes r.fail below.
             return self._deserialize_body(response).flat_map(
                 lambda body: u.try_(
-                    lambda: m.Api.HttpResponse(
+                    lambda: p.Api.HttpResponse(
                         status_code=response.status_code,
                         headers=dict(response.headers),
                         body=body,
