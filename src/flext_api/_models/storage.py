@@ -9,8 +9,8 @@ from typing import Annotated, ClassVar
 # NOTE (multi-agent): runtime import (not TYPE_CHECKING) so pydantic can
 # resolve ``t.JsonValue``/``MutableMapping`` forward refs at class build —
 # matches the sibling model modules (request.py, response.py, client.py).
-from flext_api import p, t
-from flext_web import m, p, u
+from flext_api import t
+from flext_web import m, u
 
 
 class FlextApiModelsStorage:
@@ -78,7 +78,7 @@ class FlextApiModelsStorage:
         class State(m.FlexibleInternalModel):
             """Mutable storage runtime state kept in one central model."""
 
-            model_config: ClassVar[p.ConfigDict] = m.ConfigDict(
+            model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
                 extra="forbid", validate_assignment=True
             )
             entries: MutableMapping[str, FlextApiModelsStorage.Storage.Metadata] = (

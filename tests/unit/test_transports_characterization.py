@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import m, t
+from flext_api import m, p, t
 from flext_api._protocols.base import FlextApiProtocolsBase as pb
 from flext_api._protocols.transports import FlextApiProtocolsTransports
 from flext_tests import tm

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import httpx
 
-from flext_api import c, m, r, t
+from flext_api import c, m, r, p, t
 
 from flext_web import p
 

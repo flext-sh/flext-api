@@ -5,8 +5,8 @@ from __future__ import annotations
 import time
 from typing import Annotated, ClassVar
 
-from flext_api import c, p, t
-from flext_web import m, p, u
+from flext_api import c, t
+from flext_web import m, u
 
 from collections.abc import MutableMapping, MutableSequence
 
@@ -104,7 +104,7 @@ class FlextApiModelsWebhook:
         class State(m.FlexibleInternalModel):
             """Mutable webhook runtime state centralized in one model."""
 
-            model_config: ClassVar[p.ConfigDict] = m.ConfigDict(
+            model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
                 extra="forbid", validate_assignment=True, arbitrary_types_allowed=True
             )
             handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = (
