@@ -20,11 +20,11 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
 
     settings: FlextApiSettings
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: m.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns."""
         url_result = self._build_url(request.url)
         if url_result.failure:
-            return r[m.Api.HttpResponse].fail(
+            return r[p.Api.HttpResponse].fail(
                 url_result.error or "URL validation failed"
             )
         request_body: t.Api.RequestBody = (
@@ -32,7 +32,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         )
         body_result = self._serialize_body(request_body)
         if body_result.failure:
-            return r[m.Api.HttpResponse].fail(
+            return r[p.Api.HttpResponse].fail(
                 body_result.error or "Body serialization failed"
             )
         return self._execute_http_request(
@@ -58,7 +58,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
 
     def _execute_http_request(
         self, request: m.Api.HttpRequest, url: str, serialized_body: bytes
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
             headers: t.StrMapping = {
@@ -92,7 +92,7 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
                 ).map_error(lambda exc: f"Response model validation failed: {exc}")
             )
         except c.Api.EXC_HTTPX as exc:
-            return r[m.Api.HttpResponse].fail_op("HTTP client request", exc)
+            return r[p.Api.HttpResponse].fail_op("HTTP client request", exc)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiClientRequestMixin"]

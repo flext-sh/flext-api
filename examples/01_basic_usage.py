@@ -19,13 +19,13 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         """Render example output through the canonical CLI facade."""
         u.Cli.formatters_print(str(message))
 
-    def build_request(self) -> p.Result[m.Api.HttpRequest]:
+    def build_request(self) -> p.Result[p.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
             str(settings.Api.timeout),
         )
         if timeout_result.failure:
-            timeout_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
+            timeout_failure: p.Result[p.Api.HttpRequest] = r[p.Api.HttpRequest].fail(
                 timeout_result.error or "failed to normalize timeout",
             )
             return timeout_failure
@@ -38,19 +38,19 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             timeout=timeout_result.value,
         )
         if payload_result.failure:
-            payload_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
+            payload_failure: p.Result[p.Api.HttpRequest] = r[p.Api.HttpRequest].fail(
                 payload_result.error or "failed to build request payload",
             )
             return payload_failure
 
-        request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
+        request_result: p.Result[p.Api.HttpRequest] = u.parse_model(
             payload_result.value.root,
             m.Api.HttpRequest,
         )
         return request_result
 
     @staticmethod
-    def build_response(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def build_response(request: m.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Build a response model without leaving the public API surface."""
         response_payload: t.JsonMapping = {
             "status_code": c.Api.HTTP_SUCCESS_MIN,
@@ -61,7 +61,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             },
             "request_id": "example-request",
         }
-        response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
+        response_result: p.Result[p.Api.HttpResponse] = r[p.Api.HttpResponse].ok(
             m.Api.HttpResponse.model_validate(response_payload),
         )
         return response_result

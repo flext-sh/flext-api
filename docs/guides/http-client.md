@@ -64,7 +64,7 @@ Use `request_kwargs` for query parameters and request options that belong to `m.
 
 ## Error Handling
 
-Every call returns `p.Result[m.Api.HttpResponse]`.
+Every call returns `p.Result[p.Api.HttpResponse]`.
 
 ```python
 from flext_api import FlextApi

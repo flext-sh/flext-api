@@ -118,32 +118,32 @@ class FlextApiUtilitiesRequestUtils:
             headers: t.StrMapping | None = None,
             request_kwargs: t.Api.RequestKwargs | None = None,
             timeout: float | str | None = None,
-        ) -> p.Result[m.ConfigMap]:
+        ) -> p.Result[p.ConfigMap]:
             """Build one normalized request payload for HttpRequest validation."""
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)
             if body_result.failure:
-                return r[m.ConfigMap].fail(
+                return r[p.ConfigMap].fail(
                     body_result.error or "Body extraction failed"
                 )
             headers_result = request_utils.merge_headers(headers, request_kwargs)
             if headers_result.failure:
-                return r[m.ConfigMap].fail(
+                return r[p.ConfigMap].fail(
                     headers_result.error or "Header extraction failed"
                 )
             timeout_result = request_utils.validate_and_extract_timeout(
                 timeout, request_kwargs
             )
             if timeout_result.failure:
-                return r[m.ConfigMap].fail(
+                return r[p.ConfigMap].fail(
                     timeout_result.error or "Timeout extraction failed"
                 )
             query_result = request_utils.extract_query_params(request_kwargs)
             if query_result.failure:
-                return r[m.ConfigMap].fail(
+                return r[p.ConfigMap].fail(
                     query_result.error or "Query params extraction failed"
                 )
-            return r[m.ConfigMap].ok(
+            return r[p.ConfigMap].ok(
                 m.ConfigMap(
                     root={
                         "method": method,

@@ -25,7 +25,7 @@ class FlextApi(FlextApiServiceBase[bool]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
+    model_config: ClassVar[p.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
     @property
@@ -42,7 +42,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         url: str,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.DELETE,
@@ -63,7 +63,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         url: str,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.GET,
@@ -78,7 +78,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.PATCH,
@@ -94,7 +94,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.POST,
@@ -110,7 +110,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
             method=c.Api.Method.PUT,
@@ -120,7 +120,7 @@ class FlextApi(FlextApiServiceBase[bool]):
             request_kwargs=request_kwargs,
         )
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: m.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
         Args:
@@ -139,7 +139,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Execute a generic HTTP method using monadic patterns - no fallbacks.
 
         Args:
@@ -153,7 +153,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         r[HttpResponse]: Response or error.
 
         """
-        chain: p.Result[m.Api.HttpResponse] = (
+        chain: p.Result[p.Api.HttpResponse] = (
             u.Api.RequestUtils
             .build_request_payload(
                 method=method,

@@ -17,7 +17,7 @@ class FlextApiUtilitiesApiPydantic:
         """Annotated type factories."""
 
         @staticmethod
-        def coerced_enum_validator(enum_cls: type[StrEnum]) -> m.BeforeValidator:
+        def coerced_enum_validator(enum_cls: type[StrEnum]) -> p.BeforeValidator:
             """Create a validator for automatic StrEnum coercion."""
 
             def _coerce(v: str | StrEnum) -> StrEnum:

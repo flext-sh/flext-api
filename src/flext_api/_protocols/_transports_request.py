@@ -24,18 +24,18 @@ class FlextApiTransportsRequestMixin:
 
     def _extract_request_params(
         self, data: t.JsonMapping | t.Api.RequestBody, *, connection_url: str
-    ) -> p.Result[m.Api.HttpRequest]:
+    ) -> p.Result[p.Api.HttpRequest]:
         """Extract and validate request parameters from data."""
         payload_result = self._request_payload(data, connection_url=connection_url)
         if payload_result.failure:
-            return r[m.Api.HttpRequest].fail(
+            return r[p.Api.HttpRequest].fail(
                 payload_result.error or "Unsupported HTTP request payload type"
             )
         try:
             request_model = m.Api.HttpRequest.model_validate(payload_result.value)
         except c.Api.EXC_HTTPX as e:
-            return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
-        return r[m.Api.HttpRequest].ok(request_model)
+            return r[p.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
+        return r[p.Api.HttpRequest].ok(request_model)
 
     @staticmethod
     def _request_payload(
@@ -58,17 +58,17 @@ class FlextApiTransportsRequestMixin:
 
     def _request_model(
         self, request: m.Api.HttpRequest
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Execute one validated HTTP request model through the active transport."""
         client = self._client
         if client is None:
-            return r[m.Api.HttpResponse].fail("HTTP client is not connected")
+            return r[p.Api.HttpResponse].fail("HTTP client is not connected")
         response_result = self._httpx_response(client, request)
         if response_result.failure:
-            return r[m.Api.HttpResponse].fail(
+            return r[p.Api.HttpResponse].fail(
                 response_result.error or "HTTP request failed"
             )
-        return r[m.Api.HttpResponse].ok(self._response_model(response_result.value))
+        return r[p.Api.HttpResponse].ok(self._response_model(response_result.value))
 
     def _httpx_response(
         self, client: httpx.Client, request: m.Api.HttpRequest
@@ -121,7 +121,7 @@ class FlextApiTransportsRequestMixin:
         return r[httpx.Response].ok(response)
 
     @staticmethod
-    def _response_model(response: httpx.Response) -> m.Api.HttpResponse:
+    def _response_model(response: httpx.Response) -> p.Api.HttpResponse:
         """Convert the concrete httpx response into the central API response model."""
         return m.Api.create_response(
             status_code=response.status_code,

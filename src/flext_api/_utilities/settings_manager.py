@@ -31,7 +31,7 @@ class FlextApiUtilitiesSettingsManager:
         self._client_config = None
 
     @property
-    def settings(self) -> m.Api.ClientConfig | None:
+    def settings(self) -> p.Api.ClientConfig | None:
         """Current configuration."""
         return self._client_config
 
@@ -52,11 +52,11 @@ class FlextApiUtilitiesSettingsManager:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 
-    def client_config(self) -> p.Result[m.Api.ClientConfig]:
+    def client_config(self) -> p.Result[p.Api.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._client_config is not None:
-            return r[m.Api.ClientConfig].ok(self._client_config)
-        return r[m.Api.ClientConfig].fail("No configuration set")
+            return r[p.Api.ClientConfig].ok(self._client_config)
+        return r[p.Api.ClientConfig].fail("No configuration set")
 
     def _normalize_value(self, key: str, *, value: t.Scalar) -> p.Result[t.JsonPayload]:
         """Normalize configuration value based on key type - no fallbacks."""
@@ -98,19 +98,19 @@ class FlextApiUtilitiesSettingsManager:
 
     def _build_client_config(
         self, settings: t.ScalarMapping
-    ) -> p.Result[m.Api.ClientConfig]:
+    ) -> p.Result[p.Api.ClientConfig]:
         """Build typed ClientConfig from scalar settings payload."""
         processed: MutableMapping[str, t.JsonPayload] = {}
         for key, raw_value in settings.items():
             normalize_result = self._normalize_value(key, value=raw_value)
             if normalize_result.failure:
-                return r[m.Api.ClientConfig].fail(
+                return r[p.Api.ClientConfig].fail(
                     normalize_result.error or "Value normalization failed"
                 )
             processed[key] = normalize_result.value
         headers_value = processed.get("headers", {})
         if not isinstance(headers_value, Mapping):
-            return r[m.Api.ClientConfig].fail(
+            return r[p.Api.ClientConfig].fail(
                 f"Invalid headers type: {type(headers_value)}"
             )
         timeout_result = u.try_(
@@ -135,7 +135,7 @@ class FlextApiUtilitiesSettingsManager:
         )
         for result in (timeout_result, retries_result, headers_result, verify_result):
             if result.failure:
-                return r[m.Api.ClientConfig].fail_op(
+                return r[p.Api.ClientConfig].fail_op(
                     "Client configuration validation", result.error
                 )
         config_model = m.Api.ClientConfig(
@@ -145,4 +145,4 @@ class FlextApiUtilitiesSettingsManager:
             headers=headers_result.value,
             verify_ssl=verify_result.value,
         )
-        return r[m.Api.ClientConfig].ok(config_model)
+        return r[p.Api.ClientConfig].ok(config_model)

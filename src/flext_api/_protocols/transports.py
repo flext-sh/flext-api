@@ -92,7 +92,7 @@ class FlextApiProtocolsTransports:
 
         def request_model(
             self, request: m.Api.HttpRequest
-        ) -> p.Result[m.Api.HttpResponse]:
+        ) -> p.Result[p.Api.HttpResponse]:
             """Public wrapper around request-model execution for protocol consumers."""
             return self._request_model(request)
 
