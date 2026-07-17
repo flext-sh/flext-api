@@ -29,6 +29,15 @@ class FlextApi(FlextApiServiceBase[bool]):
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
     @property
+    @override
+    def settings(self) -> FlextApiSettings:
+        """The typed API settings bound to this facade."""
+        current = super().settings
+        if isinstance(current, FlextApiSettings):
+            return current
+        return FlextApiSettings.fetch_global()
+
+    @property
     def client(self) -> FlextApiClient:
         """The lazily created HTTP client bound to this facade settings."""
         client = self._client
