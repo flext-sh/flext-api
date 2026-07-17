@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from abc import ABC
 from collections.abc import MutableMapping
+from typing import TYPE_CHECKING
 
-from flext_api import t
 from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
 from flext_core import p, r
 from flext_web import u
+
+if TYPE_CHECKING:
+    from flext_api import t
 
 
 class FlextApiProtocolPluginManager:
