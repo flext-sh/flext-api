@@ -173,7 +173,7 @@ spec:
             periodSeconds: 5```
 ## Quality Metrics
 
-### Current State (v0.12.0-dev)
+### Current State (v0.20.0-dev)
 
 | Metric              | Value | Target (1.0.0) | Status        |
 | ------------------- | ----- | -------------- | ------------- |

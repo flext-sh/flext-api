@@ -23,8 +23,8 @@ classifiers = [
 dependencies = [
     "cbor2>=6.0.1",
     "fastapi>=0.136.1",
-    "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-    "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.12.0-dev",
+    "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.20.0-dev",
+    "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.20.0-dev",
     "gql>=4.0.0",
     "httpx-sse>=0.4.3",
     "httpx>=0.28.1",
@@ -42,7 +42,7 @@ license = "MIT"
 name = "flext-api"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-version = "0.12.0.rc0"
+version = "0.20.0.dev0"
 
 [[project.authors]]
 email = "team@flext.sh"
