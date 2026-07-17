@@ -13,8 +13,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_api import FlextApi, FlextApiSettings
-from flext_api._utilities.client import FlextApiClient
+from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 from tests import c
 from tests import m
 from tests import u
@@ -85,8 +84,9 @@ class TestsFlextApiSmoke:
         """HTTP status boundaries form a valid, ordered range."""
         tm.that(c.Api.HTTP_STATUS_MIN, eq=100)
         tm.that(c.Api.HTTP_STATUS_MAX, eq=599)
-        assert c.Api.HTTP_STATUS_MIN < c.Api.HTTP_SUCCESS_MIN
-        assert c.Api.HTTP_SUCCESS_MIN < c.Api.HTTP_SUCCESS_MAX <= c.Api.HTTP_STATUS_MAX
+        tm.that(c.Api.HTTP_STATUS_MIN, lt=c.Api.HTTP_SUCCESS_MIN)
+        tm.that(c.Api.HTTP_SUCCESS_MIN, lt=c.Api.HTTP_SUCCESS_MAX)
+        tm.that(c.Api.HTTP_SUCCESS_MAX, lte=c.Api.HTTP_STATUS_MAX)
 
     # ---- HttpRequest model contract -------------------------------------
 
@@ -191,6 +191,7 @@ class TestsFlextApiSmoke:
     )
     def test_http_response_classification_computed_fields(
         self,
+        *,
         status_code: int,
         success: bool,
         redirect: bool,
@@ -199,11 +200,11 @@ class TestsFlextApiSmoke:
     ) -> None:
         """Computed classification fields agree with the status code class."""
         response = m.Api.HttpResponse.model_validate({"status_code": status_code})
-        assert response.success is success
-        assert response.redirect is redirect
-        assert response.client_error is client_error
-        assert response.server_error is server_error
-        assert response.error is (client_error or server_error)
+        tm.that(response.success, eq=success)
+        tm.that(response.redirect, eq=redirect)
+        tm.that(response.client_error, eq=client_error)
+        tm.that(response.server_error, eq=server_error)
+        tm.that(response.error, eq=client_error or server_error)
 
     def test_create_response_builds_equivalent_model(self) -> None:
         """create_response yields the same state as direct validation."""
@@ -218,8 +219,7 @@ class TestsFlextApiSmoke:
         """Packb serializes a mapping into non-empty bytes."""
         payload: t.JsonMapping = {"key": "value"}
         packed = u.Api.packb(payload)
-        tm.that(packed, is_=bytes)
-        assert len(packed) > 0
+        tm.that(packed, is_=bytes, length_gt=0)
 
     @pytest.mark.parametrize(
         "original", [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}]
