@@ -11,7 +11,15 @@ from __future__ import annotations
 
 import httpx
 
-from flext_api import c, m, p, r, t
+from typing import TYPE_CHECKING
+
+from flext_api.constants import FlextApiConstants as c
+from flext_api.models import FlextApiModels as m
+from flext_api.typings import FlextApiTypes as t
+from flext_core import r
+
+if TYPE_CHECKING:
+    from flext_api import p
 
 
 class FlextApiTransportsRequestMixin:
@@ -25,14 +33,14 @@ class FlextApiTransportsRequestMixin:
         """Extract and validate request parameters from data."""
         payload_result = self._request_payload(data, connection_url=connection_url)
         if payload_result.failure:
-            return r[p.Api.HttpRequest].fail(
+            return r[m.Api.HttpRequest].fail(
                 payload_result.error or "Unsupported HTTP request payload type"
             )
         try:
             request_model = m.Api.HttpRequest.model_validate(payload_result.value)
         except c.Api.EXC_HTTPX as e:
-            return r[p.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
-        return r[p.Api.HttpRequest].ok(request_model)
+            return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
+        return r[m.Api.HttpRequest].ok(request_model)
 
     @staticmethod
     def _request_payload(
@@ -59,13 +67,13 @@ class FlextApiTransportsRequestMixin:
         """Execute one validated HTTP request model through the active transport."""
         client = self._client
         if client is None:
-            return r[p.Api.HttpResponse].fail("HTTP client is not connected")
+            return r[m.Api.HttpResponse].fail("HTTP client is not connected")
         response_result = self._httpx_response(client, request)
         if response_result.failure:
-            return r[p.Api.HttpResponse].fail(
+            return r[m.Api.HttpResponse].fail(
                 response_result.error or "HTTP request failed"
             )
-        return r[p.Api.HttpResponse].ok(self._response_model(response_result.value))
+        return r[m.Api.HttpResponse].ok(self._response_model(response_result.value))
 
     def _httpx_response(
         self, client: httpx.Client, request: p.Api.HttpRequest

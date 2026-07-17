@@ -16,7 +16,9 @@ from typing import override
 
 import httpx
 
-from flext_api import c, r, t
+from flext_api.constants import FlextApiConstants as c
+from flext_api.typings import FlextApiTypes as t
+from flext_core import r
 from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
 from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
 from flext_api._protocols.base import FlextApiProtocolsBase as pb
