@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import time
-from collections.abc import MutableMapping, MutableSequence
-from typing import Annotated, ClassVar
+from typing import Annotated, ClassVar, TYPE_CHECKING
 
 from flext_api import c, t
 from flext_web import m, u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping, MutableSequence
 
 
 class FlextApiModelsWebhook:

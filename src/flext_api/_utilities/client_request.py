@@ -8,7 +8,7 @@ import httpx
 
 from flext_api import c, p, t
 from flext_api._utilities.client_codec import FlextApiClientCodecMixin
-from flext_core.result import r
+from flext_core import r
 from flext_web import u
 
 if TYPE_CHECKING:

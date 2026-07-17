@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import time
-from collections.abc import MutableMapping
-from typing import Annotated, ClassVar
+from typing import Annotated, ClassVar, TYPE_CHECKING
 
 # NOTE (multi-agent): runtime import (not TYPE_CHECKING) so pydantic can
 # resolve ``t.JsonValue``/``MutableMapping`` forward refs at class build —
 # matches the sibling model modules (request.py, response.py, client.py).
 from flext_api import t
 from flext_web import m, u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
 
 
 class FlextApiModelsStorage:

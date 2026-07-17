@@ -5,7 +5,7 @@ from __future__ import annotations
 import httpx
 
 from flext_api import c, p, t
-from flext_core.result import r
+from flext_core import r
 from flext_web import u
 
 

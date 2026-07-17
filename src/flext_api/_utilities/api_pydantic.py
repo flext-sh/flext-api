@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
 
-from flext_api import p, t
 from flext_web import m, u
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flext_api import p, t
+    from enum import StrEnum
 
 
 class FlextApiUtilitiesApiPydantic:

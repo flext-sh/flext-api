@@ -13,9 +13,9 @@ import httpx
 
 from typing import TYPE_CHECKING
 
-from flext_api.constants import FlextApiConstants as c
-from flext_api.models import FlextApiModels as m
-from flext_api.typings import FlextApiTypes as t
+from flext_api import FlextApiConstants as c
+from flext_api import FlextApiModels as m
+from flext_api import FlextApiTypes as t
 from flext_core import r
 
 if TYPE_CHECKING:
