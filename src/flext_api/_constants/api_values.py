@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from types import MappingProxyType
 from typing import Final
 
@@ -9,8 +10,6 @@ from httpx import HTTPError as _HttpxError
 
 from flext_api._constants.api_enums import FlextApiConstantsEnums
 from flext_web import FlextWebConstants, t
-
-from collections.abc import Mapping
 
 
 class FlextApiConstantsValues(FlextApiConstantsEnums):

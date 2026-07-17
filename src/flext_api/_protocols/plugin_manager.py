@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 from abc import ABC
-
-from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
-from flext_core import r
-from flext_web import u
-
 from collections.abc import MutableMapping
 
-from flext_api import p, t
-from flext_core import p
+from flext_api import t
+from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
+from flext_core import p, r
+from flext_web import u
 
 
 class FlextApiProtocolPluginManager:

@@ -20,7 +20,6 @@ from flext_api import c, r, t
 from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
 from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
 from flext_api._protocols.base import FlextApiProtocolsBase as pb
-
 from flext_web import p
 
 

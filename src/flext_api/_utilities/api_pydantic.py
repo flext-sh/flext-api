@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-
-from flext_web import m, p, u
-
 from enum import StrEnum
 
 from flext_api import p, t
+from flext_web import m, u
 
 
 class FlextApiUtilitiesApiPydantic:

@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from flext_api import p, t
-from flext_web import p
 
 
 class FlextApiProtocolsStorage:
