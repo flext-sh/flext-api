@@ -714,6 +714,3 @@ preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
 
-[tool.uv.sources]
-flext-core = { workspace = true }
-flext-web = { workspace = true }
