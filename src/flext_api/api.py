@@ -178,7 +178,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         return chain
 
 
-api = FlextApi.fetch_global()
+api: FlextApi = FlextApi.fetch_global()
 """Global FlextApi facade instance used as the canonical runtime entrypoint."""
 
 
