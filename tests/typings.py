@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsTypes
 
-from flext_api import p, t
+from flext_api import t
 
 
 class TestsFlextApiTypes(FlextTestsTypes, t):

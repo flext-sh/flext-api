@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from httpx import HTTPError as _HttpxError
 

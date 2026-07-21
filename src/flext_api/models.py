@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_api._models.client import FlextApiModelsClient
 from flext_api._models.request import FlextApiModelsRequest
 from flext_api._models.response import FlextApiModelsResponse
 from flext_api._models.storage import FlextApiModelsStorage
 from flext_api._models.webhook import FlextApiModelsWebhook
 from flext_web import m
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from flext_api import t

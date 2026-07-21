@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from tests.constants import TestsFlextApiConstants as TestsFlextApiConstants, c as c
-    from tests.typings import TestsFlextApiTypes as TestsFlextApiTypes, t as t
-    from tests.protocols import TestsFlextApiProtocols as TestsFlextApiProtocols, p
-    from tests.models import TestsFlextApiModels as TestsFlextApiModels, m as m
-    from tests.utilities import TestsFlextApiUtilities as TestsFlextApiUtilities, u
     from tests.base import TestsFlextApiServiceBase as TestsFlextApiServiceBase, s as s
+    from tests.constants import TestsFlextApiConstants as TestsFlextApiConstants, c as c
+    from tests.models import TestsFlextApiModels as TestsFlextApiModels, m as m
+    from tests.protocols import TestsFlextApiProtocols as TestsFlextApiProtocols, p
+    from tests.typings import TestsFlextApiTypes as TestsFlextApiTypes, t as t
+    from tests.utilities import TestsFlextApiUtilities as TestsFlextApiUtilities, u
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {

@@ -12,16 +12,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
-from typing import override, TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import httpx
 
-from flext_api import FlextApiConstants as c
-from flext_api import FlextApiTypes as t
-from flext_core import r
+from flext_api import FlextApiConstants as c, FlextApiTypes as t
 from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
 from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
 from flext_api._protocols.base import FlextApiProtocolsBase as pb
+from flext_core import r
 
 if TYPE_CHECKING:
     from flext_web import p

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Annotated, ClassVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
 # NOTE (multi-agent): runtime import (not TYPE_CHECKING) so pydantic can
 # resolve ``t.JsonValue``/``MutableMapping`` forward refs at class build —

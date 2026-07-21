@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Annotated, ClassVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
 from flext_api import c, t
 from flext_web import m, u

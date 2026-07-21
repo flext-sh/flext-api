@@ -11,8 +11,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_api import FlextApiConstants as c
-from flext_api import FlextApiTypes as t
+from flext_api import FlextApiConstants as c, FlextApiTypes as t
 
 if TYPE_CHECKING:
     from flext_api import p

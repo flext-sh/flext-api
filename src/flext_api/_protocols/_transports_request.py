@@ -9,13 +9,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import httpx
-
 from typing import TYPE_CHECKING
 
-from flext_api import FlextApiConstants as c
-from flext_api import FlextApiModels as m
-from flext_api import FlextApiTypes as t
+import httpx
+
+from flext_api import FlextApiConstants as c, FlextApiModels as m, FlextApiTypes as t
 from flext_core import r
 
 if TYPE_CHECKING:

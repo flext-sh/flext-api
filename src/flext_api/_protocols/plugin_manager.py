@@ -11,6 +11,7 @@ from flext_web import u
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
+
     from flext_api import t
 
 
