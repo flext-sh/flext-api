@@ -223,8 +223,7 @@ async def get_REDACTED_LDAP_BIND_PASSWORD_users(
 @app.post("/users/{user_id}/delete")
 @require_permissions(["user.delete"])
 async def delete_user(
-    user_id: str,
-    current_user: t.JsonMapping = Depends(get_current_user),
+    user_id: str, current_user: t.JsonMapping = Depends(get_current_user)
 ):
     """Delete user (requires delete permission)."""
     return await user_service.delete_user(user_id)

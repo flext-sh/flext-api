@@ -29,10 +29,7 @@ class FlextApiExamplesDemo(s[t.JsonMapping]):
     def execute(self) -> p.Result[t.JsonMapping]:
         api = FlextApi(settings=settings)
         return api.execute().map(
-            lambda ready: {
-                "ready": ready,
-                "base_url": settings.Api.base_url,
-            }
+            lambda ready: {"ready": ready, "base_url": settings.Api.base_url}
         )
 ```
 
