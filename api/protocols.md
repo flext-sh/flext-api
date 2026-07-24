@@ -282,9 +282,7 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
 
     def __init__(self) -> None:
         super().__init__(
-            name="http",
-            version="1.0.0",
-            description="HTTP/REST protocol plugin",
+            name="http", version="1.0.0", description="HTTP/REST protocol plugin"
         )
 
     def supported_protocols(self) -> t.StrSequence:

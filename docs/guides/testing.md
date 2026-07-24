@@ -40,7 +40,9 @@ from flext_api import FlextApi, FlextApiSettings, c, m, p, r
 class FakeApi(FlextApi):
     """In-memory API facade for unit tests."""
 
-    def get(self, url: str, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+    def get(
+        self, url: str, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
@@ -87,7 +89,9 @@ from flext_api import FlextApi, FlextApiSettings, m, p
 
 
 def test_real_http_get():
-    api = FlextApi(settings=FlextApiSettings(base_url="https://httpbin.org", timeout=5.0))
+    api = FlextApi(
+        settings=FlextApiSettings(base_url="https://httpbin.org", timeout=5.0)
+    )
     result = api.get("/get")
 
     if result.failure:
@@ -117,7 +121,9 @@ def make_api(status_code: int = 200, body: dict | None = None) -> FlextApi:
     """Factory for a fake API facade."""
 
     class FakeApi(FlextApi):
-        def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+        def get(
+            self, url, headers=None, request_kwargs=None
+        ) -> p.Result[m.Api.HttpResponse]:
             return r[m.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=status_code,
@@ -193,7 +199,9 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+    def get(
+        self, url, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
@@ -235,7 +243,9 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+    def get(
+        self, url, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,

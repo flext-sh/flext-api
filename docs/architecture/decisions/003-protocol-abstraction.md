@@ -8,476 +8,116 @@ Accepted
 
 ## Context
 
-Modern applications need to communicate with various APIs using different protocols (HTTP/REST, GraphQL, WebSocket, gRPC, etc.). Each protocol has different connection patterns, message formats, and error handling. The challenge was to create a unified interface that:
-
-1. Supports multiple protocols through a consistent API
-1. Allows easy addition of new protocols
-1. Maintains protocol-specific optimizations and features
-1. Provides unified error handling and monitoring
-1. Enables protocol negotiation and fallback
-
-Key considerations:
-
-- Enterprise applications use diverse protocols (REST, GraphQL, WebSocket, SSE)
-- Protocol implementations have different connection models and APIs
-- Need to maintain high performance for each protocol
-- Error handling and monitoring should be consistent across protocols
-- Future protocols (gRPC, MQTT, etc.) should be easily addable
+Enterprise applications consume diverse APIs, but `flext-api` currently focuses
+on HTTP/REST. The architecture keeps the HTTP surface clean while leaving room
+for future protocol support through a plugin-style boundary.
 
 ## Decision
 
-FLEXT-API will implement a **Protocol Plugin Architecture** with:
-
-1. **Abstract Base Protocol**: Common interface for all protocols
-1. **Protocol Registry**: Dynamic protocol discovery and instantiation
-1. **Protocol-Specific Implementations**: Optimized implementations for each protocol
-1. **Unified Client Interface**: Single client interface that delegates to protocol implementations
+`flext-api` exposes a single HTTP-focused facade (`FlextApi`) and a typed
+protocol layer (`p.Api`) for HTTP operations. Protocol plugins are managed by
+the exported `FlextApiProtocolPluginManager` and `FlextApiProtocolPluginTypes`
+shards, which provide a railway result-oriented lifecycle contract.
 
 ## Consequences
 
 ### Positive
 
-- **Extensibility**: New protocols can be added without changing core API
-- **Performance**: Each protocol can be optimized for its specific use case
-- **Consistency**: Unified error handling and monitoring across all protocols
-- **Testability**: Protocol implementations can be tested and mocked independently
-- **Maintainability**: Protocol-specific code is isolated and easier to maintain
-- **Future-Proof**: Easy to add new protocols as they emerge
+- Extensibility without changing `FlextApi`
+- Unified `p.Result` error handling across boundaries
+- Plugin and HTTP clients can be tested independently
 
 ### Negative
 
-- **Complexity**: Additional abstraction layer increases complexity
-- **Indirection**: Method calls go through multiple layers of abstraction
-- **Learning Curve**: Developers need to understand both generic and protocol-specific APIs
-- **Testing Overhead**: Each protocol needs comprehensive testing
+- Only HTTP is implemented today
+- Plugin lifecycle adds a small amount of boilerplate
 
-### Risks
+## Implementation Examples
 
-- **Performance Overhead**: Abstraction layer could impact performance-critical operations
-- **Inconsistent Implementations**: Different protocols might have slightly different behaviors
-- **Maintenance Burden**: Multiple protocol implementations increase maintenance complexity
-
-## Alternatives Considered
-
-### Option 1: Monolithic Client
-
-- **Description**: Single client class with conditional logic for different protocols
-- **Pros**: Simple implementation, direct performance
-- **Cons**: Hard to maintain, difficult to add new protocols, protocol coupling
-- **Rejected**: Violates open/closed principle, becomes unmaintainable
-
-### Option 2: Inheritance Hierarchy
-
-- **Description**: Base client class with protocol-specific subclasses
-- **Pros**: Object-oriented approach, shared functionality
-- **Cons**: Tight coupling, inflexible for dynamic protocol selection
-- **Rejected**: Doesn't support runtime protocol selection well
-
-### Option 3: Facade Pattern Only
-
-- **Description**: Simple facade that delegates to protocol-specific functions
-- **Pros**: Simple, minimal abstraction
-- **Cons**: No common interface, inconsistent error handling, harder to test
-- **Rejected**: Doesn't provide enough structure for enterprise use
-
-## Implementation Architecture
-
-### Protocol Interface
+### Protocol Plugin Manager
 
 ```python
 from __future__ import annotations
 
+from flext_api import FlextApiProtocolPluginManager, FlextApiProtocolPluginTypes, p, r
 
-class Base(ABC):
-    """Abstract base class for all protocol implementations."""
 
-    @abstractmethod
-    def create_client(self, settings: dict[str, t.JsonValue]):
-        """Create protocol-specific client instance."""
-        pass
+class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Plugin):
+    """Example plugin implementing the lifecycle contract."""
 
-    @abstractmethod
-    async def execute_request(self, request) -> p.Result[t.JsonValue]:
-        """Execute request using protocol-specific logic."""
-        pass
+    name = "json-schema"
+    version = "1.0.0"
+    capabilities = {"schema_validation", "serialization"}
 
-    @abstractmethod
-    def get_capabilities(self) -> ProtocolCapabilities:
-        """Get protocol capabilities and features."""
-        pass
+    def initialize(self) -> p.Result[bool]:
+        print(f"{self.name} initialized")
+        return r[bool].ok(True)
 
-    @abstractmethod
-    async def health_check(self) -> p.Result[bool]:
-        """Check protocol connectivity and health."""
-        pass
+    def shutdown(self) -> p.Result[bool]:
+        print(f"{self.name} shutdown")
+        return r[bool].ok(True)
+
+
+manager = FlextApiProtocolPluginManager.Manager()
+load_result = manager.load_plugin(JsonSchemaPlugin(name="json-schema", version="1.0.0"))
+assert load_result.success
+
+assert "json-schema" in manager.list_loaded_plugins()
+
+resolve_result = manager.resolve_plugin("json-schema")
+assert resolve_result.success
+assert resolve_result.unwrap().version == "1.0.0"
+
+assert manager.unload_plugin("json-schema").success
 ```
 
-### Protocol Registry
+### HTTP Protocol Facade
 
 ```python
 from __future__ import annotations
 
-
-class ProtocolRegistry:
-    """Registry for protocol implementations with discovery."""
-
-    def __init__(self):
-        self._protocols: dict[str, type[Base]] = {}
-        self._capabilities: dict[str, ProtocolCapabilities] = {}
-
-    def register(self, name: str, protocol_class: type[Base]):
-        """Register a protocol implementation."""
-        self._protocols[name] = protocol_class
-        # Cache capabilities for performance
-        self._capabilities[name] = protocol_class().get_capabilities()
-
-    def get_protocol(self, name: str) -> Base:
-        """Get protocol instance by name."""
-        if name not in self._protocols:
-            raise ValueError(f"Protocol '{name}' not registered")
-        return self._protocols[name]()
-
-    def list_protocols(self) -> t.StringList:
-        """List all registered protocol names."""
-        return list(self._protocols.keys())
-
-    def get_capabilities(self, name: str) -> ProtocolCapabilities:
-        """Get cached protocol capabilities."""
-        return self._capabilities.get(name)
-```
-
-### Unified Client Interface
-
-```python
-from __future__ import annotations
+from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
-class FlextApiClient(s[None]):
-    """Unified client that delegates to protocol implementations."""
-
-    def __init__(self, protocol: str = "http", **settings):
-        super().__init__()
-        config = settings
-
-    async def request(self, method: str, url: str, **kwargs) -> p.Result[t.JsonValue]:
-        """Unified request method that delegates to protocol."""
-        protocol = await self._get_protocol_instance()
-
-        # Convert unified request to protocol-specific format
-        protocol_request = self._convert_to_protocol_request(method, url, kwargs)
-
-        # Execute using protocol implementation
-        result = await protocol.execute_request(protocol_request)
-
-        # Convert back to unified response format
-        return self._convert_from_protocol_response(result)
-```
-
-## Protocol Implementations
-
-### HTTP Protocol
-
-```python
-from __future__ import annotations
+class HttpOnlyApi(FlextApi):
+    def health_check(self) -> p.Result[m.Api.HttpResponse]:
+        return self.get("/health")
 
 
-class FlextWeb(Base):
-    """HTTP/REST protocol implementation."""
-
-    def create_client(self, settings: dict[str, t.JsonValue]) -> httpx.AsyncClient:
-        return httpx.AsyncClient(**settings)
-
-    async def execute_request(
-        self, request: FlextApiModels.HttpRequest
-    ) -> p.Result[FlextApiModels.HttpResponse]:
-        client = self.create_client(request.settings)
-
-        try:
-            response = await client.request(
-                method=request.method,
-                url=request.url,
-                headers=request.headers,
-                content=request.body,
-                timeout=request.timeout,
-            )
-
-            return r.ok(
-                FlextApiModels.HttpResponse(
-                    status_code=response.status_code,
-                    headers=dict(response.headers),
-                    body=response.text,
-                    response_time=response.elapsed.total_seconds(),
+class FakeHttpApi(HttpOnlyApi):
+    def get(
+        self, url, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
+        if url.endswith("/health"):
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=200,
+                    body={"status": "healthy"},
+                    headers={"Content-Type": "application/json"},
                 )
             )
-        except Exception as e:
-            return r.fail(f"HTTP request failed: {e}")
-        finally:
-            await client.aclose()
+        return r[m.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
 
-    def get_capabilities(self) -> ProtocolCapabilities:
-        return ProtocolCapabilities(
-            supports_streaming=True,
-            supports_binary=True,
-            supports_compression=True,
-            max_request_size=100 * 1024 * 1024,  # 100MB
-            timeout_range=(1, 300),  # 1 second to 5 minutes
-        )
+
+api = FakeHttpApi(settings=FlextApiSettings(base_url="https://example.com"))
+result = api.health_check()
+assert result.success
+assert result.unwrap().body["status"] == "healthy"
 ```
 
-### GraphQL Protocol
+## What Is Not Implemented
 
-```python
-from __future__ import annotations
+The following protocols are **not** currently exposed by `flext-api`:
 
+- GraphQL
+- WebSocket
+- Server-Sent Events (SSE)
+- gRPC / Protocol Buffers
+- MQTT
 
-class GraphQL(Base):
-    """GraphQL protocol implementation."""
-
-    def create_client(self, settings: dict[str, t.JsonValue]) -> gql.Client:
-        transport = AIOHTTPTransport(url=settings["url"])
-        return gql.Client(
-            transport=transport, execute_timeout=settings.get("timeout", 30)
-        )
-
-    async def execute_request(
-        self, request: GraphQLRequest
-    ) -> p.Result[GraphQLResponse]:
-        client = self.create_client(request.settings)
-
-        try:
-            result = await client.execute_async(
-                gql.gql(request.query), variable_values=request.variables
-            )
-
-            return r.ok(GraphQLResponse(data=result))
-        except Exception as e:
-            return r.fail(f"GraphQL request failed: {e}")
-
-    def get_capabilities(self) -> ProtocolCapabilities:
-        return ProtocolCapabilities(
-            supports_streaming=False,
-            supports_binary=False,
-            supports_compression=True,
-            supports_introspection=True,
-            query_complexity_limit=1000,
-        )
-```
-
-## Usage Examples
-
-### HTTP Usage
-
-```python
-from __future__ import annotations
-from flext_api import FlextApiSettings, FlextApiClient, FlextApi
-
-settings = FlextApiSettings(base_url="https://api.example.com", timeout=1.0)
-client = FlextApiClient(settings=settings)
-api = FlextApi(settings=settings)
-result = api.get("/users/123")
-print(result.success)
-```
-
-### GraphQL Usage
-
-```python
-from __future__ import annotations
-import asyncio
-
-
-async def main() -> None:
-    # GraphQL client
-    client = FlextApiClient(protocol="graphql", url="https://api.example.com/graphql")
-
-    query = """
-        query GetUser($id: ID!) {
-            user(id: $id) {
-                name
-                email
-            }
-        }
-    """
-
-    result = await client.request("query", query, variables={"id": "123"})
-
-
-asyncio.run(main())
-```
-
-### WebSocket Usage
-
-```python
-from __future__ import annotations
-import asyncio
-
-
-async def main() -> None:
-    # WebSocket client
-    client = FlextApiClient(protocol="websocket", url="wss://api.example.com/ws")
-    await client.connect()
-    await client.send({"type": "subscribe", "channel": "updates"})
-
-
-asyncio.run(main())
-```
-
-## Testing Strategy
-
-### Protocol Isolation Testing
-
-```python
-from __future__ import annotations
-
-
-@pytest.fixture
-def http_protocol():
-    return FlextWeb()
-
-
-@pytest.mark.asyncio
-async def test_http_request_success(http_protocol):
-    # Mock httpx client
-    with patch("httpx.AsyncClient") as mock_client:
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.headers = {}
-        mock_response.text = '{"success": true}'
-        mock_response.elapsed = timedelta(seconds=0.5)
-
-        mock_client.return_value.request.return_value = mock_response
-
-        request = FlextApiModels.HttpRequest(
-            method="GET", url="https://api.example.com/test"
-        )
-        result = await http_protocol.execute_request(request)
-
-        assert result.success
-        assert result.unwrap().status_code == 200
-```
-
-### Integration Testing
-
-```python
-from __future__ import annotations
-
-
-@pytest.mark.integration
-@pytest.mark.asyncio
-async def test_protocol_registry_integration():
-    registry = ProtocolRegistry()
-
-    # Test protocol registration
-    registry.register("test", Test)
-    assert "test" in registry.list_protocols()
-
-    # Test protocol instantiation
-    protocol = registry.get_protocol("test")
-    assert isinstance(protocol, Test)
-
-    # Test capabilities caching
-    capabilities = registry.get_capabilities("test")
-    assert capabilities.supports_streaming is True
-```
-
-## Performance Considerations
-
-### Connection Pooling
-
-- HTTP protocol uses httpx connection pooling
-- GraphQL maintains persistent connections
-- WebSocket implements connection reuse
-
-### Request Batching
-
-- GraphQL supports query batching
-- HTTP can batch requests using HTTP/2 multiplexing
-- Protocol-specific optimizations maintained
-
-### Resource Management
-
-- Automatic cleanup of protocol resources
-- Connection limits and health monitoring
-- Memory-efficient request processing
-
-## Extension Points
-
-### Adding New Protocols
-
-1. **Implement Protocol Class**:
-
-```python
-from __future__ import annotations
-
-
-class Custom(Base):
-    def create_client(self, settings: dict[str, t.JsonValue]):
-        return CustomClient(**settings)
-
-    async def execute_request(self, request):
-        # Custom protocol logic
-        pass
-
-    def get_capabilities(self):
-        return ProtocolCapabilities(...)
-```
-
-1. **Register Protocol**:
-
-```python
-from __future__ import annotations
-
-registry = ProtocolRegistry()
-registry.register("custom", Custom)
-```
-
-1. **Use in Client**:
-
-```python
-from __future__ import annotations
-
-client = FlextApiClient(protocol="custom", **settings)
-```
-
-## Monitoring and Observability
-
-### Protocol Metrics
-
-- Request count and latency by protocol
-- Error rates and failure patterns
-- Connection pool utilization
-- Protocol-specific performance metrics
-
-### Health Checks
-
-- Protocol connectivity verification
-- Capability validation
-- Resource usage monitoring
-- Automatic failover detection
-
-## Migration Strategy
-
-### Phase 1: Core Architecture
-
-- [x] Implement protocol abstraction interfaces
-- [x] Create protocol registry system
-- [x] Implement HTTP protocol (primary use case)
-
-### Phase 2: Additional Protocols
-
-- [x] Implement GraphQL protocol
-- [ ] Implement WebSocket protocol
-- [ ] Implement Server-Sent Events protocol
-
-### Phase 3: Ecosystem Integration
-
-- [ ] Update documentation with protocol examples
-- [ ] Create protocol selection guidelines
-- [ ] Provide migration utilities for existing code
-- [ ] Establish protocol testing standards
+If a future release adds support for additional protocols, this page will be
+updated with real, runnable examples.
 
 ## References
 
-- [Abstraction Pattern](https://martinfowler.com/eaaCatalog/plugin.html)
-- [Strategy Pattern](https://refactoring.guru/design-patterns/strategy)
-- [Dependency Injection in Python](https://github.com/google/guice)
-- GitHub Issue: #234 - Protocol Plugin Architecture
+- GitHub Issue: #159 - Protocol Plugin Architecture
