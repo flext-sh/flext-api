@@ -186,18 +186,18 @@ spec:
 
 ### Current State (v0.12.0-dev)
 
-| Metric              | Value | Target (1.0.0) | Status        |
-| ------------------- | ----- | -------------- | ------------- |
+| Metric              | Value | Target (1.0.0) | Status          |
+| ------------------- | ----- | -------------- | --------------- |
 | **Test Coverage**   | 85%   | 90%+           | 🔄 Improving   |
 | **Total Tests**     | 334   | 400+           | 🔄 In Progress |
-| **Ruff Violations** | 0     | 0              | ✅ Complete    |
-| **Type Errors**     | 0     | 0              | ✅ Complete    |
-| **Modules**         | 25    | 25 (stable)    | ✅ Complete    |
+| **Ruff Violations** | 0     | 0              | ✅ Complete     |
+| **Type Errors**     | 0     | 0              | ✅ Complete     |
+| **Modules**         | 25    | 25 (stable)    | ✅ Complete     |
 
 ### Coverage by Layer
 
-| Layer           | Coverage | Status      | Description                    |
-| --------------- | -------- | ----------- | ------------------------------ |
+| Layer           | Coverage | Status       | Description                    |
+| --------------- | -------- | ------------ | ------------------------------ |
 | **Foundation**  | 90%+     | ✅ Excellent | Core HTTP client and utilities |
 | **Domain**      | 80-85%   | ✅ Good      | HTTP models and validation     |
 | **Application** | 85-90%   | ✅ Good      | Protocol implementations       |
