@@ -34,19 +34,19 @@ Test model validation and the public API facade in isolation:
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, c, m, p
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r
 
 
 class FakeApi(FlextApi):
     """In-memory API facade for unit tests."""
 
-    def get(
-        self, url: str, headers=None, request_kwargs=None
-    ) -> p.Result[m.Api.HttpResponse]:
-        return m.Api.HttpResponse.create_response(
-            status_code=200,
-            body={"endpoint": url, "method": "GET"},
-            headers={"Content-Type": "application/json"},
+    def get(self, url: str, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body={"endpoint": url, "method": "GET"},
+                headers={"Content-Type": "application/json"},
+            )
         )
 
 
@@ -69,6 +69,10 @@ def test_http_request_model_validation():
 
     assert request.method == "GET"
     assert request.content_type == "application/json"
+
+
+test_get_users_returns_success()
+test_http_request_model_validation()
 ```
 
 ## Integration Tests
@@ -83,9 +87,7 @@ from flext_api import FlextApi, FlextApiSettings, m, p
 
 
 def test_real_http_get():
-    api = FlextApi(
-        settings=FlextApiSettings(base_url="https://httpbin.org", timeout=5.0)
-    )
+    api = FlextApi(settings=FlextApiSettings(base_url="https://httpbin.org", timeout=5.0))
     result = api.get("/get")
 
     if result.failure:
@@ -95,6 +97,9 @@ def test_real_http_get():
         assert response.status_code == 200
         assert response.success
         assert "url" in response.body
+
+
+test_real_http_get()
 ```
 
 ## Test Fixtures
@@ -105,20 +110,20 @@ that tests can call directly:
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 def make_api(status_code: int = 200, body: dict | None = None) -> FlextApi:
     """Factory for a fake API facade."""
 
     class FakeApi(FlextApi):
-        def get(
-            self, url, headers=None, request_kwargs=None
-        ) -> p.Result[m.Api.HttpResponse]:
-            return m.Api.HttpResponse.create_response(
-                status_code=status_code,
-                body=body if body is not None else {"endpoint": url},
-                headers={"Content-Type": "application/json"},
+        def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=status_code,
+                    body=body if body is not None else {"endpoint": url},
+                    headers={"Content-Type": "application/json"},
+                )
             )
 
     return FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
@@ -130,6 +135,9 @@ def test_user_list_with_factory():
 
     assert result.success
     assert result.unwrap().body["users"][0]["name"] == "Alice"
+
+
+test_user_list_with_factory()
 ```
 
 ## Best Practices
@@ -149,6 +157,9 @@ def test_parse_valid_http_request_returns_success():
 # ❌ BAD - Vague test names
 def test_parse():
     pass
+
+
+test_parse_valid_http_request_returns_success()
 ```
 
 ### 2. Test Organization
@@ -168,6 +179,9 @@ class TestHttpRequestModel:
 
     def test_url_is_required(self):
         pass
+
+
+TestHttpRequestModel().test_valid_get_request()
 ```
 
 ### 3. Assertion Quality
@@ -175,17 +189,17 @@ class TestHttpRequestModel:
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def get(
-        self, url, headers=None, request_kwargs=None
-    ) -> p.Result[m.Api.HttpResponse]:
-        return m.Api.HttpResponse.create_response(
-            status_code=200,
-            body={"dn": "cn=test,dc=example,dc=com", "attributes": {"cn": "test"}},
-            headers={"Content-Type": "application/json"},
+    def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body={"dn": "cn=test,dc=example,dc=com", "attributes": {"cn": "test"}},
+                headers={"Content-Type": "application/json"},
+            )
         )
 
 
@@ -206,6 +220,10 @@ def test_api_result_vague():
     api = FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/test")
     assert result  # Too vague
+
+
+test_api_result()
+test_api_result_vague()
 ```
 
 ### 4. Test Independence
@@ -213,20 +231,35 @@ def test_api_result_vague():
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings, m, p, r
+
+
+class FakeApi(FlextApi):
+    def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body={"url": url},
+                headers={"Content-Type": "application/json"},
+            )
+        )
 
 
 # ✅ GOOD - Independent tests create their own facade instances
 def test_get_users():
-    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))
+    api = FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users")
     assert result.success
 
 
 def test_get_projects():
-    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))
+    api = FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/projects")
     assert result.success
+
+
+test_get_users()
+test_get_projects()
 
 
 # ❌ BAD - Shared mutable state between tests
