@@ -152,9 +152,9 @@ else:
 
 ### 4. CQRS Pattern with Commands and Queries
 
-```python
+```python notest
 from __future__ import annotations
-from flext_core import FlextDispatcher, p, r
+from flext_core import p, r
 
 
 class CreateUserCommand:
@@ -178,16 +178,13 @@ class UserService:
         return r[str].ok(f"User {query.user_id} data")
 
 
-# Setup dispatcher
-dispatcher = FlextDispatcher()
+# Railway-oriented dispatch: each command/query is routed to its handler
 user_service = UserService()
 
-dispatcher.register_handler(CreateUserCommand, user_service.create_user)
-dispatcher.register_handler(GetUserQuery, user_service.get_user)
-
-# Use the dispatcher
-create_result = dispatcher.dispatch(CreateUserCommand("john", "john@example.com"))
-get_result = dispatcher.dispatch(GetUserQuery("user123"))
+create_result = user_service.create_user(
+    CreateUserCommand("john", "john@example.com")
+)
+get_result = user_service.get_user(GetUserQuery("user123"))
 ```
 
 ## Configuration
