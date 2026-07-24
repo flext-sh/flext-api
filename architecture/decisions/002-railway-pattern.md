@@ -142,8 +142,9 @@ def get_user(user_id: int) -> p.Result[User]:
 
 ### Usage in Application Code
 
-```text
+```python
 from __future__ import annotations
+
 # Success path
 result = get_user(123)
 if result.success:

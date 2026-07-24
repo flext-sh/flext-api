@@ -55,7 +55,7 @@ FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP ope
 
 ### Option 1: Traditional Exceptions
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -71,7 +71,7 @@ def get_user(user_id: int) -> User:
 
 ### Option 2: Result Pattern (Custom Implementation)
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -97,7 +97,7 @@ class Result:
 
 ### Basic HTTP Operation
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -115,8 +115,9 @@ def get_user(user_id: int) -> p.Result[User]:
 
 ### Usage in Application Code
 
-```text
+```python
 from __future__ import annotations
+
 # Success path
 result = get_user(123)
 if result.success:
@@ -139,7 +140,7 @@ user_profile = (
 
 ### Testing Railway Code
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -202,7 +203,7 @@ def test_get_user_not_found():
 
 ### Error Message Standards
 
-```python notest
+```python
 from __future__ import annotations
 
 # Good error messages

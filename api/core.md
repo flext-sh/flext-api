@@ -301,7 +301,7 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ### Complete HTTP Client Example
 
-```text
+```python
 from __future__ import annotations
 from flext_api import FlextApiClient, FlextApiSettings
 from flext_cli import u

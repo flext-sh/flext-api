@@ -286,7 +286,7 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
 
 Middleware for centralized error handling and response formatting.
 
-```text
+```python
 from __future__ import annotations
 from flext_api import ErrorHandlingMiddleware
 from flext_api import m

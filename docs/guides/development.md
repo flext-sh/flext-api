@@ -155,8 +155,10 @@ poetry env info
 
 ### Code Documentation
 
-```text
+```python
 from __future__ import annotations
+
+
 def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     """Process data using the FLEXT pipeline.
 

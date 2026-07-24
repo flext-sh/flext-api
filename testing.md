@@ -526,7 +526,7 @@ tests/
 
 #### Test Naming Conventions
 
-```text
+```python
 from __future__ import annotations
 # Unit tests
 def test_successful_operation():

@@ -344,8 +344,10 @@ def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
 
 ### Route Registration
 
-```text
+```python
 from __future__ import annotations
+
+
 def register_api_routes(app: FastAPI):
     """Register API routes with FLEXT patterns."""
 

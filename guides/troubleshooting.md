@@ -85,7 +85,7 @@ git status
 
 #### Problem: ModuleNotFoundError
 
-```text
+```python
 from __future__ import annotations
 # Error
 ModuleNotFoundError: No module named 'flext_core'
@@ -139,7 +139,7 @@ except ImportError as e:
 
 #### Problem: MyPy errors
 
-```text
+```python
 from __future__ import annotations
 # Error
 error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapping"
@@ -179,7 +179,7 @@ mypy src/ --show-error-codes | grep "error-code"
 
 #### Problem: Tests failing
 
-```text
+```python
 from __future__ import annotations
 # Error
 AssertionError: Expected success but got failure
@@ -218,7 +218,7 @@ def test_with_debug():
 
 #### Problem: Configuration not loading
 
-```text
+```python
 from __future__ import annotations
 # Error
 ValidationError: field required
@@ -268,7 +268,7 @@ print(f"Config: {settings.model_dump()}")
 
 #### Problem: LDIF parsing fails
 
-```text
+```python
 from __future__ import annotations
 # Error
 LdifParsingException: Invalid LDIF format
@@ -331,7 +331,7 @@ def validate_ldif_content(content: str) -> t.StringList:
 
 #### Problem: Migration fails
 
-```text
+```python
 from __future__ import annotations
 # Error
 LdifMigrationException: Server compatibility error
