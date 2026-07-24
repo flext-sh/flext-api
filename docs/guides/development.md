@@ -107,8 +107,28 @@ git push origin feature/amazing-feature
 
 ### Type Safety (ZERO TOLERANCE)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_api import p, r, t
+from flext_web import m
+
+
+class ProcessedData(m.BaseModel):
+    value: str
+
+
+# ✅ CORRECT - Complete type annotations
+def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
+    """Process data with type safety."""
+    if not data:
+        return r[ProcessedData].fail("Data required")
+
+    return r[ProcessedData].ok(ProcessedData(**data))
+
+
+# ❌ WRONG - Missing type annotations
+def process_data_untyped(data):
+    return data
 ```
 
 ## Adding New Projects
@@ -126,8 +146,39 @@ cd flext-newlib
 
 ### 2. Implement Core Patterns
 
-```python
+```python notest
 from __future__ import annotations
+
+# src/flext_newlib/__init__.py
+from flext_api import p, t
+from flext_web import m
+
+
+class FlextNewlibSettings(m.BaseModel):
+    setting: str = "default"
+
+
+# Main API class
+class FlextNewlib:
+    def __init__(self, settings: FlextNewlibSettings):
+        self.settings = settings
+
+    def process(self, data: dict) -> p.Result[dict]:
+        """Process data using r pattern."""
+        # Implementation here
+        return p.Result[dict].ok(data)
+
+
+# Models class
+class FlextNewlibModels:
+    class Config(m.BaseModel):
+        setting: str = "default"
+
+    class Request(m.BaseModel):
+        data: t.JsonMapping
+
+    class Response(m.BaseModel):
+        result: p.Result[t.JsonValue]
 ```
 
 ### Test Failures
@@ -155,8 +206,14 @@ poetry env info
 
 ### Code Documentation
 
-```python
+```python notest
 from __future__ import annotations
+from flext_api import p, t
+from flext_web import m
+
+
+class ProcessedData(m.BaseModel):
+    value: str
 
 
 def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
@@ -168,9 +225,6 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     Returns:
         r containing processed data or error
 
-    Raises:
-        ValidationError: If data validation fails
-
     Example:
         >>> result = process_data({"key": "value"})
         >>> if result.success:
@@ -178,6 +232,7 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
 
     """
     # Implementation here
+    return p.Result[ProcessedData].ok(ProcessedData(value=str(data.get("key"))))
 ```
 
 ### README Updates
@@ -186,14 +241,16 @@ Update project README.md files when adding new features:
 
 - Add a "New Feature" section with usage and configuration examples.
 
-```python
+```python notest
 from __future__ import annotations
-from flext_newlib import FlextNewlib, FlextNewlibSettings
 
-lib = FlextNewlib()
-result = lib.new_feature()
+# from flext_newlib import FlextNewlib
+# from flext_newlib import FlextNewlibSettings
 
-settings = FlextNewlibSettings(new_setting="value")
+# lib = FlextNewlib()
+# result = lib.new_feature()
+
+# settings = FlextNewlibSettings(new_setting="value")
 ```
 
 ## Contributing
