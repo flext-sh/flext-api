@@ -4,298 +4,279 @@
 - [Core API Reference](#core-api-reference)
   - [Core HTTP Client](#core-http-client)
     - [FlextApiClient - Main HTTP Client](#flextapiclient---main-http-client)
+    - [FlextApi - Unified Facade](#flextapi---unified-facade)
     - [HTTP Methods](#http-methods)
-  - [FastAPI Application Factory](#fastapi-application-factory)
-    - [create\_fastapi\_app() - Application Factory](#create_fastapi_app---application-factory)
+  - [Configuration](#configuration)
     - [FlextApiSettings - Configuration Model](#flextapisettings---configuration-model)
-  - [HTTP Models and Schemas](#http-models-and-schemas)
+  - [HTTP Models](#http-models)
     - [Request/Response Models](#requestresponse-models)
-    - [Error Response Models](#error-response-models)
   - [HTTP Utilities](#http-utilities)
-    - [FlextApiUtilities - Helper Functions](#flextapiutilities---helper-functions)
-  - [Quality Metrics](#quality-metrics)
+    - [RequestUtils - Helper Functions](#requestutils---helper-functions)
   - [Usage Examples](#usage-examples)
     - [Complete HTTP Client Example](#complete-http-client-example)
-    - [FastAPI Application Example](#fastapi-application-example)
 <!-- TOC END -->
 
-This section covers the core HTTP client and server classes that form the foundation of FLEXT-API.
+This section covers the core HTTP client and configuration types that form the
+public surface of `flext-api`.
 
 ## Core HTTP Client
 
 ### FlextApiClient - Main HTTP Client
 
-The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with r patterns.
+`FlextApiClient` is the low-level HTTP client. It is bound to typed settings and
+executes validated `m.Api.HttpRequest` instances through `request(...)`. It does
+not expose `get/post/put/delete/patch` directly; those methods live on the
+`FlextApi` facade.
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiClient
-from flext_cli import u
-from flext_core import FlextSettings
 
-# Create client instance
-client = FlextApiClient(
+from flext_api import FlextApiClient, FlextApiSettings, c, m, p
+
+# Settings are the only constructor argument.
+settings = FlextApiSettings(
     base_url="https://api.example.com",
     timeout=30.0,
     max_retries=3,
-    headers={"User-Agent": "FLEXT-API/0.9.9"},
+    default_headers={"User-Agent": "flext-api"},
 )
 
-# HTTP methods with automatic error handling
-get_result = client.get("/users")
-post_result = client.post("/users", json={"name": "Alice"})
-put_result = client.put("/users/123", json={"name": "Bob"})
-delete_result = client.delete("/users/123")
+client = FlextApiClient(settings=settings)
 
-# Handle responses
-if get_result.success:
-    users = get_result.unwrap()
-    print(f"Found {len(users)} users")
+# The client exposes configured values as properties.
+print(client.base_url)  # https://api.example.com
+print(client.timeout)   # 30.0
+
+# Build and execute a validated request model.
+request = m.Api.HttpRequest(
+    method=c.Api.Method.GET,
+    url="/users",
+    headers={"Accept": "application/json"},
+    query_params={"limit": "10"},
+)
+result: p.Result[m.Api.HttpResponse] = client.request(request)
+
+if result.success:
+    response = result.unwrap()
+    print(response.status_code)
+    print(response.body)
 else:
-    print(f"Error: {get_result.error}")
+    print(f"Transport error: {result.error}")
 ```
 
 **Key Features:**
 
-- Type-safe HTTP operations
-- Automatic retry logic
-- Request/response interceptors
-- Connection pooling
-- Timeout management
+- Type-safe HTTP operations via Pydantic models
+- Monadic error handling through `p.Result`
+- Settings-driven configuration (env vars, `FLEXT_API_*` prefix)
+- Request validation before any network call
 
 **Configuration Options:**
 
-- `base_url`: Base URL for all requests
+- `base_url`: Base URL for relative requests
 - `timeout`: Request timeout in seconds
 - `max_retries`: Maximum retry attempts
-- `headers`: Default headers for all requests
-- `auth`: Authentication handler
-- `proxies`: Proxy configuration
+- `verify_ssl`: Enable TLS certificate verification
+- `default_headers`: Headers applied to all requests
+
+### FlextApi - Unified Facade
+
+`FlextApi` is the public entry point. It creates and owns a `FlextApiClient`
+lazily and exposes convenience methods for each HTTP verb.
+
+```python
+from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, c, m, p
+
+api = FlextApi(settings=FlextApiSettings(base_url="https://api.example.com"))
+
+result: p.Result[m.Api.HttpResponse] = api.get(
+    "/users",
+    headers={"Accept": "application/json"},
+    request_kwargs={"params": {"limit": 10}},
+)
+
+if result.success:
+    response = result.unwrap()
+    print(f"Status: {response.status_code}")
+    print(f"Body: {response.body}")
+else:
+    print(f"Error: {result.error}")
+```
 
 ### HTTP Methods
+
+All methods return `p.Result[m.Api.HttpResponse]`.
 
 **GET Requests:**
 
 ```python
 from __future__ import annotations
 
-# Simple GET
-result = client.get("/users")
+from flext_api import FlextApi, FlextApiSettings, m, p
 
-# GET with query parameters
-result = client.get("/users", params={"limit": 10, "offset": 0})
+api = FlextApi(settings=FlextApiSettings(base_url="https://api.example.com"))
 
-# GET with custom headers
-result = client.get("/users", headers={"Accept": "application/json"})
+result: p.Result[m.Api.HttpResponse] = api.get("/users")
 
-# Conditional requests
-result = client.get(
-    "/users", headers={"If-Modified-Since": "Wed, 21 Oct 2025 07:28:00 GMT"}
+result = api.get(
+    "/users",
+    request_kwargs={"params": {"limit": 10, "offset": 0}},
+)
+
+result = api.get(
+    "/users",
+    headers={"Accept": "application/json"},
 )
 ```
 
-**POST/PUT Requests:**
+**POST/PUT/PATCH/DELETE Requests:**
 
 ```python
 from __future__ import annotations
 
-# POST with JSON data
-user_data = {"name": "Alice", "email": "alice@example.com"}
-result = client.post("/users", json=user_data)
+from flext_api import FlextApi, FlextApiSettings, m, p
 
-# POST with form data
-form_data = {"file": file_object, "description": "Upload"}
-result = client.post("/upload", files=form_data)
+api = FlextApi(settings=FlextApiSettings(base_url="https://api.example.com"))
 
-# PUT with data
-result = client.put("/users/123", json={"name": "Updated Name"})
-```
-
-**DELETE Requests:**
-
-```python
-from __future__ import annotations
-
-# Simple DELETE
-result = client.delete("/users/123")
-
-# DELETE with body
-result = client.delete("/users/123", json={"reason": "User requested deletion"})
-```
-
-## FastAPI Application Factory
-
-### create_fastapi_app() - Application Factory
-
-Creates FastAPI applications with FLEXT patterns and configuration.
-
-```python
-from __future__ import annotations
-from flext_api import create_fastapi_app, FlextApiSettings
-from fastapi import FastAPI
-
-# Create configuration
-settings = FlextApiSettings(
-    title="Enterprise API",
-    version="2.0.0",
-    description="Enterprise-grade REST API",
-    docs_url="/docs",
-    redoc_url="/redoc",
+post_result: p.Result[m.Api.HttpResponse] = api.post(
+    "/users",
+    data={"name": "Alice", "email": "alice@example.com"},
 )
 
-# Create application
-app = create_fastapi_app(settings=settings)
+put_result = api.put("/users/123", data={"name": "Updated Name"})
 
+patch_result = api.patch("/users/123", data={"email": "new@example.com"})
 
-# Application is now ready for route registration
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "version": "2.0.0"}
+delete_result = api.delete("/users/123")
 ```
 
-**Configuration Options:**
-
-- `title`: API title for documentation
-- `version`: API version
-- `description`: API description
-- `docs_url`: OpenAPI docs URL
-- `redoc_url`: ReDoc URL
-- `openapi_url`: OpenAPI schema URL
+## Configuration
 
 ### FlextApiSettings - Configuration Model
 
-Pydantic model for API configuration with validation.
+`FlextApiSettings` is a Pydantic settings model. Project-specific fields are
+nested under the `Api` namespace, but flat constructor arguments are automatically
+lifted into that namespace for convenience.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApiSettings
+
+# Flat constructor (preferred)
+settings = FlextApiSettings(
+    base_url="https://api.example.com",
+    timeout=30.0,
+    max_retries=3,
+    verify_ssl=True,
+    default_headers={"User-Agent": "flext-api"},
+)
+
+# Equivalent nested constructor
+settings_nested = FlextApiSettings(
+    Api={
+        "base_url": "https://api.example.com",
+        "timeout": 30.0,
+        "max_retries": 3,
+    }
+)
+
+# Access the resolved namespace values.
+print(settings.Api.base_url)
+print(settings.Api.timeout)
+```
+
+To extend settings with custom fields, subclass `FlextApiSettings` and add fields
+outside the `Api` namespace or declare an additional nested group.
+
+```python
+from __future__ import annotations
+
+from flext_api import FlextApiSettings
+from pydantic import Field
 
 
 class MyApiConfig(FlextApiSettings):
-    """Custom API configuration."""
+    """Custom API configuration with an extra scalar flag."""
 
-    custom_setting: str = "default_value"
-    feature_flags = {}
+    custom_setting: str = Field(default="default_value")
+
+
+config = MyApiConfig(base_url="https://api.example.com", custom_setting="custom")
+assert config.custom_setting == "custom"
+assert config.Api.base_url == "https://api.example.com"
 ```
 
-## HTTP Models and Schemas
+## HTTP Models
 
 ### Request/Response Models
 
-Type-safe models for HTTP requests and responses using Pydantic v2.
+HTTP payloads are represented by immutable Pydantic value models under
+`m.Api`.
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiModels
 
+from flext_api import c, m
 
-class UserCreateRequest(FlextApiModels.BaseRequest):
-    """Request model for user creation."""
+request = m.Api.HttpRequest(
+    method=c.Api.Method.POST,
+    url="https://api.example.com/users",
+    headers={"Content-Type": "application/json"},
+    body={"name": "Alice", "email": "alice@example.com"},
+)
 
-    name: str = u.Field(..., min_length=1, max_length=100)
-    email: str = u.Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
-    age: int | None = u.Field(None, ge=0, le=150)
+json_data = request.model_dump_json()
+deserialized = m.Api.HttpRequest.model_validate_json(json_data)
+assert deserialized.method == "POST"
 
-
-class UserResponse(FlextApiModels.BaseResponse):
-    """Response model for user data."""
-
-    id: str
-    name: str
-    email: str
-    created_at: str
-    is_active: bool = True
-
-
-# Usage in routes
-@app.post("/users", response_model=UserResponse)
-async def create_user(request: UserCreateRequest):
-    # Validate and process request
-    user = await user_service.create_user(request.name, request.email)
-    return UserResponse(
-        id=user.id,
-        name=user.name,
-        email=user.email,
-        created_at=user.created_at.isoformat(),
-        is_active=True,
-    )
-```
-
-### Error Response Models
-
-Standardized error responses across the API.
-
-```python
-from __future__ import annotations
-from flext_api import ErrorResponse
-
-
-class ValidationErrorResponse(ErrorResponse):
-    """Validation error response."""
-
-    field_errors: t.MappingKV[str, t.StringList]
-
-
-class AuthenticationErrorResponse(ErrorResponse):
-    """Authentication error response."""
-
-    login_url: str | None = None
-
-
-# Usage in exception handlers
-@app.exception_handler(ValidationException)
-async def validation_exception_handler(request: Request, exc: ValidationException):
-    return JSONResponse(
-        status_code=422,
-        content=ValidationErrorResponse(
-            error_code="VALIDATION_ERROR",
-            message="Request validation failed",
-            field_errors=exc.field_errors,
-        ).dict(),
-    )
+response = m.Api.HttpResponse.create_response(
+    status_code=201,
+    headers={"Content-Type": "application/json"},
+    body={"id": 1, "name": "Alice"},
+)
+assert response.success
+assert response.status_code == 201
 ```
 
 ## HTTP Utilities
 
-### FlextApiUtilities - Helper Functions
+### RequestUtils - Helper Functions
 
-Collection of HTTP-related utility functions.
+`u.Api.RequestUtils` provides small, pure helpers for normalizing request
+components before they are validated into `m.Api.HttpRequest`.
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiUtilities
 
-# URL manipulation
-base_url = "https://api.example.com/v1"
-full_url = FlextApiUtilities.build_url(base_url, "/users", {"limit": 10})
+from flext_api import c, u
 
-# Header manipulation
-headers = FlextApiUtilities.merge_headers(
-    {"Content-Type": "application/json"}, {"Authorization": "Bearer token123"}
+# Build a normalized request payload from raw call-site arguments.
+payload_result = u.Api.RequestUtils.build_request_payload(
+    method=c.Api.Method.GET,
+    url="/users",
+    headers={"Accept": "application/json"},
+    request_kwargs={"params": {"limit": 10}},
 )
+assert payload_result.success
+payload = payload_result.unwrap()
+print(payload.root)
 
-# Request/response transformation
-json_data = FlextApiUtilities.parse_json_response(response)
-clean_data = FlextApiUtilities.sanitize_response_data(data)
+# Merge headers.
+merged_result = u.Api.RequestUtils.merge_headers(
+    {"Content-Type": "application/json"},
+    {"headers": {"Authorization": "Bearer token123"}},
+)
+assert merged_result.success
+print(merged_result.unwrap())
+
+# Coerce and validate timeouts.
+timeout_result = u.Api.RequestUtils.coerce_positive_timeout(5.0)
+assert timeout_result.success
+print(timeout_result.unwrap())
 ```
-
-**Key Functions:**
-
-- `build_url()`: Construct URLs with query parameters
-- `merge_headers()`: Combine header dictionaries
-- `parse_json_response()`: Parse and validate JSON responses
-- `sanitize_response_data()`: Remove sensitive data from responses
-- `format_request_data()`: Prepare data for HTTP requests
-
-## Quality Metrics
-
-| Module         | Coverage | Status    | Description                 |
-| -------------- | -------- | --------- | --------------------------- |
-| `client.py`    | 95%      | ✅ Stable | HTTP client implementation  |
-| `app.py`       | 90%      | ✅ Stable | FastAPI application factory |
-| `models.py`    | 85%      | ✅ Good   | HTTP models and schemas     |
-| `utilities.py` | 92%      | ✅ Stable | HTTP utility functions      |
-| `settings.py`  | 88%      | ✅ Good   | Configuration management    |
 
 ## Usage Examples
 
@@ -303,166 +284,75 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiClient, FlextApiSettings
-from flext_cli import u
-from flext_core import FlextSettings
+
+from flext_api import FlextApi, FlextApiSettings, c, m, p
 
 
-class UserApiClient(FlextApiClient):
-    """HTTP client for user management API."""
+class UserApiClient:
+    """Thin wrapper over the FlextApi facade for a user-management API."""
 
-    def __init__(self):
-        super().__init__(
-            base_url="https://jsonplaceholder.typicode.com",
-            timeout=10.0,
-            headers={"User-Agent": "FLEXT-API-Example/0.9.9"},
+    def __init__(self, base_url: str = "https://api.example.com"):
+        self.api = FlextApi(settings=FlextApiSettings(base_url=base_url, timeout=10.0))
+
+    def list_users(self, limit: int = 10) -> p.Result[m.Api.HttpResponse]:
+        return self.api.get(
+            "/users",
+            request_kwargs={"params": {"_limit": limit}},
         )
 
-    def get_users(self, limit: int = 10) -> p.Result[list]:
-        """Get list of users with pagination."""
-        return self.get("/users", params={"_limit": limit})
+    def get_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+        return self.api.get(f"/users/{user_id}")
 
-    def get_user(self, user_id: int) -> p.Result[dict]:
-        """Get single user by ID."""
-        return self.get(f"/users/{user_id}")
+    def create_user(self, user_data: dict) -> p.Result[m.Api.HttpResponse]:
+        return self.api.post("/users", data=user_data)
 
-    def create_user(self, user_data: dict) -> p.Result[dict]:
-        """Create new user."""
-        return self.post("/users", json=user_data)
+    def update_user(
+        self, user_id: int, user_data: dict
+    ) -> p.Result[m.Api.HttpResponse]:
+        return self.api.put(f"/users/{user_id}", data=user_data)
 
-    def update_user(self, user_id: int, user_data: dict) -> p.Result[dict]:
-        """Update existing user."""
-        return self.put(f"/users/{user_id}", json=user_data)
-
-    def delete_user(self, user_id: int) -> p.Result[bool]:
-        """Delete user."""
-        return self.delete(f"/users/{user_id}")
+    def delete_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+        return self.api.delete(f"/users/{user_id}")
 
 
-# Usage example
-client = UserApiClient()
+# Usage example against a fake facade so the example runs without network access.
+class FakeUserApi(UserApiClient):
+    def __init__(self):
+        super().__init__(base_url="https://example.com")
 
-# Get users
-users_result = client.get_users(limit=5)
+    def list_users(self, limit: int = 10) -> p.Result[m.Api.HttpResponse]:
+        return m.Api.HttpResponse.create_response(
+            status_code=200,
+            body=[{"id": i, "name": f"User {i}"} for i in range(limit)],
+            headers={"Content-Type": "application/json"},
+        )
+
+    def create_user(self, user_data: dict) -> p.Result[m.Api.HttpResponse]:
+        return m.Api.HttpResponse.create_response(
+            status_code=201,
+            body={"id": 1, **user_data},
+            headers={"Content-Type": "application/json"},
+        )
+
+
+client = FakeUserApi()
+users_result = client.list_users(limit=5)
 if users_result.success:
-    users = users_result.unwrap()
+    users = users_result.unwrap().body
     print(f"Retrieved {len(users)} users")
 
-# Create user
-new_user = {"name": "John Doe", "email": "john@example.com"}
-create_result = client.create_user(new_user)
+create_result = client.create_user({"name": "John Doe", "email": "john@example.com"})
 if create_result.success:
-    user = create_result.unwrap()
+    user = create_result.unwrap().body
     print(f"Created user: {user['name']}")
 
-# Error handling
 error_result = client.get_user(99999)
-if error_result.failure:
-    print(f"User not found: {error_result.error}")
+if error_result.success:
+    print(f"User status: {error_result.unwrap().status_code}")
+else:
+    print(f"User lookup failed: {error_result.error}")
 ```
 
-### FastAPI Application Example
-
-```python
-from __future__ import annotations
-from flext_api import create_fastapi_app, FlextApiSettings
-from flext_cli import u
-from flext_core import FlextSettings
-from fastapi import HTTPException, Depends
-
-# Configuration
-settings = FlextApiSettings(
-    title="User Management API",
-    version="1.0.0",
-    description="API for managing users in the system",
-    docs_url="/docs",
-    redoc_url="/redoc",
-)
-
-# Create application
-app = create_fastapi_app(settings=settings)
-
-
-# Models
-class UserCreate(m.BaseModel):
-    name: str
-    email: str
-
-
-class UserResponse(m.BaseModel):
-    id: int
-    name: str
-    email: str
-
-
-# Dependency injection
-def get_user_service():
-    return UserService()
-
-
-# Routes
-@app.get("/users", response_model=Sequence[UserResponse])
-async def list_users(
-    limit: int = 10,
-    offset: int = 0,
-    user_service: UserService = Depends(get_user_service),
-) -> t.SequenceOf[UserResponse]:
-    """List users with pagination."""
-    result = user_service.get_users(limit=limit, offset=offset)
-
-    if result.failure:
-        raise HTTPException(status_code=500, detail=result.error)
-
-    users = result.unwrap()
-    return [
-        UserResponse(id=user.id, name=user.name, email=user.email) for user in users
-    ]
-
-
-@app.post("/users", response_model=UserResponse, status_code=201)
-async def create_user(
-    user_data: UserCreate, user_service: UserService = Depends(get_user_service)
-) -> UserResponse:
-    """Create new user."""
-    result = user_service.create_user(user_data.name, user_data.email)
-
-    if result.failure:
-        raise HTTPException(status_code=400, detail=result.error)
-
-    user = result.unwrap()
-    return UserResponse(id=user.id, name=user.name, email=user.email)
-
-
-@app.get("/users/{user_id}", response_model=UserResponse)
-async def get_user(
-    user_id: int, user_service: UserService = Depends(get_user_service)
-) -> UserResponse:
-    """Get user by ID."""
-    result = user_service.get_user(user_id)
-
-    if result.failure:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user = result.unwrap()
-    return UserResponse(id=user.id, name=user.name, email=user.email)
-
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat(),
-    }
-
-
-# Run application
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-```
-
-This core API provides a solid foundation for building HTTP-based applications with proper error handling, type safety, and clean architecture patterns.
+This core API provides the public HTTP surface for `flext-api`: typed settings, a
+validated request model, a monadic response model, and the `FlextApi` facade for
+convenient HTTP verbs.
