@@ -52,21 +52,21 @@
 
 **Current Issues**:
 
-- ❌ Client creation fails due to missing `FlextModels.create_validated_http_url()`
+- ❌ Client creation fails due to missing URL validation helper
 - ❌ Protocol plugin interface inconsistencies
 - ❌ Configuration API test failures
 
 **Required Fixes**:
 
-```python
+```python notest
 from __future__ import annotations
 
 
-# Missing method causing failures
+# Helper for validated URL creation
 @classmethod
 def create_validated_http_url(cls, url: str) -> p.Result[str]:
     """Validate and normalize HTTP URL."""
-    # Implementation needed
+    ...
 ```
 
 #### Model Validation Testing (`tests/unit/test_models.py`)
@@ -89,20 +89,29 @@ def create_validated_http_url(cls, url: str) -> p.Result[str]:
 
 **Current Issues**:
 
-- ❌ Missing `to_dict()` serialization method
+- ❌ Missing model-dump serialization pattern
 - ❌ Negative timeout validation not raising ValueError
 - ❌ API base URL attribute access failures
 
 **Configuration Test Matrix**:
 
-```python
+```python notest
 from __future__ import annotations
 # Required test scenarios
 def test_config_defaults():
+    ...
+
 def test_config_validation():
-def test_config_serialization():  # to_dict() method needed
+    ...
+
+def test_config_serialization():  # model_dump() pattern
+    ...
+
 def test_config_negative_timeout():
+    ...
+
 def test_api_config_creation():
+    ...
 ```
 
 #### Storage Testing (`tests/unit/test_storage.py`)
@@ -211,46 +220,59 @@ def test_api_config_creation():
 
 #### HTTP Client Fixtures
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api import FlextApiClient, FlextApiSettings
+import pytest
 
 
 @pytest.fixture
 def http_client():
     """Provide configured HTTP client for tests."""
-    return FlextApiClient(base_url="https://httpbin.org", timeout=5.0)
+    return FlextApiClient(
+        settings=FlextApiSettings(base_url="https://httpbin.org", timeout=5.0)
+    )
 
 
 @pytest.fixture
 def mock_http_server():
     """Provide mock HTTP server for testing."""
     # httpx mock server implementation
+    ...
 ```
 
 #### Model Fixtures
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api import FlextApiClient
+from flext_api.models import m
+import pytest
 
 
 @pytest.fixture
 def valid_http_request():
     """Provide valid HTTP request model."""
-    return FlextApiModels.HttpRequest(method="GET", url="https://httpbin.org/get")
+    return m.Api.HttpRequest(method="GET", url="https://httpbin.org/get")
 
 
 @pytest.fixture
 def valid_client_config():
     """Provide valid client configuration."""
-    return FlextApiModels.ClientConfig(base_url="https://api.example.com")
+    return FlextApiClient(settings="https://api.example.com")
 ```
 
 ### Test Data Factories
 
 #### Request/Response Factories
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api import FlextApiClient
+from flext_api.models import m
 
 
 class TestDataFactory:
@@ -264,7 +286,7 @@ class TestDataFactory:
         }
         if overrides:
             base.update(overrides)
-        return FlextApiModels.HttpRequest(**base)
+        return m.Api.HttpRequest(**base)
 
     @staticmethod
     def create_http_response(overrides=None):
@@ -276,7 +298,7 @@ class TestDataFactory:
         }
         if overrides:
             base.update(overrides)
-        return FlextApiModels.HttpResponse(**base)
+        return m.Api.HttpResponse(**base)
 ```
 
 ## Testing Strategy by Component
@@ -285,8 +307,11 @@ class TestDataFactory:
 
 #### Unit Testing Approach
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api import FlextApi
+import httpx
 
 
 class TestFlextApiClient:
@@ -296,9 +321,9 @@ class TestFlextApiClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {"data": "test"}
 
-        result = http_client.get("/test")
+        result = FlextApi(client=http_client).get("/test")
 
-        assert result.success
+        assert result.ok
         response = result.unwrap()
         assert response.status_code == 200
         assert response.body["data"] == "test"
@@ -310,25 +335,27 @@ class TestFlextApiClient:
             "Not Found", request=mock_request, response=mock_response
         )
 
-        result = http_client.get("/not-found")
+        result = FlextApi(client=http_client).get("/not-found")
 
-        assert result.failure
+        assert result.failed
         error = result.error
         assert error.status_code == 404
 ```
 
 #### Integration Testing Approach
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api import FlextApi
 
 
 class TestHTTPIntegration:
     def test_real_http_get(self, http_client):
         """Test real HTTP GET with httpbin.org."""
-        result = http_client.get("/get")
+        result = FlextApi(client=http_client).get("/get")
 
-        assert result.success
+        assert result.ok
         response = result.unwrap()
         assert response.status_code == 200
         assert "url" in response.body
@@ -336,9 +363,9 @@ class TestHTTPIntegration:
     def test_timeout_handling(self, http_client):
         """Test timeout behavior."""
         # Configure slow endpoint
-        result = http_client.get("/delay/10", timeout=1.0)
+        result = FlextApi(client=http_client).get("/delay/10", timeout=1.0)
 
-        assert result.failure
+        assert result.failed
         assert isinstance(result.error, TimeoutError)
 ```
 
@@ -346,8 +373,11 @@ class TestHTTPIntegration:
 
 #### Validation Testing
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api import FlextApiSettings
+from flext_api.utilities import u
 
 
 class TestModelValidation:
@@ -361,21 +391,27 @@ class TestModelValidation:
         ]
 
         for url in valid_urls:
-            result = FlextModels.create_validated_http_url(url)
-            assert result.success
+            settings = FlextApiSettings(base_url=url)
+            assert settings.base_url == url
 
-        # Invalid URLs
+        # Invalid URLs (must raise on validation)
         invalid_urls = ["not-a-url", "ftp://example.com", ""]
 
         for url in invalid_urls:
-            result = FlextModels.create_validated_http_url(url)
-            assert result.failure
+            try:
+                FlextApiSettings(base_url=url)
+            except Exception:
+                pass
+            else:
+                raise AssertionError(f"expected validation error for {url!r}")
 ```
 
 #### Serialization Testing
 
-```python
+```python notest
 from __future__ import annotations
+
+from flext_api.models import m
 
 
 class TestModelSerialization:
@@ -385,7 +421,7 @@ class TestModelSerialization:
         assert json_data is not None
 
         # Test deserialization
-        deserialized = FlextApiModels.HttpRequest.model_validate_json(json_data)
+        deserialized = m.Api.HttpRequest.model_validate_json(json_data)
         assert deserialized.method == valid_http_request.method
         assert deserialized.url == valid_http_request.url
 ```
@@ -451,24 +487,26 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 #### Response Time Testing
 
-```python
+```python notest
 from __future__ import annotations
+
+import statistics
+import time
+
+from flext_api import FlextApi
 
 
 def test_response_time_performance(http_client):
     """Test response time requirements."""
-    import time
-    import statistics
-
     response_times = []
 
     # Measure 10 requests
     for _ in range(10):
         start_time = time.time()
-        result = http_client.get("/get")
+        result = FlextApi(client=http_client).get("/get")
         end_time = time.time()
 
-        if result.success:
+        if result.ok:
             response_times.append((end_time - start_time) * 1000)  # ms
 
     # Performance assertions
@@ -481,22 +519,24 @@ def test_response_time_performance(http_client):
 
 #### Concurrent Request Testing
 
-```python
+```python notest
 from __future__ import annotations
 import asyncio
+
+from flext_api import FlextApi
 
 
 async def test_concurrent_requests(http_client):
     """Test concurrent request handling."""
 
     async def make_request(i):
-        return await http_client.get(f"/get?request_id={i}")
+        return await FlextApi(client=http_client).get(f"/get?request_id={i}")
 
     # Make 50 concurrent requests
     tasks = [make_request(i) for i in range(50)]
     results = await asyncio.gather(*tasks)
 
-    successful = [r for r in results if r.success]
+    successful = [r for r in results if r.ok]
     success_rate = len(successful) / len(results)
 
     assert success_rate > 0.95, f"Success rate too low: {success_rate}"
@@ -526,18 +566,31 @@ tests/
 
 #### Test Naming Conventions
 
-```python
+```python notest
 from __future__ import annotations
+
 # Unit tests
 def test_successful_operation():
+    ...
+
 def test_error_handling():
+    ...
+
 def test_validation_scenarios():
+    ...
+
 def test_edge_cases():
+    ...
 
 # Integration tests
 def test_real_http_integration():
+    ...
+
 def test_end_to_end_workflow():
+    ...
+
 def test_system_interaction():
+    ...
 ```
 
 ### Test Data Management

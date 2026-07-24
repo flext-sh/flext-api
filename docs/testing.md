@@ -17,14 +17,21 @@
 
 **Current Issues**:
 
-- ❌ Client creation fails due to missing `FlextModels.create_validated_http_url()`
+- ❌ Client creation fails due to missing URL validation helper
 - ❌ Protocol plugin interface inconsistencies
 - ❌ Configuration API test failures
 
 **Required Fixes**:
 
-```python
+```python notest
 from __future__ import annotations
+
+
+# Helper for validated URL creation
+@classmethod
+def create_validated_http_url(cls, url: str) -> p.Result[str]:
+    """Validate and normalize HTTP URL."""
+    ...
 ```
 
 > Coverage thresholds are configured in `pyproject.toml` under `[tool.coverage.report]`.
@@ -51,24 +58,37 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 #### Response Time Testing
 
-```python
+```python notest
 from __future__ import annotations
 ```
 
 #### Test Naming Conventions
 
-```python
+```python notest
 from __future__ import annotations
+
 # Unit tests
 def test_successful_operation():
+    ...
+
 def test_error_handling():
+    ...
+
 def test_validation_scenarios():
+    ...
+
 def test_edge_cases():
+    ...
 
 # Integration tests
 def test_real_http_integration():
+    ...
+
 def test_end_to_end_workflow():
+    ...
+
 def test_system_interaction():
+    ...
 ```
 
 ### Test Data Management
