@@ -15,20 +15,13 @@ if TYPE_CHECKING:
     from tests.typings import TestsFlextApiTypes as TestsFlextApiTypes, t as t
     from tests.utilities import TestsFlextApiUtilities as TestsFlextApiUtilities, u
 
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        ".constants": ("TestsFlextApiConstants", "c"),
-        ".typings": ("TestsFlextApiTypes", "t"),
-        ".protocols": ("TestsFlextApiProtocols", "p"),
-        ".models": ("TestsFlextApiModels", "m"),
-        ".utilities": ("TestsFlextApiUtilities", "u"),
-        ".base": ("TestsFlextApiServiceBase", "s"),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    ".constants": ("TestsFlextApiConstants", "c"),
+    ".typings": ("TestsFlextApiTypes", "t"),
+    ".protocols": ("TestsFlextApiProtocols", "p"),
+    ".models": ("TestsFlextApiModels", "m"),
+    ".utilities": ("TestsFlextApiUtilities", "u"),
+    ".base": ("TestsFlextApiServiceBase", "s"),
+})
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
