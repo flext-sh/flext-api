@@ -89,6 +89,7 @@ def test_with_debug():
         print(f"Error: {result.failure()}")
     assert result.success
 ```
+
 ### 4. Configuration Issues
 
 #### Problem: Configuration not loading
@@ -98,6 +99,7 @@ from __future__ import annotations
 # Error example (not a real executable snippet):
 # ValidationError: field required
 ```
+
 #### Solutions
 
 **Check environment variables:**
@@ -105,6 +107,7 @@ from __future__ import annotations
 ```bash
 env | grep FLEXT_
 ```
+
 **Validate configuration:**
 
 ```python
@@ -117,6 +120,7 @@ try:
 except c.ValidationError as e:
     print(f"Configuration error: {e}")
 ```
+
 **Debug configuration loading:**
 
 ```python
@@ -134,6 +138,7 @@ for key, value in os.environ.items():
 settings = FlextSettings()
 print(f"Config: {settings.model_dump()}")
 ```
+
 ### 5. LDIF Processing Issues
 
 #### Problem: LDIF parsing fails
@@ -143,6 +148,7 @@ from __future__ import annotations
 # Error example (not a real executable snippet):
 # LdifParsingException: Invalid LDIF format
 ```
+
 #### Solutions
 
 **Check LDIF content:**
@@ -160,6 +166,7 @@ if result.failure:
     print(f"Parse error: {result.failure()}")
     print(f"Content: {content!r}")
 ```
+
 **Enable debug logging:**
 
 ```python
@@ -170,6 +177,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Your LDIF processing code
 ```
+
 **Validate LDIF format:**
 
 ```python
@@ -193,6 +201,7 @@ def validate_ldif_content(content: str) -> t.StringList:
 
     return issues
 ```
+
 ### 6. Migration Issues
 
 #### Problem: Migration fails
@@ -202,6 +211,7 @@ from __future__ import annotations
 # Error example (not a real executable snippet):
 # LdifMigrationException: Server compatibility error
 ```
+
 #### Solutions
 
 **Check server configuration:**
@@ -219,6 +229,7 @@ settings = FlextLdifSettings(
 
 print(f"Config: {settings.model_dump()}")
 ```
+
 **Enable server servers:**
 
 ```python
@@ -227,6 +238,7 @@ from __future__ import annotations
 # Conceptual server migration settings (not a real executable API)
 settings = {"servers_enabled": True, "source_server": "oid", "target_server": "oud"}
 ```
+
 **Test with sample data:**
 
 ```python
@@ -244,6 +256,7 @@ if result.success:
 else:
     print(f"Sample parsing failed: {result.failure}")
 ```
+
 ### 7. Performance Issues
 
 #### Problem: Slow processing
@@ -255,6 +268,7 @@ from __future__ import annotations
 # - Slow response times
 # - Timeout errors
 ```
+
 #### Solutions
 
 **Profile memory usage:**
@@ -280,6 +294,7 @@ def profile_memory():
 
 profile_memory()
 ```
+
 **Optimize batch size:**
 
 ```python
@@ -292,6 +307,7 @@ settings = FlextLdifSettings(
     parallel_processing=False,  # Disable for memory issues
 )
 ```
+
 **Enable parallel processing:**
 
 ```python
@@ -303,6 +319,7 @@ settings = {
     "max_workers": 4,  # Adjust based on CPU cores
 }
 ```
+
 ## Debugging Techniques
 
 ### 1. Logging Configuration
@@ -323,6 +340,7 @@ logger.info("Info message")
 logger.warning("Warning message")
 logger.error("Error message")
 ```
+
 ### 2. Exception Handling
 
 ```python
@@ -342,6 +360,7 @@ def safe_operation(data: dict) -> p.Result[dict]:
         logger.error(f"Unexpected error: {e}", exc_info=True)
         return r.fail(f"Operation failed: {e}")
 ```
+
 ### 3. Debug Mode
 
 ```python
@@ -355,6 +374,7 @@ settings = FlextSettings(debug=True)
 print(f"Debug mode: {settings.debug}")
 print(f"Log level: {settings.log_level}")
 ```
+
 ### 4. Step-by-Step Debugging
 
 ```python
@@ -390,6 +410,7 @@ def debug_ldif_processing(content: str):
     else:
         print(f"ERROR: Parse failed: {result.failure()}")
 ```
+
 ## Error Codes Reference
 
 ### FLEXT Core Errors
@@ -443,6 +464,7 @@ def monitor_memory():
 
 monitor_memory()
 ```
+
 ### CPU Issues
 
 ```python
@@ -467,6 +489,7 @@ def monitor_cpu():
 
 monitor_cpu()
 ```
+
 ## Getting Help
 
 ### Self-Service Resources
@@ -529,13 +552,17 @@ When reporting issues, include:
 1. **Error Details**
 
    ```python
-from __future__ import annotations
-   # Full error traceback
+
+from **future** import annotations
+
+# Full error traceback
+
    import traceback
    try:
        # Your code here
    except Exception as e:
        traceback.print_exc()
+
    ```
 
 1. **Minimal Reproduction**
@@ -592,16 +619,19 @@ def process(data: dict) -> p.Result[ProcessedData]:
 def process(data: dict) -> ProcessedData:
     return ProcessedData(**data)
 ```
+
 1. **Validate Input Early**
 
    ```python
-from __future__ import annotations
+
+from **future** import annotations
    def process_data(data: dict) -> p.Result[dict]:
        if not data:
            return r.fail("Data required")
 
        # Process data
        return r.ok(processed_data)
+
    ```
 
 1. **Use Type Hints**
@@ -621,7 +651,8 @@ from __future__ import annotations
 1. **Test Thoroughly**
 
    ```python
-from __future__ import annotations
+
+from **future** import annotations
    def test_process_data():
        # Test success case
        result = process_data({"key": "value"})
@@ -630,6 +661,7 @@ from __future__ import annotations
        # Test failure case
        result = process_data(None)
        assert result.failure
+
    ```
 
 ## Resources
