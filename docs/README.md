@@ -5,231 +5,214 @@
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
 [![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](../)
 
-**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with r patterns and synchronous architecture.
+**HTTP client foundation** for the FLEXT enterprise data integration platform.
+FLEXT-API provides a typed HTTP facade (`FlextApi`), a low-level client
+(`FlextApiClient`), Pydantic v2 request/response models, and railway-oriented
+error handling through `p.Result`.
 
-> **✅ STATUS**: Version 0.12.0-dev - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
+> **STATUS**: Version 0.12.0-dev — public HTTP facade, settings, and model
+> layer implemented. Additional protocols, middleware, and schema generation are
+> not yet part of the public API.
 
 ______________________________________________________________________
 
-## 🚀 Overview
+## Overview
 
-FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data integration platform, providing HTTP client functionality and FastAPI application creation across 33+ FLEXT ecosystem projects. This library eliminates HTTP implementation duplication while maintaining enterprise-grade patterns.
+FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data
+integration platform. It eliminates HTTP implementation duplication while
+maintaining enterprise-grade patterns: typed settings, validated request/response
+models, and `p.Result`/`r` error handling.
 
-### 🎯 Core Features
+### Core Features
 
-- **🔗 HTTP Client Foundation** - Comprehensive client wrapper with r patterns
-- **🌐 FastAPI Integration** - Application factory patterns for web services
-- **📊 Domain Models** - Pydantic v2 validation and business logic
-- **⚙️ Configuration Management** - Environment-aware settings and validation
-- **🔧 HTTP Utilities** - Helper functions and transformations
-- **📡 Protocol Support** - Multiple protocols (HTTP, GraphQL, WebSocket, SSE)
+- **HTTP Client Foundation** — `FlextApi` facade with `get/post/put/patch/delete`
+- **Typed Settings** — `FlextApiSettings` with env-var support (`FLEXT_API_*`)
+- **Pydantic v2 Models** — `m.Api.HttpRequest` and `m.Api.HttpResponse`
+- **Railway Pattern** — `p.Result` error handling for every operation
+- **Protocol Plugin Foundation** — `FlextApiProtocolPluginManager` for future protocols
 
-### 🏢 Integration with FLEXT Ecosystem
+### Integration with the FLEXT Ecosystem
 
-- **flext-core** → Foundation patterns (r, s, FlextModels)
+- **flext-core** → Foundation patterns (`c`, `t`, `p`, `m`, `u`, `r`, `s`)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
-- **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
-- **Enterprise APIs** → REST API patterns and FastAPI application hosting
+- **FLEXT Projects** → Shared HTTP facade preventing duplicate implementations
 
 ______________________________________________________________________
 
-## 🏗️ Current Source Structure
+## Current Source Structure
 
-FLEXT-API follows a **Clean Architecture** pattern with clear separation of concerns:
-
-```
+```text
 src/flext_api/
-├── __init__.py              # Public API exports
+├── __init__.py              # Public facade exports
 ├── __version__.py           # Version management
-├── api.py                   # Main API interface
-├── app.py                   # FastAPI application factory
-├── client.py                # HTTP client implementation (605 lines)
-├── settings.py                # Configuration management (187 lines)
-├── constants.py             # Configuration constants
-├── exceptions.py            # HTTP-specific exceptions
-├── handlers.py              # Request/response handlers
-├── middleware.py            # HTTP middleware implementations
-├── models.py                # Pydantic models (409 lines)
-├── plugins.py               # Plugin system
-├── protocol_impls/          # Protocol implementations
-│   ├── graphql.py          # GraphQL protocol support
-│   ├── http_client.py      # HTTP client protocol
-│   ├── http.py             # HTTP protocol implementation
-│   ├── logger.py           # Logging protocol
-│   ├── sse.py              # Server-Sent Events
-│   ├── storage_backend.py  # Storage protocol
-│   └── websocket.py        # WebSocket protocol
-├── protocol_stubs/          # Protocol stubs
-│   ├── grpc_stub.py        # gRPC stub implementation
-│   └── protobuf_stub.py    # Protocol buffer stub
-├── protocols.py             # Protocol definitions
-├── py.typed                 # Type checking marker
-├── registry.py              # Component registry
-├── schemas/                 # Schema definitions
-│   ├── asyncapi.py         # AsyncAPI schema support
-│   ├── jsonschema.py       # JSON Schema support
-│   └── openapi.py          # OpenAPI schema support
-├── serializers.py           # Data serialization
-├── server.py                # Server implementation
-├── storage.py               # Storage abstraction
-├── transports.py            # Transport layer
-├── typings.py               # Type definitions
-├── utilities.py             # HTTP utilities (414 lines)
-└── webhook.py               # Webhook handling
+├── api.py                   # FlextApi public facade
+├── base.py                  # FlextApiServiceBase
+├── _config.py               # Config integration
+├── _settings.py             # FlextApiSettings
+├── constants.py             # Public constants facade
+├── _constants/              # Constant implementations
+├── models.py                # Public models facade
+├── _models/                 # Model implementations (request, response, client, storage, webhook)
+├── protocols.py             # Public protocols facade
+├── _protocols/              # Protocol implementations (HTTP, plugins, transports, etc.)
+├── typings.py               # Public typings facade
+├── _typings/                # Typing implementations
+├── utilities.py             # Public utilities facade
+├── _utilities/              # Utility implementations (client, request utils, serializers, etc.)
+├── _settings.py             # Settings singleton
+└── py.typed                 # Type checking marker
 ```
 
-### 🎯 Key Architectural Patterns
+### Key Architectural Patterns
 
-- **Clean Architecture** - Clear separation between domain, use cases, and infrastructure
-- **Railway Pattern** - Error handling with r (90% implementation)
-- **Factory Pattern** - Application and client factory methods
-- **Plugin Architecture** - Extensible protocol implementations
-- **Configuration Management** - Environment-aware settings with validation
-
-______________________________________________________________________
-
-## 📚 Documentation Structure
-
-### 🏗️ Architecture & Design
-
-- **[Architecture Overview](architecture/overview.md)** - System design and patterns
-- **[API Reference](api-reference/)** - Complete API documentation
-  - **[Overview](api-reference/generated/overview.md)** - Generated API overview
-  - **[Public API](api-reference/generated/public-api.md)** - Public API surface
-  - **[Modules](api-reference/generated/modules/index.md)** - Module-level reference
-
-### 🔧 Development & Integration
-
-- **[Getting Started](guides/getting-started.md)** - Installation and setup guide
-- **[Configuration Guide](guides/configuration.md)** - Configuration patterns and best practices
-- **[HTTP Client Guide](guides/http-client.md)** - HTTP client usage and patterns
-- **[Testing Guide](guides/testing.md)** - Testing strategies and examples
-- **[Troubleshooting](guides/troubleshooting.md)** - Common issues and solutions
+- **Clean Architecture** — Clear separation between public facades and private implementations
+- **Railway Pattern** — `p.Result` error handling through every HTTP path
+- **MRO Composition** — Facades composed via mixin classes
+- **Plugin Architecture** — Protocol plugin manager ready for future protocols
+- **Configuration SSOT** — `config/*.yaml` and `FlextApiSettings` as the single source of truth
 
 ______________________________________________________________________
 
-## 🚀 Quick Start
+## Documentation Structure
+
+### Architecture & Design
+
+- **[Architecture Overview](architecture/overview.md)** — System design and patterns
+- **[API Reference](api/)** — Core API, protocols, middleware, schemas, and storage docs
+
+### Development & Integration
+
+- **[Getting Started](guides/getting-started.md)** — Installation and setup guide
+- **[Configuration Guide](guides/configuration.md)** — Configuration patterns and best practices
+- **[HTTP Client Guide](guides/http-client.md)** — HTTP client usage and patterns
+- **[Testing Guide](guides/testing.md)** — Testing strategies and examples
+- **[Troubleshooting](guides/troubleshooting.md)** — Common issues and solutions
+
+______________________________________________________________________
+
+## Quick Start
 
 ### Installation
 
 ```bash
-# From source (recommended for development)
-git clone <flext-api-repo>
-cd flext-api
-poetry install
+# From the FLEXT workspace (recommended for development)
+make boot
 
-# Or via pip (when available)
-pip install flext-api
+# Install flext-api specifically
+uv sync --package flext-api
 ```
 
 ### Basic HTTP Client Usage
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings
 
-# Configure client
-settings = FlextApiSettings(base_url="https://api.example.com")
+settings = FlextApiSettings(base_url="https://api.example.com", timeout=30)
 api = FlextApi(settings=settings)
 
-# Make requests with automatic error handling
 result = api.get("/users")
 if result.success:
-    users = result.unwrap()
-    print(f"Found {len(users)} users")
+    response = result.unwrap()
+    print(f"Status: {response.status_code}")
+    print(f"Body: {response.body}")
 else:
-    error = result.error or "unknown error"
-    print(f"Error: {error}")
+    print(f"Error: {result.error}")
 ```
 
-### FastAPI Application Setup
+### Settings-Driven Configuration
 
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApiSettings, create_fastapi_app
+from flext_api import FlextApiSettings
 
-# Create FastAPI application
-settings = FlextApiSettings(title="My API", version="1.0.0")
-app = create_fastapi_app(settings)
+settings = FlextApiSettings(
+    base_url="https://api.example.com",
+    timeout=30.0,
+    max_retries=3,
+    default_headers={"User-Agent": "flext-api"},
+)
 
-
-# Add your routes
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    return {"status": "healthy"}
+print(settings.Api.base_url)
+print(settings.Api.timeout)
 ```
+
+### FastAPI Application Setup
+
+A FastAPI application factory is **not** currently part of the public API. Use
+`FlextApi` and `FlextApiClient` directly in your own FastAPI/Starlette
+application if needed.
 
 ______________________________________________________________________
 
-## 🧪 Testing
+## Testing
 
 ```bash
-# Run all tests
-pytest
+# Run the flext-api test suite
+make test PROJECT=flext-api
 
-# Run with coverage
-pytest --cov=flext_api --cov-report=html
+# Run markdown documentation examples
+uv run pytest --markdown-docs -q
 
 # Run specific test categories
-pytest tests/unit/        # Unit tests
-pytest tests/integration/ # Integration tests
-pytest tests/e2e/         # End-to-end tests
+uv run pytest tests/unit/        # Unit tests
+uv run pytest tests/integration/ # Integration tests
+uv run pytest tests/e2e/          # End-to-end tests
 ```
 
-**Current Coverage**: 100% test pass rate, MyPy strict mode passes
-
 ______________________________________________________________________
 
-## 📈 Current Status
+## Current Status
 
-| Metric                 | Status       | Details                                     |
-| ---------------------- | ------------ | ------------------------------------------- |
-| **Core Functionality** | ✅ Complete   | HTTP client and FastAPI integration working |
-| **Test Coverage**      | ✅ 100%       | All tests passing, comprehensive coverage   |
-| **Type Safety**        | ✅ Strict     | MyPy strict mode passes                     |
-| **Code Quality**       | ✅ Production | Enterprise-grade implementation             |
-| **FLEXT Integration**  | 🟢 85%        | Full flext-core pattern integration         |
+| Metric                 | Status       | Details                                          |
+| ---------------------- | ------------ | ------------------------------------------------ |
+| **Core Functionality** | Complete     | HTTP client facade and settings implemented        |
+| **Test Coverage**      | In progress  | Markdown examples validated; package tests growing |
+| **Type Safety**        | Strict       | FLEXT pattern compliance and Pydantic v2 models  |
+| **Code Quality**       | In progress  | Ruff / Pyrefly gates enforced via `make check`   |
+| **FLEXT Integration**  | Active       | Full flext-core facade integration               |
 
-### 🎯 Production Readiness
+### Production Readiness
 
-- **Enterprise Patterns**: Complete r, s integration
-- **Error Handling**: Comprehensive railway-oriented error management
+- **Enterprise Patterns**: `r`, `s`, and MRO composition integrated
+- **Error Handling**: Railway-oriented error management on every HTTP path
 - **Configuration**: Environment-aware settings with validation
-- **Documentation**: Complete API reference and guides
-- **Testing**: 100% test coverage with integration tests
+- **Documentation**: User-facing guides and API reference updated to the real API
+- **Testing**: Markdown examples run under `uv run pytest --markdown-docs`
 
 ______________________________________________________________________
 
-## 🤝 Contributing
+## Contributing
 
-1. **Code Standards**: Follow FLEXT patterns and Clean Architecture principles
-1. **Testing**: Maintain 100% test coverage with comprehensive test suites
-1. **Documentation**: Update relevant guides for new features
-1. **Quality Gates**: All code must pass MyPy strict mode and comprehensive tests
+1. **Code Standards**: Follow FLEXT patterns (facades `c/t/p/m/u/r`, MRO, Pydantic v2)
+2. **Testing**: Add tests that exercise the public facade and real models
+3. **Documentation**: Update relevant guides when changing public APIs
+4. **Quality Gates**: Run `make check` before opening a PR
 
 ______________________________________________________________________
 
-## 📋 Roadmap
+## Roadmap
 
 ### Immediate (Next Release)
 
-- **Protocol Expansion**: Enhanced GraphQL and WebSocket support
-- **Performance Optimization**: HTTP client performance improvements
-- **Middleware Enhancement**: Additional middleware implementations
+- **Documentation Cleanup**: Finish aligning all markdown examples with the real API
+- **HTTP Client Hardening**: Timeouts, retries, and error classification improvements
+- **Settings Coverage**: Env-var and nested-namespace validation tests
 
 ### Short-term (Next Month)
 
-- **Authentication Integration**: Built-in auth support for HTTP clients
-- **Monitoring Integration**: flext-observability integration
-- **Plugin Ecosystem**: Enhanced plugin architecture
+- **Authentication Helpers**: Settings-driven auth headers and credentials
+- **Observability Integration**: Structured logging through the existing logger
+- **Plugin Ecosystem**: Extend protocol plugin manager examples
 
 ### Long-term (Next Quarter)
 
-- **Microservices Support**: Enhanced support for microservice architectures
-- **API Gateway Features**: Rate limiting, caching, and routing
-- **Advanced Protocols**: gRPC-Web, HTTP/2, and QUIC support
+- **Additional Protocols**: GraphQL, WebSocket, SSE (when the surface is ready)
+- **Middleware API**: First-class request/response interception (if added)
+- **Schema Generation**: OpenAPI/JSON Schema helpers from public models (if added)
 
 ______________________________________________________________________
 
-**FLEXT-API** - Enterprise HTTP Foundation | Built with ❤️ for reliability and scale
+**FLEXT-API** — Enterprise HTTP Foundation | Built for reliability and scale
