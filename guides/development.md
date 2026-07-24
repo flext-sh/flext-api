@@ -149,8 +149,14 @@ git push origin feature/amazing-feature
 
 ### Type Safety (ZERO TOLERANCE)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_api import p, r, t
+from flext_web import m
+
+
+class ProcessedData(m.BaseModel):
+    value: str
 
 
 # ✅ CORRECT - Complete type annotations
@@ -163,18 +169,42 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
 
 
 # ❌ WRONG - Missing type annotations
-def process_data(data):
+def process_data_untyped(data):
     return data
 ```
 
 ### Railway-Oriented Programming
 
-```python
+```python notest
 from __future__ import annotations
+from flext_api import p, r, t
+from flext_web import m
+
+
+class ProcessedData(m.BaseModel):
+    value: str
+
+
+def validate_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]:
+    if not data:
+        return r[t.JsonMapping].fail("Data required")
+    return r[t.JsonMapping].ok(data)
+
+
+def transform_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
+    return r[ProcessedData].ok(ProcessedData(value=str(data.get("key"))))
+
+
+def enrich_data(data: ProcessedData) -> ProcessedData:
+    return data
+
+
+def handle_error(err: str) -> str:
+    return f"handled: {err}"
 
 
 # ✅ CORRECT - Use r for all operations
-def validate_and_process(data: dict) -> p.Result[ProcessedData]:
+def validate_and_process(data: t.JsonMapping) -> p.Result[ProcessedData]:
     return (
         validate_data(data)
         .flat_map(transform_data)
@@ -184,16 +214,18 @@ def validate_and_process(data: dict) -> p.Result[ProcessedData]:
 
 
 # ❌ WRONG - Exception-based error handling
-def validate_and_process(data: dict) -> ProcessedData:
+def validate_and_process_untyped(data: dict) -> ProcessedData:
     if not data:
         raise ValueError("Data required")
-    return transform_data(data)
+    return ProcessedData(value=str(data.get("key")))
 ```
 
 ### Unified Models Pattern
 
-```python
+```python notest
 from __future__ import annotations
+from flext_api import p, t
+from flext_web import m
 
 
 # ✅ CORRECT - Use [Project]Models pattern
@@ -212,7 +244,8 @@ class ApiRequest(m.BaseModel):
 
 
 class ApiResponse(m.BaseModel):
-    result
+    result: p.Result[t.JsonValue]
+    status: int
 ```
 
 ## Testing
@@ -234,28 +267,33 @@ pytest --cov=src --cov-report=html
 
 ### Writing Tests
 
-```python
+```python notest
 from __future__ import annotations
 import pytest
-from flext_cli import u
-from flext_core import FlextSettings
+from flext_api import p, r, t
+
+
+def process_data(data: t.JsonValue | None) -> p.Result[dict]:
+    if data is None:
+        return r[dict].fail("Data required")
+    return r[dict].ok(dict(data))
 
 
 class TestDataProcessing:
-    def test_process_valid_data(self):
+    def test_process_valid_data(self) -> None:
         """Test processing valid data."""
         data = {"key": "value"}
         result = process_data(data)
 
         assert result.success
-        assert result.unwrap().key == "value"
+        assert result.unwrap()["key"] == "value"
 
-    def test_process_invalid_data(self):
+    def test_process_invalid_data(self) -> None:
         """Test processing invalid data."""
         result = process_data(None)
 
         assert result.failure
-        assert "Data required" in result.failure()
+        assert "Data required" in str(result.error)
 ```
 
 ## Quality Gates
