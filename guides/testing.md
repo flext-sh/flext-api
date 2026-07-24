@@ -301,7 +301,9 @@ from __future__ import annotations
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r, t, u
 
 
-def make_api_settings(base_url: str = "https://api.example.com", timeout: float = 5.0) -> FlextApiSettings:
+def make_api_settings(
+    base_url: str = "https://api.example.com", timeout: float = 5.0
+) -> FlextApiSettings:
     return FlextApiSettings(base_url=base_url, timeout=timeout)
 
 
@@ -310,7 +312,9 @@ def make_api(settings: FlextApiSettings | None = None) -> FlextApi:
 
 
 def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
-    return FlextApiClient(settings=settings if settings is not None else make_api_settings())
+    return FlextApiClient(
+        settings=settings if settings is not None else make_api_settings()
+    )
 
 
 settings = make_api_settings()
@@ -419,6 +423,7 @@ from __future__ import annotations
 
 # Good
 
+
 def test_get_users_returns_success_and_list():
     pass
 
@@ -428,6 +433,7 @@ def test_post_user_returns_created_status():
 
 
 # Bad
+
 
 def test_get():
     pass

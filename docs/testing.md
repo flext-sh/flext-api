@@ -201,7 +201,9 @@ from __future__ import annotations
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r, t, u
 
 
-def make_settings(base_url: str = "https://api.example.com", timeout: float = 5.0) -> FlextApiSettings:
+def make_settings(
+    base_url: str = "https://api.example.com", timeout: float = 5.0
+) -> FlextApiSettings:
     return FlextApiSettings(base_url=base_url, timeout=timeout)
 
 
@@ -210,7 +212,9 @@ def make_api(settings: FlextApiSettings | None = None) -> FlextApi:
 
 
 def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
-    return FlextApiClient(settings=settings if settings is not None else make_settings())
+    return FlextApiClient(
+        settings=settings if settings is not None else make_settings()
+    )
 
 
 settings = make_settings()

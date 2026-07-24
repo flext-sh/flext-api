@@ -45,7 +45,7 @@ client = FlextApiClient(settings=settings)
 
 # The client exposes configured values as properties.
 print(client.base_url)  # https://api.example.com
-print(client.timeout)   # 30.0
+print(client.timeout)  # 30.0
 
 # Build and execute a validated request model.
 request = m.Api.HttpRequest(
@@ -87,7 +87,7 @@ lazily and exposes convenience methods for each HTTP verb.
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, c, m, p
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r
 
 api = FlextApi(settings=FlextApiSettings(base_url="https://api.example.com"))
 
@@ -120,15 +120,9 @@ api = FlextApi(settings=FlextApiSettings(base_url="https://api.example.com"))
 
 result: p.Result[m.Api.HttpResponse] = api.get("/users")
 
-result = api.get(
-    "/users",
-    request_kwargs={"params": {"limit": 10, "offset": 0}},
-)
+result = api.get("/users", request_kwargs={"params": {"limit": 10, "offset": 0}})
 
-result = api.get(
-    "/users",
-    headers={"Accept": "application/json"},
-)
+result = api.get("/users", headers={"Accept": "application/json"})
 ```
 
 **POST/PUT/PATCH/DELETE Requests:**
@@ -141,8 +135,7 @@ from flext_api import FlextApi, FlextApiSettings, m, p
 api = FlextApi(settings=FlextApiSettings(base_url="https://api.example.com"))
 
 post_result: p.Result[m.Api.HttpResponse] = api.post(
-    "/users",
-    data={"name": "Alice", "email": "alice@example.com"},
+    "/users", data={"name": "Alice", "email": "alice@example.com"}
 )
 
 put_result = api.put("/users/123", data={"name": "Updated Name"})
@@ -176,11 +169,7 @@ settings = FlextApiSettings(
 
 # Equivalent nested constructor
 settings_nested = FlextApiSettings(
-    Api={
-        "base_url": "https://api.example.com",
-        "timeout": 30.0,
-        "max_retries": 3,
-    }
+    Api={"base_url": "https://api.example.com", "timeout": 30.0, "max_retries": 3}
 )
 
 # Access the resolved namespace values.
@@ -228,11 +217,11 @@ request = m.Api.HttpRequest(
     body={"name": "Alice", "email": "alice@example.com"},
 )
 
-json_data = request.model_dump_json()
+json_data = request.model_dump_json(exclude={"content_type"})
 deserialized = m.Api.HttpRequest.model_validate_json(json_data)
 assert deserialized.method == "POST"
 
-response = m.Api.HttpResponse.create_response(
+response = m.Api.create_response(
     status_code=201,
     headers={"Content-Type": "application/json"},
     body={"id": 1, "name": "Alice"},
@@ -285,7 +274,7 @@ print(timeout_result.unwrap())
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, c, m, p
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r
 
 
 class UserApiClient:
@@ -295,10 +284,7 @@ class UserApiClient:
         self.api = FlextApi(settings=FlextApiSettings(base_url=base_url, timeout=10.0))
 
     def list_users(self, limit: int = 10) -> p.Result[m.Api.HttpResponse]:
-        return self.api.get(
-            "/users",
-            request_kwargs={"params": {"_limit": limit}},
-        )
+        return self.api.get("/users", request_kwargs={"params": {"_limit": limit}})
 
     def get_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
         return self.api.get(f"/users/{user_id}")
@@ -321,17 +307,48 @@ class FakeUserApi(UserApiClient):
         super().__init__(base_url="https://example.com")
 
     def list_users(self, limit: int = 10) -> p.Result[m.Api.HttpResponse]:
-        return m.Api.HttpResponse.create_response(
-            status_code=200,
-            body=[{"id": i, "name": f"User {i}"} for i in range(limit)],
-            headers={"Content-Type": "application/json"},
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body=[{"id": i, "name": f"User {i}"} for i in range(limit)],
+                headers={"Content-Type": "application/json"},
+            )
+        )
+
+    def get_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body={"id": user_id, "name": "User Name"},
+                headers={"Content-Type": "application/json"},
+            )
         )
 
     def create_user(self, user_data: dict) -> p.Result[m.Api.HttpResponse]:
-        return m.Api.HttpResponse.create_response(
-            status_code=201,
-            body={"id": 1, **user_data},
-            headers={"Content-Type": "application/json"},
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=201,
+                body={"id": 1, **user_data},
+                headers={"Content-Type": "application/json"},
+            )
+        )
+
+    def update_user(
+        self, user_id: int, user_data: dict
+    ) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body={"id": user_id, **user_data},
+                headers={"Content-Type": "application/json"},
+            )
+        )
+
+    def delete_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=204, body={}, headers={"Content-Type": "application/json"}
+            )
         )
 
 
@@ -346,11 +363,13 @@ if create_result.success:
     user = create_result.unwrap().body
     print(f"Created user: {user['name']}")
 
-error_result = client.get_user(99999)
-if error_result.success:
-    print(f"User status: {error_result.unwrap().status_code}")
-else:
-    print(f"User lookup failed: {error_result.error}")
+update_result = client.update_user(1, {"name": "Jane Doe"})
+if update_result.success:
+    print(f"Updated user: {update_result.unwrap().body['name']}")
+
+delete_result = client.delete_user(1)
+if delete_result.success:
+    print(f"Deleted user, status: {delete_result.unwrap().status_code}")
 ```
 
 This core API provides the public HTTP surface for `flext-api`: typed settings, a

@@ -67,10 +67,7 @@ auth_client = FlextApiClient(settings=auth_settings)
 
 # Custom configuration
 custom_settings = FlextApiSettings(
-    base_url="https://api.example.com",
-    timeout=60.0,
-    max_retries=5,
-    verify_ssl=True,
+    base_url="https://api.example.com", timeout=60.0, max_retries=5, verify_ssl=True
 )
 custom_client = FlextApiClient(settings=custom_settings)
 ```
@@ -91,7 +88,10 @@ class FakeApi(FlextApi):
             body = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
         elif request.url.endswith("/users") and str(request.method) == "POST":
             body = {"id": 3, "name": "Carlos"}
-        elif request.url.endswith("/users/123") and str(request.method) in {"PUT", "PATCH"}:
+        elif request.url.endswith("/users/123") and str(request.method) in {
+            "PUT",
+            "PATCH",
+        }:
             body = {"id": 123, "updated": True}
         elif request.url.endswith("/users/123") and str(request.method) == "DELETE":
             body = {"deleted": 123}
@@ -116,7 +116,10 @@ if result.success:
     print(f"Found {len(users)} users")
 
 # GET with query parameters
-result = api.get("/users", request_kwargs={"params": {"limit": "10", "offset": "0", "status": "active"}})
+result = api.get(
+    "/users",
+    request_kwargs={"params": {"limit": "10", "offset": "0", "status": "active"}},
+)
 
 # GET with custom headers
 result = api.get(
@@ -191,8 +194,7 @@ print(client.settings.Api.default_headers)
 
 # API key authentication
 api_key_settings = FlextApiSettings(
-    base_url="https://api.example.com",
-    default_headers={"X-API-Key": "your-api-key"},
+    base_url="https://api.example.com", default_headers={"X-API-Key": "your-api-key"}
 )
 client = FlextApiClient(settings=api_key_settings)
 ```
@@ -327,9 +329,7 @@ api = FakeApi(settings=settings)
 result = api.get("/users", request_kwargs={"params": {"active": True}})
 
 # Multiple values for same parameter
-result = api.get(
-    "/users", request_kwargs={"params": {"tags": ["admin", "active"]}}
-)
+result = api.get("/users", request_kwargs={"params": {"tags": ["admin", "active"]}})
 
 # Complex query parameters
 result = api.get(
@@ -384,11 +384,7 @@ result = api.post("/users", data=user_data)
 
 # Raw bytes with a custom content type
 xml_data = b"<user><name>Alice</name></user>"
-result = api.post(
-    "/users",
-    data=xml_data,
-    headers={"Content-Type": "application/xml"},
-)
+result = api.post("/users", data=xml_data, headers={"Content-Type": "application/xml"})
 
 response = result.unwrap()
 print(response.body)
@@ -584,7 +580,8 @@ def get_all_users(page_size: int = 50) -> list[dict]:
     page = 1
     while True:
         result = api.get(
-            "/users", request_kwargs={"params": {"page": str(page), "per_page": str(page_size)}}
+            "/users",
+            request_kwargs={"params": {"page": str(page), "per_page": str(page_size)}},
         )
         if result.failure:
             break
@@ -654,7 +651,7 @@ class RetryApi(FlextApi):
             if result.success and not self._is_retryable(result.unwrap()):
                 return result
             if attempt < getattr(self, "max_retries"):
-                time.sleep(getattr(self, "retry_delay") * (2 ** attempt))
+                time.sleep(getattr(self, "retry_delay") * (2**attempt))
         return result
 
 
@@ -814,7 +811,9 @@ settings = FlextApiSettings(base_url="https://api.example.com", timeout=30.0)
 api = FakeApi(settings=settings)
 
 
-async def execute_requests(requests: list[m.Api.HttpRequest]) -> list[p.Result[m.Api.HttpResponse]]:
+async def execute_requests(
+    requests: list[m.Api.HttpRequest],
+) -> list[p.Result[m.Api.HttpResponse]]:
     async def execute_one(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         return api.request(request)
 
@@ -825,7 +824,9 @@ async def execute_requests(requests: list[m.Api.HttpRequest]) -> list[p.Result[m
 requests = [
     m.Api.HttpRequest(method="GET", url="https://api.example.com/users/1"),
     m.Api.HttpRequest(method="GET", url="https://api.example.com/users/2"),
-    m.Api.HttpRequest(method="POST", url="https://api.example.com/users", body={"name": "New User"}),
+    m.Api.HttpRequest(
+        method="POST", url="https://api.example.com/users", body={"name": "New User"}
+    ),
 ]
 results = asyncio.run(execute_requests(requests))
 assert all(result.success for result in results)
@@ -840,10 +841,7 @@ from __future__ import annotations
 from flext_api import FlextApiClient, FlextApiSettings, c, m, p, r, t, u
 
 # HTTPS only with SSL verification enabled
-settings = FlextApiSettings(
-    base_url="https://api.example.com",
-    verify_ssl=True,
-)
+settings = FlextApiSettings(base_url="https://api.example.com", verify_ssl=True)
 client = FlextApiClient(settings=settings)
 print(client.settings.Api.verify_ssl)
 ```
