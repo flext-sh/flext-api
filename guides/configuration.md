@@ -113,17 +113,14 @@ from flext_ldif import FlextLdifSettings
 settings = FlextSettings(log_level="INFO", debug=False, environment="production")
 
 # LDIF configuration
-ldif_config = FlextLdifSettings(
-    ldif_encoding="utf-8",
-    ldif_strict_validation=True,
-)
+ldif_config = FlextLdifSettings(ldif_encoding="utf-8", ldif_strict_validation=True)
 ```
 
 ## Project-Specific Configuration
 
 ### flext-ldif Configuration
 
-```python notest
+```python
 from __future__ import annotations
 from flext_ldif import FlextLdifSettings
 
@@ -151,7 +148,7 @@ settings = FlextApiSettings(
 
 ### flext-auth Configuration
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import FlextAuthSettings, c
 
@@ -292,7 +289,7 @@ print(config.model_dump())
 
 ### 4. Document Configuration Options
 
-```python notest
+```python
 from __future__ import annotations
 from flext_web import m, u
 
@@ -345,7 +342,18 @@ print(settings.model_dump())
 
 # Validate configuration by re-instantiating with the same data
 try:
-    FlextSettings(**settings.model_dump(exclude={"cache_dir", "work_dir", "data_dir", "state_dir", "config_dir", "runtime_dir"}))
+    FlextSettings(
+        **settings.model_dump(
+            exclude={
+                "cache_dir",
+                "work_dir",
+                "data_dir",
+                "state_dir",
+                "config_dir",
+                "runtime_dir",
+            }
+        )
+    )
     print("Configuration is valid")
 except Exception as exc:
     print(f"Configuration has errors: {exc}")
@@ -374,9 +382,7 @@ def main() -> None:
     # Configure LDIF processing
     ldif_config = FlextLdifSettings(
         ldif_encoding=os.getenv("FLEXT_LDIF_DEFAULT_ENCODING", "utf-8"),
-        ldif_strict_validation=os.getenv(
-            "FLEXT_LDIF_STRICT_VALIDATION", "true"
-        ).lower()
+        ldif_strict_validation=os.getenv("FLEXT_LDIF_STRICT_VALIDATION", "true").lower()
         == "true",
     )
 

@@ -98,7 +98,7 @@ docker run -v $(pwd)/data:/app/data flext:latest
 
 ### 1. Basic Setup
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import FlextContainer
 
@@ -175,7 +175,7 @@ else:
 
 ### 4. CQRS Pattern with Commands and Queries
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import p, r
 
@@ -204,9 +204,7 @@ class UserService:
 # Railway-oriented dispatch: each command/query is routed to its handler
 user_service = UserService()
 
-create_result = user_service.create_user(
-    CreateUserCommand("john", "john@example.com")
-)
+create_result = user_service.create_user(CreateUserCommand("john", "john@example.com"))
 get_result = user_service.get_user(GetUserQuery("user123"))
 ```
 
@@ -230,10 +228,7 @@ from __future__ import annotations
 from flext_ldif import FlextLdifSettings
 
 # Create custom configuration
-settings = FlextLdifSettings(
-    ldif_encoding="utf-8",
-    ldif_strict_validation=True,
-)
+settings = FlextLdifSettings(ldif_encoding="utf-8", ldif_strict_validation=True)
 
 print(f"LDIF encoding: {settings.ldif.ldif_encoding}")
 ```

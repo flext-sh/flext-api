@@ -23,7 +23,7 @@
 
 **Required Fixes**:
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -58,37 +58,37 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 #### Response Time Testing
 
-```python notest
+```python
 from __future__ import annotations
 ```
 
 #### Test Naming Conventions
 
-```python notest
+```python
 from __future__ import annotations
 
+
 # Unit tests
-def test_successful_operation():
-    ...
+def test_successful_operation(): ...
 
-def test_error_handling():
-    ...
 
-def test_validation_scenarios():
-    ...
+def test_error_handling(): ...
 
-def test_edge_cases():
-    ...
+
+def test_validation_scenarios(): ...
+
+
+def test_edge_cases(): ...
+
 
 # Integration tests
-def test_real_http_integration():
-    ...
+def test_real_http_integration(): ...
 
-def test_end_to_end_workflow():
-    ...
 
-def test_system_interaction():
-    ...
+def test_end_to_end_workflow(): ...
+
+
+def test_system_interaction(): ...
 ```
 
 ### Test Data Management

@@ -311,11 +311,22 @@ class GraphQL(Base):
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiClient
+from flext_api import FlextApiSettings, FlextApiClient, FlextApi
 
-# HTTP client (default protocol)
-client = FlextApiClient(protocol="http", base_url="https://api.example.com")
-result = await client.get("/users/123")
+settings = FlextApiSettings(base_url="https://api.example.com", timeout=30)
+client = FlextApiClient(settings=settings)
+api = FlextApi(client=client)
+
+# HTTP verbs live on FlextApi, not on the client directly.
+assert callable(api.get)
+assert callable(api.post)
+assert callable(api.put)
+assert callable(api.delete)
+assert callable(api.patch)
+
+# The client surface exposes settings-derived attributes.
+assert client.base_url == "https://api.example.com"
+assert client.timeout == 30
 ```
 
 ### GraphQL Usage
@@ -323,7 +334,7 @@ result = await client.get("/users/123")
 ```python
 from __future__ import annotations
 
-# GraphQL client
+# GraphQL usage is conceptual; flext-api currently exposes only HTTP through FlextApi.
 client = FlextApiClient(protocol="graphql", url="https://api.example.com/graphql")
 
 query = """
@@ -335,7 +346,9 @@ query = """
     }
 """
 
-result = await client.request("query", query, variables={"id": "123"})
+
+async def run_graphql_query():
+    return await client.request("query", query, variables={"id": "123"})
 ```
 
 ### WebSocket Usage
@@ -343,10 +356,13 @@ result = await client.request("query", query, variables={"id": "123"})
 ```python
 from __future__ import annotations
 
-# WebSocket client
+# WebSocket usage is conceptual; flext-api currently exposes only HTTP through FlextApi.
 client = FlextApiClient(protocol="websocket", url="wss://api.example.com/ws")
-await client.connect()
-await client.send({"type": "subscribe", "channel": "updates"})
+
+
+async def run_websocket():
+    await client.connect()
+    await client.send({"type": "subscribe", "channel": "updates"})
 ```
 
 ## Testing Strategy

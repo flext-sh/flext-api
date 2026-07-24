@@ -95,8 +95,8 @@ def test_with_debug():
 
 ```python
 from __future__ import annotations
-# Error
-ValidationError: field required
+# Error example (not a real executable snippet):
+# ValidationError: field required
 ```
 #### Solutions
 
@@ -140,8 +140,8 @@ print(f"Config: {settings.model_dump()}")
 
 ```python
 from __future__ import annotations
-# Error
-LdifParsingException: Invalid LDIF format
+# Error example (not a real executable snippet):
+# LdifParsingException: Invalid LDIF format
 ```
 #### Solutions
 
@@ -199,8 +199,8 @@ def validate_ldif_content(content: str) -> t.StringList:
 
 ```python
 from __future__ import annotations
-# Error
-LdifMigrationException: Server compatibility error
+# Error example (not a real executable snippet):
+# LdifMigrationException: Server compatibility error
 ```
 #### Solutions
 
@@ -224,14 +224,14 @@ print(f"Config: {settings.model_dump()}")
 ```python
 from __future__ import annotations
 
-settings = FlextLdifSettings(
-    servers_enabled=True, source_server="oid", target_server="oud"
-)
+# Conceptual server migration settings (not a real executable API)
+settings = {"servers_enabled": True, "source_server": "oid", "target_server": "oud"}
 ```
 **Test with sample data:**
 
 ```python
 from __future__ import annotations
+from flext_ldif import ldif
 
 # Test migration with small sample
 sample_ldif = """dn: cn=test,dc=example,dc=com
@@ -242,7 +242,7 @@ result = ldif.parse_string(sample_ldif)
 if result.success:
     print("Sample parsing successful")
 else:
-    print(f"Sample parsing failed: {result.failure()}")
+    print(f"Sample parsing failed: {result.failure}")
 ```
 ### 7. Performance Issues
 
@@ -297,10 +297,11 @@ settings = FlextLdifSettings(
 ```python
 from __future__ import annotations
 
-settings = FlextLdifSettings(
-    parallel_processing=True,
-    max_workers=4,  # Adjust based on CPU cores
-)
+# Conceptual tuning snippet (not a real executable API)
+settings = {
+    "parallel_processing": True,
+    "max_workers": 4,  # Adjust based on CPU cores
+}
 ```
 ## Debugging Techniques
 
@@ -448,6 +449,7 @@ monitor_memory()
 from __future__ import annotations
 
 # Monitor CPU usage
+import os
 import time
 
 import psutil

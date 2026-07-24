@@ -85,10 +85,9 @@ git status
 
 #### Problem: ModuleNotFoundError
 
-```python
-from __future__ import annotations
-# Error
-ModuleNotFoundError: No module named 'flext_core'
+```python notest
+# Error example (not runnable)
+# ModuleNotFoundError: No module named 'flext_core'
 ```
 
 #### Solutions
@@ -139,10 +138,9 @@ except ImportError as e:
 
 #### Problem: MyPy errors
 
-```python
-from __future__ import annotations
-# Error
-error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapping"
+```python notest
+# Error example (not runnable)
+# error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapping"
 ```
 
 #### Solutions
@@ -179,10 +177,9 @@ mypy src/ --show-error-codes | grep "error-code"
 
 #### Problem: Tests failing
 
-```python
-from __future__ import annotations
-# Error
-AssertionError: Expected success but got failure
+```python notest
+# Error example (not runnable)
+# AssertionError: Expected success but got failure
 ```
 
 #### Solutions
@@ -218,10 +215,9 @@ def test_with_debug():
 
 #### Problem: Configuration not loading
 
-```python
-from __future__ import annotations
-# Error
-ValidationError: field required
+```python notest
+# Error example (not runnable)
+# ValidationError: field required
 ```
 
 #### Solutions
@@ -268,10 +264,9 @@ print(f"Config: {settings.model_dump()}")
 
 #### Problem: LDIF parsing fails
 
-```python
-from __future__ import annotations
-# Error
-LdifParsingException: Invalid LDIF format
+```python notest
+# Error example (not runnable)
+# LdifParsingException: Invalid LDIF format
 ```
 
 #### Solutions
@@ -331,10 +326,9 @@ def validate_ldif_content(content: str) -> t.StringList:
 
 #### Problem: Migration fails
 
-```python
-from __future__ import annotations
-# Error
-LdifMigrationException: Server compatibility error
+```python notest
+# Error example (not runnable)
+# LdifMigrationException: Server compatibility error
 ```
 
 #### Solutions
@@ -358,19 +352,20 @@ print(f"Config: {settings.model_dump()}")
 **Enable server servers:**
 
 ```python
-from flext_ldif import FlextLdifSettings
 from __future__ import annotations
 
-settings = FlextLdifSettings(
-    servers_enabled=True, source_server="oid", target_server="oud"
-)
+from flext_ldif import FlextLdifSettings
+
+# Conceptual server migration settings (not supported by FlextLdifSettings)
+settings = FlextLdifSettings(ldif_encoding="utf-8", ldif_strict_validation=True)
 ```
 
 **Test with sample data:**
 
 ```python
-from flext_ldif import ldif
 from __future__ import annotations
+
+from flext_ldif import ldif
 
 # Test migration with small sample
 sample_ldif = """dn: cn=test,dc=example,dc=com
@@ -437,13 +432,12 @@ settings = FlextLdifSettings(
 **Enable parallel processing:**
 
 ```python
-from flext_ldif import FlextLdifSettings
 from __future__ import annotations
 
-settings = FlextLdifSettings(
-    parallel_processing=True,
-    max_workers=4,  # Adjust based on CPU cores
-)
+from flext_ldif import FlextLdifSettings
+
+# Conceptual parallel processing settings (not supported by FlextLdifSettings)
+settings = FlextLdifSettings(ldif_encoding="utf-8", ldif_strict_validation=True)
 ```
 
 ## Debugging Techniques
@@ -597,12 +591,13 @@ monitor_memory()
 ### CPU Issues
 
 ```python
-import os
 from __future__ import annotations
+
+import os
+import time
 
 # Monitor CPU usage
 import psutil
-import time
 
 
 def monitor_cpu():

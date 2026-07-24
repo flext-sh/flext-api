@@ -114,13 +114,17 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 ```python
 from __future__ import annotations
+
+
 # HTTP-specific entity
 class FlextWebEndpoint(FlextModels.Entity):
     """HTTP endpoint with routing and validation."""
+
     path: str
     method: str
     response_model: type[BaseModel]
     middleware: list[Middleware]
+
 
 # HTTP-specific domain service
 class EndpointService(s):
@@ -134,7 +138,7 @@ class EndpointService(s):
         if endpoint.method not in ["GET", "POST", "PUT", "DELETE"]:
             return r[bool].fail("Invalid HTTP method")
 
-        return r[bool].| ok(value=True)
+        return r[bool].ok(value=True)
 ```
 
 ### Application Layer (Protocol Implementations)
@@ -185,9 +189,9 @@ from flext_api import ProtocolRegistry
 
 # Register protocols
 registry = ProtocolRegistry()
-registry.register("http", FlextWeb
-registry.register("graphql", GraphQL
-registry.register("websocket", WebSocket
+registry.register("http", FlextWeb)
+registry.register("graphql", GraphQL)
+registry.register("websocket", WebSocket)
 
 # Use protocols dynamically
 http_protocol = registry.get_protocol("http")
@@ -195,12 +199,12 @@ client = http_protocol.create_client({"base_url": "https://api.example.com"})
 
 
 # Add custom protocol
-class Custom
+class Custom:
     def create_client(self, settings: dict):
         return CustomClient(settings)
 
 
-registry.register("custom", Custom
+registry.register("custom", Custom)
 ```
 
 ### Protocol Interface
@@ -212,7 +216,7 @@ from flext_cli import u
 from flext_core import FlextSettings
 
 
-class Base
+class Base(ABC):
     """Base protocol interface."""
 
     @abstractmethod
@@ -226,7 +230,7 @@ class Base
         pass
 
 
-class FlextWebBase
+class FlextWebBase(Base):
     """HTTP protocol implementation."""
 
     def create_client(self, settings: dict) -> FlextApiClient:
@@ -412,6 +416,7 @@ Storage Layer
 
 ```python
 from __future__ import annotations
+from abc import ABC, abstractmethod
 
 
 class StorageBackend(ABC):
@@ -490,6 +495,7 @@ Caching Strategy
 
 ```python
 from __future__ import annotations
+import os
 from flext_api import FlextApiCache
 
 # Redis cache configuration
@@ -652,6 +658,8 @@ Performance Layer
 
 ```python
 from __future__ import annotations
+import time
+import uuid
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -830,7 +838,7 @@ from __future__ import annotations
 from flext_api import Base
 
 
-class CustomBase
+class CustomBase(Base):
     """Custom protocol implementation."""
 
     def create_client(self, settings: dict):
@@ -845,7 +853,7 @@ class CustomBase
 
 # Register new protocol
 registry = ProtocolRegistry()
-registry.register("custom", Custom
+registry.register("custom", Custom)
 ```
 
 ### Custom Middleware
@@ -938,10 +946,14 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 ```python
 from __future__ import annotations
+
+
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
 def create_app(settings: dict) -> FastAPI:
+    pass
     # Legacy implementation
+
 
 # New API (introduced in 0.9.x)
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:

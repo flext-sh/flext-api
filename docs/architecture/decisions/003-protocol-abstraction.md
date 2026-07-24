@@ -269,42 +269,56 @@ class GraphQL(Base):
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiClient
+from flext_api import FlextApiSettings, FlextApiClient, FlextApi
 
-# HTTP client (default protocol)
-client = FlextApiClient(protocol="http", base_url="https://api.example.com")
-result = await client.get("/users/123")
+settings = FlextApiSettings(base_url="https://api.example.com", timeout=1.0)
+client = FlextApiClient(settings=settings)
+api = FlextApi(settings=settings)
+result = api.get("/users/123")
+print(result.success)
 ```
 
 ### GraphQL Usage
 
 ```python
 from __future__ import annotations
+import asyncio
 
-# GraphQL client
-client = FlextApiClient(protocol="graphql", url="https://api.example.com/graphql")
 
-query = """
-    query GetUser($id: ID!) {
-        user(id: $id) {
-            name
-            email
+async def main() -> None:
+    # GraphQL client
+    client = FlextApiClient(protocol="graphql", url="https://api.example.com/graphql")
+
+    query = """
+        query GetUser($id: ID!) {
+            user(id: $id) {
+                name
+                email
+            }
         }
-    }
-"""
+    """
 
-result = await client.request("query", query, variables={"id": "123"})
+    result = await client.request("query", query, variables={"id": "123"})
+
+
+asyncio.run(main())
 ```
 
 ### WebSocket Usage
 
 ```python
 from __future__ import annotations
+import asyncio
 
-# WebSocket client
-client = FlextApiClient(protocol="websocket", url="wss://api.example.com/ws")
-await client.connect()
-await client.send({"type": "subscribe", "channel": "updates"})
+
+async def main() -> None:
+    # WebSocket client
+    client = FlextApiClient(protocol="websocket", url="wss://api.example.com/ws")
+    await client.connect()
+    await client.send({"type": "subscribe", "channel": "updates"})
+
+
+asyncio.run(main())
 ```
 
 ## Testing Strategy

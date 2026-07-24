@@ -209,9 +209,9 @@ spec:
 
 ```python
 from __future__ import annotations
-from flext_api import Base
 
-class CustomBase
+
+class CustomProtocol:
     """Custom protocol implementation."""
 
     def create_client(self, settings: dict):
@@ -220,22 +220,22 @@ class CustomBase
 
     async def execute_request(self, request) -> p.Result[t.JsonValue]:
         """Execute protocol-specific request."""
-        # Custom protocol implementation
         pass
+
 
 # Register new protocol
 registry = ProtocolRegistry()
-registry.register("custom", Custom
+registry.register("custom", CustomProtocol())
 ```
 
 ### Custom Middleware
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiMiddleware
+from flext_api import p, r
 
 
-class CustomBusinessMiddleware(FlextApiMiddleware):
+class CustomBusinessMiddleware:
     """Custom middleware for business logic."""
 
     async def process_request(self, request) -> p.Result[dict]:
@@ -245,7 +245,6 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
             "tenant_id": request.headers.get("X-Tenant-ID"),
             "user_role": request.headers.get("X-User-Role"),
         }
-
         return r[dict].ok({})
 
 
@@ -318,15 +317,17 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 ```python
 from __future__ import annotations
+
+
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
-def create_app(settings: dict) -> FastAPI:
-    # Legacy implementation
+def create_app(settings: dict) -> FastAPI: ...  # Legacy implementation
+
 
 # New API (introduced in 0.9.x)
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
-    # New implementation
+    ...  # New implementation
 ```
 
 ## References

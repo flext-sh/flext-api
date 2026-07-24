@@ -58,7 +58,7 @@
 
 **Required Fixes**:
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -95,23 +95,25 @@ def create_validated_http_url(cls, url: str) -> p.Result[str]:
 
 **Configuration Test Matrix**:
 
-```python notest
+```python
 from __future__ import annotations
-# Required test scenarios
-def test_config_defaults():
-    ...
 
-def test_config_validation():
-    ...
+
+# Required test scenarios
+def test_config_defaults(): ...
+
+
+def test_config_validation(): ...
+
 
 def test_config_serialization():  # model_dump() pattern
     ...
 
-def test_config_negative_timeout():
-    ...
 
-def test_api_config_creation():
-    ...
+def test_config_negative_timeout(): ...
+
+
+def test_api_config_creation(): ...
 ```
 
 #### Storage Testing (`tests/unit/test_storage.py`)
@@ -220,7 +222,7 @@ def test_api_config_creation():
 
 #### HTTP Client Fixtures
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api import FlextApiClient, FlextApiSettings
@@ -244,7 +246,7 @@ def mock_http_server():
 
 #### Model Fixtures
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api import FlextApiClient
@@ -268,7 +270,7 @@ def valid_client_config():
 
 #### Request/Response Factories
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api import FlextApiClient
@@ -307,7 +309,7 @@ class TestDataFactory:
 
 #### Unit Testing Approach
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api import FlextApi
@@ -344,7 +346,7 @@ class TestFlextApiClient:
 
 #### Integration Testing Approach
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api import FlextApi
@@ -373,7 +375,7 @@ class TestHTTPIntegration:
 
 #### Validation Testing
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api import FlextApiSettings
@@ -408,7 +410,7 @@ class TestModelValidation:
 
 #### Serialization Testing
 
-```python notest
+```python
 from __future__ import annotations
 
 from flext_api.models import m
@@ -487,7 +489,7 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 
 #### Response Time Testing
 
-```python notest
+```python
 from __future__ import annotations
 
 import statistics
@@ -519,7 +521,7 @@ def test_response_time_performance(http_client):
 
 #### Concurrent Request Testing
 
-```python notest
+```python
 from __future__ import annotations
 import asyncio
 
@@ -566,31 +568,31 @@ tests/
 
 #### Test Naming Conventions
 
-```python notest
+```python
 from __future__ import annotations
 
+
 # Unit tests
-def test_successful_operation():
-    ...
+def test_successful_operation(): ...
 
-def test_error_handling():
-    ...
 
-def test_validation_scenarios():
-    ...
+def test_error_handling(): ...
 
-def test_edge_cases():
-    ...
+
+def test_validation_scenarios(): ...
+
+
+def test_edge_cases(): ...
+
 
 # Integration tests
-def test_real_http_integration():
-    ...
+def test_real_http_integration(): ...
 
-def test_end_to_end_workflow():
-    ...
 
-def test_system_interaction():
-    ...
+def test_end_to_end_workflow(): ...
+
+
+def test_system_interaction(): ...
 ```
 
 ### Test Data Management

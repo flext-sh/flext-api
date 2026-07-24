@@ -78,8 +78,7 @@ if result.failure:
     print(result.error or "HTTP request failed")
 else:
     response = result.value
-
-response = result.value
+    print(response.status_code)
 ```
 
 The result contract is the canonical FLEXT railway contract: inspect `success` or `failure`, then use `value`, `error`, `unwrap()`, or higher-order methods such as `map` and `flat_map`.

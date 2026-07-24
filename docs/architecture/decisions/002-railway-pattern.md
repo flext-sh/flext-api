@@ -100,17 +100,16 @@ class Result:
 ```python
 from __future__ import annotations
 
+from flext_api import FlextApiSettings, FlextApiClient, FlextApi, p
+from flext_api import m
 
-def get_user(user_id: int) -> p.Result[User]:
+
+def fetch_user(user_id: int) -> p.Result[m.Api.HttpResponse]:
     """Get user with railway error handling."""
-    return (
-        FlextApiClient()
-        .get(f"/users/{user_id}")
-        .flat_map(lambda resp: validate_status_code(resp))
-        .flat_map(lambda resp: parse_json_response(resp))
-        .map(lambda data: User(**data))
-        .map_error(lambda err: f"User fetch failed: {err}")
+    client = FlextApiClient(
+        settings=FlextApiSettings(base_url="https://api.example.com", timeout=30)
     )
+    return FlextApi(client=client).get(f"/users/{user_id}")
 ```
 
 ### Usage in Application Code
@@ -118,24 +117,28 @@ def get_user(user_id: int) -> p.Result[User]:
 ```python
 from __future__ import annotations
 
-# Success path
-result = get_user(123)
-if result.success:
-    user = result.unwrap()
-    print(f"Found user: {user.name}")
 
-# Error handling
-if result.failure:
-    logger.error(result.error)
-    return None
+def _usage_example(
+    get_user, get_user_profile, enrich_profile, log_and_notify, logger, user_id: int
+) -> None:
+    # Success path
+    result = get_user(123)
+    if result.success:
+        user = result.unwrap()
+        print(f"Found user: {user.name}")
 
-# Chained operations
-user_profile = (
-    get_user(user_id)
-    .flat_map(lambda user: get_user_profile(user.id))
-    .flat_map(lambda profile: enrich_profile(profile))
-    .map_error(lambda err: log_and_notify(err))
-)
+    # Error handling
+    if result.failure:
+        logger.error(result.error)
+        return None
+
+    # Chained operations
+    user_profile = (
+        get_user(user_id)
+        .flat_map(lambda user: get_user_profile(user.id))
+        .flat_map(lambda profile: enrich_profile(profile))
+        .map_error(lambda err: log_and_notify(err))
+    )
 ```
 
 ### Testing Railway Code
