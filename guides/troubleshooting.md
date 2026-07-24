@@ -603,11 +603,11 @@ import psutil
 def monitor_cpu():
     process = psutil.Process(os.getpid())
 
-    # Get CPU usage over time
+    # Get CPU usage samples quickly
     for i in range(10):
-        cpu_percent = process.cpu_percent()
+        cpu_percent = process.cpu_percent(interval=0.01)
         print(f"CPU usage: {cpu_percent}%")
-        time.sleep(1)
+        time.sleep(0.01)
 
 
 monitor_cpu()

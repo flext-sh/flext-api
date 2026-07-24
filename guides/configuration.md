@@ -154,7 +154,7 @@ from flext_auth import FlextAuthSettings, c
 
 settings = FlextAuthSettings(
     Auth={
-        "secret_key": "your-secret-key",
+        "secret_key": "this-is-a-very-long-secret-key-that-is-safe-for-hs256-32-bytes",
         "algorithm": c.Auth.Algorithms.HS256,
         "access_token_expire_minutes": 30,
         "refresh_token_expire_days": 7,
