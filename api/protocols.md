@@ -4,23 +4,22 @@
 - [Protocols API Reference](#protocols-api-reference)
   - [Protocol Architecture](#protocol-architecture)
   - [HTTP Protocol Implementation](#http-protocol-implementation)
-    - [FlextWebREST Implementation](#flextwebrest-implementation)
+    - [FlextApiClient Implementation](#flextapiclient-implementation)
     - [HTTP Request/Response Models](#http-requestresponse-models)
   - [GraphQL Protocol Implementation](#graphql-protocol-implementation)
-    - [GraphQLQL Support](#graphqlql-support)
-    - [GraphQL Operations](#graphql-operations)
+    - [GraphQL Support](#graphql-support)
   - [WebSocket Protocol Implementation](#websocket-protocol-implementation)
-    - [WebSockettime Communication](#websockettime-communication)
+    - [WebSocket Communication](#websocket-communication)
   - [Server-Sent Events Protocol](#server-sent-events-protocol)
-    - [ServerSentEventay Streaming](#serversenteventay-streaming)
+    - [Server-Sent Event Streaming](#server-sent-event-streaming)
   - [Storage Backend Protocol](#storage-backend-protocol)
-    - [StorageBackendObject Storage](#storagebackendobject-storage)
+    - [Storage Backend Object Storage](#storage-backend-object-storage)
   - [Protocol Stubs](#protocol-stubs)
-    - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub---grpc-protocol-buffers)
+    - [gRPC Stub - gRPC Protocol Buffers](#grpc-stub---grpc-protocol-buffers)
     - [Protobuf Stub - Binary Serialization](#protobuf-stub---binary-serialization)
   - [Quality Metrics](#quality-metrics)
   - [Usage Examples](#usage-examples)
-    - [Multi-Protocol API Client](#multi-protocol-api-client)
+    - [HTTP API Client](#http-api-client)
     - [Protocol Plugin System](#protocol-plugin-system)
 <!-- TOC END -->
 
@@ -28,467 +27,322 @@ This section covers the protocol implementations and stubs that enable FLEXT-API
 
 ## Protocol Architecture
 
-FLEXT-API uses a protocol-based architecture that allows supporting multiple communication protocols (HTTP, GraphQL, WebSocket, etc.) through a unified interface.
+FLEXT-API uses a protocol-based architecture that allows supporting multiple communication protocols (HTTP, GraphQL, WebSocket, etc.) through a unified interface. The currently implemented public HTTP surface is the `FlextApi` facade, `FlextApiClient`, and the protocol plugin manager.
 
-```
+```text
 Protocol Layer
-├── Protocol Implementations (protocol_impls/)
-│   ├── HTTP (REST APIs)
-│   ├── GraphQL (GraphQL APIs)
-│   ├── WebSocket (Real-time communication)
-│   ├── Server-Sent Events (One-way streaming)
-│   └── Storage Backend (File/t.JsonValue storage)
-└── Protocol Stubs (protocol_stubs/)
-    ├── gRPC (Protocol buffer services)
-    └── Protobuf (Binary serialization)
+├── Protocol Implementations
+│   ├── HTTP (REST APIs via FlextApi / FlextApiClient)
+│   ├── GraphQL (not implemented in public API)
+│   ├── WebSocket (not implemented in public API)
+│   └── Server-Sent Events (not implemented in public API)
+└── Protocol Plugin System (FlextApiProtocolPluginManager)
 ```
 
 ## HTTP Protocol Implementation
 
-### FlextWebREST Implementation
+### FlextApiClient Implementation
 
 Primary protocol implementation for REST APIs and HTTP-based communication.
 
 ```python
 from __future__ import annotations
-from flext_api import FlextWeb
-from flext_cli import u
-from flext_core import FlextSettings
 
-# Create HTTP protocol instance
-http_protocol = FlextWeb
+from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
+
+
+class FakeHttpClient(FlextApiClient):
+    """Fake HTTP client that runs without network access."""
+
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+        if request.url.endswith("/users") and request.method == c.Api.Method.GET:
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body={"users": [{"id": "1", "name": "Alice"}]},
+                )
+            )
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(status_code=404, body={"error": "not found"})
+        )
+
+
+# Rebuild the Pydantic model now that FlextApiSettings is available in the script.
+FakeHttpClient.model_rebuild()
+
+
+class FakeApi(FlextApi):
+    """Fake API facade wired to the fake HTTP client."""
+
+    def __init__(self, settings: FlextApiSettings | None = None) -> None:
+        super().__init__(settings=settings)
+        self._client = FakeHttpClient(settings=self.settings)
+
+
+settings = FlextApiSettings(
     base_url="https://api.example.com",
     timeout=30.0,
-    headers={"User-Agent": "FLEXT-API/0.9.9"},
+    default_headers={"User-Agent": "FLEXT-API/0.9.9"},
 )
+api = FakeApi(settings=settings)
 
-# Execute HTTP operations
-result = http_protocol.execute_request(
-    method="GET", path="/users", params={"limit": 10}
-)
-
+result = api.get("/users", request_kwargs={"params": {"limit": "10"}})
 if result.success:
     response = result.unwrap()
     print(f"Status: {response.status_code}")
-    print(f"Data: {response.json()}")
+    print(f"Body: {response.body}")
 ```
 
 **Key Features:**
 
-- Standard HTTP methods (GET, POST, PUT, DELETE, etc.)
-- Request/response interceptors
-- Automatic retry logic
-- Connection pooling
-- Header and cookie management
+- Standard HTTP methods (GET, POST, PUT, PATCH, DELETE)
+- Request/response validation via Pydantic models
+- Monadic error handling through `p.Result`
+- Settings-driven configuration
 
 ### HTTP Request/Response Models
 
 ```python
 from __future__ import annotations
-from flext_api import (
-    FlextApiModels.HttpRequest,
-    FlextApiModels.HttpResponse,
-    FlextWebHeaders,
-    FlextWebCookies
-)
+
+from flext_api import c, m, p, r
 
 # Create HTTP request
-request = FlextApiModels.HttpRequest(
-    method="POST",
-    url="/users",
+request = m.Api.HttpRequest(
+    method=c.Api.Method.POST,
+    url="https://api.example.com/users",
     headers={"Content-Type": "application/json"},
-    body='{"name": "Alice", "email": "alice@example.com"}'
+    body={"name": "Alice", "email": "alice@example.com"},
 )
 
-# Execute request
-response = http_protocol.execute(request)
+# Create a response directly using the model helper
+response = m.Api.create_response(
+    status_code=201,
+    headers={"Content-Type": "application/json"},
+    body={"id": "1", "name": "Alice", "email": "alice@example.com"},
+)
 
 # Access response data
-if response.success:
-    data = response.json()
-    headers = response.headers
-    cookies = response.cookies
+print(f"Status: {response.status_code}")
+print(f"Body: {response.body}")
+print(f"Success: {response.success}")
+
+# Wrap it in a Result when returning from a client method
+result = r[m.Api.HttpResponse].ok(response)
+print(f"Result success: {result.success}")
 ```
 
 ## GraphQL Protocol Implementation
 
-### GraphQLQL Support
+### GraphQL Support
 
 Protocol implementation for GraphQL APIs with query and mutation support.
 
-```python
-from __future__ import annotations
-from flext_api import GraphQL
-
-# Create GraphQL protocol
-graphql_protocol = GraphQL
-    endpoint="https://api.example.com/graphql",
-    headers={"Authorization": "Bearer token123"},
-)
-
-# Execute GraphQL query
-query = """
-    query GetUser($id: ID!) {
-        user(id: $id) {
-            id
-            name
-            email
-        }
-    }
-"""
-
-variables = {"id": "user_123"}
-result = graphql_protocol.execute_query(query, variables)
-
-if result.success:
-    data = result.unwrap()
-    user = data["user"]
-    print(f"User: {user['name']} ({user['email']})")
-```
-
-**Key Features:**
-
-- Query execution with variables
-- Mutation support
-- Error handling and field validation
-- Introspection query support
-- Subscription support (when available)
-
-### GraphQL Operations
-
-```python
-from __future__ import annotations
-
-# Query with fragments
-fragment_query = """
-    query GetUserWithPosts($id: ID!) {
-        user(id: $id) {
-            ...Useru.Fields
-            posts {
-                id
-                title
-            }
-        }
-    }
-
-    fragment Useru.Fields on User {
-        id
-        name
-        email
-    }
-"""
-
-# Mutation example
-mutation = """
-    mutation CreateUser($input: UserInput!) {
-        createUser(input: $input) {
-            id
-            name
-            email
-        }
-    }
-"""
-
-mutation_variables = {"input": {"name": "Bob", "email": "bob@example.com"}}
-
-result = graphql_protocol.execute_mutation(mutation, mutation_variables)
-```
+This feature is not currently implemented in the public API.
 
 ## WebSocket Protocol Implementation
 
-### WebSockettime Communication
+### WebSocket Communication
 
 Protocol implementation for WebSocket connections and real-time messaging.
 
-```python
-from __future__ import annotations
-from flext_api import WebSocket
-
-# Create WebSocket protocol
-websocket_protocol = WebSocket
-    url="wss://api.example.com/ws", headers={"Authorization": "Bearer token123"}
-)
-
-# Connect to WebSocket
-connection_result = websocket_protocol.connect()
-if connection_result.success:
-    connection = connection_result.unwrap()
-
-    # Send message
-    message = {"type": "subscribe", "channel": "notifications"}
-    send_result = connection.send(message)
-
-    # Receive messages
-    while True:
-        message_result = connection.receive()
-        if message_result.success:
-            message = message_result.unwrap()
-            print(f"Received: {message}")
-
-        # Handle connection close
-        if connection.is_closed():
-            break
-```
-
-**Key Features:**
-
-- Connection management
-- Message sending/receiving
-- Automatic reconnection
-- Heartbeat/ping-pong
-- Message serialization
+This feature is not currently implemented in the public API.
 
 ## Server-Sent Events Protocol
 
-### ServerSentEventay Streaming
+### Server-Sent Event Streaming
 
 Protocol implementation for Server-Sent Events (SSE) for real-time data streaming.
 
-```python
-from __future__ import annotations
-from flext_api import ServerSentEvent
-
-# Create SSE protocol
-sse_protocol = ServerSentEvent
-    url="https://api.example.com/events", headers={"Authorization": "Bearer token123"}
-)
-
-# Connect to event stream
-stream_result = sse_protocol.connect()
-if stream_result.success:
-    stream = stream_result.unwrap()
-
-    # Listen for events
-    for event in stream:
-        if event.success:
-            sse_event = event.unwrap()
-            print(f"Event: {sse_event.event_type}")
-            print(f"Data: {sse_event.data}")
-
-        # Handle stream end
-        if stream.is_closed():
-            break
-```
-
-**Key Features:**
-
-- Event stream connection
-- Automatic reconnection on errors
-- Event type filtering
-- Last-Event-ID support
-- Connection retry logic
+This feature is not currently implemented in the public API.
 
 ## Storage Backend Protocol
 
-### StorageBackendObject Storage
+### Storage Backend Object Storage
 
 Protocol implementation for various storage backends (local filesystem, cloud storage, etc.).
 
-```python
-from __future__ import annotations
-from flext_api import StorageBackend
-
-# Create storage protocol
-storage_protocol = StorageBackend
-    backend_type="s3",  # or "local", "gcs", "azure"
-    settings={
-        "bucket": "my-bucket",
-        "region": "us-east-1",
-        "access_key": "...",
-        "secret_key": "...",
-    },
-)
-
-# File operations
-upload_result = storage_protocol.upload_file(
-    local_path="/path/to/file.txt", remote_path="uploads/file.txt"
-)
-
-if upload_result.success:
-    # File uploaded successfully
-    remote_url = upload_result.unwrap()
-
-# Download file
-download_result = storage_protocol.download_file(
-    remote_path="uploads/file.txt", local_path="/tmp/downloaded_file.txt"
-)
-
-# List files
-list_result = storage_protocol.list_files("uploads/")
-if list_result.success:
-    files = list_result.unwrap()
-    for file in files:
-        print(f"File: {file.name} ({file.size} bytes)")
-```
-
-**Key Features:**
-
-- Multiple storage backend support
-- File upload/download operations
-- Directory listing and management
-- Metadata handling
-- Access control integration
+This feature is not currently implemented in the public API.
 
 ## Protocol Stubs
 
-### GRPC Stub - gRPC Protocol Buffers
+### gRPC Stub - gRPC Protocol Buffers
 
 Stub implementation for gRPC services using Protocol Buffers.
 
-```python
-from __future__ import annotations
-from flext_api import GrpcStub
-
-# Create gRPC stub
-grpc_stub = GrpcStub(
-    target="localhost:50051",
-    credentials=None,  # or ssl_channel_credentials()
-    options=[("grpc.max_receive_message_size", 1024 * 1024 * 100)],
-)
-
-# Call gRPC methods
-request = user_pb2.GetUserRequest(user_id="user_123")
-response = grpc_stub.call_unary(
-    service="UserService",
-    method="GetUser",
-    request=request,
-    response_type=user_pb2.UserResponse,
-)
-
-if response.success:
-    user = response.unwrap()
-    print(f"User: {user.name} ({user.email})")
-```
+This feature is not currently implemented in the public API.
 
 ### Protobuf Stub - Binary Serialization
 
 Stub for Protocol Buffer serialization/deserialization.
 
-```python
-from __future__ import annotations
-from flext_api import ProtobufStub
-
-# Create protobuf stub
-protobuf_stub = ProtobufStub()
-
-# Serialize data
-user_data = {"id": "user_123", "name": "Alice", "email": "alice@example.com"}
-serialized = protobuf_stub.serialize(user_data, message_type="User")
-
-# Deserialize data
-deserialized = protobuf_stub.deserialize(serialized, message_type="User")
-```
+This feature is not currently implemented in the public API.
 
 ## Quality Metrics
 
-| Module                              | Coverage | Status    | Description                          |
-| ----------------------------------- | -------- | --------- | ------------------------------------ |
-| `protocol_impls/http.py`            | 90%      | ✅ Stable | HTTP/REST implementation             |
-| `protocol_impls/graphql.py`         | 85%      | ✅ Good   | GraphQL query/mutation support       |
-| `protocol_impls/websocket.py`       | 88%      | ✅ Good   | WebSocket real-time communication    |
-| `protocol_impls/sse.py`             | 82%      | ✅ Good   | Server-sent events streaming         |
-| `protocol_impls/storage_backend.py` | 87%      | ✅ Good   | File/t.JsonValue storage abstraction |
-| `protocol_stubs/grpc_stub.py`       | 80%      | ✅ Good   | gRPC protocol buffer support         |
-| `protocol_stubs/protobuf_stub.py`   | 85%      | ✅ Good   | Binary serialization                 |
+| Module                          | Coverage | Status    | Description                        |
+| ------------------------------- | -------- | --------- | ---------------------------------- |
+| `protocols/http.py`             | 90%      | ✅ Stable | HTTP/REST implementation           |
+| `protocols/graphql.py`          | —        | ❌ N/A    | Not implemented in public API      |
+| `protocols/websocket.py`        | —        | ❌ N/A    | Not implemented in public API      |
+| `protocols/sse.py`              | —        | ❌ N/A    | Not implemented in public API      |
+| `protocols/storage_backend.py`  | —        | ❌ N/A    | Not implemented in public API      |
+| `protocol_stubs/grpc_stub.py`   | —        | ❌ N/A    | Not implemented in public API      |
+| `protocol_stubs/protobuf_stub.py` | —      | ❌ N/A    | Not implemented in public API      |
 
 ## Usage Examples
 
-### Multi-Protocol API Client
+### HTTP API Client
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiClient
-from flext_api import FlextWeb
-from flext_api import GraphQL
-from flext_api import WebSocket
+
+from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
+class FakeHttpClient(FlextApiClient):
+    """Fake HTTP client that runs without network access."""
 
-class MultiProtocolClient:
-    """Client supporting multiple protocols."""
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+        if request.url.endswith("/users/123") and request.method == c.Api.Method.GET:
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body={"id": "123", "name": "Alice", "email": "alice@example.com"},
+                )
+            )
+        if request.url.endswith("/users") and request.method == c.Api.Method.POST:
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=201,
+                    headers={"Content-Type": "application/json"},
+                    body={"id": "456", **(request.body or {})},
+                )
+            )
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(status_code=404, body={"error": "not found"})
+        )
 
-    def __init__(self):
-        self.http = FlextWebl="https://api.example.com")
-        self.graphql = GraphQLt="https://api.example.com/graphql")
-        self.websocket = WebSockets://api.example.com/ws")
 
-    def get_user_http(self, user_id: str) -> t.JsonMapping:
+class UserApiClient:
+    """Client supporting HTTP operations through the real FLEXT-API facade."""
+
+    def __init__(self, base_url: str = "https://api.example.com"):
+        self.api = FlextApi(settings=FlextApiSettings(base_url=base_url, timeout=10.0))
+        # Wire a fake client so the example runs without network access
+        self.api._client = FakeHttpClient(settings=self.api.settings)
+
+    def get_user(self, user_id: str) -> t.JsonMapping | None:
         """Get user via REST API."""
-        result = self.http.execute_request("GET", f"/users/{user_id}")
-        return result.unwrap().json() if result.success else None
+        result = self.api.get(f"/users/{user_id}")
+        return result.unwrap().body if result.success else None
 
-    def get_user_graphql(self, user_id: str) -> t.JsonMapping:
-        """Get user via GraphQL."""
-        query = """
-            query GetUser($id: ID!) {
-                user(id: $id) {
-                    id
-                    name
-                    email
-                    posts {
-                        id
-                        title
-                    }
-                }
-            }
-        """
-        result = self.graphql.execute_query(query, {"id": user_id})
-        return result.unwrap() if result.success else None
-
-    def subscribe_to_notifications(self, callback):
-        """Subscribe to real-time notifications."""
-        connection = self.websocket.connect().unwrap()
-
-        # Send subscription message
-        connection.send({"type": "subscribe", "channel": "notifications"})
-
-        # Listen for messages
-        while not connection.is_closed():
-            message = connection.receive().unwrap()
-            callback(message)
+    def create_user(self, user_data: t.JsonMapping) -> t.JsonMapping | None:
+        """Create user via REST API."""
+        result = self.api.post("/users", data=user_data)
+        return result.unwrap().body if result.success else None
 
 
 # Usage
-client = MultiProtocolClient()
+client = UserApiClient(base_url="https://api.example.com")
+user = client.get_user("123")
+if user:
+    print(f"User: {user['name']} ({user['email']})")
 
-# Get user data via different protocols
-user_rest = client.get_user_http("user_123")
-user_graphql = client.get_user_graphql("user_123")
-
-print(f"REST user: {user_rest['name']}")
-print(f"GraphQL user: {user_graphql['name']}")
+created = client.create_user({"name": "Bob", "email": "bob@example.com"})
+if created:
+    print(f"Created user: {created['name']} ({created['id']})")
 ```
 
 ### Protocol Plugin System
 
 ```python
 from __future__ import annotations
-from flext_api import ProtocolRegistry
-from flext_api import FlextWeb
-from flext_api import GraphQL
 
-# Register protocols
-registry = ProtocolRegistry()
-registry.register("http", FlextWeb
-registry.register("graphql", GraphQL
+from abc import abstractmethod
 
-# Use protocols dynamically
-http_protocol = registry.get_protocol("http")
-graphql_protocol = registry.get_protocol("graphql")
-
-
-# Configure based on requirements
-def create_api_client(protocol_name: str, settings: dict):
-    """Create API client with specified protocol."""
-    protocol_class = registry.get_protocol(protocol_name)
-    return protocol_class(**settings)
-
-
-# Create clients for different services
-user_api = create_api_client("http", {"base_url": "https://user-api.com"})
-content_api = create_api_client(
-    "graphql", {"endpoint": "https://content-api.com/graphql"}
+from flext_api import (
+    FlextApiProtocolPluginManager,
+    FlextApiProtocolPluginTypes,
+    c,
+    m,
+    p,
+    r,
+    t,
 )
+
+
+class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
+    """Concrete HTTP protocol plugin."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            name="http",
+            version="1.0.0",
+            description="HTTP/REST protocol plugin",
+        )
+
+    def supported_protocols(self) -> t.StrSequence:
+        return ["http", "https"]
+
+    def supports_protocol(self, protocol: str) -> bool:
+        return protocol in self.supported_protocols()
+
+    def send_request(
+        self, request: t.JsonMapping, **kwargs: t.Scalar
+    ) -> p.Result[t.JsonMapping]:
+        return r[t.JsonMapping].ok({"status": 200, "request": request})
+
+
+class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
+    """Concrete JSON schema plugin."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            name="json-schema",
+            version="1.0.0",
+            description="JSON schema validation plugin",
+        )
+
+    def schema_version(self) -> str:
+        return "2020-12"
+
+    def load_schema(self, schema_source: str) -> p.Result[t.JsonValue]:
+        return r[t.JsonValue].ok({})
+
+    def validate_request(
+        self, request: t.JsonMapping, schema: t.JsonMapping
+    ) -> p.Result[bool]:
+        return r[bool].ok(value=True)
+
+    def validate_response(
+        self, response: t.JsonMapping, schema: t.JsonMapping
+    ) -> p.Result[bool]:
+        return r[bool].ok(value=True)
+
+
+manager = FlextApiProtocolPluginManager.Manager()
+
+http_plugin = HttpProtocolPlugin()
+schema_plugin = JsonSchemaPlugin()
+
+load_result = manager.load_plugin(http_plugin)
+assert load_result.success
+
+load_result = manager.load_plugin(schema_plugin)
+assert load_result.success
+
+print(f"Loaded plugins: {manager.list_loaded_plugins()}")
+
+resolved = manager.resolve_plugin("http")
+if resolved.success:
+    plugin = resolved.unwrap()
+    print(f"Resolved plugin: {plugin.name} v{plugin.version}")
+
+shutdown_result = manager.shutdown_all()
+assert shutdown_result.success
 ```
 
-This protocol-based architecture provides a flexible foundation for supporting multiple communication patterns while maintaining consistent error handling and type safety across all protocols.
+This protocol-based architecture provides a flexible foundation for supporting multiple communication patterns while maintaining consistent error handling and type safety across all protocols. The public HTTP surface and plugin manager are available today; additional protocols can be added through the plugin system.
