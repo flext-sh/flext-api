@@ -234,14 +234,11 @@ from flext_ldif import FlextLdifSettings
 
 # Create custom configuration
 settings = FlextLdifSettings(
-    default_encoding="utf-8",
-    strict_validation=True,
-    servers_enabled=True,
-    batch_size=1000,
+    ldif_encoding="utf-8",
+    ldif_strict_validation=True,
 )
 
-# Use configuration
-# Use the ldif instance with the settings above
+print(f"LDIF encoding: {settings.ldif.ldif_encoding}")
 ```
 
 ## Next Steps
