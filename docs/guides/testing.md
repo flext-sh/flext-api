@@ -4,129 +4,126 @@
 
 # flext-api - FLEXT Testing Guide
 
-> Project profile: `flext-api`
-
-This guide covers testing strategies, best practices, and procedures for FLEXT applications and libraries.
+This guide covers testing strategies, best practices, and executable examples for
+`flext-api` using the current FLEXT HTTP facade and railway result patterns.
 
 ## Overview
 
-FLEXT maintains comprehensive test coverage across all **33 projects** with the following standards:
-
-- **85%+ coverage** for foundation libraries (flext-core)
-- **75%+ coverage** for applications and domain libraries
-- **100% test pass rate** across all projects
-- **Zero Pyrefly errors** in strict mode (successor to MyPy)
-- **Zero Ruff violations** in production code
+FLEXT projects share a unified testing contract: tests exercise the public facade
+(`FlextApi`, `FlextApiClient`, `m.Api.HttpRequest`, `p.Result`) and never depend
+on internal implementation details. The examples below run without network access
+by using small `FakeApi` subclasses that simulate the real client behavior.
 
 ## Test Structure
 
-FLEXT uses a hierarchical test structure:
+FLEXT packages use a hierarchical test structure:
 
-```
+```text
 tests/
-├── unit/           # Unit tests (fast, isolated)
-├── integration/    # Integration tests (component interaction)
-├── e2e/           # End-to-end tests (full workflow)
-├── fixtures/      # Test data and fixtures
-└── conftest.py    # Pytest configuration
+├── unit/           # Fast, isolated tests of models and utilities
+├── integration/    # Tests that cross package boundaries
+├── e2e/           # End-to-end workflow tests
+├── fixtures/      # Test data and builders
+└── conftest.py    # Shared pytest configuration
 ```
 
-## Test Categories
+## Unit Tests
 
-### Unit Tests
-
-Test individual functions and classes in isolation:
+Test model validation and the public API facade in isolation:
 
 ```python
 from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, c, m, p
+
+
+class FakeApi(FlextApi):
+    """In-memory API facade for unit tests."""
+
+    def get(self, url: str, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+        return m.Api.HttpResponse.create_response(
+            status_code=200,
+            body={"endpoint": url, "method": "GET"},
+            headers={"Content-Type": "application/json"},
+        )
+
+
+def test_get_users_returns_success():
+    api = FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/users")
+
+    assert result.success
+    response = result.unwrap()
+    assert response.status_code == 200
+    assert response.body["endpoint"] == "/users"
+
+
+def test_http_request_model_validation():
+    request = m.Api.HttpRequest(
+        method=c.Api.Method.GET,
+        url="https://example.com/users",
+        headers={"Accept": "application/json"},
+    )
+
+    assert request.method == "GET"
+    assert request.content_type == "application/json"
 ```
 
-### Parallel Test Execution
+## Integration Tests
 
-```bash
-# Run tests in parallel
-pytest -n auto
+Integration tests exercise the real `FlextApiClient.request` pipeline with a
+known, safe endpoint such as `httpbin.org` and always handle failures gracefully:
 
-# Specific number of workers
-pytest -n 4
+```python
+from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, m, p
+
+
+def test_real_http_get():
+    api = FlextApi(settings=FlextApiSettings(base_url="https://httpbin.org", timeout=5.0))
+    result = api.get("/get")
+
+    if result.failure:
+        print(f"Network unavailable: {result.error}")
+    else:
+        response = result.unwrap()
+        assert response.status_code == 200
+        assert response.success
+        assert "url" in response.body
 ```
 
 ## Test Fixtures
 
-### Pytest Fixtures
+Avoid pytest decorators in markdown examples by showing plain factory functions
+that tests can call directly:
 
 ```python
 from __future__ import annotations
-```
 
-### Loading Test Data
-
-```python
-from __future__ import annotations
-import json
-from pathlib import Path
+from flext_api import FlextApi, FlextApiSettings, m, p
 
 
-def load_test_fixture(fixture_name: str) -> str:
-    """Load test fixture from fixtures directory."""
-    fixture_path = Path(__file__).parent / "fixtures" / fixture_name
-    return fixture_path.read_text()
+def make_api(status_code: int = 200, body: dict | None = None) -> FlextApi:
+    """Factory for a fake API facade."""
+
+    class FakeApi(FlextApi):
+        def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+            return m.Api.HttpResponse.create_response(
+                status_code=status_code,
+                body=body if body is not None else {"endpoint": url},
+                headers={"Content-Type": "application/json"},
+            )
+
+    return FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
 
 
-def load_json_fixture(fixture_name: str) -> t.JsonMapping:
-    """Load JSON test fixture."""
-    fixture_path = Path(__file__).parent / "fixtures" / fixture_name
-    return json.loads(fixture_path.read_text())
+def test_user_list_with_factory():
+    api = make_api(body={"users": [{"id": 1, "name": "Alice"}]})
+    result = api.get("/users")
 
-
-# Usage
-def test_with_fixture():
-    """Test using loaded fixture data."""
-    ldif_content = load_test_fixture("ldif/valid.ldif")
-    config_data = load_json_fixture("settings/dev.yaml")
-
-    # Use fixture data in test
-    result = process_ldif(ldif_content, config_data)
     assert result.success
-```
-
-## Continuous Integration
-
-### GitHub Actions Workflow
-
-```yaml
-name: Test Suite
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.13]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
-
-      - name: Run tests
-        run: |
-          poetry run pytest --cov=src --cov-report=xml
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.xml
+    assert result.unwrap().body["users"][0]["name"] == "Alice"
 ```
 
 ## Best Practices
@@ -138,22 +135,13 @@ from __future__ import annotations
 
 
 # ✅ GOOD - Descriptive test names
-def test_parse_valid_ldif_returns_success():
-    """Test that parsing valid LDIF returns success result."""
-    pass
-
-
-def test_parse_invalid_ldif_returns_failure():
-    """Test that parsing invalid LDIF returns failure result."""
+def test_parse_valid_http_request_returns_success():
+    """Test that a valid HTTP request model validates successfully."""
     pass
 
 
 # ❌ BAD - Vague test names
 def test_parse():
-    pass
-
-
-def test_ldif():
     pass
 ```
 
@@ -163,133 +151,121 @@ def test_ldif():
 from __future__ import annotations
 
 
-class TestLdifParsing:
-    """Test LDIF parsing functionality."""
+class TestHttpRequestModel:
+    """Test HTTP request model validation."""
 
-    def test_parse_valid_single_entry(self):
-        """Test parsing single valid LDIF entry."""
+    def test_valid_get_request(self):
         pass
 
-    def test_parse_valid_multiple_entries(self):
-        """Test parsing multiple valid LDIF entries."""
+    def test_invalid_method_raises(self):
         pass
 
-    def test_parse_invalid_format(self):
-        """Test parsing invalid LDIF format."""
-        pass
-
-
-class TestLdifMigration:
-    """Test LDIF migration functionality."""
-
-    def test_migrate_oid_to_oud(self):
-        """Test OID to OUD migration."""
+    def test_url_is_required(self):
         pass
 ```
 
 ### 3. Assertion Quality
 
 ```python
-from flext_ldif import ldif
 from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, m, p
+
+
+class FakeApi(FlextApi):
+    def get(self, url, headers=None, request_kwargs=None) -> p.Result[m.Api.HttpResponse]:
+        return m.Api.HttpResponse.create_response(
+            status_code=200,
+            body={"dn": "cn=test,dc=example,dc=com", "attributes": {"cn": "test"}},
+            headers={"Content-Type": "application/json"},
+        )
 
 
 # ✅ GOOD - Specific assertions
-def test_parse_result():
-    result = ldif.parse_string(content)
+def test_api_result():
+    api = FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/test")
 
     assert result.success
-    entries = result.unwrap()
-    assert len(entries) == 1
-    assert entries[0].dn == "cn=test,dc=example,dc=com"
-    assert "cn" in entries[0].attributes
+    response = result.unwrap()
+    assert response.status_code == 200
+    assert response.body["dn"] == "cn=test,dc=example,dc=com"
+    assert "cn" in response.body["attributes"]
 
 
 # ❌ BAD - Vague assertions
-def test_parse_result():
-    result = ldif.parse_string(content)
+def test_api_result_vague():
+    api = FakeApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/test")
     assert result  # Too vague
 ```
 
 ### 4. Test Independence
 
 ```python
-from flext_ldif import ldif
 from __future__ import annotations
-from flext_ldif import FlextLdif
+
+from flext_api import FlextApi, FlextApiSettings, m, p
 
 
-# ✅ GOOD - Independent tests
-def test_parse_valid_ldif():
-    processor = FlextLdif()  # Fresh instance
-    result = processor.parse_string("dn: test")
+# ✅ GOOD - Independent tests create their own facade instances
+def test_get_users():
+    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/users")
     assert result.success
 
 
-def test_parse_invalid_ldif():
-    processor = FlextLdif()  # Fresh instance
-    result = processor.parse_string("invalid")
-    assert result.failure
-
-
-# ❌ BAD - Dependent tests
-processor = FlextLdif()  # Shared instance
-
-
-def test_parse_valid_ldif():
-    result = processor.parse_string("dn: test")
+def test_get_projects():
+    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/projects")
     assert result.success
 
 
-def test_parse_invalid_ldif():
-    result = processor.parse_string("invalid")
-    assert result.failure
+# ❌ BAD - Shared mutable state between tests
+class BadSuite:
+    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))
+```
+
+## Continuous Integration
+
+Run the test suite through the FLEXT workspace dispatcher:
+
+```bash
+# Run all tests for flext-api
+make test PROJECT=flext-api
+
+# Run the markdown documentation examples
+uv run pytest --markdown-docs -q
 ```
 
 ## Troubleshooting
 
-### Common Test Issues
+### Import Errors
 
-1. **Import Errors**
+```bash
+# Ensure the workspace environment is bootstrapped
+make boot
+uv run pytest --markdown-docs docs/guides/testing.md -q
+```
 
-   ```bash
-   # Set PYTHONPATH
-   export PYTHONPATH=src
-   pytest
-   ```
+### Test Timeout
 
-1. **Fixture Not Found**
+```bash
+# Increase the per-test timeout during debugging
+uv run pytest --markdown-docs -q --timeout=60
+```
 
-   ```python
+### Coverage Issues
 
-from **future** import annotations
-
-# Check fixture scope and dependencies
-
-   @pytest.fixture(scope="function")
-   def my_fixture():
-       return "value"
-
-   ```
-
-1. **Test Timeout**
-
-   ```bash
-   # Increase timeout
-   pytest --timeout=300
-   ```
-
-1. **Coverage Issues**
-
-   ```bash
-   # Check coverage configuration
-   pytest --cov=src --cov-report=term-missing
-   ```
+```bash
+# Check coverage configuration for the project
+uv run pytest --cov=src/flext_api --cov-report=term-missing
+```
 
 ## Resources
 
 - [Pytest Documentation](https://docs.pytest.org/)
 - [Coverage.py Documentation](https://coverage.readthedocs.io/)
 - FLEXT Quality Standards
-- Test Examples
-- CI/CD Configuration
+- Test Examples in `tests/`
+- CI/CD Configuration in `.github/workflows/`
