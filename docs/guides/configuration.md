@@ -76,6 +76,24 @@ Configure FLEXT programmatically in your code:
 
 ```python
 from __future__ import annotations
+from flext_api import FlextApiSettings
+from flext_core import FlextSettings
+from flext_ldif import FlextLdifSettings
+
+# Core configuration
+settings = FlextSettings(log_level="INFO", debug=False, environment="production")
+
+# LDIF configuration
+ldif_config = FlextLdifSettings(
+    ldif_encoding="utf-8",
+    ldif_strict_validation=True,
+)
+
+# API configuration
+api_config = FlextApiSettings(
+    base_url="https://api.example.com",
+    timeout=30,
+)
 ```
 
 ## Configuration Validation
@@ -84,14 +102,12 @@ All configuration is validated using Pydantic v2 models:
 
 ```python
 from __future__ import annotations
-from flext_core import c, FlextSettings, e
+from flext_core import c, FlextSettings
 
 try:
-    settings = FlextSettings(
-        log_level="INVALID_LEVEL"  # This will raise ValidationError
-    )
-except c.ValidationError as e:
-    print(f"Configuration error: {e}")
+    settings = FlextSettings(debug="not_a_boolean")  # This will raise ValidationError
+except c.ValidationError as exc:
+    print(f"Configuration error: {exc}")
 ```
 
 ## Configuration Inheritance
@@ -105,11 +121,11 @@ from flext_core import FlextSettings
 # Base configuration
 base_config = FlextSettings(log_level="INFO", environment="production")
 
-# Extended configuration
+# Extended configuration (exclude fields already in base to avoid duplicate kwargs)
+base_dump = {k: v for k, v in base_config.model_dump().items() if k not in {"debug"}}
 extended_config = FlextSettings(
-    **base_config.model_dump(),
+    **base_dump,
     debug=True,  # Override for development
-    custom_setting="value",
 )
 ```
 
@@ -127,18 +143,19 @@ export FLEXT_API_KEY=your_api_key
 
 ```python
 from __future__ import annotations
-from flext_core import FlextSettings
+from flext_core import c, FlextSettings
 
 
-def main():
+def main() -> int:
     # Validate configuration at startup
-    settings = FlextSettings()
-
-    if not settings.is_valid():
-        print("Invalid configuration")
+    try:
+        settings = FlextSettings()
+    except c.ValidationError as exc:
+        print(f"Invalid configuration: {exc}")
         return 1
 
     # Continue with application logic
+    print(f"Configuration loaded: {settings.model_dump()}")
     return 0
 ```
 
@@ -155,19 +172,24 @@ class MyAppConfig(FlextSettings):
 
     @u.field_validator("another_setting")
     @classmethod
-    def validate_another_setting(cls, v):
+    def validate_another_setting(cls, v: int) -> int:
         if v < 0:
             raise ValueError("another_setting must be positive")
         return v
+
+
+config = MyAppConfig(another_setting=10)
+print(config.model_dump())
 ```
 
 ### 4. Document Configuration Options
 
-```python
+```python notest
 from __future__ import annotations
+from flext_web import m, u
 
 
-class FlextLdifSettings(m.BaseModel):
+class LdifConfig(m.BaseModel):
     """Configuration for LDIF processing."""
 
     default_encoding: str = u.Field(
@@ -213,11 +235,12 @@ settings = FlextSettings(debug=True)
 # Print configuration
 print(settings.model_dump())
 
-# Validate configuration
-if settings.is_valid():
+# Validate configuration by re-instantiating with the same data
+try:
+    FlextSettings(**settings.model_dump(exclude={"cache_dir", "work_dir", "data_dir", "state_dir", "config_dir", "runtime_dir"}))
     print("Configuration is valid")
-else:
-    print("Configuration has errors")
+except Exception as exc:
+    print(f"Configuration has errors: {exc}")
 ```
 
 ## Examples
@@ -231,22 +254,22 @@ from __future__ import annotations
 """Complete FLEXT configuration example."""
 
 import os
-
-from flext_ldif import FlextLdifSettings
-
 from flext_api import FlextApiSettings
 from flext_core import FlextSettings
+from flext_ldif import FlextLdifSettings
 
 
-def main():
+def main() -> None:
     # Load configuration from environment
     settings = FlextSettings()
 
     # Configure LDIF processing
     ldif_config = FlextLdifSettings(
-        source_server=os.getenv("FLEXT_SOURCE_SERVER", "oid"),
-        target_server=os.getenv("FLEXT_TARGET_SERVER", "oud"),
-        batch_size=int(os.getenv("FLEXT_BATCH_SIZE", "1000")),
+        ldif_encoding=os.getenv("FLEXT_LDIF_DEFAULT_ENCODING", "utf-8"),
+        ldif_strict_validation=os.getenv(
+            "FLEXT_LDIF_STRICT_VALIDATION", "true"
+        ).lower()
+        == "true",
     )
 
     # Configure API client
@@ -257,8 +280,8 @@ def main():
 
     print("Configuration loaded successfully")
     print(f"Log level: {settings.log_level}")
-    print(f"LDIF batch size: {ldif_config.batch_size}")
-    print(f"API base URL: {api_config.base_url}")
+    print(f"LDIF encoding: {ldif_config.ldif.ldif_encoding}")
+    print(f"API base URL: {api_config.Api.base_url}")
 
 
 if __name__ == "__main__":
