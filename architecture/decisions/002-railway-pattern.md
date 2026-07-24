@@ -82,7 +82,10 @@ FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP ope
 
 ### Option 1: Traditional Exceptions
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def get_user(user_id: int) -> User:
     response = httpx.get(f"/users/{user_id}")
     response.raise_for_status()
@@ -95,7 +98,10 @@ def get_user(user_id: int) -> User:
 
 ### Option 2: Result Pattern (Custom Implementation)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class Result:
     def __init__(self, success: bool, value=None, error=None):
         self.success = success
@@ -118,7 +124,10 @@ class Result:
 
 ### Basic HTTP Operation
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def get_user(user_id: int) -> p.Result[User]:
     """Get user with railway error handling."""
     return (
@@ -133,12 +142,13 @@ def get_user(user_id: int) -> p.Result[User]:
 
 ### Usage in Application Code
 
-```python notest
+```text
+from __future__ import annotations
 # Success path
 result = get_user(123)
 if result.success:
     user = result.unwrap()
-    u.Cli.print(f"Found user: {user.name}")
+    print(f"Found user: {user.name}")
 
 # Error handling
 if result.failure:
@@ -156,7 +166,10 @@ user_profile = (
 
 ### Testing Railway Code
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_get_user_success():
     # Given
     mock_response = MockHttpResponse(status_code=200, body='{"name": "John"}')
@@ -216,7 +229,9 @@ def test_get_user_not_found():
 
 ### Error Message Standards
 
-```python notest
+```python
+from __future__ import annotations
+
 # Good error messages
 r.fail("Invalid user ID: must be positive integer")
 r.fail("HTTP request timeout after 30 seconds")

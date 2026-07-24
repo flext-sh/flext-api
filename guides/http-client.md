@@ -41,7 +41,8 @@ Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, e
 
 ### Creating HTTP Clients
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiClient
 from flext_cli import u
 from flext_core import FlextSettings
@@ -74,12 +75,14 @@ custom_client = FlextApiClient(
 
 All HTTP methods return `r[T]` for type-safe error handling.
 
-```python notest
+```python
+from __future__ import annotations
+
 # GET request
 result = client.get("/users")
 if result.success:
     users = result.unwrap()
-    u.Cli.print(f"Found {len(users)} users")
+    print(f"Found {len(users)} users")
 
 # GET with query parameters
 result = client.get("/users", params={"limit": 10, "offset": 0, "status": "active"})
@@ -109,7 +112,8 @@ result = client.patch("/users/123", json={"email": "new@example.com"})
 
 Add custom logic before and after HTTP requests.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiClient
 from flext_cli import u
 from flext_core import FlextSettings
@@ -161,7 +165,9 @@ class LoggingClient(FlextApiClient):
 
 ### Custom Headers and Authentication
 
-```python notest
+```python
+from __future__ import annotations
+
 # Bearer token authentication
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -199,7 +205,8 @@ client = FlextApiClient(base_url="https://api.example.com", auth=custom_auth)
 
 FLEXT-API uses the railway pattern for type-safe error handling.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -227,14 +234,16 @@ def safe_api_call():
 result = safe_api_call()
 if result.success:
     user = result.unwrap()
-    u.Cli.print(f"User: {user['name']}")
+    print(f"User: {user['name']}")
 else:
-    u.Cli.print(f"Error: {result.error}")
+    print(f"Error: {result.error}")
 ```
 
 ### Error Types and Handling
 
-```python notest
+```python
+from __future__ import annotations
+
 # HTTP error responses
 try:
     result = client.get("/users/999")
@@ -243,25 +252,27 @@ try:
 
         # Handle specific HTTP errors
         if error.status_code == 404:
-            u.Cli.print("Resource not found")
+            print("Resource not found")
         elif error.status_code == 401:
-            u.Cli.print("Authentication required")
+            print("Authentication required")
         elif error.status_code == 403:
-            u.Cli.print("Access forbidden")
+            print("Access forbidden")
         elif error.status_code == 429:
-            u.Cli.print("Rate limit exceeded")
+            print("Rate limit exceeded")
         elif error.status_code >= 500:
-            u.Cli.print("Server error")
+            print("Server error")
 
 except Exception as e:
-    u.Cli.print(f"Unexpected error: {e}")
+    print(f"Unexpected error: {e}")
 ```
 
 ## Request Configuration
 
 ### Query Parameters
 
-```python notest
+```python
+from __future__ import annotations
+
 # Simple query parameters
 result = client.get("/users", params={"active": True})
 
@@ -285,7 +296,9 @@ result = client.get(
 
 ### Request Body Data
 
-```python notest
+```python
+from __future__ import annotations
+
 # JSON data (default)
 user_data = {
     "name": "Alice",
@@ -311,7 +324,9 @@ result = client.post(
 
 ### Custom Headers
 
-```python notest
+```python
+from __future__ import annotations
+
 # Per-request headers
 result = client.get(
     "/api/data",
@@ -343,53 +358,57 @@ result = client.post(
 
 ### Response Processing
 
-```python notest
+```python
+from __future__ import annotations
+
 # Get response t.JsonValue
 result = client.get("/users/123")
 if result.success:
     response = result.unwrap()
 
     # Access response data
-    u.Cli.print(f"Status: {response.status_code}")
-    u.Cli.print(f"Headers: {dict(response.headers)}")
-    u.Cli.print(f"Content: {response.text}")
+    print(f"Status: {response.status_code}")
+    print(f"Headers: {dict(response.headers)}")
+    print(f"Content: {response.text}")
 
     # Parse JSON response
     user_data = response.json()
-    u.Cli.print(f"User: {user_data['name']}")
+    print(f"User: {user_data['name']}")
 
     # Access raw response content
     raw_content = response.content
-    u.Cli.print(f"Raw content length: {len(raw_content)}")
+    print(f"Raw content length: {len(raw_content)}")
 ```
 
 ### Response Metadata
 
-```python notest
+```python
+from __future__ import annotations
+
 # Response timing
 result = client.get("/slow-endpoint")
 if result.success:
     response = result.unwrap()
-    u.Cli.print(f"Request took: {response.elapsed.total_seconds()}s")
+    print(f"Request took: {response.elapsed.total_seconds()}s")
 
 # Response headers
 result = client.get("/api/data")
 if result.success:
     response = result.unwrap()
-    u.Cli.print(f"Content-Type: {response.headers.get('Content-Type')}")
-    u.Cli.print(f"Cache-Control: {response.headers.get('Cache-Control')}")
-    u.Cli.print(f"ETag: {response.headers.get('ETag')}")
+    print(f"Content-Type: {response.headers.get('Content-Type')}")
+    print(f"Cache-Control: {response.headers.get('Cache-Control')}")
+    print(f"ETag: {response.headers.get('ETag')}")
 ```
 
 ## Advanced Usage Patterns
 
 ### Batch Operations
 
-```python notest
-from typing import List
+```python
+from __future__ import annotations
 
 
-async def batch_create_users(users: List[dict]) -> List[r[dict]]:
+async def batch_create_users(users: list[dict]) -> list[r[dict]]:
     """Create multiple users in parallel."""
     import asyncio
 
@@ -414,15 +433,18 @@ results = await batch_create_users(users)
 
 for i, result in enumerate(results):
     if result.success:
-        u.Cli.print(f"✅ Created user {i + 1}")
+        print(f"✅ Created user {i + 1}")
     else:
-        u.Cli.print(f"❌ Failed to create user {i + 1}: {result.error}")
+        print(f"❌ Failed to create user {i + 1}: {result.error}")
 ```
 
 ### Pagination
 
-```python notest
-def get_all_users(page_size: int = 50) -> List[dict]:
+```python
+from __future__ import annotations
+
+
+def get_all_users(page_size: int = 50) -> list[dict]:
     """Get all users with pagination."""
     all_users = []
     page = 1
@@ -450,12 +472,13 @@ def get_all_users(page_size: int = 50) -> List[dict]:
 
 # Usage
 users = get_all_users(page_size=100)
-u.Cli.print(f"Total users: {len(users)}")
+print(f"Total users: {len(users)}")
 ```
 
 ### Retry Logic
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiClient
 from flext_cli import u
 from flext_core import FlextSettings
@@ -504,7 +527,8 @@ result = retry_client.get("/data")
 
 ### Test Client Setup
 
-```python notest
+```python
+from __future__ import annotations
 import pytest
 from flext_api import FlextApiClient
 from flext_api import FlextApiTestClient
@@ -556,7 +580,8 @@ class TestUserAPI:
 
 ### Mocking External APIs
 
-```python notest
+```python
+from __future__ import annotations
 from unittest.mock import Mock, patch
 import pytest
 
@@ -585,7 +610,9 @@ def test_external_api_call(mock_http_client):
 
 ### Connection Pooling
 
-```python notest
+```python
+from __future__ import annotations
+
 # Configure connection pooling for better performance
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -597,10 +624,10 @@ client = FlextApiClient(
 
 ### Request Batching
 
-```python notest
-from typing import List, Dict, t.JsonValue
+```python
+from __future__ import annotations
 
-def batch_requests(requests: List[m.Dict]) -> List[r[t.JsonValue]]:
+def batch_requests(requests: list[m.Dict]) -> list[r[t.JsonValue]]:
     """Execute multiple HTTP requests efficiently."""
 
     async def execute_batch():
@@ -637,7 +664,9 @@ results = batch_requests(requests)
 
 ### Secure Communication
 
-```python notest
+```python
+from __future__ import annotations
+
 # HTTPS only
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -658,7 +687,10 @@ client = FlextApiClient(
 
 ### Sensitive Data Handling
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # Avoid logging sensitive data
 class SecureClient(FlextApiClient):
     def _prepare_request_data(self, data: dict) -> t.JsonMapping:
@@ -679,7 +711,9 @@ class SecureClient(FlextApiClient):
 
 **1. Connection Timeouts**
 
-```python notest
+```python
+from __future__ import annotations
+
 # Increase timeout for slow endpoints
 result = client.get("/slow-endpoint", timeout=60.0)
 
@@ -688,14 +722,16 @@ import socket
 
 try:
     socket.create_connection(("api.example.com", 443), timeout=5)
-    u.Cli.print("Network connection OK")
+    print("Network connection OK")
 except OSError:
-    u.Cli.print("Network connection failed")
+    print("Network connection failed")
 ```
 
 **2. SSL Certificate Errors**
 
-```python notest
+```python
+from __future__ import annotations
+
 # Disable SSL verification (NOT recommended for production)
 client = FlextApiClient(base_url="https://api.example.com", verify_ssl=False)
 
@@ -709,7 +745,9 @@ client = FlextApiClient(base_url="https://api.example.com", ssl_context=ssl_cont
 
 **3. Rate Limiting**
 
-```python notest
+```python
+from __future__ import annotations
+
 # Handle rate limit responses
 result = client.get("/api/data")
 
@@ -717,7 +755,7 @@ if result.failure and result.error.status_code == 429:
     retry_after = result.error.headers.get("Retry-After")
     if retry_after:
         wait_time = int(retry_after)
-        u.Cli.print(f"Rate limited. Retry after {wait_time} seconds")
+        print(f"Rate limited. Retry after {wait_time} seconds")
         time.sleep(wait_time)
 ```
 

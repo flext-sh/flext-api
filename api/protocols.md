@@ -49,7 +49,8 @@ Protocol Layer
 
 Primary protocol implementation for REST APIs and HTTP-based communication.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextWeb
 from flext_cli import u
 from flext_core import FlextSettings
@@ -68,8 +69,8 @@ result = http_protocol.execute_request(
 
 if result.success:
     response = result.unwrap()
-    u.Cli.print(f"Status: {response.status_code}")
-    u.Cli.print(f"Data: {response.json()}")
+    print(f"Status: {response.status_code}")
+    print(f"Data: {response.json()}")
 ```
 
 **Key Features:**
@@ -82,7 +83,8 @@ if result.success:
 
 ### HTTP Request/Response Models
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import (
     FlextApiModels.HttpRequest,
     FlextApiModels.HttpResponse,
@@ -114,7 +116,8 @@ if response.success:
 
 Protocol implementation for GraphQL APIs with query and mutation support.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import GraphQL
 
 # Create GraphQL protocol
@@ -140,7 +143,7 @@ result = graphql_protocol.execute_query(query, variables)
 if result.success:
     data = result.unwrap()
     user = data["user"]
-    u.Cli.print(f"User: {user['name']} ({user['email']})")
+    print(f"User: {user['name']} ({user['email']})")
 ```
 
 **Key Features:**
@@ -153,7 +156,9 @@ if result.success:
 
 ### GraphQL Operations
 
-```python notest
+```python
+from __future__ import annotations
+
 # Query with fragments
 fragment_query = """
     query GetUserWithPosts($id: ID!) {
@@ -195,7 +200,8 @@ result = graphql_protocol.execute_mutation(mutation, mutation_variables)
 
 Protocol implementation for WebSocket connections and real-time messaging.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import WebSocket
 
 # Create WebSocket protocol
@@ -217,7 +223,7 @@ if connection_result.success:
         message_result = connection.receive()
         if message_result.success:
             message = message_result.unwrap()
-            u.Cli.print(f"Received: {message}")
+            print(f"Received: {message}")
 
         # Handle connection close
         if connection.is_closed():
@@ -238,7 +244,8 @@ if connection_result.success:
 
 Protocol implementation for Server-Sent Events (SSE) for real-time data streaming.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import ServerSentEvent
 
 # Create SSE protocol
@@ -255,8 +262,8 @@ if stream_result.success:
     for event in stream:
         if event.success:
             sse_event = event.unwrap()
-            u.Cli.print(f"Event: {sse_event.event_type}")
-            u.Cli.print(f"Data: {sse_event.data}")
+            print(f"Event: {sse_event.event_type}")
+            print(f"Data: {sse_event.data}")
 
         # Handle stream end
         if stream.is_closed():
@@ -277,7 +284,8 @@ if stream_result.success:
 
 Protocol implementation for various storage backends (local filesystem, cloud storage, etc.).
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import StorageBackend
 
 # Create storage protocol
@@ -310,7 +318,7 @@ list_result = storage_protocol.list_files("uploads/")
 if list_result.success:
     files = list_result.unwrap()
     for file in files:
-        u.Cli.print(f"File: {file.name} ({file.size} bytes)")
+        print(f"File: {file.name} ({file.size} bytes)")
 ```
 
 **Key Features:**
@@ -327,7 +335,8 @@ if list_result.success:
 
 Stub implementation for gRPC services using Protocol Buffers.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import GrpcStub
 
 # Create gRPC stub
@@ -348,14 +357,15 @@ response = grpc_stub.call_unary(
 
 if response.success:
     user = response.unwrap()
-    u.Cli.print(f"User: {user.name} ({user.email})")
+    print(f"User: {user.name} ({user.email})")
 ```
 
 ### Protobuf Stub - Binary Serialization
 
 Stub for Protocol Buffer serialization/deserialization.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import ProtobufStub
 
 # Create protobuf stub
@@ -385,7 +395,8 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ### Multi-Protocol API Client
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiClient
 from flext_api import FlextWeb
 from flext_api import GraphQL
@@ -444,13 +455,14 @@ client = MultiProtocolClient()
 user_rest = client.get_user_http("user_123")
 user_graphql = client.get_user_graphql("user_123")
 
-u.Cli.print(f"REST user: {user_rest['name']}")
-u.Cli.print(f"GraphQL user: {user_graphql['name']}")
+print(f"REST user: {user_rest['name']}")
+print(f"GraphQL user: {user_graphql['name']}")
 ```
 
 ### Protocol Plugin System
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import ProtocolRegistry
 from flext_api import FlextWeb
 from flext_api import GraphQL

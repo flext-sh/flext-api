@@ -30,7 +30,8 @@ This section covers the HTTP storage and caching system for file uploads, downlo
 
 Main storage interface for handling file uploads, downloads, and metadata operations.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiStorage
 from flext_cli import u
 from flext_core import FlextSettings
@@ -57,9 +58,9 @@ with open("document.pdf", "rb") as file:
 
 if upload_result.success:
     file_url = upload_result.unwrap()
-    u.Cli.print(f"File uploaded: {file_url}")
+    print(f"File uploaded: {file_url}")
 else:
-    u.Cli.print(f"Upload failed: {upload_result.error}")
+    print(f"Upload failed: {upload_result.error}")
 ```
 
 **Key Features:**
@@ -72,7 +73,9 @@ else:
 
 ### Storage Configuration
 
-```python notest
+```python
+from __future__ import annotations
+
 # Local filesystem storage
 local_storage = FlextApiStorage(
     backend="local",
@@ -112,7 +115,9 @@ gcs_storage = FlextApiStorage(
 
 Upload files with automatic validation and metadata handling.
 
-```python notest
+```python
+from __future__ import annotations
+
 # Upload from file path
 upload_result = storage.upload_from_path(
     local_path="/path/to/document.pdf",
@@ -145,7 +150,9 @@ upload_result = storage.upload_file(
 
 Download files with caching and access control.
 
-```python notest
+```python
+from __future__ import annotations
+
 # Download file
 download_result = storage.download_file(
     remote_path="documents/report.pdf", local_path="/tmp/downloaded_report.pdf"
@@ -153,32 +160,34 @@ download_result = storage.download_file(
 
 if download_result.success:
     file_path = download_result.unwrap()
-    u.Cli.print(f"File downloaded to: {file_path}")
+    print(f"File downloaded to: {file_path}")
 
 # Download to bytes
 download_result = storage.download_to_bytes("documents/report.pdf")
 if download_result.success:
     file_bytes = download_result.unwrap()
     # Process file bytes
-    u.Cli.print(f"Downloaded {len(file_bytes)} bytes")
+    print(f"Downloaded {len(file_bytes)} bytes")
 ```
 
 ### File Management
 
 List, delete, and manage stored files.
 
-```python notest
+```python
+from __future__ import annotations
+
 # List files in directory
 files_result = storage.list_files("documents/")
 if files_result.success:
     files = files_result.unwrap()
     for file_info in files:
-        u.Cli.print(f"File: {file_info.name}, Size: {file_info.size} bytes")
+        print(f"File: {file_info.name}, Size: {file_info.size} bytes")
 
 # Delete file
 delete_result = storage.delete_file("documents/old_report.pdf")
 if delete_result.success:
-    u.Cli.print("File deleted successfully")
+    print("File deleted successfully")
 
 # Move/rename file
 move_result = storage.move_file(
@@ -193,7 +202,8 @@ move_result = storage.move_file(
 
 HTTP response caching with multiple backend support.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiCache
 
 # Create cache instance
@@ -209,7 +219,7 @@ cache = FlextApiCache(
 async def get_user(user_id: str):
     # Expensive database operation
     user = await database.get_user(user_id)
-    return UserResponse(**user.dict())
+    return UserResponse(**user.model_dump())
 
 
 # Manual cache operations
@@ -217,9 +227,9 @@ cache.set("user_123", user_data, ttl=300)
 cached_data = cache.get("user_123")
 
 if cached_data:
-    u.Cli.print(f"Cache hit: {cached_data}")
+    print(f"Cache hit: {cached_data}")
 else:
-    u.Cli.print("Cache miss")
+    print("Cache miss")
 ```
 
 **Key Features:**
@@ -232,7 +242,10 @@ else:
 
 ### Cache Strategies
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # Time-based caching
 @cache.cached(ttl=3600)  # Cache for 1 hour
 @app.get("/slow-endpoint")
@@ -261,7 +274,8 @@ async def get_user(user_id: str):
 
 Support for multiple storage backends with failover and load balancing.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import MultiBackendStorage
 
 # Configure multiple backends
@@ -287,7 +301,7 @@ if upload_result.success:
     file_url = upload_result.unwrap()
 else:
     # Fallback to secondary backend
-    u.Cli.print(f"Upload failed on primary, trying fallback: {upload_result.error}")
+    print(f"Upload failed on primary, trying fallback: {upload_result.error}")
 ```
 
 ## File Processing
@@ -296,7 +310,8 @@ else:
 
 Process files during upload/download with transformation and validation.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextFileProcessor
 
 # Create file processor
@@ -348,7 +363,8 @@ async def upload_image(file: UploadFile = File(...)):
 
 ### Complete File Upload System
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiStorage, FlextFileProcessor
 from flext_api import FileUploadMiddleware
 from fastapi import UploadFile, File, HTTPException
@@ -438,7 +454,8 @@ async def download_file(file_id: str):
 
 ### Caching with Storage Integration
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiStorage, FlextApiCache
 
 # Initialize storage and cache

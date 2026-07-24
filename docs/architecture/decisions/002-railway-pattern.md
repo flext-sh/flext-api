@@ -55,23 +55,33 @@ FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP ope
 
 ### Option 1: Traditional Exceptions
 
-```python
+```python notest
+from __future__ import annotations
+
+
 def get_user(user_id: int) -> User:
     response = httpx.get(f"/users/{user_id}")
     response.raise_for_status()
-    return User(**response.json())```
+    return User(**response.json())
+```
+
 - **Pros**: Familiar, concise for success paths
 - **Cons**: Silent failures, complex error handling, hard to test
 - **Rejected**: Not suitable for enterprise HTTP operations
 
 ### Option 2: Result Pattern (Custom Implementation)
 
-```python
+```python notest
+from __future__ import annotations
+
+
 class Result:
     def __init__(self, success: bool, value=None, error=None):
         self.success = success
         self.value = value
-        self.error = error```
+        self.error = error
+```
+
 - **Pros**: Simple implementation, explicit error handling
 - **Cons**: No composability, reinventing the wheel, less type-safe
 - **Rejected**: r from flext-core is more robust and feature-complete
@@ -87,7 +97,10 @@ class Result:
 
 ### Basic HTTP Operation
 
-```python
+```python notest
+from __future__ import annotations
+
+
 def get_user(user_id: int) -> p.Result[User]:
     """Get user with railway error handling."""
     return (
@@ -97,15 +110,18 @@ def get_user(user_id: int) -> p.Result[User]:
         .flat_map(lambda resp: parse_json_response(resp))
         .map(lambda data: User(**data))
         .map_error(lambda err: f"User fetch failed: {err}")
-    )```
+    )
+```
+
 ### Usage in Application Code
 
-```python
+```text
+from __future__ import annotations
 # Success path
 result = get_user(123)
 if result.success:
     user = result.unwrap()
-    u.Cli.print(f"Found user: {user.name}")
+    print(f"Found user: {user.name}")
 
 # Error handling
 if result.failure:
@@ -118,10 +134,15 @@ user_profile = (
     .flat_map(lambda user: get_user_profile(user.id))
     .flat_map(lambda profile: enrich_profile(profile))
     .map_error(lambda err: log_and_notify(err))
-)```
+)
+```
+
 ### Testing Railway Code
 
-```python
+```python notest
+from __future__ import annotations
+
+
 def test_get_user_success():
     # Given
     mock_response = MockHttpResponse(status_code=200, body='{"name": "John"}')
@@ -134,6 +155,7 @@ def test_get_user_success():
     assert result.success
     assert result.unwrap().name == "John"
 
+
 def test_get_user_not_found():
     # Given
     client.get.return_value = r.fail("HTTP 404")
@@ -143,7 +165,9 @@ def test_get_user_not_found():
 
     # Then
     assert result.failure
-    assert "404" in result.error```
+    assert "404" in result.error
+```
+
 ## Migration Strategy
 
 ### Phase 1: Core Implementation
@@ -178,7 +202,9 @@ def test_get_user_not_found():
 
 ### Error Message Standards
 
-```python
+```python notest
+from __future__ import annotations
+
 # Good error messages
 r.fail("Invalid user ID: must be positive integer")
 r.fail("HTTP request timeout after 30 seconds")
@@ -186,7 +212,9 @@ r.fail("JSON parsing failed: invalid response format")
 
 # Avoid generic messages
 r.fail("Error")  # Too vague
-r.fail("Something went wrong")  # Not helpful```
+r.fail("Something went wrong")  # Not helpful
+```
+
 ### Performance Considerations
 
 - **Short-Circuiting**: Failed operations don't execute subsequent operations

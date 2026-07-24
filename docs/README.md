@@ -125,6 +125,7 @@ pip install flext-api
 ### Basic HTTP Client Usage
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApi, FlextApiSettings
 
 # Configure client
@@ -135,10 +136,10 @@ api = FlextApi(settings=settings)
 result = api.get("/users")
 if result.success:
     users = result.unwrap()
-    u.Cli.print(f"Found {len(users)} users")
+    print(f"Found {len(users)} users")
 else:
     error = result.error or "unknown error"
-    u.Cli.print(f"Error: {error}")
+    print(f"Error: {error}")
 ```
 
 ### FastAPI Application Setup

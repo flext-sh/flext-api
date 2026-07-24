@@ -30,11 +30,11 @@ This section covers the HTTP middleware and handler system for request/response 
 
 Base class for implementing HTTP middleware with FLEXT patterns.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiMiddleware
 from flext_cli import u
 from flext_core import FlextSettings
-from typing import Callable, Awaitable
 
 
 class LoggingMiddleware(FlextApiMiddleware):
@@ -82,7 +82,8 @@ app.add_middleware(middleware)
 
 Chain multiple middleware components for complex request processing.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import MiddlewarePipeline
 
 # Create middleware pipeline
@@ -115,7 +116,8 @@ async def handle_request(request):
 
 Middleware for handling user authentication and authorization.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import AuthenticationMiddleware
 from flext_cli import u
 from flext_core import FlextSettings
@@ -172,7 +174,8 @@ app.add_middleware(auth_middleware)
 
 ### Authorization Decorator
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import require_roles, require_permissions
 
 
@@ -202,7 +205,8 @@ async def delete_user(
 
 Middleware for preprocessing incoming requests.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import RequestMiddleware
 
 
@@ -246,7 +250,8 @@ class RequestValidationMiddleware(RequestMiddleware):
 
 Middleware for postprocessing outgoing responses.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import ResponseMiddleware
 
 
@@ -281,7 +286,8 @@ class ResponseFormattingMiddleware(ResponseMiddleware):
 
 Middleware for centralized error handling and response formatting.
 
-```python notest
+```text
+from __future__ import annotations
 from flext_api import ErrorHandlingMiddleware
 from flext_api import m
 
@@ -316,7 +322,7 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
 
         return r[dict].ok({
             "status_code": status_code,
-            "response": error_response.dict(),
+            "response": error_response.model_dump(),
         })
 
     def map_exception_to_status(self, exception) -> int:
@@ -343,7 +349,8 @@ class FlextApiErrorHandler(ErrorHandlingMiddleware):
 
 Middleware for monitoring request performance and metrics.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -395,7 +402,8 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 
 ### Complete Middleware Stack
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import (
     MiddlewarePipeline,
     LoggingMiddleware,
@@ -421,7 +429,8 @@ app.middleware("http")(middleware_pipeline.process_request)
 
 ### Custom Middleware Implementation
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiMiddleware
 from flext_cli import u
 from flext_core import FlextSettings
@@ -451,7 +460,8 @@ app.add_middleware(custom_middleware)
 
 ### Middleware with Dependency Injection
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 

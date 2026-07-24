@@ -27,7 +27,8 @@ This section covers the core HTTP client and server classes that form the founda
 
 The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with r patterns.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiClient
 from flext_cli import u
 from flext_core import FlextSettings
@@ -49,9 +50,9 @@ delete_result = client.delete("/users/123")
 # Handle responses
 if get_result.success:
     users = get_result.unwrap()
-    u.Cli.print(f"Found {len(users)} users")
+    print(f"Found {len(users)} users")
 else:
-    u.Cli.print(f"Error: {get_result.error}")
+    print(f"Error: {get_result.error}")
 ```
 
 **Key Features:**
@@ -75,7 +76,9 @@ else:
 
 **GET Requests:**
 
-```python notest
+```python
+from __future__ import annotations
+
 # Simple GET
 result = client.get("/users")
 
@@ -93,7 +96,9 @@ result = client.get(
 
 **POST/PUT Requests:**
 
-```python notest
+```python
+from __future__ import annotations
+
 # POST with JSON data
 user_data = {"name": "Alice", "email": "alice@example.com"}
 result = client.post("/users", json=user_data)
@@ -108,7 +113,9 @@ result = client.put("/users/123", json={"name": "Updated Name"})
 
 **DELETE Requests:**
 
-```python notest
+```python
+from __future__ import annotations
+
 # Simple DELETE
 result = client.delete("/users/123")
 
@@ -122,7 +129,8 @@ result = client.delete("/users/123", json={"reason": "User requested deletion"})
 
 Creates FastAPI applications with FLEXT patterns and configuration.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import create_fastapi_app, FlextApiSettings
 from fastapi import FastAPI
 
@@ -158,7 +166,8 @@ async def health_check():
 
 Pydantic model for API configuration with validation.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiSettings
 
 
@@ -175,9 +184,9 @@ class MyApiConfig(FlextApiSettings):
 
 Type-safe models for HTTP requests and responses using Pydantic v2.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiModels
-from typing import Optional
 
 
 class UserCreateRequest(FlextApiModels.BaseRequest):
@@ -185,7 +194,7 @@ class UserCreateRequest(FlextApiModels.BaseRequest):
 
     name: str = u.Field(..., min_length=1, max_length=100)
     email: str = u.Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
-    age: Optional[int] = u.Field(None, ge=0, le=150)
+    age: int | None = u.Field(None, ge=0, le=150)
 
 
 class UserResponse(FlextApiModels.BaseResponse):
@@ -216,7 +225,8 @@ async def create_user(request: UserCreateRequest):
 
 Standardized error responses across the API.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import ErrorResponse
 
 
@@ -229,7 +239,7 @@ class ValidationErrorResponse(ErrorResponse):
 class AuthenticationErrorResponse(ErrorResponse):
     """Authentication error response."""
 
-    login_url: Optional[str] = None
+    login_url: str | None = None
 
 
 # Usage in exception handlers
@@ -251,7 +261,8 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
 
 Collection of HTTP-related utility functions.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiUtilities
 
 # URL manipulation
@@ -290,7 +301,8 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ### Complete HTTP Client Example
 
-```python notest
+```text
+from __future__ import annotations
 from flext_api import FlextApiClient, FlextApiSettings
 from flext_cli import u
 from flext_core import FlextSettings
@@ -334,24 +346,25 @@ client = UserApiClient()
 users_result = client.get_users(limit=5)
 if users_result.success:
     users = users_result.unwrap()
-    u.Cli.print(f"Retrieved {len(users)} users")
+    print(f"Retrieved {len(users)} users")
 
 # Create user
 new_user = {"name": "John Doe", "email": "john@example.com"}
 create_result = client.create_user(new_user)
 if create_result.success:
     user = create_result.unwrap()
-    u.Cli.print(f"Created user: {user['name']}")
+    print(f"Created user: {user['name']}")
 
 # Error handling
 error_result = client.get_user(99999)
 if error_result.failure:
-    u.Cli.print(f"User not found: {error_result.error}")
+    print(f"User not found: {error_result.error}")
 ```
 
 ### FastAPI Application Example
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import create_fastapi_app, FlextApiSettings
 from flext_cli import u
 from flext_core import FlextSettings

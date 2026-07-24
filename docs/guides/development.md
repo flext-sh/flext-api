@@ -108,6 +108,7 @@ git push origin feature/amazing-feature
 ### Type Safety (ZERO TOLERANCE)
 
 ```python
+from __future__ import annotations
 ```
 
 ## Adding New Projects
@@ -126,6 +127,7 @@ cd flext-newlib
 ### 2. Implement Core Patterns
 
 ```python
+from __future__ import annotations
 ```
 
 ### Test Failures
@@ -153,7 +155,8 @@ poetry env info
 
 ### Code Documentation
 
-```python
+```text
+from __future__ import annotations
 def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     """Process data using the FLEXT pipeline.
 
@@ -172,7 +175,9 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
         ...     processed = result.unwrap()
 
     """
-    # Implementation here```
+    # Implementation here
+```
+
 ### README Updates
 
 Update project README.md files when adding new features:
@@ -180,12 +185,15 @@ Update project README.md files when adding new features:
 - Add a "New Feature" section with usage and configuration examples.
 
 ```python
+from __future__ import annotations
 from flext_newlib import FlextNewlib, FlextNewlibSettings
 
 lib = FlextNewlib()
 result = lib.new_feature()
 
-settings = FlextNewlibSettings(new_setting="value")```
+settings = FlextNewlibSettings(new_setting="value")
+```
+
 ## Contributing
 
 ### Pull Request Process

@@ -219,7 +219,10 @@ flext_api/
 
 #### FlextApi (api.py)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextApi(s[FlextApiSettings]):
     """Thin facade providing access to all FLEXT-API functionality."""
 
@@ -245,7 +248,10 @@ class FlextApi(s[FlextApiSettings]):
 
 #### FlextApiClient (client.py)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextApiClient(s[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
@@ -280,7 +286,8 @@ class FlextApiClient(s[None]):
 
 #### FlextApiModels (models.py)
 
-```python notest
+```python
+from __future__ import annotations
 class FlextApiModels(FlextModels):
     """Pydantic models extending flext-core base classes."""
 
@@ -288,8 +295,8 @@ class FlextApiModels(FlextModels):
         """HTTP request model with validation."""
         method: str
         url: str
-        headers: Dict[str, str] = {}
-        body: Optional[t.JsonValue] = None
+        headers: dict[str, str] = {}
+        body: t.JsonValue | None = None
         timeout: float = 30.0
 
         @u.computed_field
@@ -303,7 +310,7 @@ class FlextApiModels(FlextModels):
     class FlextApiModels.HttpResponse(FlextModels.FlextApiModels.HttpResponse):
         """HTTP response model with validation."""
         status_code: int
-        headers: Dict[str, str]
+        headers: dict[str, str]
         body
         response_time: float
 
@@ -320,7 +327,8 @@ class FlextApiModels(FlextModels):
 
 ### Protocol Architecture
 
-```python notest
+```python
+from __future__ import annotations
 # Protocol base interface
 class Base
     """Abstract base class for all protocols."""
@@ -374,14 +382,15 @@ class FlextWebBase
 
 ### Protocol Registry Pattern
 
-```python notest
+```python
+from __future__ import annotations
 class ProtocolRegistry:
     """Registry for protocol implementations."""
 
     def __init__(self):
-        self._protocols: Dict[str, Type[Base
+        self._protocols: dict[str, type[Base
 
-    def register(self, name: str, protocol_class: Type[Base
+    def register(self, name: str, protocol_class: type[Base
         """Register a protocol implementation."""
         self._protocols[name] = protocol_class
 
@@ -401,7 +410,9 @@ class ProtocolRegistry:
 
 ### FlextContainer Integration
 
-```python notest
+```python
+from __future__ import annotations
+
 # Service registration in FlextApi.__init__
 container = FlextContainer.get_global()
 
@@ -433,7 +444,10 @@ store = storage.unwrap()
 
 ### Railway Pattern Implementation
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # All public methods return r[T]
 def get(self, url: str, **kwargs) -> p.Result[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
@@ -474,36 +488,39 @@ user_data = (
 
 if user_data.success:
     users = user_data.unwrap()
-    u.Cli.print(f"Fetched {len(users)} users")
+    print(f"Fetched {len(users)} users")
 ```
 
 ## Configuration Management
 
 ### Pydantic-based Configuration
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextApiSettings(m.BaseModel):
     """Configuration model with validation."""
 
     model_config = ConfigDict(validate_assignment=True, extra="forbid")
 
     # HTTP client settings
-    base_url: Optional[str] = None
+    base_url: str | None = None
     timeout: float = u.Field(default=30.0, gt=0, le=300)
     max_retries: int = u.Field(default=3, ge=0, le=10)
     retry_delay: float = u.Field(default=1.0, gt=0, le=60)
 
     # Authentication
     auth_type: AuthType = AuthType.NONE
-    api_key: Optional[str] = None
-    jwt_token: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
+    api_key: str | None = None
+    jwt_token: str | None = None
+    username: str | None = None
+    password: str | None = None
 
     # SSL/TLS settings
     verify_ssl: bool = True
-    ssl_cert_path: Optional[str] = None
-    ssl_key_path: Optional[str] = None
+    ssl_cert_path: str | None = None
+    ssl_key_path: str | None = None
 
     # Connection settings
     max_connections: int = u.Field(default=100, gt=0, le=1000)
@@ -538,13 +555,16 @@ class FlextApiSettings(m.BaseModel):
 
 ### Backend Interface Pattern
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
     @abstractmethod
     async def upload_file(
-        self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
+        self, file: BinaryIO, path: str, metadata: Optional[dict[str, str]] = None
     ) -> p.Result[str]:
         """Upload file to storage."""
         pass
@@ -560,7 +580,7 @@ class StorageBackend(ABC):
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> p.Result[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> p.Result[list[FileInfo]]:
         """List files in storage."""
         pass
 
@@ -574,7 +594,7 @@ class StorageBackend(ABC):
 class S3Backend(StorageBackend):
     """Amazon S3 storage backend."""
 
-    def __init__(self, settings: Dict[str, t.JsonValue]):
+    def __init__(self, settings: dict[str, t.JsonValue]):
         self.bucket = settings["bucket"]
         self.client = boto3.client(
             "s3",
@@ -584,7 +604,7 @@ class S3Backend(StorageBackend):
         )
 
     async def upload_file(
-        self, file: BinaryIO, path: str, metadata: Optional[Dict[str, str]] = None
+        self, file: BinaryIO, path: str, metadata: Optional[dict[str, str]] = None
     ) -> p.Result[str]:
         """Upload file to S3."""
         try:
@@ -620,7 +640,10 @@ tests/
 
 ### Test Fixtures and Mocks
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # conftest.py - Shared test fixtures
 @pytest.fixture
 def mock_http_client():
@@ -648,14 +671,17 @@ async def async_client(test_config):
 
 ### Connection Pooling
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class ConnectionPoolManager:
     """HTTP connection pool management."""
 
     def __init__(self, max_connections: int = 100, max_keepalive: int = 20):
         self.max_connections = max_connections
         self.max_keepalive = max_keepalive
-        self._pools: Dict[str, httpx.AsyncClient] = {}
+        self._pools: dict[str, httpx.AsyncClient] = {}
 
     async def get_client(self, base_url: str) -> httpx.AsyncClient:
         """Get or create client for base URL."""
@@ -680,7 +706,10 @@ class ConnectionPoolManager:
 
 ### Response Caching
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class ResponseCache:
     """HTTP response caching with TTL."""
 
@@ -688,13 +717,13 @@ class ResponseCache:
         self.cache = TTLCache(maxsize=max_size, ttl=default_ttl)
         self._lock = asyncio.Lock()
 
-    async def get(self, key: str) -> Optional[CachedResponse]:
+    async def get(self, key: str) -> CachedResponse | None:
         """Get cached response."""
         async with self._lock:
             return self.cache.get(key)
 
     async def set(
-        self, key: str, response: FlextApiModels.HttpResponse, ttl: Optional[int] = None
+        self, key: str, response: FlextApiModels.HttpResponse, ttl: int | None = None
     ):
         """Cache response with optional TTL."""
         async with self._lock:
@@ -707,7 +736,7 @@ class ResponseCache:
             )
             self.cache[key] = cached
 
-    def make_cache_key(self, method: str, url: str, headers: Dict[str, str]) -> str:
+    def make_cache_key(self, method: str, url: str, headers: dict[str, str]) -> str:
         """Generate cache key from request."""
         key_data = f"{method}:{url}:{sorted(headers.items())}"
         return hashlib.sha256(key_data.encode()).hexdigest()
@@ -717,12 +746,15 @@ class ResponseCache:
 
 ### Authentication Handlers
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class AuthenticationManager:
     """Multi-scheme authentication manager."""
 
     def __init__(self):
-        self._handlers: Dict[str, AuthHandler] = {
+        self._handlers: dict[str, AuthHandler] = {
             "jwt": JwtAuthHandler(),
             "api_key": ApiKeyAuthHandler(),
             "basic": BasicAuthHandler(),

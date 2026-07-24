@@ -8,6 +8,7 @@ FLEXT-API exposes two HTTP entry points:
 ## Facade Usage
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApi, FlextApiSettings
 
 settings = FlextApiSettings(base_url="https://api.example.com")
@@ -21,14 +22,15 @@ result = api.get(
 
 if result.success:
     response = result.value
-    u.Cli.print(response.status_code)
+    print(response.status_code)
 else:
-    u.Cli.print(result.error or "request failed")
+    print(result.error or "request failed")
 ```
 
 ## Client Usage
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApiClient, FlextApiSettings, c, m
 
 settings = FlextApiSettings(Api={"base_url": "https://api.example.com"})
@@ -50,6 +52,7 @@ result = client.request(request)
 Use the facade for typical application code:
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApi
 
 api = FlextApi()
@@ -67,11 +70,14 @@ Use `request_kwargs` for query parameters and request options that belong to `m.
 Every call returns `p.Result[m.Api.HttpResponse]`.
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApi
 
 result = FlextApi().get("/health")
 if result.failure:
-    raise RuntimeError(result.error or "HTTP request failed")
+    print(result.error or "HTTP request failed")
+else:
+    response = result.value
 
 response = result.value
 ```

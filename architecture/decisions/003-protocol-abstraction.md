@@ -126,12 +126,15 @@ FLEXT-API will implement a **Protocol Plugin Architecture** with:
 
 ### Protocol Interface
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class Base(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
-    def create_client(self, settings: Dict[str, t.JsonValue]):
+    def create_client(self, settings: dict[str, t.JsonValue]):
         """Create protocol-specific client instance."""
         pass
 
@@ -153,15 +156,18 @@ class Base(ABC):
 
 ### Protocol Registry
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class ProtocolRegistry:
     """Registry for protocol implementations with discovery."""
 
     def __init__(self):
-        self._protocols: Dict[str, Type[Base]] = {}
-        self._capabilities: Dict[str, ProtocolCapabilities] = {}
+        self._protocols: dict[str, type[Base]] = {}
+        self._capabilities: dict[str, ProtocolCapabilities] = {}
 
-    def register(self, name: str, protocol_class: Type[Base]):
+    def register(self, name: str, protocol_class: type[Base]):
         """Register a protocol implementation."""
         self._protocols[name] = protocol_class
         # Cache capabilities for performance
@@ -184,7 +190,10 @@ class ProtocolRegistry:
 
 ### Unified Client Interface
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextApiClient(s[None]):
     """Unified client that delegates to protocol implementations."""
 
@@ -210,11 +219,14 @@ class FlextApiClient(s[None]):
 
 ### HTTP Protocol
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextWeb(Base):
     """HTTP/REST protocol implementation."""
 
-    def create_client(self, settings: Dict[str, t.JsonValue]) -> httpx.AsyncClient:
+    def create_client(self, settings: dict[str, t.JsonValue]) -> httpx.AsyncClient:
         return httpx.AsyncClient(**settings)
 
     async def execute_request(
@@ -256,11 +268,14 @@ class FlextWeb(Base):
 
 ### GraphQL Protocol
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class GraphQL(Base):
     """GraphQL protocol implementation."""
 
-    def create_client(self, settings: Dict[str, t.JsonValue]) -> gql.Client:
+    def create_client(self, settings: dict[str, t.JsonValue]) -> gql.Client:
         transport = AIOHTTPTransport(url=settings["url"])
         return gql.Client(
             transport=transport, execute_timeout=settings.get("timeout", 30)
@@ -294,7 +309,8 @@ class GraphQL(Base):
 
 ### HTTP Usage
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiClient
 
 # HTTP client (default protocol)
@@ -304,7 +320,9 @@ result = await client.get("/users/123")
 
 ### GraphQL Usage
 
-```python notest
+```python
+from __future__ import annotations
+
 # GraphQL client
 client = FlextApiClient(protocol="graphql", url="https://api.example.com/graphql")
 
@@ -322,7 +340,9 @@ result = await client.request("query", query, variables={"id": "123"})
 
 ### WebSocket Usage
 
-```python notest
+```python
+from __future__ import annotations
+
 # WebSocket client
 client = FlextApiClient(protocol="websocket", url="wss://api.example.com/ws")
 await client.connect()
@@ -333,7 +353,10 @@ await client.send({"type": "subscribe", "channel": "updates"})
 
 ### Protocol Isolation Testing
 
-```python notest
+```python
+from __future__ import annotations
+
+
 @pytest.fixture
 def http_protocol():
     return FlextWeb()
@@ -362,7 +385,10 @@ async def test_http_request_success(http_protocol):
 
 ### Integration Testing
 
-```python notest
+```python
+from __future__ import annotations
+
+
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_protocol_registry_integration():
@@ -407,9 +433,12 @@ async def test_protocol_registry_integration():
 
 1. **Implement Protocol Class**:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class Custom(Base):
-    def create_client(self, settings: Dict[str, t.JsonValue]):
+    def create_client(self, settings: dict[str, t.JsonValue]):
         return CustomClient(**settings)
 
     async def execute_request(self, request):
@@ -422,14 +451,18 @@ class Custom(Base):
 
 1. **Register Protocol**:
 
-```python notest
+```python
+from __future__ import annotations
+
 registry = ProtocolRegistry()
 registry.register("custom", Custom)
 ```
 
 1. **Use in Client**:
 
-```python notest
+```python
+from __future__ import annotations
+
 client = FlextApiClient(protocol="custom", **settings)
 ```
 

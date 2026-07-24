@@ -112,14 +112,15 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 **Domain Patterns:**
 
-```python notest
+```python
+from __future__ import annotations
 # HTTP-specific entity
 class FlextWebEndpoint(FlextModels.Entity):
     """HTTP endpoint with routing and validation."""
     path: str
     method: str
-    response_model: Type[BaseModel]
-    middleware: List[Middleware]
+    response_model: type[BaseModel]
+    middleware: list[Middleware]
 
 # HTTP-specific domain service
 class EndpointService(s):
@@ -178,7 +179,8 @@ Protocol Layer
 
 FLEXT-API uses a plugin system for protocol extensibility.
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import ProtocolRegistry
 
 # Register protocols
@@ -203,7 +205,8 @@ registry.register("custom", Custom
 
 ### Protocol Interface
 
-```python notest
+```python
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from flext_cli import u
 from flext_core import FlextSettings
@@ -268,7 +271,10 @@ FlextApiClient
 
 ### Request Processing Pipeline
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # Request processing flow
 @app.middleware("http")
 async def request_pipeline(request, call_next):
@@ -296,7 +302,10 @@ async def request_pipeline(request, call_next):
 
 ### Application Factory Pattern
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
@@ -335,17 +344,18 @@ def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
 
 ### Route Registration
 
-```python notest
+```text
+from __future__ import annotations
 def register_api_routes(app: FastAPI):
     """Register API routes with FLEXT patterns."""
 
     # User routes
-    @app.get("/users", response_model=List[UserResponse])
+    @app.get("/users", response_model=list[UserResponse])
     async def list_users(
         limit: int = 10,
         offset: int = 0,
         current_user: t.JsonMapping = Depends(get_current_user),
-    ) -> List[UserResponse]:
+    ) -> list[UserResponse]:
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
 
@@ -398,7 +408,10 @@ Storage Layer
 
 ### Storage Interface
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
@@ -420,7 +433,7 @@ class StorageBackend(ABC):
         pass
 
     @abstractmethod
-    async def list_files(self, prefix: str = "") -> p.Result[List[FileInfo]]:
+    async def list_files(self, prefix: str = "") -> p.Result[list[FileInfo]]:
         """List files in storage."""
         pass
 
@@ -473,7 +486,8 @@ Caching Strategy
 
 ### Cache Configuration
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiCache
 
 # Redis cache configuration
@@ -541,7 +555,8 @@ Security Layer
 
 ### Security Middleware
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import SecurityMiddleware
 
 
@@ -633,7 +648,8 @@ Performance Layer
 
 ### Performance Monitoring
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import PerformanceMonitoringMiddleware
 
 
@@ -719,7 +735,7 @@ Container Layer
 
 ### Deployment Configuration
 
-```python notest
+```text
 # Docker configuration
 FROM python:3.13-slim
 
@@ -807,7 +823,8 @@ spec:
 
 ### Adding New Protocols
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import Base
 
 
@@ -831,7 +848,8 @@ registry.register("custom", Custom
 
 ### Custom Middleware
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApiMiddleware
 
 
@@ -880,7 +898,10 @@ app.add_middleware(CustomBusinessMiddleware())
 
 ### Monitoring and Optimization
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # Performance monitoring setup
 @app.on_event("startup")
 async def setup_monitoring():
@@ -913,7 +934,8 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```python notest
+```python
+from __future__ import annotations
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
 def create_app(settings: dict) -> FastAPI:

@@ -38,6 +38,7 @@ tests/
 Test individual functions and classes in isolation:
 
 ```python
+from __future__ import annotations
 ```
 
 ### Parallel Test Execution
@@ -55,23 +56,28 @@ pytest -n 4
 ### Pytest Fixtures
 
 ```python
+from __future__ import annotations
 ```
 
 ### Loading Test Data
 
 ```python
+from __future__ import annotations
 import json
 from pathlib import Path
+
 
 def load_test_fixture(fixture_name: str) -> str:
     """Load test fixture from fixtures directory."""
     fixture_path = Path(__file__).parent / "fixtures" / fixture_name
     return fixture_path.read_text()
 
+
 def load_json_fixture(fixture_name: str) -> t.JsonMapping:
     """Load JSON test fixture."""
     fixture_path = Path(__file__).parent / "fixtures" / fixture_name
     return json.loads(fixture_path.read_text())
+
 
 # Usage
 def test_with_fixture():
@@ -81,7 +87,9 @@ def test_with_fixture():
 
     # Use fixture data in test
     result = process_ldif(ldif_content, config_data)
-    assert result.success```
+    assert result.success
+```
+
 ## Continuous Integration
 
 ### GitHub Actions Workflow
@@ -118,30 +126,43 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage.xml```
+          file: ./coverage.xml
+```
+
 ## Best Practices
 
 ### 1. Test Naming
 
 ```python
+from __future__ import annotations
+
+
 # ✅ GOOD - Descriptive test names
 def test_parse_valid_ldif_returns_success():
     """Test that parsing valid LDIF returns success result."""
     pass
 
+
 def test_parse_invalid_ldif_returns_failure():
     """Test that parsing invalid LDIF returns failure result."""
     pass
+
 
 # ❌ BAD - Vague test names
 def test_parse():
     pass
 
+
 def test_ldif():
-    pass```
+    pass
+```
+
 ### 2. Test Organization
 
 ```python
+from __future__ import annotations
+
+
 class TestLdifParsing:
     """Test LDIF parsing functionality."""
 
@@ -157,18 +178,25 @@ class TestLdifParsing:
         """Test parsing invalid LDIF format."""
         pass
 
+
 class TestLdifMigration:
     """Test LDIF migration functionality."""
 
     def test_migrate_oid_to_oud(self):
         """Test OID to OUD migration."""
-        pass```
+        pass
+```
+
 ### 3. Assertion Quality
 
 ```python
+from flext_ldif import ldif
+from __future__ import annotations
+
+
 # ✅ GOOD - Specific assertions
 def test_parse_result():
-    result = ldif.parse(content)
+    result = ldif.parse_string(content)
 
     assert result.success
     entries = result.unwrap()
@@ -179,33 +207,45 @@ def test_parse_result():
 
 # ❌ BAD - Vague assertions
 def test_parse_result():
-    result = ldif.parse(content)
-    assert result  # Too vague```
-
+    result = ldif.parse_string(content)
+    assert result  # Too vague
+```
 
 ### 4. Test Independence
+
 ```python
+from flext_ldif import ldif
+from __future__ import annotations
+from flext_ldif import FlextLdif
+
+
 # ✅ GOOD - Independent tests
 def test_parse_valid_ldif():
-    ldif = ldif()  # Fresh instance
-    result = ldif.parse("dn: test")
+    processor = FlextLdif()  # Fresh instance
+    result = processor.parse_string("dn: test")
     assert result.success
 
+
 def test_parse_invalid_ldif():
-    ldif = ldif()  # Fresh instance
-    result = ldif.parse("invalid")
+    processor = FlextLdif()  # Fresh instance
+    result = processor.parse_string("invalid")
     assert result.failure
 
+
 # ❌ BAD - Dependent tests
-ldif = ldif()  # Shared instance
+processor = FlextLdif()  # Shared instance
+
 
 def test_parse_valid_ldif():
-    result = ldif.parse("dn: test")
+    result = processor.parse_string("dn: test")
     assert result.success
 
+
 def test_parse_invalid_ldif():
-    result = ldif.parse("invalid")
-    assert result.failure```
+    result = processor.parse_string("invalid")
+    assert result.failure
+```
+
 ## Troubleshooting
 
 ### Common Test Issues
@@ -220,11 +260,16 @@ def test_parse_invalid_ldif():
 
 1. **Fixture Not Found**
 
-   ```python notest
-   # Check fixture scope and dependencies
+   ```python
+
+from **future** import annotations
+
+# Check fixture scope and dependencies
+
    @pytest.fixture(scope="function")
    def my_fixture():
        return "value"
+
    ```
 
 1. **Test Timeout**

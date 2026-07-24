@@ -67,6 +67,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 **Domain Patterns:**
 
 ```python
+from __future__ import annotations
 ```
 
 **Key Components:**
@@ -83,36 +84,42 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
+from __future__ import annotations
 ```
 
 ### Request Processing Pipeline
 
 ```python
+from __future__ import annotations
 ```
 
 ### Storage Interface
 
 ```python
+from __future__ import annotations
 ```
 
 ### Cache Configuration
 
 ```python
+from __future__ import annotations
 ```
 
 ### Security Middleware
 
 ```python
+from __future__ import annotations
 ```
 
 ### Performance Monitoring
 
 ```python
+from __future__ import annotations
 ```
 
 ### Deployment Configuration
 
-```python
+```text
 # Docker configuration
 FROM python:3.13-slim
 
@@ -128,7 +135,9 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
 # Start application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]```
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
 ### Kubernetes Deployment
 
 ```yaml
@@ -170,7 +179,9 @@ spec:
               path: /ready
               port: 8000
             initialDelaySeconds: 5
-            periodSeconds: 5```
+            periodSeconds: 5
+```
+
 ## Quality Metrics
 
 ### Current State (v0.12.0-dev)
@@ -197,6 +208,7 @@ spec:
 ### Adding New Protocols
 
 ```python
+from __future__ import annotations
 from flext_api import Base
 
 class CustomBase
@@ -213,11 +225,15 @@ class CustomBase
 
 # Register new protocol
 registry = ProtocolRegistry()
-registry.register("custom", Custom```
+registry.register("custom", Custom
+```
+
 ### Custom Middleware
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApiMiddleware
+
 
 class CustomBusinessMiddleware(FlextApiMiddleware):
     """Custom middleware for business logic."""
@@ -232,8 +248,11 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
 
         return r[dict].ok({})
 
+
 # Register middleware
-app.add_middleware(CustomBusinessMiddleware())```
+app.add_middleware(CustomBusinessMiddleware())
+```
+
 ## Performance Considerations
 
 ### Bottlenecks and Optimization
@@ -262,6 +281,9 @@ app.add_middleware(CustomBusinessMiddleware())```
 ### Monitoring and Optimization
 
 ```python
+from __future__ import annotations
+
+
 # Performance monitoring setup
 @app.on_event("startup")
 async def setup_monitoring():
@@ -271,11 +293,14 @@ async def setup_monitoring():
     # Setup tracing
     tracer.setup(service_name="flext-api")
 
+
 # Performance metrics endpoint
 @app.get("/metrics")
 async def get_metrics():
     """Prometheus metrics endpoint."""
-    return Response(content=metrics.generate_latest(), media_type="text/plain")```
+    return Response(content=metrics.generate_latest(), media_type="text/plain")
+```
+
 ## Migration Guidelines
 
 ### Version Compatibility
@@ -292,6 +317,7 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 **Migration Example:**
 
 ```python
+from __future__ import annotations
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
 def create_app(settings: dict) -> FastAPI:
@@ -300,7 +326,9 @@ def create_app(settings: dict) -> FastAPI:
 # New API (introduced in 0.9.x)
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
-    # New implementation```
+    # New implementation
+```
+
 ## References
 
 - **FLEXT-Core Documentation**: Foundation patterns and infrastructure

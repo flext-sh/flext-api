@@ -24,6 +24,7 @@
 **Required Fixes**:
 
 ```python
+from __future__ import annotations
 ```
 
 > Coverage thresholds are configured in `pyproject.toml` under `[tool.coverage.report]`.
@@ -51,11 +52,13 @@ make test                   # 75%+ coverage (threshold in pyproject.toml)
 #### Response Time Testing
 
 ```python
+from __future__ import annotations
 ```
 
 #### Test Naming Conventions
 
-```python
+```text
+from __future__ import annotations
 # Unit tests
 def test_successful_operation():
 def test_error_handling():
@@ -65,15 +68,20 @@ def test_edge_cases():
 # Integration tests
 def test_real_http_integration():
 def test_end_to_end_workflow():
-def test_system_interaction():```
+def test_system_interaction():
+```
+
 ### Test Data Management
 
 #### Test Data Patterns
 
 ```python
+from __future__ import annotations
+
 # Test data constants
 TEST_BASE_URL = "https://httpbin.org"
 TEST_TIMEOUT = 5.0
+
 
 # Test data factories
 def create_test_user_data(**overrides):
@@ -82,10 +90,13 @@ def create_test_user_data(**overrides):
     base.update(overrides)
     return base
 
+
 # Parameterized test data
 VALID_HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"]
 INVALID_URLS = ["", "not-a-url", "ftp://invalid"]
-HTTP_STATUS_CODES = [200, 201, 400, 401, 404, 500]```
+HTTP_STATUS_CODES = [200, 201, 400, 401, 404, 500]
+```
+
 ## Testing Roadmap
 
 ### Phase 1: Foundation (Current - 28% → 75%)
