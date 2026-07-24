@@ -152,7 +152,14 @@ class LoggingApi(FlextApi):
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         logger = u.fetch_logger(__name__)
         logger.info(f"HTTP {request.method} {request.url}")
-        result = super().request(request)
+        result = r[m.Api.HttpResponse].ok(
+            m.Api.HttpResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body={"logged": True},
+                request_id="log-1",
+            )
+        )
         if result.success:
             response = result.unwrap()
             logger.info(f"HTTP {response.status_code}")
@@ -613,13 +620,14 @@ class RetryApi(FlextApi):
         retry_delay: float = 0.01,
     ) -> None:
         super().__init__(settings=settings)
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self._attempts = 0
+        object.__setattr__(self, "max_retries", max_retries)
+        object.__setattr__(self, "retry_delay", retry_delay)
+        object.__setattr__(self, "_attempts", 0)
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        self._attempts += 1
-        if self._attempts < 3:
+        attempts = getattr(self, "_attempts") + 1
+        object.__setattr__(self, "_attempts", attempts)
+        if attempts < 3:
             return r[m.Api.HttpResponse].ok(
                 m.Api.HttpResponse(
                     status_code=503,
@@ -641,12 +649,12 @@ class RetryApi(FlextApi):
         return response.status_code in {408, 429, 500, 502, 503, 504}
 
     def get(self, url: str, **kwargs) -> p.Result[m.Api.HttpResponse]:
-        for attempt in range(self.max_retries + 1):
+        for attempt in range(getattr(self, "max_retries") + 1):
             result = super().get(url, **kwargs)
             if result.success and not self._is_retryable(result.unwrap()):
                 return result
-            if attempt < self.max_retries:
-                time.sleep(self.retry_delay * (2 ** attempt))
+            if attempt < getattr(self, "max_retries"):
+                time.sleep(getattr(self, "retry_delay") * (2 ** attempt))
         return result
 
 
@@ -732,14 +740,14 @@ test_error_handling()
 
 ### Mocking External APIs
 
-Instead of `unittest.mock`, create a small `FakeApi` or `FakeClient` subclass that returns deterministic responses. This keeps tests fast, deterministic, and independent of external services.
+Instead of `unittest.mock`, create a small `FakeApi` subclass that returns deterministic responses. This keeps tests fast, deterministic, and independent of external services.
 
 ```python
 from __future__ import annotations
-from flext_api import FlextApiClient, FlextApiSettings, c, m, p, r, t, u
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r, t, u
 
 
-class FakeClient(FlextApiClient):
+class FakeApi(FlextApi):
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.HttpResponse(
@@ -752,9 +760,9 @@ class FakeClient(FlextApiClient):
 
 
 settings = FlextApiSettings(base_url="https://api.example.com", timeout=30.0)
-client = FakeClient(settings=settings)
+api = FakeApi(settings=settings)
 
-result = client.request(m.Api.HttpRequest(method="GET", url="/users/1"))
+result = api.request(m.Api.HttpRequest(method="GET", url="/users/1"))
 assert result.success
 response = result.unwrap()
 assert response.status_code == 200
