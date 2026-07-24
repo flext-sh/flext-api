@@ -21,9 +21,9 @@ result = api.get(
 
 if result.success:
     response = result.value
-    print(response.status_code)
+    u.Cli.print(response.status_code)
 else:
-    print(result.error or "request failed")
+    u.Cli.print(result.error or "request failed")
 ```
 
 ## Client Usage

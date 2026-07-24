@@ -73,9 +73,9 @@ with open("document.pdf", "rb") as file:
 
 if upload_result.success:
     file_url = upload_result.unwrap()
-    print(f"File uploaded: {file_url}")
+    u.Cli.print(f"File uploaded: {file_url}")
 else:
-    print(f"Upload failed: {upload_result.error}")
+    u.Cli.print(f"Upload failed: {upload_result.error}")
 ```
 
 **Key Features:**
@@ -169,14 +169,14 @@ download_result = storage.download_file(
 
 if download_result.success:
     file_path = download_result.unwrap()
-    print(f"File downloaded to: {file_path}")
+    u.Cli.print(f"File downloaded to: {file_path}")
 
 # Download to bytes
 download_result = storage.download_to_bytes("documents/report.pdf")
 if download_result.success:
     file_bytes = download_result.unwrap()
     # Process file bytes
-    print(f"Downloaded {len(file_bytes)} bytes")
+    u.Cli.print(f"Downloaded {len(file_bytes)} bytes")
 ```
 
 ### File Management
@@ -189,12 +189,12 @@ files_result = storage.list_files("documents/")
 if files_result.success:
     files = files_result.unwrap()
     for file_info in files:
-        print(f"File: {file_info.name}, Size: {file_info.size} bytes")
+        u.Cli.print(f"File: {file_info.name}, Size: {file_info.size} bytes")
 
 # Delete file
 delete_result = storage.delete_file("documents/old_report.pdf")
 if delete_result.success:
-    print("File deleted successfully")
+    u.Cli.print("File deleted successfully")
 
 # Move/rename file
 move_result = storage.move_file(
@@ -233,9 +233,9 @@ cache.set("user_123", user_data, ttl=300)
 cached_data = cache.get("user_123")
 
 if cached_data:
-    print(f"Cache hit: {cached_data}")
+    u.Cli.print(f"Cache hit: {cached_data}")
 else:
-    print("Cache miss")
+    u.Cli.print("Cache miss")
 ```
 
 **Key Features:**
@@ -303,7 +303,7 @@ if upload_result.success:
     file_url = upload_result.unwrap()
 else:
     # Fallback to secondary backend
-    print(f"Upload failed on primary, trying fallback: {upload_result.error}")
+    u.Cli.print(f"Upload failed on primary, trying fallback: {upload_result.error}")
 ```
 
 ## File Processing

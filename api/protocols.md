@@ -84,8 +84,8 @@ result = http_protocol.execute_request(
 
 if result.success:
     response = result.unwrap()
-    print(f"Status: {response.status_code}")
-    print(f"Data: {response.json()}")
+    u.Cli.print(f"Status: {response.status_code}")
+    u.Cli.print(f"Data: {response.json()}")
 ```
 
 **Key Features:**
@@ -156,7 +156,7 @@ result = graphql_protocol.execute_query(query, variables)
 if result.success:
     data = result.unwrap()
     user = data["user"]
-    print(f"User: {user['name']} ({user['email']})")
+    u.Cli.print(f"User: {user['name']} ({user['email']})")
 ```
 
 **Key Features:**
@@ -233,7 +233,7 @@ if connection_result.success:
         message_result = connection.receive()
         if message_result.success:
             message = message_result.unwrap()
-            print(f"Received: {message}")
+            u.Cli.print(f"Received: {message}")
 
         # Handle connection close
         if connection.is_closed():
@@ -271,8 +271,8 @@ if stream_result.success:
     for event in stream:
         if event.success:
             sse_event = event.unwrap()
-            print(f"Event: {sse_event.event_type}")
-            print(f"Data: {sse_event.data}")
+            u.Cli.print(f"Event: {sse_event.event_type}")
+            u.Cli.print(f"Data: {sse_event.data}")
 
         # Handle stream end
         if stream.is_closed():
@@ -326,7 +326,7 @@ list_result = storage_protocol.list_files("uploads/")
 if list_result.success:
     files = list_result.unwrap()
     for file in files:
-        print(f"File: {file.name} ({file.size} bytes)")
+        u.Cli.print(f"File: {file.name} ({file.size} bytes)")
 ```
 
 **Key Features:**
@@ -364,7 +364,7 @@ response = grpc_stub.call_unary(
 
 if response.success:
     user = response.unwrap()
-    print(f"User: {user.name} ({user.email})")
+    u.Cli.print(f"User: {user.name} ({user.email})")
 ```
 
 ### Protobuf Stub - Binary Serialization
@@ -460,8 +460,8 @@ client = MultiProtocolClient()
 user_rest = client.get_user_http("user_123")
 user_graphql = client.get_user_graphql("user_123")
 
-print(f"REST user: {user_rest['name']}")
-print(f"GraphQL user: {user_graphql['name']}")
+u.Cli.print(f"REST user: {user_rest['name']}")
+u.Cli.print(f"GraphQL user: {user_graphql['name']}")
 ```
 
 ### Protocol Plugin System

@@ -17,7 +17,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
     @staticmethod
     def _emit(message: object) -> None:
         """Render example output through the canonical CLI facade."""
-        u.Cli.formatters_print(str(message))
+        u.Cli.formatters_u.Cli.print(str(message))
 
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""

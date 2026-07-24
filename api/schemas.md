@@ -135,8 +135,8 @@ schema_generator = JsonSchema()
 json_schema = schema_generator.generate_from_model(UserCreateRequest)
 
 # Schema includes validation rules
-print(f"Required fields: {json_schema.required}")
-print(f"Properties: {list(json_schema.properties.keys())}")
+u.Cli.print(f"Required fields: {json_schema.required}")
+u.Cli.print(f"Properties: {list(json_schema.properties.keys())}")
 ```
 
 **Key Features:**
@@ -161,7 +161,7 @@ is_valid = validator.validate(test_data)
 
 if not is_valid:
     errors = validator.get_validation_errors()
-    print(f"Validation errors: {errors}")
+    u.Cli.print(f"Validation errors: {errors}")
 
 # Validate with custom context
 validation_result = validator.validate_with_context(
@@ -284,9 +284,9 @@ openapi_schema.export_to_file("user_api_openapi.yaml")
 json_schema_generator.export_to_file(user_request_schema, "user_request_schema.json")
 json_schema_generator.export_to_file(user_response_schema, "user_response_schema.json")
 
-print("✅ Schema generation complete!")
-print(f"OpenAPI paths: {len(openapi_spec.paths)}")
-print(f"JSON Schema properties: {len(user_request_schema.properties)}")
+u.Cli.print("✅ Schema generation complete!")
+u.Cli.print(f"OpenAPI paths: {len(openapi_spec.paths)}")
+u.Cli.print(f"JSON Schema properties: {len(user_request_schema.properties)}")
 ```
 
 ### Schema Validation in Production

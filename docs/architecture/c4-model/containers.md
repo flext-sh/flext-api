@@ -211,7 +211,7 @@ USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "from flext_api import FlextApiClient; print('OK')"
+    CMD python -c "from flext_api import FlextApiClient; u.Cli.print('OK')"
 
 # Start application
 CMD ["python", "-m", "flext_api.app"]

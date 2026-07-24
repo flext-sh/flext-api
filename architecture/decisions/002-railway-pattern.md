@@ -138,7 +138,7 @@ def get_user(user_id: int) -> p.Result[User]:
 result = get_user(123)
 if result.success:
     user = result.unwrap()
-    print(f"Found user: {user.name}")
+    u.Cli.print(f"Found user: {user.name}")
 
 # Error handling
 if result.failure:

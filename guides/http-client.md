@@ -95,7 +95,7 @@ All HTTP methods return `r[T]` for type-safe error handling.
 result = client.get("/users")
 if result.success:
     users = result.unwrap()
-    print(f"Found {len(users)} users")
+    u.Cli.print(f"Found {len(users)} users")
 
 # GET with query parameters
 result = client.get("/users", params={"limit": 10, "offset": 0, "status": "active"})
@@ -277,9 +277,9 @@ def safe_api_call():
 result = safe_api_call()
 if result.success:
     user = result.unwrap()
-    print(f"User: {user['name']}")
+    u.Cli.print(f"User: {user['name']}")
 else:
-    print(f"Error: {result.error}")
+    u.Cli.print(f"Error: {result.error}")
 ```
 
 ### Error Types and Handling
@@ -293,18 +293,18 @@ try:
 
         # Handle specific HTTP errors
         if error.status_code == 404:
-            print("Resource not found")
+            u.Cli.print("Resource not found")
         elif error.status_code == 401:
-            print("Authentication required")
+            u.Cli.print("Authentication required")
         elif error.status_code == 403:
-            print("Access forbidden")
+            u.Cli.print("Access forbidden")
         elif error.status_code == 429:
-            print("Rate limit exceeded")
+            u.Cli.print("Rate limit exceeded")
         elif error.status_code >= 500:
-            print("Server error")
+            u.Cli.print("Server error")
 
 except Exception as e:
-    print(f"Unexpected error: {e}")
+    u.Cli.print(f"Unexpected error: {e}")
 ```
 
 ## Request Configuration
@@ -400,17 +400,17 @@ if result.success:
     response = result.unwrap()
 
     # Access response data
-    print(f"Status: {response.status_code}")
-    print(f"Headers: {dict(response.headers)}")
-    print(f"Content: {response.text}")
+    u.Cli.print(f"Status: {response.status_code}")
+    u.Cli.print(f"Headers: {dict(response.headers)}")
+    u.Cli.print(f"Content: {response.text}")
 
     # Parse JSON response
     user_data = response.json()
-    print(f"User: {user_data['name']}")
+    u.Cli.print(f"User: {user_data['name']}")
 
     # Access raw response content
     raw_content = response.content
-    print(f"Raw content length: {len(raw_content)}")
+    u.Cli.print(f"Raw content length: {len(raw_content)}")
 ```
 
 ### Response Metadata
@@ -420,15 +420,15 @@ if result.success:
 result = client.get("/slow-endpoint")
 if result.success:
     response = result.unwrap()
-    print(f"Request took: {response.elapsed.total_seconds()}s")
+    u.Cli.print(f"Request took: {response.elapsed.total_seconds()}s")
 
 # Response headers
 result = client.get("/api/data")
 if result.success:
     response = result.unwrap()
-    print(f"Content-Type: {response.headers.get('Content-Type')}")
-    print(f"Cache-Control: {response.headers.get('Cache-Control')}")
-    print(f"ETag: {response.headers.get('ETag')}")
+    u.Cli.print(f"Content-Type: {response.headers.get('Content-Type')}")
+    u.Cli.print(f"Cache-Control: {response.headers.get('Cache-Control')}")
+    u.Cli.print(f"ETag: {response.headers.get('ETag')}")
 ```
 
 ## Advanced Usage Patterns
@@ -464,9 +464,9 @@ results = await batch_create_users(users)
 
 for i, result in enumerate(results):
     if result.success:
-        print(f"✅ Created user {i + 1}")
+        u.Cli.print(f"✅ Created user {i + 1}")
     else:
-        print(f"❌ Failed to create user {i + 1}: {result.error}")
+        u.Cli.print(f"❌ Failed to create user {i + 1}: {result.error}")
 ```
 
 ### Pagination
@@ -500,7 +500,7 @@ def get_all_users(page_size: int = 50) -> List[dict]:
 
 # Usage
 users = get_all_users(page_size=100)
-print(f"Total users: {len(users)}")
+u.Cli.print(f"Total users: {len(users)}")
 ```
 
 ### Retry Logic
@@ -755,9 +755,9 @@ import socket
 
 try:
     socket.create_connection(("api.example.com", 443), timeout=5)
-    print("Network connection OK")
+    u.Cli.print("Network connection OK")
 except OSError:
-    print("Network connection failed")
+    u.Cli.print("Network connection failed")
 ```
 
 **2. SSL Certificate Errors**
@@ -784,7 +784,7 @@ if result.failure and result.error.status_code == 429:
     retry_after = result.error.headers.get("Retry-After")
     if retry_after:
         wait_time = int(retry_after)
-        print(f"Rate limited. Retry after {wait_time} seconds")
+        u.Cli.print(f"Rate limited. Retry after {wait_time} seconds")
         time.sleep(wait_time)
 ```
 

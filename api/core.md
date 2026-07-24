@@ -65,9 +65,9 @@ delete_result = client.delete("/users/123")
 # Handle responses
 if get_result.success:
     users = get_result.unwrap()
-    print(f"Found {len(users)} users")
+    u.Cli.print(f"Found {len(users)} users")
 else:
-    print(f"Error: {get_result.error}")
+    u.Cli.print(f"Error: {get_result.error}")
 ```
 
 **Key Features:**
@@ -367,19 +367,19 @@ client = UserApiClient()
 users_result = client.get_users(limit=5)
 if users_result.success:
     users = users_result.unwrap()
-    print(f"Retrieved {len(users)} users")
+    u.Cli.print(f"Retrieved {len(users)} users")
 
 # Create user
 new_user = {"name": "John Doe", "email": "john@example.com"}
 create_result = client.create_user(new_user)
 if create_result.success:
     user = create_result.unwrap()
-    print(f"Created user: {user['name']}")
+    u.Cli.print(f"Created user: {user['name']}")
 
 # Error handling
 error_result = client.get_user(99999)
 if error_result.failure:
-    print(f"User not found: {error_result.error}")
+    u.Cli.print(f"User not found: {error_result.error}")
 ```
 
 ### FastAPI Application Example

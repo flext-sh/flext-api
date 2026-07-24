@@ -135,10 +135,10 @@ api = FlextApi(settings=settings)
 result = api.get("/users")
 if result.success:
     users = result.unwrap()
-    print(f"Found {len(users)} users")
+    u.Cli.print(f"Found {len(users)} users")
 else:
     error = result.error or "unknown error"
-    print(f"Error: {error}")
+    u.Cli.print(f"Error: {error}")
 ```
 
 ### FastAPI Application Setup

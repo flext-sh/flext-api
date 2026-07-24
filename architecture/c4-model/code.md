@@ -474,7 +474,7 @@ user_data = (
 
 if user_data.success:
     users = user_data.unwrap()
-    print(f"Fetched {len(users)} users")
+    u.Cli.print(f"Fetched {len(users)} users")
 ```
 
 ## Configuration Management
