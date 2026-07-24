@@ -226,6 +226,9 @@ class FakeHttpClient(FlextApiClient):
         )
 
 
+FakeHttpClient.model_rebuild()
+
+
 class UserApiClient:
     """Client supporting HTTP operations through the real FLEXT-API facade."""
 
