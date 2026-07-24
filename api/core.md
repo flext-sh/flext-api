@@ -1,21 +1,22 @@
 # Core API Reference
 
 <!-- TOC START -->
-- [Core HTTP Client](#core-http-client)
-  - [FlextApiClient - Main HTTP Client](#flextapiclient-main-http-client)
-  - [HTTP Methods](#http-methods)
-- [FastAPI Application Factory](#fastapi-application-factory)
-  - [create_fastapi_app() - Application Factory](#createfastapiapp-application-factory)
-  - [FlextApiSettings - Configuration Model](#flextapisettings-configuration-model)
-- [HTTP Models and Schemas](#http-models-and-schemas)
-  - [Request/Response Models](#requestresponse-models)
-  - [Error Response Models](#error-response-models)
-- [HTTP Utilities](#http-utilities)
-  - [FlextApiUtilities - Helper Functions](#flextapiutilities-helper-functions)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete HTTP Client Example](#complete-http-client-example)
-  - [FastAPI Application Example](#fastapi-application-example)
+- [Core API Reference](#core-api-reference)
+  - [Core HTTP Client](#core-http-client)
+    - [FlextApiClient - Main HTTP Client](#flextapiclient---main-http-client)
+    - [HTTP Methods](#http-methods)
+  - [FastAPI Application Factory](#fastapi-application-factory)
+    - [create\_fastapi\_app() - Application Factory](#create_fastapi_app---application-factory)
+    - [FlextApiSettings - Configuration Model](#flextapisettings---configuration-model)
+  - [HTTP Models and Schemas](#http-models-and-schemas)
+    - [Request/Response Models](#requestresponse-models)
+    - [Error Response Models](#error-response-models)
+  - [HTTP Utilities](#http-utilities)
+    - [FlextApiUtilities - Helper Functions](#flextapiutilities---helper-functions)
+  - [Quality Metrics](#quality-metrics)
+  - [Usage Examples](#usage-examples)
+    - [Complete HTTP Client Example](#complete-http-client-example)
+    - [FastAPI Application Example](#fastapi-application-example)
 <!-- TOC END -->
 
 This section covers the core HTTP client and server classes that form the foundation of FLEXT-API.
@@ -28,25 +29,8 @@ The primary HTTP client for all HTTP operations within the FLEXT ecosystem, prov
 
 ```python notest
 from flext_api import FlextApiClient
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 # Create client instance
 client = FlextApiClient(
@@ -294,8 +278,8 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ## Quality Metrics
 
-| Module         | Coverage | Status   | Description                 |
-| -------------- | -------- | -------- | --------------------------- |
+| Module         | Coverage | Status    | Description                 |
+| -------------- | -------- | --------- | --------------------------- |
 | `client.py`    | 95%      | ✅ Stable | HTTP client implementation  |
 | `app.py`       | 90%      | ✅ Stable | FastAPI application factory |
 | `models.py`    | 85%      | ✅ Good   | HTTP models and schemas     |
@@ -308,25 +292,8 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ```python notest
 from flext_api import FlextApiClient, FlextApiSettings
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class UserApiClient(FlextApiClient):
@@ -386,25 +353,8 @@ if error_result.failure:
 
 ```python notest
 from flext_api import create_fastapi_app, FlextApiSettings
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from fastapi import HTTPException, Depends
 
 # Configuration

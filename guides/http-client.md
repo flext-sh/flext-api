@@ -1,37 +1,38 @@
 # HTTP Client Guide
 
 <!-- TOC START -->
-- [HTTP Client Basics](#http-client-basics)
-  - [Creating HTTP Clients](#creating-http-clients)
-  - [HTTP Methods](#http-methods)
-- [Advanced HTTP Features](#advanced-http-features)
-  - [Request/Response Interceptors](#requestresponse-interceptors)
-  - [Custom Headers and Authentication](#custom-headers-and-authentication)
-- [Error Handling](#error-handling)
-  - [Railway Pattern Error Handling](#railway-pattern-error-handling)
-  - [Error Types and Handling](#error-types-and-handling)
-- [Request Configuration](#request-configuration)
-  - [Query Parameters](#query-parameters)
-  - [Request Body Data](#request-body-data)
-  - [Custom Headers](#custom-headers)
-- [Response Handling](#response-handling)
-  - [Response Processing](#response-processing)
-  - [Response Metadata](#response-metadata)
-- [Advanced Usage Patterns](#advanced-usage-patterns)
-  - [Batch Operations](#batch-operations)
-  - [Pagination](#pagination)
-  - [Retry Logic](#retry-logic)
-- [Testing HTTP Clients](#testing-http-clients)
-  - [Test Client Setup](#test-client-setup)
-  - [Mocking External APIs](#mocking-external-apis)
-- [Performance Optimization](#performance-optimization)
-  - [Connection Pooling](#connection-pooling)
-  - [Request Batching](#request-batching)
-- [Security Best Practices](#security-best-practices)
-  - [Secure Communication](#secure-communication)
-  - [Sensitive Data Handling](#sensitive-data-handling)
-- [Troubleshooting](#troubleshooting)
-  - [Common Issues](#common-issues)
+- [HTTP Client Guide](#http-client-guide)
+  - [HTTP Client Basics](#http-client-basics)
+    - [Creating HTTP Clients](#creating-http-clients)
+    - [HTTP Methods](#http-methods)
+  - [Advanced HTTP Features](#advanced-http-features)
+    - [Request/Response Interceptors](#requestresponse-interceptors)
+    - [Custom Headers and Authentication](#custom-headers-and-authentication)
+  - [Error Handling](#error-handling)
+    - [Railway Pattern Error Handling](#railway-pattern-error-handling)
+    - [Error Types and Handling](#error-types-and-handling)
+  - [Request Configuration](#request-configuration)
+    - [Query Parameters](#query-parameters)
+    - [Request Body Data](#request-body-data)
+    - [Custom Headers](#custom-headers)
+  - [Response Handling](#response-handling)
+    - [Response Processing](#response-processing)
+    - [Response Metadata](#response-metadata)
+  - [Advanced Usage Patterns](#advanced-usage-patterns)
+    - [Batch Operations](#batch-operations)
+    - [Pagination](#pagination)
+    - [Retry Logic](#retry-logic)
+  - [Testing HTTP Clients](#testing-http-clients)
+    - [Test Client Setup](#test-client-setup)
+    - [Mocking External APIs](#mocking-external-apis)
+  - [Performance Optimization](#performance-optimization)
+    - [Connection Pooling](#connection-pooling)
+    - [Request Batching](#request-batching)
+  - [Security Best Practices](#security-best-practices)
+    - [Secure Communication](#secure-communication)
+    - [Sensitive Data Handling](#sensitive-data-handling)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
 <!-- TOC END -->
 
 Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, error handling, and advanced features.
@@ -42,25 +43,8 @@ Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, e
 
 ```python notest
 from flext_api import FlextApiClient
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 # Basic client
 client = FlextApiClient(
@@ -127,25 +111,8 @@ Add custom logic before and after HTTP requests.
 
 ```python notest
 from flext_api import FlextApiClient
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class LoggingClient(FlextApiClient):
@@ -233,25 +200,8 @@ client = FlextApiClient(base_url="https://api.example.com", auth=custom_auth)
 FLEXT-API uses the railway pattern for type-safe error handling.
 
 ```python notest
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 def safe_api_call():
@@ -507,25 +457,8 @@ u.Cli.print(f"Total users: {len(users)}")
 
 ```python notest
 from flext_api import FlextApiClient
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class RetryClient(FlextApiClient):

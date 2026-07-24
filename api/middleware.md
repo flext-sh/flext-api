@@ -1,24 +1,25 @@
 # Middleware API Reference
 
 <!-- TOC START -->
-- [HTTP Middleware System](#http-middleware-system)
-  - [FlextApiMiddleware - Base Middleware Class](#flextapimiddleware-base-middleware-class)
-  - [Middleware Pipeline](#middleware-pipeline)
-- [Authentication Middleware](#authentication-middleware)
-  - [AuthenticationMiddleware - User Authentication](#authenticationmiddleware-user-authentication)
-  - [Authorization Decorator](#authorization-decorator)
-- [Request/Response Processing](#requestresponse-processing)
-  - [RequestMiddleware - Request Processing](#requestmiddleware-request-processing)
-  - [ResponseMiddleware - Response Processing](#responsemiddleware-response-processing)
-- [Error Handling Middleware](#error-handling-middleware)
-  - [ErrorHandlingMiddleware - Exception Processing](#errorhandlingmiddleware-exception-processing)
-- [Performance Middleware](#performance-middleware)
-  - [PerformanceMonitoringMiddleware - Performance Tracking](#performancemonitoringmiddleware-performance-tracking)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete Middleware Stack](#complete-middleware-stack)
-  - [Custom Middleware Implementation](#custom-middleware-implementation)
-  - [Middleware with Dependency Injection](#middleware-with-dependency-injection)
+- [Middleware API Reference](#middleware-api-reference)
+  - [HTTP Middleware System](#http-middleware-system)
+    - [FlextApiMiddleware - Base Middleware Class](#flextapimiddleware---base-middleware-class)
+    - [Middleware Pipeline](#middleware-pipeline)
+  - [Authentication Middleware](#authentication-middleware)
+    - [AuthenticationMiddleware - User Authentication](#authenticationmiddleware---user-authentication)
+    - [Authorization Decorator](#authorization-decorator)
+  - [Request/Response Processing](#requestresponse-processing)
+    - [RequestMiddleware - Request Processing](#requestmiddleware---request-processing)
+    - [ResponseMiddleware - Response Processing](#responsemiddleware---response-processing)
+  - [Error Handling Middleware](#error-handling-middleware)
+    - [ErrorHandlingMiddleware - Exception Processing](#errorhandlingmiddleware---exception-processing)
+  - [Performance Middleware](#performance-middleware)
+    - [PerformanceMonitoringMiddleware - Performance Tracking](#performancemonitoringmiddleware---performance-tracking)
+  - [Quality Metrics](#quality-metrics)
+  - [Usage Examples](#usage-examples)
+    - [Complete Middleware Stack](#complete-middleware-stack)
+    - [Custom Middleware Implementation](#custom-middleware-implementation)
+    - [Middleware with Dependency Injection](#middleware-with-dependency-injection)
 <!-- TOC END -->
 
 This section covers the HTTP middleware and handler system for request/response processing, authentication, logging, and cross-cutting concerns.
@@ -31,25 +32,8 @@ Base class for implementing HTTP middleware with FLEXT patterns.
 
 ```python notest
 from flext_api import FlextApiMiddleware
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from typing import Callable, Awaitable
 
 
@@ -133,25 +117,8 @@ Middleware for handling user authentication and authorization.
 
 ```python notest
 from flext_api import AuthenticationMiddleware
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class JwtAuthenticationMiddleware(AuthenticationMiddleware):
@@ -416,8 +383,8 @@ class RequestPerformanceMiddleware(PerformanceMonitoringMiddleware):
 
 ## Quality Metrics
 
-| Module                         | Coverage | Status   | Description                   |
-| ------------------------------ | -------- | -------- | ----------------------------- |
+| Module                         | Coverage | Status    | Description                   |
+| ------------------------------ | -------- | --------- | ----------------------------- |
 | `middleware/__init__.py`       | 90%      | ✅ Stable | Base middleware classes       |
 | `middleware/auth.py`           | 85%      | ✅ Good   | Authentication middleware     |
 | `middleware/validation.py`     | 88%      | ✅ Good   | Request validation middleware |
@@ -456,25 +423,8 @@ app.middleware("http")(middleware_pipeline.process_request)
 
 ```python notest
 from flext_api import FlextApiMiddleware
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class CustomHeaderMiddleware(FlextApiMiddleware):
@@ -502,25 +452,8 @@ app.add_middleware(custom_middleware)
 ### Middleware with Dependency Injection
 
 ```python notest
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class DatabaseMiddleware(FlextApiMiddleware):

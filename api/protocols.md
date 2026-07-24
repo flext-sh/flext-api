@@ -1,26 +1,27 @@
 # Protocols API Reference
 
 <!-- TOC START -->
-- [Protocol Architecture](#protocol-architecture)
-- [HTTP Protocol Implementation](#http-protocol-implementation)
-  - [FlextWebREST Implementation](#flextwebrest-implementation)
-  - [HTTP Request/Response Models](#http-requestresponse-models)
-- [GraphQL Protocol Implementation](#graphql-protocol-implementation)
-  - [GraphQLQL Support](#graphqlql-support)
-  - [GraphQL Operations](#graphql-operations)
-- [WebSocket Protocol Implementation](#websocket-protocol-implementation)
-  - [WebSockettime Communication](#websockettime-communication)
-- [Server-Sent Events Protocol](#server-sent-events-protocol)
-  - [ServerSentEventay Streaming](#serversenteventay-streaming)
-- [Storage Backend Protocol](#storage-backend-protocol)
-  - [StorageBackendObject Storage](#storagebackendobject-storage)
-- [Protocol Stubs](#protocol-stubs)
-  - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub-grpc-protocol-buffers)
-  - [Protobuf Stub - Binary Serialization](#protobuf-stub-binary-serialization)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Multi-Protocol API Client](#multi-protocol-api-client)
-  - [Protocol Plugin System](#protocol-plugin-system)
+- [Protocols API Reference](#protocols-api-reference)
+  - [Protocol Architecture](#protocol-architecture)
+  - [HTTP Protocol Implementation](#http-protocol-implementation)
+    - [FlextWebREST Implementation](#flextwebrest-implementation)
+    - [HTTP Request/Response Models](#http-requestresponse-models)
+  - [GraphQL Protocol Implementation](#graphql-protocol-implementation)
+    - [GraphQLQL Support](#graphqlql-support)
+    - [GraphQL Operations](#graphql-operations)
+  - [WebSocket Protocol Implementation](#websocket-protocol-implementation)
+    - [WebSockettime Communication](#websockettime-communication)
+  - [Server-Sent Events Protocol](#server-sent-events-protocol)
+    - [ServerSentEventay Streaming](#serversenteventay-streaming)
+  - [Storage Backend Protocol](#storage-backend-protocol)
+    - [StorageBackendObject Storage](#storagebackendobject-storage)
+  - [Protocol Stubs](#protocol-stubs)
+    - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub---grpc-protocol-buffers)
+    - [Protobuf Stub - Binary Serialization](#protobuf-stub---binary-serialization)
+  - [Quality Metrics](#quality-metrics)
+  - [Usage Examples](#usage-examples)
+    - [Multi-Protocol API Client](#multi-protocol-api-client)
+    - [Protocol Plugin System](#protocol-plugin-system)
 <!-- TOC END -->
 
 This section covers the protocol implementations and stubs that enable FLEXT-API to support multiple communication protocols through a plugin architecture.
@@ -50,25 +51,8 @@ Primary protocol implementation for REST APIs and HTTP-based communication.
 
 ```python notest
 from flext_api import FlextWeb
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 # Create HTTP protocol instance
 http_protocol = FlextWeb
@@ -387,15 +371,15 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ## Quality Metrics
 
-| Module                              | Coverage | Status   | Description                                   |
-| ----------------------------------- | -------- | -------- | --------------------------------------------- |
-| `protocol_impls/http.py`            | 90%      | ✅ Stable | HTTP/REST implementation                      |
-| `protocol_impls/graphql.py`         | 85%      | ✅ Good   | GraphQL query/mutation support                |
-| `protocol_impls/websocket.py`       | 88%      | ✅ Good   | WebSocket real-time communication             |
-| `protocol_impls/sse.py`             | 82%      | ✅ Good   | Server-sent events streaming                  |
+| Module                              | Coverage | Status    | Description                          |
+| ----------------------------------- | -------- | --------- | ------------------------------------ |
+| `protocol_impls/http.py`            | 90%      | ✅ Stable | HTTP/REST implementation             |
+| `protocol_impls/graphql.py`         | 85%      | ✅ Good   | GraphQL query/mutation support       |
+| `protocol_impls/websocket.py`       | 88%      | ✅ Good   | WebSocket real-time communication    |
+| `protocol_impls/sse.py`             | 82%      | ✅ Good   | Server-sent events streaming         |
 | `protocol_impls/storage_backend.py` | 87%      | ✅ Good   | File/t.JsonValue storage abstraction |
-| `protocol_stubs/grpc_stub.py`       | 80%      | ✅ Good   | gRPC protocol buffer support                  |
-| `protocol_stubs/protobuf_stub.py`   | 85%      | ✅ Good   | Binary serialization                          |
+| `protocol_stubs/grpc_stub.py`       | 80%      | ✅ Good   | gRPC protocol buffer support         |
+| `protocol_stubs/protobuf_stub.py`   | 85%      | ✅ Good   | Binary serialization                 |
 
 ## Usage Examples
 

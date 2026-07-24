@@ -1,48 +1,49 @@
 # Architecture Overview
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [Layer Details](#layer-details)
-  - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
-  - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
-  - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
-- [Protocol Plugin System](#protocol-plugin-system)
-  - [Protocol Registry](#protocol-registry)
-  - [Protocol Interface](#protocol-interface)
-- [HTTP Client Architecture](#http-client-architecture)
-  - [FlextApiClient Design](#flextapiclient-design)
-  - [Request Processing Pipeline](#request-processing-pipeline)
-- [FastAPI Integration Architecture](#fastapi-integration-architecture)
-  - [Application Factory Pattern](#application-factory-pattern)
-  - [Route Registration](#route-registration)
-- [Storage Architecture](#storage-architecture)
-  - [Multi-Backend Storage](#multi-backend-storage)
-  - [Storage Interface](#storage-interface)
-- [Caching Architecture](#caching-architecture)
-  - [Multi-Level Caching](#multi-level-caching)
-  - [Cache Configuration](#cache-configuration)
-- [Security Architecture](#security-architecture)
-  - [Authentication and Authorization](#authentication-and-authorization)
-  - [Security Middleware](#security-middleware)
-- [Performance Architecture](#performance-architecture)
-  - [Performance Optimization Strategies](#performance-optimization-strategies)
-  - [Performance Monitoring](#performance-monitoring)
-- [Deployment Architecture](#deployment-architecture)
-  - [Container Architecture](#container-architecture)
-  - [Deployment Configuration](#deployment-configuration)
-  - [Kubernetes Deployment](#kubernetes-deployment)
-- [Quality Metrics](#quality-metrics)
-  - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
-  - [Coverage by Layer](#coverage-by-layer)
-- [Extension Points](#extension-points)
-  - [Adding New Protocols](#adding-new-protocols)
-  - [Custom Middleware](#custom-middleware)
-- [Performance Considerations](#performance-considerations)
-  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
-  - [Monitoring and Optimization](#monitoring-and-optimization)
-- [Migration Guidelines](#migration-guidelines)
-  - [Version Compatibility](#version-compatibility)
-- [References](#references)
+- [Architecture Overview](#architecture-overview)
+  - [Overview](#overview)
+  - [Layer Details](#layer-details)
+    - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
+    - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
+    - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
+  - [Protocol Plugin System](#protocol-plugin-system)
+    - [Protocol Registry](#protocol-registry)
+    - [Protocol Interface](#protocol-interface)
+  - [HTTP Client Architecture](#http-client-architecture)
+    - [FlextApiClient Design](#flextapiclient-design)
+    - [Request Processing Pipeline](#request-processing-pipeline)
+  - [FastAPI Integration Architecture](#fastapi-integration-architecture)
+    - [Application Factory Pattern](#application-factory-pattern)
+    - [Route Registration](#route-registration)
+  - [Storage Architecture](#storage-architecture)
+    - [Multi-Backend Storage](#multi-backend-storage)
+    - [Storage Interface](#storage-interface)
+  - [Caching Architecture](#caching-architecture)
+    - [Multi-Level Caching](#multi-level-caching)
+    - [Cache Configuration](#cache-configuration)
+  - [Security Architecture](#security-architecture)
+    - [Authentication and Authorization](#authentication-and-authorization)
+    - [Security Middleware](#security-middleware)
+  - [Performance Architecture](#performance-architecture)
+    - [Performance Optimization Strategies](#performance-optimization-strategies)
+    - [Performance Monitoring](#performance-monitoring)
+  - [Deployment Architecture](#deployment-architecture)
+    - [Container Architecture](#container-architecture)
+    - [Deployment Configuration](#deployment-configuration)
+    - [Kubernetes Deployment](#kubernetes-deployment)
+  - [Quality Metrics](#quality-metrics)
+    - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
+    - [Coverage by Layer](#coverage-by-layer)
+  - [Extension Points](#extension-points)
+    - [Adding New Protocols](#adding-new-protocols)
+    - [Custom Middleware](#custom-middleware)
+  - [Performance Considerations](#performance-considerations)
+    - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
+    - [Monitoring and Optimization](#monitoring-and-optimization)
+  - [Migration Guidelines](#migration-guidelines)
+    - [Version Compatibility](#version-compatibility)
+  - [References](#references)
 <!-- TOC END -->
 
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
@@ -204,25 +205,8 @@ registry.register("custom", Custom
 
 ```python notest
 from abc import ABC, abstractmethod
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class Base
@@ -802,18 +786,18 @@ spec:
 
 ### Current State (v0.12.0-dev)
 
-| Metric              | Value | Target (1.0.0) | Status        |
-| ------------------- | ----- | -------------- | ------------- |
+| Metric              | Value | Target (1.0.0) | Status          |
+| ------------------- | ----- | -------------- | --------------- |
 | **Test Coverage**   | 85%   | 90%+           | 🔄 Improving   |
 | **Total Tests**     | 334   | 400+           | 🔄 In Progress |
-| **Ruff Violations** | 0     | 0              | ✅ Complete    |
-| **Type Errors**     | 0     | 0              | ✅ Complete    |
-| **Modules**         | 25    | 25 (stable)    | ✅ Complete    |
+| **Ruff Violations** | 0     | 0              | ✅ Complete     |
+| **Type Errors**     | 0     | 0              | ✅ Complete     |
+| **Modules**         | 25    | 25 (stable)    | ✅ Complete     |
 
 ### Coverage by Layer
 
-| Layer           | Coverage | Status      | Description                    |
-| --------------- | -------- | ----------- | ------------------------------ |
+| Layer           | Coverage | Status       | Description                    |
+| --------------- | -------- | ------------ | ------------------------------ |
 | **Foundation**  | 90%+     | ✅ Excellent | Core HTTP client and utilities |
 | **Domain**      | 80-85%   | ✅ Good      | HTTP models and validation     |
 | **Application** | 85-90%   | ✅ Good      | Protocol implementations       |

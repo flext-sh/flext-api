@@ -1,24 +1,25 @@
 # Storage API Reference
 
 <!-- TOC START -->
-- [HTTP Storage System](#http-storage-system)
-  - [FlextApiStorage - File Storage Management](#flextapistorage-file-storage-management)
-  - [Storage Configuration](#storage-configuration)
-- [File Operations](#file-operations)
-  - [Upload Operations](#upload-operations)
-  - [Download Operations](#download-operations)
-  - [File Management](#file-management)
-- [Caching System](#caching-system)
-  - [FlextApiCache - Response Caching](#flextapicache-response-caching)
-  - [Cache Strategies](#cache-strategies)
-- [Distributed Storage](#distributed-storage)
-  - [Multi-Backend Storage](#multi-backend-storage)
-- [File Processing](#file-processing)
-  - [FlextFileProcessor - File Processing Pipeline](#flextfileprocessor-file-processing-pipeline)
-- [Quality Metrics](#quality-metrics)
-- [Usage Examples](#usage-examples)
-  - [Complete File Upload System](#complete-file-upload-system)
-  - [Caching with Storage Integration](#caching-with-storage-integration)
+- [Storage API Reference](#storage-api-reference)
+  - [HTTP Storage System](#http-storage-system)
+    - [FlextApiStorage - File Storage Management](#flextapistorage---file-storage-management)
+    - [Storage Configuration](#storage-configuration)
+  - [File Operations](#file-operations)
+    - [Upload Operations](#upload-operations)
+    - [Download Operations](#download-operations)
+    - [File Management](#file-management)
+  - [Caching System](#caching-system)
+    - [FlextApiCache - Response Caching](#flextapicache---response-caching)
+    - [Cache Strategies](#cache-strategies)
+  - [Distributed Storage](#distributed-storage)
+    - [Multi-Backend Storage](#multi-backend-storage)
+  - [File Processing](#file-processing)
+    - [FlextFileProcessor - File Processing Pipeline](#flextfileprocessor---file-processing-pipeline)
+  - [Quality Metrics](#quality-metrics)
+  - [Usage Examples](#usage-examples)
+    - [Complete File Upload System](#complete-file-upload-system)
+    - [Caching with Storage Integration](#caching-with-storage-integration)
 <!-- TOC END -->
 
 This section covers the HTTP storage and caching system for file uploads, downloads, and distributed storage backends.
@@ -31,25 +32,8 @@ Main storage interface for handling file uploads, downloads, and metadata operat
 
 ```python notest
 from flext_api import FlextApiStorage
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 # Create storage instance
 storage = FlextApiStorage(
@@ -353,8 +337,8 @@ async def upload_image(file: UploadFile = File(...)):
 
 ## Quality Metrics
 
-| Module                 | Coverage | Status   | Description                     |
-| ---------------------- | -------- | -------- | ------------------------------- |
+| Module                 | Coverage | Status    | Description                     |
+| ---------------------- | -------- | --------- | ------------------------------- |
 | `storage/__init__.py`  | 92%      | ✅ Stable | Main storage interface          |
 | `storage/cache.py`     | 88%      | ✅ Good   | HTTP response caching           |
 | `storage/backends.py`  | 85%      | ✅ Good   | Storage backend implementations |
