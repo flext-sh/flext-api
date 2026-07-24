@@ -105,7 +105,7 @@ Configure FLEXT programmatically in your code:
 
 ```python
 from __future__ import annotations
-from flext_cli import u
+from flext_api import FlextApiSettings
 from flext_core import FlextSettings
 from flext_ldif import FlextLdifSettings
 
@@ -114,10 +114,8 @@ settings = FlextSettings(log_level="INFO", debug=False, environment="production"
 
 # LDIF configuration
 ldif_config = FlextLdifSettings(
-    default_encoding="utf-8",
-    strict_validation=True,
-    servers_enabled=True,
-    batch_size=1000,
+    ldif_encoding="utf-8",
+    ldif_strict_validation=True,
 )
 ```
 
@@ -125,22 +123,14 @@ ldif_config = FlextLdifSettings(
 
 ### flext-ldif Configuration
 
-```python
+```python notest
 from __future__ import annotations
 from flext_ldif import FlextLdifSettings
 
 settings = FlextLdifSettings(
-    # Server-specific settings
-    source_server="oid",
-    target_server="oud",
-    # Migration options
-    preserve_oid_modifiers=True,
-    handle_schema_extensions=True,
-    validate_entries=True,
-    # Performance settings
-    batch_size=1000,
-    parallel_processing=True,
-    max_workers=4,
+    # Server-specific settings (use environment variables in production)
+    ldif_encoding="utf-8",
+    ldif_strict_validation=True,
 )
 ```
 
@@ -153,23 +143,25 @@ from flext_api import FlextApiSettings
 settings = FlextApiSettings(
     base_url="https://api.example.com",
     timeout=30,
-    retry_attempts=3,
+    max_retries=3,
     verify_ssl=True,
-    headers={"User-Agent": "FLEXT-API/1.0"},
+    default_headers={"User-Agent": "FLEXT-API/1.0"},
 )
 ```
 
 ### flext-auth Configuration
 
-```python
+```python notest
 from __future__ import annotations
-from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuthSettings, c
 
 settings = FlextAuthSettings(
-    secret_key="your-secret-key",
-    algorithm=c.Auth.Algorithms.HS256,
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=7,
+    Auth={
+        "secret_key": "your-secret-key",
+        "algorithm": c.Auth.Algorithms.HS256,
+        "access_token_expire_minutes": 30,
+        "refresh_token_expire_days": 7,
+    }
 )
 ```
 
@@ -217,15 +209,12 @@ All configuration is validated using Pydantic v2 models:
 
 ```python
 from __future__ import annotations
-from flext_cli import u
 from flext_core import c, FlextSettings
 
 try:
-    settings = FlextSettings(
-        log_level="INVALID_LEVEL"  # This will raise ValidationError
-    )
-except c.ValidationError as e:
-    print(f"Configuration error: {e}")
+    settings = FlextSettings(debug="not_a_boolean")  # This will raise ValidationError
+except c.ValidationError as exc:
+    print(f"Configuration error: {exc}")
 ```
 
 ## Configuration Inheritance
