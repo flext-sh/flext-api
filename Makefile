@@ -9,7 +9,7 @@ SHELL := /bin/sh
 .DEFAULT_GOAL := help
 
 PROJECT_NAME := flext-api
-MAKE_PROFILE := workspace-member
+MAKE_PROFILE := standalone
 WORKSPACE_ROOT_REL := .
 WORKSPACE_MEMBERS := flext-api flext-auth flext-cli flext-core flext-db-oracle flext-dbt-ldap flext-dbt-ldif flext-dbt-oracle flext-dbt-oracle-wms flext-grpc flext-infra flext-ldap flext-ldif flext-meltano flext-observability flext-oracle-oic flext-oracle-wms flext-plugin flext-quality flext-tap-ldap flext-tap-ldif flext-tap-oracle flext-tap-oracle-oic flext-tap-oracle-wms flext-target-ldap flext-target-ldif flext-target-oracle flext-target-oracle-oic flext-target-oracle-wms flext-tests flext-web
 WORKSPACE_EDITABLES := $(PROJECT_NAME):.
@@ -52,6 +52,9 @@ UV ?= uv
 UV_REQUESTED := $(UV)
 CALLER_PATH := $(PATH)
 CALLER_VIRTUAL_ENV := $(patsubst %/,%,$(VIRTUAL_ENV))
+FLEXT_INFRA_BOOTSTRAP_REQUIREMENT := flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev
+FLEXT_INFRA_BOOTSTRAP_TOOL_ARGS := --with "pyrefly>=1.1.1" --with "ruff>=0.15.12"
+FLEXT_INFRA_SOURCE_ROOT_REL := flext-infra
 
 # === MYPY RESOURCE LIMIT ===
 # mro-0ftd.3.11: every Mypy process inherits validated memory and time caps.
@@ -135,6 +138,14 @@ override VIRTUAL_ENV := $(RUNTIME_VENV)
 override PATH := $(RUNTIME_BIN):$(SANITIZED_CALLER_PATH)
 export FLEXT_INFRA_PYTHON UV UV_PROJECT UV_PROJECT_ENVIRONMENT VIRTUAL_ENV PATH
 
+ifneq ($(strip $(FLEXT_INFRA_SOURCE_ROOT_REL)),)
+FLEXT_INFRA_SOURCE_ROOT := $(abspath $(PROJECT_ROOT)/$(FLEXT_INFRA_SOURCE_ROOT_REL))
+FLEXT_INFRA_BOOTSTRAP := env -u PYTHONPATH -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u UV_PROJECT_ENVIRONMENT PATH="$(SANITIZED_CALLER_PATH)" $(UV) run --no-project --with-editable "$(FLEXT_INFRA_SOURCE_ROOT)" $(FLEXT_INFRA_BOOTSTRAP_TOOL_ARGS) python -m flext_infra
+else
+FLEXT_INFRA_SOURCE_ROOT :=
+FLEXT_INFRA_BOOTSTRAP := env -u PYTHONPATH -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u UV_PROJECT_ENVIRONMENT PATH="$(SANITIZED_CALLER_PATH)" $(UV) run --no-project --with "$(FLEXT_INFRA_BOOTSTRAP_REQUIREMENT)" $(FLEXT_INFRA_BOOTSTRAP_TOOL_ARGS) python -m flext_infra
+endif
+
 ifeq ($(MAKE_PROFILE),workspace-root)
 CODEGEN_SCOPE := all
 ALLOWED_PROJECTS := . $(WORKSPACE_MEMBERS)
@@ -199,6 +210,7 @@ _builtin_clean_generated \
 	_builtin_release_status \
 	_builtin_codegen_check \
 	_builtin_codegen_apply \
+	_builtin_codegen_init \
 	_builtin_worktree_list \
 	_builtin_worktree_add \
 	_builtin_worktree_update \
@@ -281,7 +293,7 @@ setup:
 	@$(SELF_MAKE) _builtin_setup_environment
 
 _builtin_help_usage:
-	@printf '%s\n' 'flext-api [workspace-member]' '';
+	@printf '%s\n' 'flext-api [standalone]' '';
 
 
 	@printf '  %-10s WHAT=%s\n' 'help' 'usage';
@@ -362,12 +374,25 @@ _builtin_help_usage:
 _builtin_setup_submodules:
 	@set -eu; \
 	root="$(PROJECT_ROOT)"; \
+	selected="$(REQUESTED_PROJECTS)"; \
 	if [ ! -f "$$root/.gitmodules" ]; then exit 0; fi; \
+	setup_selected() { \
+		candidate="$$1"; \
+		if [ -z "$$selected" ]; then return 0; fi; \
+		for project in $$selected; do \
+			if [ "$$project" = "." ]; then continue; fi; \
+			case "$$project" in \
+				"$$candidate"|"$$candidate"/*) return 0 ;; \
+			esac; \
+		done; \
+		return 1; \
+	}; \
 	preflight_managed_submodules() { \
 		superproject="$$1"; \
 		if [ ! -f "$$superproject/.gitmodules" ]; then return 0; fi; \
 		git -C "$$superproject" config -f .gitmodules --get-regexp '^submodule\..*\.path$$' 2>/dev/null | \
 		while IFS=' ' read -r path_key child_path; do \
+			if [ "$$superproject" = "$$root" ] && ! setup_selected "$$child_path"; then continue; fi; \
 			prefix=$${path_key%.path}; \
 			managed=$$(git -C "$$superproject" config -f .gitmodules --bool --get --default false "$$prefix.flext-managed"); \
 			if [ "$$managed" != true ]; then continue; fi; \
@@ -378,10 +403,6 @@ _builtin_setup_submodules:
 			sha1=$$(git -C "$$superproject" rev-parse "HEAD:$$child_path"); \
 			branch=$$(git -C "$$superproject" config -f .gitmodules --get --default "" "$$prefix.branch"); \
 			current=$$(git -C "$$checkout" branch --show-current); \
-			if [ -n "$$(git -C "$$checkout" status --porcelain)" ]; then \
-				printf "ERROR: %s: local changes must be reconciled before setup\n" "$$displaypath" >&2; \
-				exit 1; \
-			fi; \
 			if [ -z "$$branch" ]; then \
 				if [ -n "$$current" ]; then \
 					printf "ERROR: %s: branch %s is checked out but .gitmodules declares no branch\n" "$$displaypath" "$$current" >&2; \
@@ -420,6 +441,7 @@ _builtin_setup_submodules:
 		if [ ! -f "$$superproject/.gitmodules" ]; then return 0; fi; \
 		git -C "$$superproject" config -f .gitmodules --get-regexp '^submodule\..*\.path$$' 2>/dev/null | \
 		while IFS=' ' read -r path_key child_path; do \
+			if [ "$$superproject" = "$$root" ] && ! setup_selected "$$child_path"; then continue; fi; \
 			prefix=$${path_key%.path}; \
 			managed=$$(git -C "$$superproject" config -f .gitmodules --bool --get --default false "$$prefix.flext-managed"); \
 			if [ "$$managed" != true ]; then continue; fi; \
@@ -436,6 +458,7 @@ _builtin_setup_submodules:
 		if [ ! -f "$$superproject/.gitmodules" ]; then return 0; fi; \
 		git -C "$$superproject" config -f .gitmodules --get-regexp '^submodule\..*\.path$$' 2>/dev/null | \
 		while IFS=' ' read -r path_key child_path; do \
+			if [ "$$superproject" = "$$root" ] && ! setup_selected "$$child_path"; then continue; fi; \
 			prefix=$${path_key%.path}; \
 			managed=$$(git -C "$$superproject" config -f .gitmodules --bool --get --default false "$$prefix.flext-managed"); \
 			if [ "$$managed" != true ]; then continue; fi; \
@@ -483,22 +506,25 @@ _builtin_require_environment:
 		exit 2; \
 	fi
 
+_builtin_setup_conform: _builtin_setup_submodules
+	@$(FLEXT_INFRA_BOOTSTRAP) codegen conform --root "$(PROJECT_ROOT)" --scope "$(CODEGEN_SCOPE)" --mode apply
+
 ifeq ($(MAKE_PROFILE),workspace-root)
-_builtin_setup_environment: _builtin_setup_submodules
+_builtin_setup_environment: _builtin_setup_conform
 	@$(UV) venv --clear "$(RUNTIME_VENV)"
 	@$(UV) sync --project "$(PROJECT_ROOT)" $(UV_SYNC_FLAGS) --link-mode "$(UV_LINK_MODE)"
 	@$(UV) pip check --python "$(RUNTIME_VENV)"
 else ifeq ($(MAKE_PROFILE),workspace-member)
 ifeq ($(ATTACHED_MEMBER),Y)
-_builtin_setup_environment: _builtin_setup_submodules
+_builtin_setup_environment: _builtin_setup_conform
 	@$(SELF_MAKE) -C "$(RUNTIME_ROOT)" _builtin_setup_environment
 else
-_builtin_setup_environment: _builtin_setup_submodules
+_builtin_setup_environment: _builtin_setup_conform
 	@$(UV) venv --clear "$(RUNTIME_VENV)"
 	@$(UV) sync --project "$(PROJECT_ROOT)" $(UV_SYNC_FLAGS) --link-mode "$(UV_LINK_MODE)"
 endif
 else
-_builtin_setup_environment: _builtin_setup_submodules
+_builtin_setup_environment: _builtin_setup_conform
 	@$(UV) venv --clear "$(RUNTIME_VENV)"
 	@$(UV) sync --project "$(PROJECT_ROOT)" $(UV_SYNC_FLAGS) --link-mode "$(UV_LINK_MODE)"
 endif
@@ -732,6 +758,10 @@ _builtin_codegen_check: _builtin_require_environment
 _builtin_codegen_apply: _builtin_require_environment
 	$(call _require_apply)
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope "$(CODEGEN_SCOPE)" --mode apply
+
+_builtin_codegen_init: _builtin_require_environment
+	$(call _require_apply)
+	@$(PROJECT_FLEXT_INFRA) codegen init --workspace "$(PROJECT_ROOT)" --apply
 
 _builtin_worktree_list:
 	@$(PROJECT_FLEXT_INFRA) workspace worktree --workspace "$(WORKSPACE)" --operation list
