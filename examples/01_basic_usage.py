@@ -8,16 +8,16 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApi, c, m, p, r, s, settings, t, u
+from flext_api import FlextApiServiceBase, FlextApi, c, m, p, r, settings, t, u
 
 
-class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
+class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
     """Minimal guided tour of flext-api through public aliases and facades."""
 
     @staticmethod
     def _emit(message: object) -> None:
         """Render example output through the canonical CLI facade."""
-        u.Cli.formatters_u.Cli.print(str(message))
+        u.Cli.formatters_print(str(message))
 
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""

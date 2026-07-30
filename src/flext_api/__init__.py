@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from ._settings import FlextApiSettings as FlextApiSettings
     from ._settings import settings as settings
     from .api import FlextApi as FlextApi
+    from .api import FlextApiClient as FlextApiClient
     from .api import api as api
     from .base import FlextApiServiceBase as FlextApiServiceBase
 
@@ -51,7 +52,7 @@ if TYPE_CHECKING:
 _LAZY_MODULES: dict[str, tuple[str, ...]] = {
     "._config": ("FlextApiConfig", "config"),
     "._settings": ("FlextApiSettings", "settings"),
-    ".api": ("FlextApi", "api"),
+    ".api": ("FlextApi", "FlextApiClient", "api"),
     ".base": ("FlextApiServiceBase", "s"),
     ".constants": ("FlextApiConstants", "c"),
     ".models": ("FlextApiModels", "m"),
@@ -71,6 +72,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
 
 _PUBLIC_EXPORTS: tuple[str, ...] = (
     "FlextApi",
+    "FlextApiClient",
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiModels",

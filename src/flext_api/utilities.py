@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from flext_api import t
 from flext_api._utilities.api_pydantic import FlextApiUtilitiesApiPydantic
+from flext_api._utilities.client import FlextApiClient
 from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
 from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
 from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
@@ -22,6 +23,6 @@ class FlextApiUtilities(u):
         """API-specific utility namespace."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClient", "FlextApiUtilities", "u"]
 
 u = FlextApiUtilities
