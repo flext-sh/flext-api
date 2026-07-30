@@ -46,7 +46,7 @@ class FlextApiTypes(t):
         type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
         type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
         type WebhookHandler = Callable[
-            [t.JsonMapping], t.JsonValue | p.ResultLike[bool] | None
+            [t.JsonMapping], t.JsonValue | p.Result[bool] | None
         ]
         type RequestKwargs = t.MappingKV[
             str,
