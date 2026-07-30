@@ -4,9 +4,16 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApiServiceBase, FlextApiSettings, p, r, t, u
+from flext_api._settings import FlextApiSettings
+from flext_api.base import FlextApiServiceBase
+from flext_api.protocols import FlextApiProtocols
+from flext_api.typings import FlextApiTypes
+from flext_core import r, u
+
 from flext_api._utilities.client_request import FlextApiClientRequestMixin
 
+p = FlextApiProtocols
+t = FlextApiTypes
 _LOGGER = u.fetch_logger(__name__)
 
 

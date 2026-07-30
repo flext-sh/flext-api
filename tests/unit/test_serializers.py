@@ -69,17 +69,14 @@ class TestsFlextApiSerializers:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=42)
 
-    def test_unpackb_nil_is_success_without_accessible_payload(self) -> None:
-        """Msgpack nil decodes to a success, but the None payload is guarded.
-
-        The result contract forbids a None success payload, so any payload
-        access raises ValueError even though the operation itself succeeded.
-        """
+    def test_unpackb_nil_is_failure_because_none_payload_is_forbidden(self) -> None:
+        """Msgpack nil is rejected because None cannot be a success payload."""
         result = u.Api.unpackb(b"\xc0")
 
-        tm.that(result.success, eq=True)
-        tm.that(result.error, none=True)
-        with pytest.raises(ValueError, match="non-None payload"):
+        tm.that(result.success, eq=False)
+        tm.that(result.failure, eq=True)
+        tm.that(result.error, has="None")
+        with pytest.raises(RuntimeError, match="Cannot access value of failed result"):
             _ = result.value
 
     # ---- unpackb failure --------------------------------------------------
