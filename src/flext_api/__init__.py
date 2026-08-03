@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from .api import api as api
     from .base import FlextApiServiceBase as FlextApiServiceBase
 
-    s: type[FlextApiServiceBase]
+    s: type[FlextApiServiceBase[bool]]
     from .constants import FlextApiConstants as FlextApiConstants
 
     c: type[FlextApiConstants]
