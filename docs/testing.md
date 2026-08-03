@@ -2,162 +2,281 @@
 
 ## Overview
 
-**Current Status**: 23 tests passing, 76 failing (28% pass rate) · Target: 75%+ coverage with real HTTP functionality
+This document describes the current testing strategy for `flext_api`. The public API surface is intentionally small and testable:
 
-**Testing Philosophy**: Comprehensive testing strategy ensuring reliability, maintainability, and confidence in HTTP foundation deployments across the FLEXT ecosystem.
+- `FlextApiSettings` for configuration.
+- `FlextApiClient` for the low-level HTTP client.
+- `FlextApi` for the high-level HTTP facade (`get`, `post`, `put`, `patch`, `delete`, `request`).
+- `m.Api.HttpRequest` and `m.Api.HttpResponse` for typed request/response values.
+- `p.Result` and `r.ok` / `r.fail` for railway-style error handling.
 
-## Test Categories & Structure
+Tests should validate the real contract: every `FlextApi` method returns `p.Result[m.Api.HttpResponse]`, successes are inspected via `result.unwrap()`, and failures are inspected via `result.error`.
 
-### 1. Unit Tests (Primary Focus)
+## Test Structure
 
-**Status**: 23 passing, 76 failing - Major improvements needed
-**Coverage Target**: 80%+ unit test coverage
-
-#### HTTP Client Testing (`tests/unit/test_client.py`)
-
-**Current Issues**:
-
-- ❌ Client creation fails due to missing `FlextModels.create_validated_http_url()`
-- ❌ Protocol plugin interface inconsistencies
-- ❌ Configuration API test failures
-
-**Required Fixes**:
-
-```python
+```text
+tests/
+├── unit/           # Fast, isolated tests of helpers and models
+├── integration/    # Multi-component tests with a fake or real HTTP layer
+├── e2e/            # Full workflow tests against a real service
+└── conftest.py     # Shared pytest fixtures and configuration
 ```
 
-> Coverage thresholds are configured in `pyproject.toml` under `[tool.coverage.report]`.
+The examples below use plain functions and deterministic `FakeApi` subclasses. They run as standalone scripts and can also be collected by pytest.
 
-### CI/CD Testing Integration
+## Unit Tests
 
-#### Quality Gates
+Unit tests exercise one behavior at a time. A `FakeApi` subclass replaces the real HTTP backend so the tests run without network access.
+
+```python
+from __future__ import annotations
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r, t, u
+
+
+class FakeApi(FlextApi):
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+        if request.url.endswith("/users") and str(request.method) == "GET":
+            body = [{"id": 1, "name": "Alice"}]
+        elif request.url.endswith("/users/404"):
+            return r[m.Api.HttpResponse].ok(
+                m.Api.HttpResponse(
+                    status_code=404,
+                    headers={"Content-Type": "application/json"},
+                    body={"error": "not found"},
+                    request_id="unit-1",
+                )
+            )
+        else:
+            body = {"ok": True}
+        return r[m.Api.HttpResponse].ok(
+            m.Api.HttpResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=body,
+                request_id="unit-1",
+            )
+        )
+
+
+settings = FlextApiSettings(base_url="https://api.example.com", timeout=5.0)
+api = FakeApi(settings=settings)
+
+
+def test_get_users_returns_success() -> None:
+    result = api.get("/users")
+    assert result.success
+    response = result.unwrap()
+    assert response.status_code == 200
+    assert isinstance(response.body, list)
+
+
+def test_not_found_is_classified() -> None:
+    result = api.get("/users/404")
+    assert result.success
+    response = result.unwrap()
+    assert response.status_code == 404
+    assert response.client_error
+
+
+test_get_users_returns_success()
+test_not_found_is_classified()
+```
+
+Model validation can also be tested in isolation.
+
+```python
+from __future__ import annotations
+from flext_api import c, m, p, r, t, u
+
+
+def test_request_model_requires_valid_url() -> None:
+    request = m.Api.HttpRequest(method="GET", url="https://api.example.com/users")
+    assert request.method == c.Api.Method.GET
+    assert request.url == "https://api.example.com/users"
+
+
+def test_response_model_classifies_errors() -> None:
+    response = m.Api.HttpResponse(
+        status_code=500,
+        headers={"Content-Type": "application/json"},
+        body={"error": "server error"},
+        request_id="unit-2",
+    )
+    assert response.server_error
+    assert not response.success
+
+
+test_request_model_requires_valid_url()
+test_response_model_classifies_errors()
+```
+
+## Integration Tests
+
+Integration tests exercise a sequence of API calls and transformations. Use a stateful `FakeApi` subclass to simulate the backend and assert the combined outcome.
+
+```python
+from __future__ import annotations
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r, t, u
+
+
+class WorkflowApi(FlextApi):
+    def __init__(self, settings: FlextApiSettings | None = None) -> None:
+        super().__init__(settings=settings)
+        object.__setattr__(self, "_orders", {})
+
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+        orders: dict[int, dict] = getattr(self, "_orders")
+        if request.url.endswith("/orders") and str(request.method) == "POST":
+            body = request.body if isinstance(request.body, dict) else {}
+            order_id = len(orders) + 1
+            orders[order_id] = {"id": order_id, **body}
+            return r[m.Api.HttpResponse].ok(
+                m.Api.HttpResponse(
+                    status_code=201,
+                    headers={"Content-Type": "application/json"},
+                    body=orders[order_id],
+                    request_id="int-1",
+                )
+            )
+        if request.url.endswith("/orders") and str(request.method) == "GET":
+            return r[m.Api.HttpResponse].ok(
+                m.Api.HttpResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=list(orders.values()),
+                    request_id="int-1",
+                )
+            )
+        return r[m.Api.HttpResponse].ok(
+            m.Api.HttpResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body={"ok": True},
+                request_id="int-1",
+            )
+        )
+
+
+settings = FlextApiSettings(base_url="https://api.example.com", timeout=5.0)
+api = WorkflowApi(settings=settings)
+
+
+def test_create_and_list_orders() -> None:
+    create_result = api.post("/orders", data={"item": "book", "quantity": 2})
+    assert create_result.success
+    created = create_result.unwrap()
+    assert created.status_code == 201
+    body = created.body
+    assert isinstance(body, dict)
+    assert body.get("item") == "book"
+
+    list_result = api.get("/orders")
+    assert list_result.success
+    orders = list_result.unwrap().body
+    assert isinstance(orders, list)
+    assert len(orders) == 1
+
+
+test_create_and_list_orders()
+```
+
+## Running Tests
+
+Use the root `make` commands as the canonical test runner.
 
 ```bash
-# Phase 1 quality gates (current status)
-make lint                    # ✅ PASSING
-make type-check             # ❌ 295 ERRORS (CRITICAL)
-make security               # ✅ PASSING
-make test                   # ❌ 28% PASS RATE (CRITICAL)
+# Run all tests in the flext-api project
+make test PROJECT=flext-api
 
-# Target quality gates (Phase 1 completion)
-make val               # All gates passing
-make test                   # 75%+ coverage (threshold in pyproject.toml)
+# Run the markdown examples
+uv run pytest --markdown-docs docs/testing.md guides/http-client.md guides/testing.md -q
 ```
 
-## Performance & Load Testing
+## Test Data and Helpers
 
-### HTTP Performance Benchmarks
-
-#### Response Time Testing
+Keep tests clean by extracting reusable helper functions. These can be used in standalone scripts or in pytest-collected test files.
 
 ```python
+from __future__ import annotations
+from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r, t, u
+
+
+def make_settings(
+    base_url: str = "https://api.example.com", timeout: float = 5.0
+) -> FlextApiSettings:
+    return FlextApiSettings(base_url=base_url, timeout=timeout)
+
+
+def make_api(settings: FlextApiSettings | None = None) -> FlextApi:
+    return FlextApi(settings=settings if settings is not None else make_settings())
+
+
+def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
+    return FlextApiClient(
+        settings=settings if settings is not None else make_settings()
+    )
+
+
+settings = make_settings()
+assert settings.Api.base_url == "https://api.example.com"
+assert settings.Api.timeout == 5.0
+
+client = make_client(settings)
+assert client.base_url == "https://api.example.com"
+
+api = make_api(settings)
+assert isinstance(api, FlextApi)
 ```
 
-#### Test Naming Conventions
+## Mocking External APIs
+
+Do not use `unittest.mock` in executable examples. Use a small `FakeApi` subclass to return deterministic responses and test the real `FlextApi` contract.
 
 ```python
-# Unit tests
-def test_successful_operation():
-def test_error_handling():
-def test_validation_scenarios():
-def test_edge_cases():
+from __future__ import annotations
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r, t, u
 
-# Integration tests
-def test_real_http_integration():
-def test_end_to_end_workflow():
-def test_system_interaction():```
-### Test Data Management
 
-#### Test Data Patterns
+class FakeApi(FlextApi):
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.HttpResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body={"id": 1, "name": "Test User"},
+                request_id="mock-1",
+            )
+        )
 
-```python
-# Test data constants
-TEST_BASE_URL = "https://httpbin.org"
-TEST_TIMEOUT = 5.0
 
-# Test data factories
-def create_test_user_data(**overrides):
-    """Create test user data with defaults."""
-    base = {"name": "Test User", "email": "test@example.com", "age": 30}
-    base.update(overrides)
-    return base
+settings = FlextApiSettings(base_url="https://api.example.com", timeout=5.0)
+api = FakeApi(settings=settings)
 
-# Parameterized test data
-VALID_HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"]
-INVALID_URLS = ["", "not-a-url", "ftp://invalid"]
-HTTP_STATUS_CODES = [200, 201, 400, 401, 404, 500]```
-## Testing Roadmap
 
-### Phase 1: Foundation (Current - 28% → 75%)
+def test_with_fake_api() -> None:
+    result = api.get("/users/1")
+    assert result.success
+    response = result.unwrap()
+    assert response.status_code == 200
+    assert response.body.get("name") == "Test User"
 
-**Timeline**: October - November 2025
 
-1. **Week 1-2**: Fix critical test failures
-
-   - Implement missing methods
-   - Fix type safety issues
-   - Resolve import errors
-
-1. **Week 3-4**: Improve unit test coverage
-
-   - Add comprehensive model tests
-   - Implement configuration tests
-   - Add storage abstraction tests
-
-1. **Week 5-6**: Integration testing
-
-   - Real HTTP server tests
-   - FastAPI application tests
-   - Error handling validation
-
-### Phase 2: Advanced Testing (Future)
-
-**Timeline**: December 2025 - January 2026
-
-1. **Performance Testing**: Load and stress testing
-1. **Security Testing**: Authentication and authorization
-1. **End-to-End Testing**: Complete workflow validation
-1. **Cross-Platform Testing**: Multiple environments
+test_with_fake_api()
+```
 
 ## Success Metrics
 
-### Quantitative Metrics
-
-- **Test Pass Rate**: 95%+ (current: 23%)
-- **Coverage**: 75%+ (current: 28%)
-- **Performance**: \<500ms average response time
-- **Reliability**: 99%+ success rate under normal conditions
-
-### Qualitative Metrics
-
-- **Test Quality**: Tests validate real functionality, not mocks
-- **Error Coverage**: All error paths tested
-- **Maintainability**: Tests easy to understand and modify
-- **Documentation**: Test scenarios well-documented
+- **Test Pass Rate**: 100% of collected tests.
+- **Coverage**: follow the thresholds in `pyproject.toml`.
+- **Determinism**: network-dependent tests should use `FakeApi` or be clearly marked as integration/e2e tests against a known environment.
+- **Maintainability**: tests validate the real `FlextApi` contract and avoid vague assertions.
 
 ## Risk Mitigation
 
-### Test Reliability Risks
+- **Flaky Tests**: Use `FakeApi` subclasses for deterministic unit and integration tests.
+- **External Service Dependencies**: Keep real network tests in `tests/e2e/` and run them only in controlled environments.
+- **Coverage Gaps**: Test success paths, error status codes, model validation, and request/response serialization.
 
-1. **Flaky Tests**: Implement retry logic for network-dependent tests
-1. **Environment Dependencies**: Use Docker for consistent test environments
-1. **External Service Dependencies**: Mock external services where possible
+---
 
-### Coverage Gaps
-
-1. **Error Path Coverage**: Explicit testing of error conditions
-1. **Edge Case Coverage**: Boundary value and edge case testing
-1. **Integration Coverage**: Real system interaction testing
-
-### Maintenance Overhead
-
-1. **Test Data Management**: Centralized test data factories
-1. **Fixture Optimization**: Shared fixtures to reduce duplication
-1. **Test Organization**: Clear test categorization and naming
-
-______________________________________________________________________
-
-**Current Status**: 23/99 tests passing (28% pass rate)
-**Critical Issues**: 4 major failure categories blocking progress
-**Target**: 75%+ coverage with real HTTP functionality by Phase 1 completion
-**Next Priority**: Implement missing methods and fix type safety issues
+**Next Priority**: Keep the markdown examples in `docs/testing.md` and `guides/testing.md` aligned with the current `FlextApi` contract as the library evolves.

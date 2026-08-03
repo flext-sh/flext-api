@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api.constants import c
-from flext_api.typings import t
-from flext_web import p
+if TYPE_CHECKING:
+    from flext_api import c, t
+    from flext_web import p
 
 
 class FlextApiProtocolsHttpClient:
@@ -41,10 +41,7 @@ class FlextApiProtocolsHttpClient:
             ...
 
         def request(
-            self,
-            method: c.Api.Method | str,
-            url: str,
-            **kwargs: t.JsonValue,
+            self, method: c.Api.Method | str, url: str, **kwargs: t.JsonValue
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute an HTTP request."""
             ...

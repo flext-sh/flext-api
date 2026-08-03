@@ -8,6 +8,7 @@ FLEXT-API exposes two HTTP entry points:
 ## Facade Usage
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApi, FlextApiSettings
 
 settings = FlextApiSettings(base_url="https://api.example.com")
@@ -29,9 +30,10 @@ else:
 ## Client Usage
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApiClient, FlextApiSettings, c, m
 
-settings = FlextApiSettings(base_url="https://api.example.com")
+settings = FlextApiSettings(Api={"base_url": "https://api.example.com"})
 client = FlextApiClient(settings=settings)
 
 request = m.Api.HttpRequest.model_validate({
@@ -39,7 +41,7 @@ request = m.Api.HttpRequest.model_validate({
     "url": "/users",
     "headers": {"Accept": "application/json"},
     "query_params": {"limit": "10"},
-    "timeout": settings.timeout,
+    "timeout": settings.Api.timeout,
 })
 
 result = client.request(request)
@@ -50,6 +52,7 @@ result = client.request(request)
 Use the facade for typical application code:
 
 ```python
+from __future__ import annotations
 from flext_api import FlextApi
 
 api = FlextApi()
@@ -67,10 +70,15 @@ Use `request_kwargs` for query parameters and request options that belong to `m.
 Every call returns `p.Result[m.Api.HttpResponse]`.
 
 ```python
-if result.failure:
-    raise RuntimeError(result.error or "HTTP request failed")
+from __future__ import annotations
+from flext_api import FlextApi
 
-response = result.value
+result = FlextApi().get("/health")
+if result.failure:
+    print(result.error or "HTTP request failed")
+else:
+    response = result.value
+    print(response.status_code)
 ```
 
 The result contract is the canonical FLEXT railway contract: inspect `success` or `failure`, then use `value`, `error`, `unwrap()`, or higher-order methods such as `map` and `flat_map`.

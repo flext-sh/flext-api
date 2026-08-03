@@ -76,6 +76,7 @@ docker run -v $(pwd)/data:/app/data flext:latest
 ### 1. Basic Setup
 
 ```python
+from __future__ import annotations
 from flext_core import FlextContainer
 
 # Create dependency injection container
@@ -84,13 +85,14 @@ container = FlextContainer()
 # Register services (example)
 # container.bind(IService, ServiceImplementation())
 
-print("FLEXT application initialized!")```
+print("FLEXT application initialized!")
+```
+
 ### 2. Using flext-ldif for LDIF Processing
 
 ```python
+from __future__ import annotations
 from flext_ldif import ldif
-
-# Initialize LDIF API
 
 # Parse LDIF content
 ldif_content = """dn: cn=test,dc=example,dc=com
@@ -98,77 +100,91 @@ cn: test
 sn: user
 objectClass: inetOrgPerson"""
 
-result = ldif.parse(ldif_content)
+result = ldif.parse_string(ldif_content)
 if result.success:
-    entries = result.unwrap()
+    entries = result.unwrap().entries
     print(f"Successfully parsed {len(entries)} LDIF entries")
 else:
-    print(f"Failed to parse LDIF: {result.failure()}")```
+    print(f"Failed to parse LDIF: {result.error}")
+```
+
 ### 3. Railway-Oriented Error Handling
 
 ```python
+from __future__ import annotations
 from flext_core import p, r
+from flext_ldif import ldif
 
-def process_ldif_data(content: str) -> p.Result[str, Exception]:
+
+def process_ldif_data(content: str) -> p.Result[str]:
     # Parse LDIF
-    parse_result = ldif.parse(content)
+    parse_result = ldif.parse_string(content)
     if parse_result.failure:
-        return r.failure(parse_result.failure())
+        return r[str].fail(str(parse_result.error))
 
-    entries = parse_result.unwrap()
+    entries = parse_result.unwrap().entries
 
     # Process entries
     try:
         processed_data = process_entries(entries)
-        return r.success(processed_data)
-    except Exception as e:
-        return r.failure(e)
+        return r[str].ok(processed_data)
+    except Exception as exc:
+        return r[str].fail(str(exc))
+
 
 def process_entries(entries: list) -> str:
     # Your processing logic here
     return f"Processed {len(entries)} entries"
+
+
+ldif_content = """dn: cn=test,dc=example,dc=com
+cn: test
+sn: user
+objectClass: inetOrgPerson"""
 
 # Usage
 result = process_ldif_data(ldif_content)
 if result.success:
     print(f"Success: {result.unwrap()}")
 else:
-    print(f"Error: {result.failure()}")```
+    print(f"Error: {result.error}")
+```
+
 ### 4. CQRS Pattern with Commands and Queries
 
 ```python
-from dataclasses import dataclass
+from __future__ import annotations
+from flext_core import p, r
 
-from flext_core import FlextDispatcher, p, r
 
-@dataclass
 class CreateUserCommand:
-    username: str
-    email: str
+    def __init__(self, username: str, email: str) -> None:
+        self.username = username
+        self.email = email
 
-@dataclass
+
 class GetUserQuery:
-    user_id: str
+    def __init__(self, user_id: str) -> None:
+        self.user_id = user_id
+
 
 class UserService:
-    def create_user(self, cmd: CreateUserCommand) -> p.Result[str, Exception]:
+    def create_user(self, cmd: CreateUserCommand) -> p.Result[str]:
         # Create user logic
-        return r.success(f"User {cmd.username} created")
+        return r[str].ok(f"User {cmd.username} created")
 
-    def get_user(self, query: GetUserQuery) -> p.Result[str, Exception]:
+    def get_user(self, query: GetUserQuery) -> p.Result[str]:
         # Get user logic
-        return r.success(f"User {query.user_id} data")
+        return r[str].ok(f"User {query.user_id} data")
 
-# Setup dispatcher
-dispatcher = FlextDispatcher()
+
+# Railway-oriented dispatch: each command/query is routed to its handler
 user_service = UserService()
 
-dispatcher.register(CreateUserCommand, user_service.create_user)
-dispatcher.register(GetUserQuery, user_service.get_user)
+create_result = user_service.create_user(CreateUserCommand("john", "john@example.com"))
+get_result = user_service.get_user(GetUserQuery("user123"))
+```
 
-# Use the dispatcher
-create_result = dispatcher.dispatch(CreateUserCommand("john", "john@example.com"))
-get_result = dispatcher.dispatch(GetUserQuery("user123"))```
 ## Configuration
 
 ### Basic Configuration
@@ -179,22 +195,21 @@ FLEXT uses environment variables for configuration:
 # Set configuration
 export FLEXT_LOG_LEVEL=INFO
 export FLEXT_LDIF_DEFAULT_ENCODING=utf-8
-export FLEXT_LDIF_STRICT_VALIDATION=true```
+export FLEXT_LDIF_STRICT_VALIDATION=true
+```
+
 ### Programmatic Configuration
 
 ```python
+from __future__ import annotations
 from flext_ldif import FlextLdifSettings
 
 # Create custom configuration
-settings = FlextLdifSettings(
-    default_encoding="utf-8",
-    strict_validation=True,
-    servers_enabled=True,
-    batch_size=1000,
-)
+settings = FlextLdifSettings(ldif_encoding="utf-8", ldif_strict_validation=True)
 
-# Use configuration
-ldif = ldif(settings=settings)```
+print(f"LDIF encoding: {settings.ldif.ldif_encoding}")
+```
+
 ## Next Steps
 
 ### Explore the Ecosystem

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api.typings import t
+if TYPE_CHECKING:
+    from flext_api import t
 
 
 class FlextApiProtocolsSerializer:
@@ -16,7 +17,7 @@ class FlextApiProtocolsSerializer:
 
         @property
         def content_type(self) -> str:
-            """Get content type for this serializer."""
+            """Content type for this serializer."""
             ...
 
         def deserialize(self, data: bytes) -> t.JsonValue:

@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import MutableMapping
+from typing import TYPE_CHECKING
 
 from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
-from flext_api.typings import t
 from flext_core import r
-from flext_core.protocols import p
 from flext_web import u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+
+    from flext_api import t
+    from flext_core import p
 
 
 class FlextApiProtocolPluginManager:
@@ -26,21 +30,19 @@ class FlextApiProtocolPluginManager:
             self._loaded_plugins = {}
 
         def resolve_plugin(
-            self,
-            plugin_name: str,
+            self, plugin_name: str
         ) -> p.Result[FlextApiProtocolPluginTypes.Plugin]:
             """Get loaded plugin by name."""
             if plugin_name not in self._loaded_plugins:
                 return r[FlextApiProtocolPluginTypes.Plugin].fail(
-                    f"Plugin '{plugin_name}' not loaded",
+                    f"Plugin '{plugin_name}' not loaded"
                 )
             return r[FlextApiProtocolPluginTypes.Plugin].ok(
                 self._loaded_plugins[plugin_name]
             )
 
         def resolve_plugins_by_type(
-            self,
-            plugin_type: type[FlextApiProtocolPluginTypes.Plugin],
+            self, plugin_type: type[FlextApiProtocolPluginTypes.Plugin]
         ) -> t.SequenceOf[FlextApiProtocolPluginTypes.Plugin]:
             """Get all loaded plugins of specific type."""
             return [
@@ -54,8 +56,7 @@ class FlextApiProtocolPluginManager:
             return list(self._loaded_plugins.keys())
 
         def load_plugin(
-            self,
-            plugin: FlextApiProtocolPluginTypes.Plugin,
+            self, plugin: FlextApiProtocolPluginTypes.Plugin
         ) -> p.Result[bool]:
             """Load and initialize a plugin."""
             if plugin.name in self._loaded_plugins:
@@ -63,7 +64,7 @@ class FlextApiProtocolPluginManager:
             init_result = plugin.initialize()
             if init_result.failure:
                 return r[bool].fail(
-                    f"Failed to initialize plugin '{plugin.name}': {init_result.error}",
+                    f"Failed to initialize plugin '{plugin.name}': {init_result.error}"
                 )
             self._loaded_plugins[plugin.name] = plugin
             self.logger.info("Loaded plugin: %s v%s", plugin.name, plugin.version)
@@ -78,7 +79,7 @@ class FlextApiProtocolPluginManager:
             ]
             if failed_plugins:
                 return r[bool].fail(
-                    f"Failed to unload plugins: {', '.join(failed_plugins)}",
+                    f"Failed to unload plugins: {', '.join(failed_plugins)}"
                 )
             return r[bool].ok(value=True)
 
@@ -97,9 +98,7 @@ class FlextApiProtocolPluginManager:
         def _log_shutdown_warning(self, error: str, plugin_name: str) -> None:
             """Log shutdown warnings while preserving tap_error's None contract."""
             _ = self.logger.warning(
-                "Plugin shutdown warning: %s",
-                error,
-                plugin=plugin_name,
+                "Plugin shutdown warning: %s", error, plugin=plugin_name
             )
 
 

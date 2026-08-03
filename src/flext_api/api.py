@@ -12,16 +12,7 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_api import (
-    FlextApiServiceBase,
-    FlextApiSettings,
-    c,
-    m,
-    p,
-    r,
-    t,
-    u,
-)
+from flext_api import FlextApiServiceBase, FlextApiSettings, c, m, p, r, t, u
 from flext_api._utilities.client import FlextApiClient
 
 
@@ -37,17 +28,23 @@ class FlextApi(FlextApiServiceBase[bool]):
     model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
-    def __init__(
-        self,
-        *,
-        settings: FlextApiSettings | None = None,
-    ) -> None:
-        """Public bootstrap surface using the canonical ``settings=`` call form."""
-        super().__init__(runtime_settings=settings)
+    def __init__(self, settings: FlextApiSettings | None = None) -> None:
+        """Bind the facade to explicit settings or the global singleton."""
+        resolved = settings if settings is not None else FlextApiSettings.fetch_global()
+        super().__init__(runtime_settings=resolved)
+
+    @property
+    @override
+    def settings(self) -> FlextApiSettings:
+        """The typed API settings bound to this facade."""
+        current = super().settings
+        if isinstance(current, FlextApiSettings):
+            return current
+        return FlextApiSettings.fetch_global()
 
     @property
     def client(self) -> FlextApiClient:
-        """Return the lazily created HTTP client bound to this facade settings."""
+        """The lazily created HTTP client bound to this facade settings."""
         client = self._client
         if client is None:
             client = FlextApiClient(settings=self.settings)
@@ -69,13 +66,10 @@ class FlextApi(FlextApiServiceBase[bool]):
         )
 
     @override
-    def execute(
-        self,
-        **kwargs: t.Scalar,
-    ) -> p.Result[bool]:
+    def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
         """Execute s interface."""
         if kwargs:
-            self.logger.info(f"Execute called with kwargs: {kwargs}")
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         return r[bool].ok(True)
 
     def get(
@@ -140,10 +134,7 @@ class FlextApi(FlextApiServiceBase[bool]):
             request_kwargs=request_kwargs,
         )
 
-    def request(
-        self,
-        request: m.Api.HttpRequest,
-    ) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
         Args:
@@ -163,7 +154,7 @@ class FlextApi(FlextApiServiceBase[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """Generic HTTP method executor using monadic patterns - no fallbacks.
+        """Execute a generic HTTP method using monadic patterns - no fallbacks.
 
         Args:
         method: HTTP method (GET, POST, etc.).
@@ -191,8 +182,8 @@ class FlextApi(FlextApiServiceBase[bool]):
         return chain
 
 
-api = FlextApi.fetch_global()
+api: FlextApi = FlextApi.fetch_global()
 """Global FlextApi facade instance used as the canonical runtime entrypoint."""
 
 
-__all__: list[str] = ["FlextApi", "api"]
+__all__: t.MutableSequenceOf[str] = ["FlextApi", "FlextApiClient", "api"]

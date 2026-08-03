@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import time
-from collections.abc import MutableMapping, MutableSequence
-from typing import Annotated, ClassVar
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
-from flext_api.constants import c
-from flext_api.typings import t
+from flext_api import c, t
 from flext_web import m, u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping, MutableSequence
 
 
 class FlextApiModelsWebhook:
@@ -37,16 +38,13 @@ class FlextApiModelsWebhook:
                 u.Field("sha256", description="Supported HMAC signature algorithm"),
             ] = c.Api.WebhookAlgorithm.SHA256
             max_retries: Annotated[
-                int,
-                u.Field(3, description="Maximum retry attempts per event", ge=0),
+                int, u.Field(3, description="Maximum retry attempts per event", ge=0)
             ] = 3
             retry_delay: Annotated[
-                float,
-                u.Field(1.0, description="Initial retry delay in seconds", gt=0),
+                float, u.Field(1.0, description="Initial retry delay in seconds", gt=0)
             ] = 1.0
             retry_backoff: Annotated[
-                float,
-                u.Field(2.0, description="Retry backoff multiplier", gt=0),
+                float, u.Field(2.0, description="Retry backoff multiplier", gt=0)
             ] = 2.0
             queue_limit: Annotated[
                 int,
@@ -72,27 +70,21 @@ class FlextApiModelsWebhook:
             type: str = u.Field(description="Canonical event type", min_length=1)
             data: t.JsonMapping = u.Field(description="Normalized event payload")
             timestamp: float = u.Field(
-                default_factory=time.time,
-                description="Event creation timestamp",
+                default_factory=time.time, description="Event creation timestamp"
             )
             attempts: Annotated[
-                int,
-                u.Field(0, description="Number of processing attempts", ge=0),
+                int, u.Field(0, description="Number of processing attempts", ge=0)
             ] = 0
 
         class Delivery(m.Value):
             """Canonical delivery status for one webhook event."""
 
-            event_type: str = u.Field(
-                description="Associated event type",
-                min_length=1,
-            )
+            event_type: str = u.Field(description="Associated event type", min_length=1)
             timestamp: float = u.Field(
-                default_factory=time.time,
-                description="Delivery status timestamp",
+                default_factory=time.time, description="Delivery status timestamp"
             )
             status: t.Api.WebhookDeliveryStatus = u.Field(
-                description="Delivery terminal status",
+                description="Delivery terminal status"
             )
             attempts: Annotated[
                 int | None,
@@ -114,9 +106,7 @@ class FlextApiModelsWebhook:
             """Mutable webhook runtime state centralized in one model."""
 
             model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
-                extra="forbid",
-                validate_assignment=True,
-                arbitrary_types_allowed=True,
+                extra="forbid", validate_assignment=True, arbitrary_types_allowed=True
             )
             handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = (
                 u.Field(
@@ -130,31 +120,30 @@ class FlextApiModelsWebhook:
             retry_queue: MutableSequence[FlextApiModelsWebhook.Webhook.Event] = u.Field(
                 default_factory=list, description="Retry event queue"
             )
-            deliveries: MutableMapping[
-                str,
-                FlextApiModelsWebhook.Webhook.Delivery,
-            ] = u.Field(
-                default_factory=dict, description="Delivery records by event id"
+            deliveries: MutableMapping[str, FlextApiModelsWebhook.Webhook.Delivery] = (
+                u.Field(
+                    default_factory=dict, description="Delivery records by event id"
+                )
             )
 
             @property
             def event_queue_size(self) -> int:
-                """Return current main queue length."""
+                """Current main queue length."""
                 return len(self.event_queue)
 
             @property
             def retry_queue_size(self) -> int:
-                """Return current retry queue length."""
+                """Current retry queue length."""
                 return len(self.retry_queue)
 
             @property
             def total_deliveries(self) -> int:
-                """Return number of delivery confirmations."""
+                """Number of delivery confirmations."""
                 return len(self.deliveries)
 
             @property
             def successful_deliveries(self) -> int:
-                """Return number of successful deliveries."""
+                """Number of successful deliveries."""
                 return sum(
                     1
                     for delivery in self.deliveries.values()
@@ -163,7 +152,7 @@ class FlextApiModelsWebhook:
 
             @property
             def failed_deliveries(self) -> int:
-                """Return number of failed deliveries."""
+                """Number of failed deliveries."""
                 return sum(
                     1
                     for delivery in self.deliveries.values()
@@ -171,4 +160,4 @@ class FlextApiModelsWebhook:
                 )
 
 
-__all__: list[str] = ["FlextApiModelsWebhook"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsWebhook"]

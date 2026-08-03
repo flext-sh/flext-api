@@ -31,9 +31,7 @@ class FlextApiUtilitiesSerializers:
         return bytes(packed)
 
     @staticmethod
-    def unpackb(
-        data: bytes,
-    ) -> p.Result[t.JsonValue]:
+    def unpackb(data: bytes) -> p.Result[t.JsonValue]:
         """Type-safe wrapper for msgpack.unpackb().
 
         Args:

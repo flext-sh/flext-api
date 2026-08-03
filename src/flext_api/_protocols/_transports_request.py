@@ -9,10 +9,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 
 from flext_api import c, m, r, t
-from flext_web import p
+
+if TYPE_CHECKING:
+    from flext_web import p
 
 
 class FlextApiTransportsRequestMixin:
@@ -21,16 +25,13 @@ class FlextApiTransportsRequestMixin:
     _client: httpx.Client | None
 
     def _extract_request_params(
-        self,
-        data: t.JsonMapping | t.Api.RequestBody,
-        *,
-        connection_url: str,
+        self, data: t.JsonMapping | t.Api.RequestBody, *, connection_url: str
     ) -> p.Result[m.Api.HttpRequest]:
         """Extract and validate request parameters from data."""
         payload_result = self._request_payload(data, connection_url=connection_url)
         if payload_result.failure:
             return r[m.Api.HttpRequest].fail(
-                payload_result.error or "Unsupported HTTP request payload type",
+                payload_result.error or "Unsupported HTTP request payload type"
             )
         try:
             request_model = m.Api.HttpRequest.model_validate(payload_result.value)
@@ -40,9 +41,7 @@ class FlextApiTransportsRequestMixin:
 
     @staticmethod
     def _request_payload(
-        data: t.JsonMapping | t.Api.RequestBody,
-        *,
-        connection_url: str,
+        data: t.JsonMapping | t.Api.RequestBody, *, connection_url: str
     ) -> p.Result[t.MappingKV[str, t.Api.RequestBody | t.JsonValue]]:
         """Build the Pydantic request payload from supported transport inputs."""
         match data:
@@ -52,21 +51,15 @@ class FlextApiTransportsRequestMixin:
                     **payload,
                 }
             case str() | bytes():
-                request_payload = {
-                    "url": connection_url,
-                    "body": data,
-                }
+                request_payload = {"url": connection_url, "body": data}
             case _:
                 return r[t.MappingKV[str, t.Api.RequestBody | t.JsonValue]].fail(
-                    "Unsupported HTTP request payload type",
+                    "Unsupported HTTP request payload type"
                 )
-        return r[t.MappingKV[str, t.Api.RequestBody | t.JsonValue]].ok(
-            request_payload,
-        )
+        return r[t.MappingKV[str, t.Api.RequestBody | t.JsonValue]].ok(request_payload)
 
     def _request_model(
-        self,
-        request: m.Api.HttpRequest,
+        self, request: m.Api.HttpRequest
     ) -> p.Result[m.Api.HttpResponse]:
         """Execute one validated HTTP request model through the active transport."""
         client = self._client
@@ -75,16 +68,12 @@ class FlextApiTransportsRequestMixin:
         response_result = self._httpx_response(client, request)
         if response_result.failure:
             return r[m.Api.HttpResponse].fail(
-                response_result.error or "HTTP request failed",
+                response_result.error or "HTTP request failed"
             )
-        return r[m.Api.HttpResponse].ok(
-            self._response_model(response_result.value),
-        )
+        return r[m.Api.HttpResponse].ok(self._response_model(response_result.value))
 
     def _httpx_response(
-        self,
-        client: httpx.Client,
-        request: m.Api.HttpRequest,
+        self, client: httpx.Client, request: m.Api.HttpRequest
     ) -> p.Result[httpx.Response]:
         """Dispatch one request body shape to httpx."""
         match request.body:
@@ -95,15 +84,11 @@ class FlextApiTransportsRequestMixin:
             case bytes() as body_bytes:
                 return self._request_content_body(client, request, body_bytes)
             case _:
-                return r[httpx.Response].fail(
-                    "Unsupported HTTP request body type",
-                )
+                return r[httpx.Response].fail("Unsupported HTTP request body type")
 
     @staticmethod
     def _request_json_body(
-        client: httpx.Client,
-        request: m.Api.HttpRequest,
-        body_json: t.JsonMapping,
+        client: httpx.Client, request: m.Api.HttpRequest, body_json: t.JsonMapping
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with JSON body semantics."""
         try:
@@ -121,9 +106,7 @@ class FlextApiTransportsRequestMixin:
 
     @staticmethod
     def _request_content_body(
-        client: httpx.Client,
-        request: m.Api.HttpRequest,
-        body_content: str | bytes,
+        client: httpx.Client, request: m.Api.HttpRequest, body_content: str | bytes
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with raw content body semantics."""
         try:

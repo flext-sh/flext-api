@@ -12,17 +12,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Callable,
-)
+from collections.abc import Callable
 
 from flext_api import c
 from flext_api._typings.serialization import FlextApiTypingsSerialization
-from flext_web import FlextWebTypes, p, t, u
+from flext_web import p, t, u
 
 
-class FlextApiTypes(FlextWebTypes):
-    """Unified API type definitions extending FlextWebTypes via MRO."""
+class FlextApiTypes(t):
+    """Unified API type definitions extending t via MRO."""
 
     class Api(FlextApiTypingsSerialization):
         """API types namespace for cross-project access."""
@@ -32,8 +30,7 @@ class FlextApiTypes(FlextWebTypes):
         type RequestBody = t.JsonValue | t.StrictBytes
         type ResponseBody = t.JsonValue | t.StrictBytes | None
         type HttpResponseDict = t.MappingKV[
-            str,
-            t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None,
+            str, t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type RouteData = t.MappingKV[
@@ -49,8 +46,7 @@ class FlextApiTypes(FlextWebTypes):
         type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
         type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
         type WebhookHandler = Callable[
-            [t.JsonMapping],
-            t.JsonValue | p.ResultLike[bool] | None,
+            [t.JsonMapping], t.JsonValue | p.Result[bool] | None
         ]
         type RequestKwargs = t.MappingKV[
             str,
@@ -68,13 +64,9 @@ class FlextApiTypes(FlextWebTypes):
         INTEGER_ADAPTER: u.TypeAdapter[t.StrictInt] = t.int_adapter()
         FLOAT_ADAPTER: u.TypeAdapter[t.StrictFloat] = t.float_adapter()
         STORAGE_ENTRY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
-        REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(
-            RequestBody,
-        )
+        REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(RequestBody)
 
-        RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(
-            ResponseBody,
-        )
+        RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(ResponseBody)
         DICT_BODY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
         JSON_HEADERS_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
 

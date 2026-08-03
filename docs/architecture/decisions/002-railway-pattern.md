@@ -8,24 +8,11 @@ Accepted
 
 ## Context
 
-HTTP operations are inherently unreliable - network failures, server errors, timeouts, and malformed responses are common. Traditional exception-based error handling makes code complex and error-prone. The FLEXT ecosystem needed a consistent approach to error handling that:
-
-1. Makes error handling explicit and visible in the type system
-1. Enables composable operations that can be chained together
-1. Prevents silent failures and unhandled errors
-1. Provides clear separation between success and failure paths
-1. Integrates well with async/await patterns
-
-Key challenges:
-
-- HTTP errors are expected and frequent (timeouts, 4xx, 5xx responses)
-- Error handling code often obscures business logic
-- Exception-based code is hard to test and reason about
-- Async error handling adds complexity
+HTTP operations are inherently unreliable: network failures, server errors, timeouts, and malformed responses are common. Traditional exception-based error handling makes code complex and error-prone. The FLEXT ecosystem needed a consistent approach to error handling that makes errors explicit, composable, and testable.
 
 ## Decision
 
-FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP operations. Every public method returns `r[T]` instead of throwing exceptions. Operations are composed using `flat_map`, `map`, and `map_error` methods.
+FLEXT-API uses **Railway-Oriented Programming** with `r[T]` for all HTTP operations. Every public method returns `p.Result[T]`. Operations are composed using `flat_map`, `map`, and `map_error` methods.
 
 ## Consequences
 
@@ -34,53 +21,48 @@ FLEXT-API will use **Railway-Oriented Programming** with `r[T]` for all HTTP ope
 - **Explicit Error Handling**: Errors are visible in type signatures and cannot be ignored
 - **Composable Operations**: HTTP operations can be chained without nested try/catch blocks
 - **Testable Code**: Railway pattern makes testing success and failure paths straightforward
-- **Type Safety**: Compiler catches unhandled error cases
-- **Clear Intent**: Code reads like a recipe of operations that can succeed or fail
-- **Async Friendly**: Works seamlessly with async/await patterns
+- **Type Safety**: Type signatures catch unhandled error cases
 
 ### Negative
 
 - **Learning Curve**: Developers must learn railway pattern concepts
 - **Verbose Code**: Some operations require more lines than exception-based code
-- **Type Complexity**: Generic types can be harder to understand initially
-- **Migration Effort**: Converting existing exception-based code requires significant changes
-
-### Risks
-
-- **Adoption Resistance**: Teams accustomed to exceptions may resist the change
-- **Type System Complexity**: Advanced generic patterns may confuse some developers
-- **Debugging Difficulty**: Stack traces become less useful for railway pattern code
 
 ## Alternatives Considered
 
 ### Option 1: Traditional Exceptions
 
 ```python
-def get_user(user_id: int) -> User:
-    response = httpx.get(f"/users/{user_id}")
+from __future__ import annotations
+
+import httpx
+
+
+def get_user(user_id: int) -> dict:
+    """Traditional exception-based example (not used in FLEXT-API)."""
+    response = httpx.get(f"https://api.example.com/users/{user_id}")
     response.raise_for_status()
-    return User(**response.json())```
-- **Pros**: Familiar, concise for success paths
-- **Cons**: Silent failures, complex error handling, hard to test
-- **Rejected**: Not suitable for enterprise HTTP operations
+    return response.json()
+```
 
 ### Option 2: Result Pattern (Custom Implementation)
 
 ```python
+from __future__ import annotations
+
+
 class Result:
+    """Minimal custom result type (not used in FLEXT-API)."""
+
     def __init__(self, success: bool, value=None, error=None):
         self.success = success
         self.value = value
-        self.error = error```
-- **Pros**: Simple implementation, explicit error handling
-- **Cons**: No composability, reinventing the wheel, less type-safe
-- **Rejected**: r from flext-core is more robust and feature-complete
+        self.error = error
+```
 
 ### Option 3: Hybrid Approach
 
 - **Description**: Use railway pattern internally but expose traditional APIs
-- **Pros**: Gradual adoption, familiar external APIs
-- **Cons**: Inconsistent error handling, defeats the purpose
 - **Rejected**: Would undermine the architectural benefits
 
 ## Implementation Examples
@@ -88,115 +70,153 @@ class Result:
 ### Basic HTTP Operation
 
 ```python
-def get_user(user_id: int) -> p.Result[User]:
-    """Get user with railway error handling."""
-    return (
-        FlextApiClient()
-        .get(f"/users/{user_id}")
-        .flat_map(lambda resp: validate_status_code(resp))
-        .flat_map(lambda resp: parse_json_response(resp))
-        .map(lambda data: User(**data))
-        .map_error(lambda err: f"User fetch failed: {err}")
-    )```
+from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, m, p, r
+
+
+class UserApi(FlextApi):
+    def fetch_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+        return (
+            self
+            .get(f"/users/{user_id}")
+            .flat_map(self._validate_ok)
+            .map_error(lambda err: f"User fetch failed: {err}")
+        )
+
+    def _validate_ok(
+        self, response: m.Api.HttpResponse
+    ) -> p.Result[m.Api.HttpResponse]:
+        if response.success:
+            return r[m.Api.HttpResponse].ok(response)
+        return r[m.Api.HttpResponse].fail(
+            f"HTTP {response.status_code}: request failed"
+        )
+
+
+class FakeUserApi(UserApi):
+    def get(
+        self, url, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
+        if url.endswith("/users/123"):
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=200,
+                    body={"id": 123, "name": "Alice"},
+                    headers={"Content-Type": "application/json"},
+                )
+            )
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(status_code=404, body={"error": "not found"})
+        )
+
+
+api = FakeUserApi(settings=FlextApiSettings(base_url="https://example.com"))
+result = api.fetch_user(123)
+assert result.success
+assert result.unwrap().body["name"] == "Alice"
+```
+
 ### Usage in Application Code
 
 ```python
-# Success path
-result = get_user(123)
+from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, m, p, r
+
+
+class FakeProfileApi(FlextApi):
+    def get(
+        self, url, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
+        return r[m.Api.HttpResponse].ok(
+            m.Api.create_response(
+                status_code=200,
+                body={"user_id": 123, "bio": "FLEXT enthusiast"},
+                headers={"Content-Type": "application/json"},
+            )
+        )
+
+
+api = FakeProfileApi(settings=FlextApiSettings(base_url="https://example.com"))
+result = api.get("/users/123/profile")
+
 if result.success:
-    user = result.unwrap()
-    print(f"Found user: {user.name}")
+    profile = result.unwrap().body
+    print(f"Found profile: {profile['bio']}")
+else:
+    print(f"Error: {result.error}")
+```
 
-# Error handling
-if result.failure:
-    logger.error(result.error)
-    return None
-
-# Chained operations
-user_profile = (
-    get_user(user_id)
-    .flat_map(lambda user: get_user_profile(user.id))
-    .flat_map(lambda profile: enrich_profile(profile))
-    .map_error(lambda err: log_and_notify(err))
-)```
 ### Testing Railway Code
 
 ```python
+from __future__ import annotations
+
+from flext_api import FlextApi, FlextApiSettings, m, p, r
+
+
+class FakeUserApi(FlextApi):
+    def get(
+        self, url, headers=None, request_kwargs=None
+    ) -> p.Result[m.Api.HttpResponse]:
+        if url.endswith("/users/123"):
+            return r[m.Api.HttpResponse].ok(
+                m.Api.create_response(
+                    status_code=200,
+                    body={"id": 123, "name": "John"},
+                    headers={"Content-Type": "application/json"},
+                )
+            )
+        return r[m.Api.HttpResponse].fail("HTTP 404")
+
+
 def test_get_user_success():
-    # Given
-    mock_response = MockHttpResponse(status_code=200, body='{"name": "John"}')
-    client.get.return_value = r.ok(mock_response)
-
-    # When
-    result = get_user(123)
-
-    # Then
+    api = FakeUserApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/users/123")
     assert result.success
-    assert result.unwrap().name == "John"
+    assert result.unwrap().body["name"] == "John"
+
 
 def test_get_user_not_found():
-    # Given
-    client.get.return_value = r.fail("HTTP 404")
-
-    # When
-    result = get_user(123)
-
-    # Then
+    api = FakeUserApi(settings=FlextApiSettings(base_url="https://example.com"))
+    result = api.get("/users/999")
     assert result.failure
-    assert "404" in result.error```
+    assert "404" in result.error
+
+
+test_get_user_success()
+test_get_user_not_found()
+```
+
 ## Migration Strategy
 
-### Phase 1: Core Implementation
-
-- [x] Implement r integration in all HTTP operations
-- [x] Update FlextApiClient to return r[T]
-- [x] Add railway pattern utilities and helpers
-
-### Phase 2: Ecosystem Migration
-
-- [x] Update all internal usage to railway pattern
-- [ ] Create migration examples and documentation
-- [ ] Provide utility functions for common transformations
-- [ ] Update testing patterns and examples
-
-### Phase 3: Ecosystem Adoption
-
-- [ ] Update all ecosystem projects to use railway pattern
-- [ ] Provide training and support for migration
-- [ ] Update documentation and code examples
-- [ ] Establish coding standards for railway pattern usage
+- [x] Implement `r` integration in all HTTP operations
+- [x] Update `FlextApi` and `FlextApiClient` to return `p.Result[T]`
+- [ ] Update all remaining markdown examples to use real APIs
 
 ## Best Practices
 
 ### Railway Pattern Guidelines
 
-1. **Always Return r**: Every public method should return r[T]
-1. **Use Descriptive Errors**: Error messages should be user-friendly and actionable
-1. **Chain Operations**: Use `flat_map` for sequential operations, `map` for transformations
-1. **Handle Errors Early**: Validate inputs and fail fast with clear error messages
-1. **Test Both Paths**: Always test both success and failure code paths
+1. Always return `p.Result[T]` from public HTTP methods
+2. Use descriptive errors
+3. Chain operations with `flat_map` and `map`
+4. Test both success and failure paths
 
 ### Error Message Standards
 
 ```python
-# Good error messages
-r.fail("Invalid user ID: must be positive integer")
-r.fail("HTTP request timeout after 30 seconds")
-r.fail("JSON parsing failed: invalid response format")
+from __future__ import annotations
 
-# Avoid generic messages
-r.fail("Error")  # Too vague
-r.fail("Something went wrong")  # Not helpful```
-### Performance Considerations
+from flext_api import r
 
-- **Short-Circuiting**: Failed operations don't execute subsequent operations
-- **Memory Efficiency**: No exception object creation for expected errors
-- **Async Compatibility**: Works seamlessly with async/await
-- **Composable**: Enables efficient pipelining of operations
+r[str].fail("Invalid user ID: must be a positive integer")
+r[str].fail("HTTP request timeout after 30 seconds")
+r[str].fail("JSON parsing failed: invalid response format")
+```
 
 ## References
 
-- [FLEXT-Core Railway-Oriented Programming](https://github.com/organization/flext/tree/main/flext-core/docs/guides/railway-oriented-programming.md)
 - [Railway-Oriented Programming](https://fsharpforfunandprofit.com/rop/)
-- [Error Handling in Scala](https://typelevel.org/cats/datatypes/either.html)
 - GitHub Issue: #156 - Railway Pattern Implementation

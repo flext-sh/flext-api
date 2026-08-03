@@ -8,20 +8,17 @@ import httpx
 
 from flext_api import c, m, p, t
 from flext_api._utilities.client_codec import FlextApiClientCodecMixin
-from flext_api.settings import FlextApiSettings
 from flext_core.result import r
 from flext_web import u
+
+if TYPE_CHECKING:
+    from flext_api import FlextApiSettings
 
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
     """Request execution helpers for FlextApiClient."""
 
-    if TYPE_CHECKING:
-
-        @property
-        def settings(self) -> FlextApiSettings:
-            """Settings contract supplied by FlextApiServiceBase at runtime."""
-            ...
+    settings: FlextApiSettings
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request from model using monadic patterns."""
@@ -36,40 +33,41 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         body_result = self._serialize_body(request_body)
         if body_result.failure:
             return r[m.Api.HttpResponse].fail(
-                body_result.error or "Body serialization failed",
+                body_result.error or "Body serialization failed"
             )
         return self._execute_http_request(
-            request=request,
-            url=url_result.value,
-            serialized_body=body_result.value,
+            request=request, url=url_result.value, serialized_body=body_result.value
         )
 
     def _build_url(self, path: str) -> p.Result[str]:
         """Build full URL from base_url and path."""
+        # NOTE (multi-agent): mro-t9s9 — request defaults belong to this
+        # client's injected runtime settings, never the global singleton.
+        api_settings = self.settings.Api
         if not path:
             return r[str].fail("URL path cannot be empty")
         path_stripped = path.strip()
         if not path_stripped:
             return r[str].fail("URL path cannot be empty")
-        if not self.settings.base_url.strip():
+        if not api_settings.base_url.strip():
             return r[str].ok(path_stripped)
-        base = self.settings.base_url.strip().rstrip("/")
+        base = api_settings.base_url.strip().rstrip("/")
         if path_stripped.startswith("/"):
             return r[str].ok(f"{base}{path_stripped}")
         return r[str].ok(f"{base}/{path_stripped}")
 
     def _execute_http_request(
-        self,
-        request: m.Api.HttpRequest,
-        url: str,
-        serialized_body: bytes,
+        self, request: m.Api.HttpRequest, url: str, serialized_body: bytes
     ) -> p.Result[m.Api.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
             headers: t.StrMapping = {
-                **self.settings.default_headers,
+                **self.settings.Api.default_headers,
                 **request.headers,
             }
+            extensions = (
+                {"sni_hostname": request.sni_hostname} if request.sni_hostname else {}
+            )
             with httpx.Client(timeout=request.timeout) as client:
                 response = client.request(
                     method=str(request.method),
@@ -77,24 +75,24 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
                     headers=headers,
                     params=request.query_params or {},
                     content=serialized_body or None,
+                    extensions=extensions,
                 )
-            if response.status_code >= c.Api.HTTP_ERROR_MIN:
-                return r[m.Api.HttpResponse].fail(
-                    f"HTTP {response.status_code}: {response.reason_phrase}",
-                )
+            # Any HTTP status (incl. 4xx/5xx) is a successful transport round-trip;
+            # HttpResponse classifies it (success/client_error/server_error). Only a
+            # transport failure (connection/TLS/timeout/DNS) becomes r.fail below.
             return self._deserialize_body(response).flat_map(
                 lambda body: u.try_(
-                    lambda: m.Api.HttpResponse.model_validate({
-                        "status_code": response.status_code,
-                        "headers": dict(response.headers),
-                        "body": body,
-                        "request_id": "",
-                    }),
+                    lambda: m.Api.HttpResponse(
+                        status_code=response.status_code,
+                        headers=dict(response.headers),
+                        body=body,
+                        request_id="",
+                    ),
                     catch=(c.ValidationError, ValueError, TypeError),
-                ).map_error(lambda exc: f"Response model validation failed: {exc}"),
+                ).map_error(lambda exc: f"Response model validation failed: {exc}")
             )
         except c.Api.EXC_HTTPX as exc:
             return r[m.Api.HttpResponse].fail_op("HTTP client request", exc)
 
 
-__all__: list[str] = ["FlextApiClientRequestMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClientRequestMixin"]

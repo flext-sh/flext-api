@@ -5,8 +5,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
-from flext_api.constants import c
-from flext_api.typings import t
+from flext_api import c, t
 from flext_web import m, u
 
 
@@ -38,19 +37,17 @@ class FlextApiModelsClient:
             u.Field(default=c.MAX_RETRY_ATTEMPTS, description="Maximum retry attempts"),
         ]
         headers: Annotated[
-            t.StrMapping,
-            u.Field(description="Default headers for all requests"),
+            t.StrMapping, u.Field(description="Default headers for all requests")
         ] = u.Field(default_factory=lambda: MappingProxyType({}))
         verify_ssl: Annotated[
-            bool,
-            u.Field(default=True, description="Verify SSL certificates"),
+            bool, u.Field(default=True, description="Verify SSL certificates")
         ]
 
         @u.computed_field(return_type=bool)
         @property
         def configured(self) -> bool:
-            """Return whether configuration is usable."""
+            """Whether the configuration is usable."""
             return bool(self.base_url) and self.timeout > 0
 
 
-__all__: list[str] = ["FlextApiModelsClient"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsClient"]

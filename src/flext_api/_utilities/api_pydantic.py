@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from flext_web import m, u
+
+if TYPE_CHECKING:
+    from enum import StrEnum
+from flext_api import t
 
 
 class FlextApiUtilitiesApiPydantic:
@@ -14,9 +18,7 @@ class FlextApiUtilitiesApiPydantic:
         """Annotated type factories."""
 
         @staticmethod
-        def coerced_enum_validator(
-            enum_cls: type[StrEnum],
-        ) -> m.BeforeValidator:
+        def coerced_enum_validator(enum_cls: type[StrEnum]) -> m.BeforeValidator:
             """Create a validator for automatic StrEnum coercion."""
 
             def _coerce(v: str | StrEnum) -> StrEnum:
@@ -29,4 +31,4 @@ class FlextApiUtilitiesApiPydantic:
             return m.BeforeValidator(_coerce)
 
 
-__all__: list[str] = ["FlextApiUtilitiesApiPydantic"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesApiPydantic"]

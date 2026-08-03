@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApi, c, m, p, r, s, t, u
+from flext_api import FlextApiServiceBase, FlextApi, c, m, p, r, settings, t, u
 
 
-class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
+class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
     """Minimal guided tour of flext-api through public aliases and facades."""
 
     @staticmethod
@@ -22,7 +22,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
-            str(self.settings.timeout)
+            str(settings.Api.timeout)
         )
         if timeout_result.failure:
             timeout_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].fail(
@@ -32,7 +32,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
 
         payload_result = u.Api.RequestUtils.build_request_payload(
             method=c.Api.Method.GET,
-            url=f"{self.settings.base_url.rstrip('/')}/resources",
+            url=f"{settings.Api.base_url.rstrip('/')}/resources",
             headers={"accept": c.Api.ContentType.JSON.value},
             request_kwargs={"params": {"page": 1, "active": True}},
             timeout=timeout_result.value,
@@ -44,8 +44,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             return payload_failure
 
         request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
-            payload_result.value.root,
-            m.Api.HttpRequest,
+            payload_result.value.root, m.Api.HttpRequest
         )
         return request_result
 
@@ -74,10 +73,10 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
 
         self._emit("\n1. Setup via s/base.py")
         runtime_snapshot: t.JsonMapping = {
-            "base_url": self.settings.base_url,
-            "timeout": self.settings.timeout,
-            "max_retries": self.settings.max_retries,
-            "verify_ssl": self.settings.verify_ssl,
+            "base_url": settings.Api.base_url,
+            "timeout": settings.Api.timeout,
+            "max_retries": settings.Api.max_retries,
+            "verify_ssl": settings.Api.verify_ssl,
         }
         self._emit(runtime_snapshot)
 
@@ -88,7 +87,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
                 execute_result.error or "flext-api execute failed"
             )
             return execute_failure
-        self._emit(f"Facade ready: base_url={api.settings.base_url}")
+        self._emit(f"Facade ready: base_url={api.settings.Api.base_url}")
 
         self._emit("\n2. Request normalization via u.Api.RequestUtils")
         request_result = self.build_request()
@@ -117,13 +116,15 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             response.body or {}
         )
         namespace = type(self).__name__.lower()
-        ttl = int(self.settings.timeout)
-        settings = m.Api.Storage.Settings(namespace=namespace, default_ttl=ttl)
-        entry = m.Api.Storage.Metadata(
-            value=entry_value,
-            timestamp=u.generate_iso_timestamp(),
-            ttl=settings.default_ttl,
-        )
+        ttl = int(settings.Api.timeout)
+        # NOTE (multi-agent): avoid shadowing the module-level ``settings``
+        # singleton (ADR-005 namespaced settings); use a distinct local name.
+        storage_settings = m.Api.Storage.Settings(namespace=namespace, default_ttl=ttl)
+        entry = m.Api.Storage.Metadata.model_validate({
+            "value": entry_value,
+            "timestamp": u.generate_iso_timestamp(),
+            "ttl": storage_settings.default_ttl,
+        })
         state = m.Api.Storage.State(
             entries={"latest-response": entry},
             operations_count=2,
@@ -136,7 +137,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
             cache_misses=state.cache_misses,
             storage_size=len(state.entries),
             memory_usage=len(repr(state.entries)),
-            namespace=settings.namespace,
+            namespace=storage_settings.namespace,
         )
         self._emit(f"Storage entry: {state.entries['latest-response'].value}")
         self._emit(f"Stats: {stats.model_dump(mode='python')}")
@@ -147,7 +148,7 @@ class FlextApiExamplesBasicUsage(s[t.JsonMapping]):
         )
 
         summary: t.JsonMapping = {
-            "base_url": self.settings.base_url,
+            "base_url": api.settings.Api.base_url,
             "request_method": str(request.method),
             "response_status": response.status_code,
             "storage_entries": len(state.entries),

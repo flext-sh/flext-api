@@ -6,9 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsUtilities
-
 from flext_api import u
+from flext_tests import FlextTestsUtilities
 
 
 class TestsFlextApiUtilities(FlextTestsUtilities, u):

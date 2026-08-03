@@ -2,20 +2,22 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from types import MappingProxyType
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from httpx import HTTPError as _HttpxError
 
 from flext_api._constants.api_enums import FlextApiConstantsEnums
 from flext_web import FlextWebConstants, t
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
 
 class FlextApiConstantsValues(FlextApiConstantsEnums):
     """API scalar constants mixed into ``c.Api``."""
 
-    EXC_HTTPX: Final[tuple[type[Exception], ...]] = (
+    EXC_HTTPX: Final[t.VariadicTuple[type[Exception]]] = (
         ConnectionError,
         KeyError,
         TypeError,
@@ -23,12 +25,7 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
         _HttpxError,
     )
     METHOD_LITERALS_HEAD_LOWER: Final[str] = "head"
-    SAFE_METHODS: Final[frozenset[str]] = frozenset({
-        "GET",
-        "HEAD",
-        "OPTIONS",
-        "TRACE",
-    })
+    SAFE_METHODS: Final[frozenset[str]] = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
     TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({
         "completed",
         "failed",
@@ -39,9 +36,21 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     )
     DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
     DEFAULT_BASE_URL: Final[str] = "http://localhost:8000"
+    MAX_HOSTNAME_LENGTH: Final[int] = 253
     MAX_URL_LENGTH: Final[int] = 2048
     MIN_PORT: Final[int] = 1
     MAX_PORT: Final[int] = 65535
+    VALID_HTTP_METHODS: Final[frozenset[str]] = frozenset({
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "CONNECT",
+        "TRACE",
+    })
     HTTP_SUCCESS_MIN: Final[int] = 200
     HTTP_SUCCESS_MAX: Final[int] = 300
     HTTP_REDIRECT_MIN: Final[int] = 300
@@ -64,4 +73,4 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     })
 
 
-__all__: list[str] = ["FlextApiConstantsValues"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiConstantsValues"]

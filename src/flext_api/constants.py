@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from flext_api._constants.api import FlextApiConstantsApi
-from flext_web import FlextWebConstants
+from flext_web import c
 
 
-class FlextApiConstants(FlextWebConstants):
+class FlextApiConstants(c):
     """FlextApi domain constants extending FlextWebConstants via MRO."""
 
     class Api(FlextApiConstantsApi):

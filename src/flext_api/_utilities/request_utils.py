@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_api import p, t
-from flext_api.constants import c
+from flext_api import c, p, t
 from flext_core.result import r
 from flext_web import m
 
@@ -29,26 +28,24 @@ class FlextApiUtilitiesRequestUtils:
 
         @staticmethod
         def extract_body_from_kwargs(
-            data: t.Api.RequestBody | None,
-            kwargs: t.Api.RequestKwargs | None,
+            data: t.Api.RequestBody | None, kwargs: t.Api.RequestKwargs | None
         ) -> p.Result[t.Api.RequestBody]:
             """Extract body from data or kwargs."""
             if data is not None:
                 return r[t.Api.RequestBody].ok(data)
             if kwargs is not None and "data" in kwargs and kwargs["data"] is not None:
                 return r[t.Api.RequestBody].ok(
-                    t.Api.REQUEST_BODY_ADAPTER.validate_python(kwargs["data"]),
+                    t.Api.REQUEST_BODY_ADAPTER.validate_python(kwargs["data"])
                 )
             if kwargs is not None and "json" in kwargs and kwargs["json"] is not None:
                 return r[t.Api.RequestBody].ok(
-                    t.Api.REQUEST_BODY_ADAPTER.validate_python(kwargs["json"]),
+                    t.Api.REQUEST_BODY_ADAPTER.validate_python(kwargs["json"])
                 )
             return r[t.Api.RequestBody].ok({})
 
         @staticmethod
         def merge_headers(
-            headers: t.StrMapping | None,
-            kwargs: t.Api.RequestKwargs | None,
+            headers: t.StrMapping | None, kwargs: t.Api.RequestKwargs | None
         ) -> p.Result[t.StrMapping]:
             """Merge headers from headers dict and kwargs."""
             merged: t.MutableStrMapping = {}
@@ -59,9 +56,7 @@ class FlextApiUtilitiesRequestUtils:
                 if headers_value is not None:
                     if not isinstance(headers_value, Mapping):
                         return r[t.StrMapping].fail("Headers must be a mapping")
-                    validated = t.Api.STR_MAPPING_ADAPTER.validate_python(
-                        headers_value,
-                    )
+                    validated = t.Api.STR_MAPPING_ADAPTER.validate_python(headers_value)
                     merged.update(validated)
             return r[t.StrMapping].ok(merged)
 
@@ -76,8 +71,7 @@ class FlextApiUtilitiesRequestUtils:
 
         @staticmethod
         def validate_and_extract_timeout(
-            timeout: float | str | None,
-            kwargs: t.Api.RequestKwargs | None,
+            timeout: float | str | None, kwargs: t.Api.RequestKwargs | None
         ) -> p.Result[float]:
             """Validate and extract timeout from timeout value or kwargs."""
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
@@ -103,7 +97,7 @@ class FlextApiUtilitiesRequestUtils:
                 return r[t.Api.WebParams].ok(query_params)
             if not isinstance(params_value, Mapping):
                 return r[t.Api.WebParams].fail(
-                    f"Invalid params type: {type(params_value)}",
+                    f"Invalid params type: {type(params_value)}"
                 )
             normalized: t.MutableStrMapping = {}
             for key, value in params_value.items():
@@ -130,25 +124,24 @@ class FlextApiUtilitiesRequestUtils:
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)
             if body_result.failure:
                 return r[m.ConfigMap].fail(
-                    body_result.error or "Body extraction failed",
+                    body_result.error or "Body extraction failed"
                 )
             headers_result = request_utils.merge_headers(headers, request_kwargs)
             if headers_result.failure:
                 return r[m.ConfigMap].fail(
-                    headers_result.error or "Header extraction failed",
+                    headers_result.error or "Header extraction failed"
                 )
             timeout_result = request_utils.validate_and_extract_timeout(
-                timeout,
-                request_kwargs,
+                timeout, request_kwargs
             )
             if timeout_result.failure:
                 return r[m.ConfigMap].fail(
-                    timeout_result.error or "Timeout extraction failed",
+                    timeout_result.error or "Timeout extraction failed"
                 )
             query_result = request_utils.extract_query_params(request_kwargs)
             if query_result.failure:
                 return r[m.ConfigMap].fail(
-                    query_result.error or "Query params extraction failed",
+                    query_result.error or "Query params extraction failed"
                 )
             return r[m.ConfigMap].ok(
                 m.ConfigMap(
@@ -159,9 +152,9 @@ class FlextApiUtilitiesRequestUtils:
                         "headers": dict(headers_result.value),
                         "query_params": query_result.value,
                         "timeout": timeout_result.value,
-                    },
-                ),
+                    }
+                )
             )
 
 
-__all__: list[str] = ["FlextApiUtilitiesRequestUtils"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesRequestUtils"]

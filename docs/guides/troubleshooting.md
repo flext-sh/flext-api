@@ -51,6 +51,7 @@ git status
 #### Problem: ModuleNotFoundError
 
 ```python
+from __future__ import annotations
 ```
 
 **Check Poetry environment:**
@@ -63,6 +64,7 @@ poetry install
 ### r
 
 ```python
+from __future__ import annotations
 ```
 
 ### 3. Test Failures
@@ -70,49 +72,62 @@ poetry install
 #### Problem: Tests failing
 
 ```python
+from __future__ import annotations
 ```
 
 **Check test data:**
 
 ```python
+from __future__ import annotations
+
+
 def test_with_debug():
     result = my_function()
     print(f"Result: {result}")
     print(f"Success: {result.success}")
     if result.failure:
         print(f"Error: {result.failure()}")
-    assert result.success```
+    assert result.success
+```
+
 ### 4. Configuration Issues
 
 #### Problem: Configuration not loading
 
 ```python
-# Error
-ValidationError: field required```
+from __future__ import annotations
+# Error example (not a real executable snippet):
+# ValidationError: field required
+```
+
 #### Solutions
 
 **Check environment variables:**
 
 ```bash
-env | grep FLEXT_```
+env | grep FLEXT_
+```
+
 **Validate configuration:**
 
 ```python
-from flext_core import FlextSettings, e
+from __future__ import annotations
+from flext_core import c, FlextSettings, e
 
 try:
     settings = FlextSettings()
     print("Configuration valid")
 except c.ValidationError as e:
-    print(f"Configuration error: {e}")```
+    print(f"Configuration error: {e}")
+```
+
 **Debug configuration loading:**
 
 ```python
+from __future__ import annotations
 import os
 
-from flext_core import (
-    FlextSettings,
-)
+from flext_core import FlextSettings
 
 # Print all FLEXT environment variables
 for key, value in os.environ.items():
@@ -121,40 +136,54 @@ for key, value in os.environ.items():
 
 # Load and print configuration
 settings = FlextSettings()
-print(f"Config: {settings.dict()}")```
+print(f"Config: {settings.model_dump()}")
+```
+
 ### 5. LDIF Processing Issues
 
 #### Problem: LDIF parsing fails
 
 ```python
-# Error
-LdifParsingException: Invalid LDIF format```
+from __future__ import annotations
+# Error example (not a real executable snippet):
+# LdifParsingException: Invalid LDIF format
+```
+
 #### Solutions
 
 **Check LDIF content:**
 
 ```python
+from __future__ import annotations
 from flext_ldif import ldif
 
 content = """dn: cn=test,dc=example,dc=com
 cn: test
 objectClass: inetOrgPerson"""
 
-result = ldif.parse(content)
+result = ldif.parse_string(content)
 if result.failure:
     print(f"Parse error: {result.failure()}")
-    print(f"Content: {content!r}")```
+    print(f"Content: {content!r}")
+```
+
 **Enable debug logging:**
 
 ```python
+from __future__ import annotations
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Your LDIF processing code```
+# Your LDIF processing code
+```
+
 **Validate LDIF format:**
 
 ```python
+from __future__ import annotations
+
+
 # Check for common LDIF issues
 def validate_ldif_content(content: str) -> t.StringList:
     issues = []
@@ -170,19 +199,25 @@ def validate_ldif_content(content: str) -> t.StringList:
         if line and not line.startswith(("dn:", " ", "\t")) and ":" not in line:
             issues.append(f"Invalid line {i + 1}: {line}")
 
-    return issues```
+    return issues
+```
+
 ### 6. Migration Issues
 
 #### Problem: Migration fails
 
 ```python
-# Error
-LdifMigrationException: Server compatibility error```
+from __future__ import annotations
+# Error example (not a real executable snippet):
+# LdifMigrationException: Server compatibility error
+```
+
 #### Solutions
 
 **Check server configuration:**
 
 ```python
+from __future__ import annotations
 from flext_ldif import FlextLdifSettings
 
 settings = FlextLdifSettings(
@@ -192,43 +227,58 @@ settings = FlextLdifSettings(
     handle_schema_extensions=True,
 )
 
-print(f"Config: {settings.dict()}")```
+print(f"Config: {settings.model_dump()}")
+```
+
 **Enable server servers:**
 
 ```python
-settings = FlextLdifSettings(
-    servers_enabled=True, source_server="oid", target_server="oud"
-)```
+from __future__ import annotations
+
+# Conceptual server migration settings (not a real executable API)
+settings = {"servers_enabled": True, "source_server": "oid", "target_server": "oud"}
+```
+
 **Test with sample data:**
 
 ```python
+from __future__ import annotations
+from flext_ldif import ldif
+
 # Test migration with small sample
 sample_ldif = """dn: cn=test,dc=example,dc=com
 cn: test
 objectClass: inetOrgPerson"""
 
-result = ldif.parse(sample_ldif)
+result = ldif.parse_string(sample_ldif)
 if result.success:
     print("Sample parsing successful")
 else:
-    print(f"Sample parsing failed: {result.failure()}")```
+    print(f"Sample parsing failed: {result.failure}")
+```
+
 ### 7. Performance Issues
 
 #### Problem: Slow processing
 
 ```python
+from __future__ import annotations
 # Symptoms
 # - High memory usage
 # - Slow response times
-# - Timeout errors```
+# - Timeout errors
+```
+
 #### Solutions
 
 **Profile memory usage:**
 
 ```python
+from __future__ import annotations
 import os
 
 import psutil
+
 
 def profile_memory():
     process = psutil.Process(os.getpid())
@@ -241,29 +291,41 @@ def profile_memory():
 
     print(f"Memory used: {memory_used / 1024 / 1024:.2f} MB")
 
-profile_memory()```
+
+profile_memory()
+```
+
 **Optimize batch size:**
 
 ```python
+from __future__ import annotations
 from flext_ldif import FlextLdifSettings
 
 # Reduce batch size for memory-constrained environments
 settings = FlextLdifSettings(
     batch_size=100,  # Instead of default 1000
     parallel_processing=False,  # Disable for memory issues
-)```
+)
+```
+
 **Enable parallel processing:**
 
 ```python
-settings = FlextLdifSettings(
-    parallel_processing=True,
-    max_workers=4,  # Adjust based on CPU cores
-)```
+from __future__ import annotations
+
+# Conceptual tuning snippet (not a real executable API)
+settings = {
+    "parallel_processing": True,
+    "max_workers": 4,  # Adjust based on CPU cores
+}
+```
+
 ## Debugging Techniques
 
 ### 1. Logging Configuration
 
 ```python
+from __future__ import annotations
 import logging
 
 # Configure logging
@@ -272,15 +334,19 @@ logging.basicConfig(
 )
 
 # Use FLEXT logger
-logger = FlextLogger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 logger.debug("Debug message")
 logger.info("Info message")
 logger.warning("Warning message")
-logger.error("Error message")```
+logger.error("Error message")
+```
+
 ### 2. Exception Handling
 
 ```python
-from flext_core import p, r
+from __future__ import annotations
+from flext_core import c, p, r
+
 
 def safe_operation(data: dict) -> p.Result[dict]:
     try:
@@ -292,10 +358,13 @@ def safe_operation(data: dict) -> p.Result[dict]:
         return r.fail(f"Validation failed: {e}")
     except Exception as e:
         logger.error(f"Unexpected error: {e}", exc_info=True)
-        return r.fail(f"Operation failed: {e}")```
+        return r.fail(f"Operation failed: {e}")
+```
+
 ### 3. Debug Mode
 
 ```python
+from __future__ import annotations
 from flext_core import FlextSettings
 
 # Enable debug mode
@@ -303,10 +372,15 @@ settings = FlextSettings(debug=True)
 
 # Debug information will be printed
 print(f"Debug mode: {settings.debug}")
-print(f"Log level: {settings.log_level}")```
+print(f"Log level: {settings.log_level}")
+```
+
 ### 4. Step-by-Step Debugging
 
 ```python
+from __future__ import annotations
+
+
 def debug_ldif_processing(content: str):
     """Debug LDIF processing step by step."""
     print(f"Input content length: {len(content)}")
@@ -329,12 +403,14 @@ def debug_ldif_processing(content: str):
     # Step 3: Try parsing
     from flext_ldif import ldif
 
-    result = ldif.parse(content)
+    result = ldif.parse_string(content)
     if result.success:
         entries = result.unwrap()
         print(f"SUCCESS: Parsed {len(entries)} entries")
     else:
-        print(f"ERROR: Parse failed: {result.failure()}")```
+        print(f"ERROR: Parse failed: {result.failure()}")
+```
+
 ## Error Codes Reference
 
 ### FLEXT Core Errors
@@ -366,10 +442,13 @@ def debug_ldif_processing(content: str):
 ### Memory Issues
 
 ```python
+from __future__ import annotations
+
 # Monitor memory usage
 import os
 
 import psutil
+
 
 def monitor_memory():
     process = psutil.Process(os.getpid())
@@ -382,25 +461,35 @@ def monitor_memory():
     if memory_info.rss > 500 * 1024 * 1024:  # 500MB
         print("WARNING: High memory usage detected")
 
-monitor_memory()```
+
+monitor_memory()
+```
+
 ### CPU Issues
 
 ```python
+from __future__ import annotations
+
 # Monitor CPU usage
+import os
 import time
 
 import psutil
 
+
 def monitor_cpu():
     process = psutil.Process(os.getpid())
 
-    # Get CPU usage over time
+    # Get CPU usage samples quickly
     for i in range(10):
-        cpu_percent = process.cpu_percent()
+        cpu_percent = process.cpu_percent(interval=0.01)
         print(f"CPU usage: {cpu_percent}%")
-        time.sleep(1)
+        time.sleep(0.01)
 
-monitor_cpu()```
+
+monitor_cpu()
+```
+
 ## Getting Help
 
 ### Self-Service Resources
@@ -462,18 +551,24 @@ When reporting issues, include:
 
 1. **Error Details**
 
-   ```python notest
-   # Full error traceback
+   ```python
+
+from **future** import annotations
+
+# Full error traceback
+
    import traceback
    try:
        # Your code here
    except Exception as e:
        traceback.print_exc()
+
    ```
 
 1. **Minimal Reproduction**
 
-   ```python notest
+   ```python
+from __future__ import annotations
    # Minimal code that reproduces the issue
    from flext_core import FlextBus
    ```
@@ -512,27 +607,37 @@ from flext_core import u
 1. **Always Use r**
 
 ```python
+from __future__ import annotations
+
+
 # ✅ GOOD
 def process(data: dict) -> p.Result[ProcessedData]:
     return r.ok(ProcessedData(**data))
 
+
 # ❌ BAD
 def process(data: dict) -> ProcessedData:
-    return ProcessedData(**data)```
+    return ProcessedData(**data)
+```
+
 1. **Validate Input Early**
 
-   ```python notest
+   ```python
+
+from **future** import annotations
    def process_data(data: dict) -> p.Result[dict]:
        if not data:
            return r.fail("Data required")
 
        # Process data
        return r.ok(processed_data)
+
    ```
 
 1. **Use Type Hints**
 
-   ```python notest
+   ```python
+from __future__ import annotations
    # ✅ GOOD
    def process(items: t.SequenceOf[Item]) -> p.Result[Sequence[ProcessedItem]]:
        pass
@@ -545,7 +650,9 @@ def process(data: dict) -> ProcessedData:
 
 1. **Test Thoroughly**
 
-   ```python notest
+   ```python
+
+from **future** import annotations
    def test_process_data():
        # Test success case
        result = process_data({"key": "value"})
@@ -554,6 +661,7 @@ def process(data: dict) -> ProcessedData:
        # Test failure case
        result = process_data(None)
        assert result.failure
+
    ```
 
 ## Resources
