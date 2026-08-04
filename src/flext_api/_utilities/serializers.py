@@ -45,8 +45,7 @@ class FlextApiUtilitiesSerializers:
             result = msgpack.unpackb(data)
             if result is None:
                 return r[t.JsonValue].fail(
-                    "msgpack nil is forbidden because None cannot be a "
-                    "success payload"
+                    "msgpack nil is forbidden because None cannot be a success payload"
                 )
             normalized = t.Api.API_JSON_VALUE_ADAPTER.validate_python(result)
             return r[t.JsonValue].ok(normalized)
