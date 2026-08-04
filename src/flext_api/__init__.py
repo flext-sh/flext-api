@@ -30,9 +30,10 @@ if TYPE_CHECKING:
     from .api import FlextApi as FlextApi
     from .api import FlextApiClient as FlextApiClient
     from .api import api as api
-    from .base import FlextApiServiceBase as FlextApiServiceBase
-
-    s: type[FlextApiServiceBase[bool]]
+    from .base import (
+        FlextApiServiceBase as FlextApiServiceBase,
+        FlextApiServiceBase as s,
+    )
     from .constants import FlextApiConstants as FlextApiConstants
 
     c: type[FlextApiConstants]
