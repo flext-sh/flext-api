@@ -4,6 +4,29 @@
 
 # flext-api - Getting Started with FLEXT
 
+<!-- TOC START -->
+- [What is FLEXT](#what-is-flext)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+  - [Basic Installation](#basic-installation)
+  - [Development Installation](#development-installation)
+  - [Docker Installation](#docker-installation)
+- [Your First FLEXT Application](#your-first-flext-application)
+  - [1. Basic Setup](#1-basic-setup)
+  - [2. Using flext-ldif for LDIF Processing](#2-using-flext-ldif-for-ldif-processing)
+  - [3. Railway-Oriented Error Handling](#3-railway-oriented-error-handling)
+  - [4. CQRS Pattern with Commands and Queries](#4-cqrs-pattern-with-commands-and-queries)
+- [Configuration](#configuration)
+  - [Basic Configuration](#basic-configuration)
+  - [Programmatic Configuration](#programmatic-configuration)
+- [Next Steps](#next-steps)
+  - [Explore the Ecosystem](#explore-the-ecosystem)
+  - [Learn Key Patterns](#learn-key-patterns)
+  - [Build Real Applications](#build-real-applications)
+- [Getting Help](#getting-help)
+- [What's Next](#whats-next)
+<!-- TOC END -->
+
 > Project profile: `flext-api`
 
 ## What is FLEXT
@@ -85,9 +108,7 @@ container = FlextContainer()
 # Register services (example)
 # container.bind(IService, ServiceImplementation())
 
-print("FLEXT application initialized!")
-```
-
+print("FLEXT application initialized!")```
 ### 2. Using flext-ldif for LDIF Processing
 
 ```python
@@ -105,9 +126,7 @@ if result.success:
     entries = result.unwrap().entries
     print(f"Successfully parsed {len(entries)} LDIF entries")
 else:
-    print(f"Failed to parse LDIF: {result.error}")
-```
-
+    print(f"Failed to parse LDIF: {result.error}")```
 ### 3. Railway-Oriented Error Handling
 
 ```python
@@ -147,9 +166,7 @@ result = process_ldif_data(ldif_content)
 if result.success:
     print(f"Success: {result.unwrap()}")
 else:
-    print(f"Error: {result.error}")
-```
-
+    print(f"Error: {result.error}")```
 ### 4. CQRS Pattern with Commands and Queries
 
 ```python
@@ -182,9 +199,7 @@ class UserService:
 user_service = UserService()
 
 create_result = user_service.create_user(CreateUserCommand("john", "john@example.com"))
-get_result = user_service.get_user(GetUserQuery("user123"))
-```
-
+get_result = user_service.get_user(GetUserQuery("user123"))```
 ## Configuration
 
 ### Basic Configuration
@@ -195,9 +210,7 @@ FLEXT uses environment variables for configuration:
 # Set configuration
 export FLEXT_LOG_LEVEL=INFO
 export FLEXT_LDIF_DEFAULT_ENCODING=utf-8
-export FLEXT_LDIF_STRICT_VALIDATION=true
-```
-
+export FLEXT_LDIF_STRICT_VALIDATION=true```
 ### Programmatic Configuration
 
 ```python
@@ -207,9 +220,7 @@ from flext_ldif import FlextLdifSettings
 # Create custom configuration
 settings = FlextLdifSettings(ldif_encoding="utf-8", ldif_strict_validation=True)
 
-print(f"LDIF encoding: {settings.ldif.ldif_encoding}")
-```
-
+print(f"LDIF encoding: {settings.ldif.ldif_encoding}")```
 ## Next Steps
 
 ### Explore the Ecosystem

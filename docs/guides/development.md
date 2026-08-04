@@ -4,6 +4,37 @@
 
 # flext-api - FLEXT Development Guide
 
+<!-- TOC START -->
+- [Prerequisites](#prerequisites)
+- [Development Environment Setup](#development-environment-setup)
+  - [1. Clone the Repository](#1-clone-the-repository)
+  - [2. Install Dependencies](#2-install-dependencies)
+  - [3. Verify Installation](#3-verify-installation)
+- [Project Structure](#project-structure)
+- [Development Workflow](#development-workflow)
+  - [1. Create a Feature Branch](#1-create-a-feature-branch)
+  - [2. Make Changes](#2-make-changes)
+  - [3. Run Quality Gates](#3-run-quality-gates)
+  - [4. Commit Changes](#4-commit-changes)
+- [Code Standards](#code-standards)
+  - [Type Safety (ZERO TOLERANCE)](#type-safety-zero-tolerance)
+- [Adding New Projects](#adding-new-projects)
+  - [1. Create Project Structure](#1-create-project-structure)
+  - [2. Implement Core Patterns](#2-implement-core-patterns)
+  - [Test Failures](#test-failures)
+  - [Import Issues](#import-issues)
+- [Documentation](#documentation)
+  - [Code Documentation](#code-documentation)
+  - [README Updates](#readme-updates)
+- [Contributing](#contributing)
+  - [Pull Request Process](#pull-request-process)
+  - [Code Review Guidelines](#code-review-guidelines)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+- [Resources](#resources)
+- [Support](#support)
+<!-- TOC END -->
+
 > Project profile: `flext-api`
 
 This guide covers setting up a development environment for FLEXT contributions and understanding the development workflow.
@@ -128,9 +159,7 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
 
 # ❌ WRONG - Missing type annotations
 def process_data_untyped(data):
-    return data
-```
-
+    return data```
 ## Adding New Projects
 
 ### 1. Create Project Structure
@@ -141,9 +170,7 @@ cp -r flext-api flext-newlib
 cd flext-newlib
 
 # Update project metadata
-# Edit pyproject.toml, README.md, etc.
-```
-
+# Edit pyproject.toml, README.md, etc.```
 ### 2. Implement Core Patterns
 
 ```python
@@ -178,9 +205,7 @@ class FlextNewlibModels:
         data: t.JsonMapping
 
     class Response(m.BaseModel):
-        result: p.Result[t.JsonValue]
-```
-
+        result: p.Result[t.JsonValue]```
 ### Test Failures
 
 ```bash
@@ -188,9 +213,7 @@ class FlextNewlibModels:
 pytest tests/unit/test_module.py -vv --tb=long
 
 # Debug mode
-pytest tests/unit/test_module.py --pdb
-```
-
+pytest tests/unit/test_module.py --pdb```
 ### Import Issues
 
 ```bash
@@ -232,9 +255,7 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
 
     """
     # Implementation here
-    return p.Result[ProcessedData].ok(ProcessedData(value=str(data.get("key"))))
-```
-
+    return p.Result[ProcessedData].ok(ProcessedData(value=str(data.get("key"))))```
 ### README Updates
 
 Update project README.md files when adding new features:
@@ -250,9 +271,7 @@ from __future__ import annotations
 # lib = FlextNewlib()
 # result = lib.new_feature()
 
-# settings = FlextNewlibSettings(new_setting="value")
-```
-
+# settings = FlextNewlibSettings(new_setting="value")```
 ## Contributing
 
 ### Pull Request Process

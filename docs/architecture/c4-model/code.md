@@ -1,5 +1,19 @@
 # C4 Model - Code
 
+<!-- TOC START -->
+- [Overview](#overview)
+- [Code Diagram](#code-diagram)
+- [Code Structure Analysis](#code-structure-analysis)
+  - [Core Module Relationships](#core-module-relationships)
+  - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
+  - [Test Fixtures and Mocks](#test-fixtures-and-mocks)
+- [Performance Optimizations](#performance-optimizations)
+  - [Connection Pooling](#connection-pooling)
+  - [Response Caching](#response-caching)
+- [Security Implementation](#security-implementation)
+  - [Authentication Handlers](#authentication-handlers)
+<!-- TOC END -->
+
 ## Overview
 
 This document describes the **Code** level of the C4 model for FLEXT-API, showing the actual implementation details, class relationships, and code organization.
@@ -193,9 +207,7 @@ flext_api/
 #### FlextApi (api.py)
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Test Fixtures and Mocks
 
 ```python
@@ -222,9 +234,7 @@ async def async_client(test_config):
     """Real HTTP client for integration tests."""
     client = FlextApiClient(test_config)
     yield client
-    await client.close()
-```
-
+    await client.close()```
 ## Performance Optimizations
 
 ### Connection Pooling
@@ -259,9 +269,7 @@ class ConnectionPoolManager:
         """Close all connection pools."""
         for client in self._pools.values():
             await client.aclose()
-        self._pools.clear()
-```
-
+        self._pools.clear()```
 ### Response Caching
 
 ```python
@@ -297,9 +305,7 @@ class ResponseCache:
     def make_cache_key(self, method: str, url: str, headers: dict[str, str]) -> str:
         """Generate cache key from request."""
         key_data = f"{method}:{url}:{sorted(headers.items())}"
-        return hashlib.sha256(key_data.encode()).hexdigest()
-```
-
+        return hashlib.sha256(key_data.encode()).hexdigest()```
 ## Security Implementation
 
 ### Authentication Handlers
@@ -336,9 +342,7 @@ class AuthenticationManager:
             return r.fail(f"Authentication failed: {auth_result.error}")
 
         authenticated_request = auth_result.unwrap()
-        return r.ok(authenticated_request)
-```
-
+        return r.ok(authenticated_request)```
 ---
 
 **C4 Model Complete**: This concludes the C4 model documentation for FLEXT-API, showing the progression from high-level system context down to implementation details.

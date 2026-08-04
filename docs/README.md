@@ -1,5 +1,29 @@
 # FLEXT-API
 
+<!-- TOC START -->
+- [Overview](#overview)
+  - [Core Features](#core-features)
+  - [Integration with the FLEXT Ecosystem](#integration-with-the-flext-ecosystem)
+- [Current Source Structure](#current-source-structure)
+  - [Key Architectural Patterns](#key-architectural-patterns)
+- [Documentation Structure](#documentation-structure)
+  - [Architecture & Design](#architecture-design)
+  - [Development & Integration](#development-integration)
+- [Quick Start](#quick-start)
+  - [Installation](#installation)
+  - [Basic HTTP Client Usage](#basic-http-client-usage)
+  - [Settings-Driven Configuration](#settings-driven-configuration)
+  - [FastAPI Application Setup](#fastapi-application-setup)
+- [Testing](#testing)
+- [Current Status](#current-status)
+  - [Production Readiness](#production-readiness)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+  - [Immediate (Next Release)](#immediate-next-release)
+  - [Short-term (Next Month)](#short-term-next-month)
+  - [Long-term (Next Quarter)](#long-term-next-quarter)
+<!-- TOC END -->
+
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Current](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
 [![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
@@ -118,9 +142,7 @@ if result.success:
     print(f"Status: {response.status_code}")
     print(f"Body: {response.body}")
 else:
-    print(f"Error: {result.error}")
-```
-
+    print(f"Error: {result.error}")```
 ### Settings-Driven Configuration
 
 ```python
@@ -136,9 +158,7 @@ settings = FlextApiSettings(
 )
 
 print(settings.Api.base_url)
-print(settings.Api.timeout)
-```
-
+print(settings.Api.timeout)```
 ### FastAPI Application Setup
 
 A FastAPI application factory is **not** currently part of the public API. Use
@@ -159,9 +179,7 @@ uv run pytest --markdown-docs -q
 # Run specific test categories
 uv run pytest tests/unit/        # Unit tests
 uv run pytest tests/integration/ # Integration tests
-uv run pytest tests/e2e/          # End-to-end tests
-```
-
+uv run pytest tests/e2e/          # End-to-end tests```
 ______________________________________________________________________
 
 ## Current Status
