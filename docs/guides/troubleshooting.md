@@ -615,13 +615,12 @@ from **future** import annotations
 1. **Use Type Hints**
 
    ```python
-from __future__ import annotations
-   # ✅ GOOD
+   from __future__ import annotations
+   # GOOD
    def process(items: t.SequenceOf[Item]) -> p.Result[Sequence[ProcessedItem]]:
        pass
 
-
-   # ❌ BAD
+   # BAD
    def process(items):
        pass
    ```
@@ -629,8 +628,7 @@ from __future__ import annotations
 1. **Test Thoroughly**
 
    ```python
-
-from **future** import annotations
+   from __future__ import annotations
    def test_process_data():
        # Test success case
        result = process_data({"key": "value"})
