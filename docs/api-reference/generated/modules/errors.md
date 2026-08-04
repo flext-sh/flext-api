@@ -1,12 +1,12 @@
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
-# flext_api.models
+# flext_api.errors
 
 <!-- TOC START -->
 - No sections found
 <!-- TOC END -->
 
-::: flext_api.models
+::: flext_api.errors
     options:
       show_root_heading: true
       show_root_full_path: false
