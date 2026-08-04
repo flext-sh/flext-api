@@ -248,9 +248,7 @@ class TestsFlextApiSmoke:
 
     def test_facade_execute_reports_success_and_retains_settings(self) -> None:
         """The facade executes successfully and preserves its settings."""
-        settings = FlextApiSettings(
-            base_url="https://api.example", timeout=4.0
-        )
+        settings = FlextApiSettings(base_url="https://api.example", timeout=4.0)
         api = FlextApi(settings=settings)
         result = api.execute()
         tm.that(result.success, eq=True)

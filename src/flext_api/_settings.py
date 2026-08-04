@@ -41,7 +41,8 @@ class FlextApiSettings(FlextSettings):
             ),
         ]
         timeout: Annotated[
-            float, m.Field(default=30.0, description="Default request timeout in seconds")
+            float,
+            m.Field(default=30.0, description="Default request timeout in seconds"),
         ]
         max_retries: Annotated[
             int, m.Field(default=3, description="Maximum retry attempts")
@@ -70,7 +71,9 @@ class FlextApiSettings(FlextSettings):
     if TYPE_CHECKING:
         Api: _Api
     else:
-        Api: _Api = m.Field(default_factory=_Api, description="Namespaced API settings.")
+        Api: _Api = m.Field(
+            default_factory=_Api, description="Namespaced API settings."
+        )
 
     @u.model_validator(mode="before")
     @classmethod
