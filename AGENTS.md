@@ -34,6 +34,8 @@ All method calls funnel through the private `_http_method`; headers/kwargs are a
 
 - Use the **typed HTTP methods / facade** — never bypass the shared client chain.
 - Request/response payloads are Pydantic-2 models (`model_dump(mode="json")` only at the wire edge).
+- Config/settings canonical pattern: ADR-012.
+- Codemod governance (ast-grep + make mod): ADR-014.
 
 ## Commands
 
