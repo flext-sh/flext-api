@@ -51,7 +51,6 @@ class FlextApiClientCodecMixin:
             validated: p.Result[t.Api.ResponseBody] = u.validate_value(
                 t.Api.RESPONSE_BODY_ADAPTER, json_data
             )
-            return validated
         except (
             AttributeError,
             ValueError,
@@ -62,6 +61,8 @@ class FlextApiClientCodecMixin:
             c.ValidationError,
         ) as exc:
             return r[t.Api.ResponseBody].fail_op("JSON deserialization", exc)
+        else:
+            return validated
 
     @staticmethod
     def _deserialize_text(response: httpx.Response) -> p.Result[t.Api.ResponseBody]:

@@ -299,16 +299,12 @@ uv run pytest --markdown-docs -q```
 ```bash
 # Ensure the workspace environment is bootstrapped
 make boot
-uv run pytest --markdown-docs docs/guides/testing.md -q
-```
-
+uv run pytest --markdown-docs docs/guides/testing.md -q```
 ### Test Timeout
 
 ```bash
 # Increase the per-test timeout during debugging
-uv run pytest --markdown-docs -q --timeout=60
-```
-
+uv run pytest --markdown-docs -q --timeout=60```
 ### Coverage Issues
 
 ```bash

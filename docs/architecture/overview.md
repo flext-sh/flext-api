@@ -191,9 +191,7 @@ spec:
               path: /ready
               port: 8000
             initialDelaySeconds: 5
-            periodSeconds: 5
-```
-
+            periodSeconds: 5```
 ## Quality Metrics
 
 ### Current State (v0.12.0-dev)

@@ -533,9 +533,9 @@ When reporting issues, include:
 
    ```python
 
-from **future** import annotations
+   from __future__ import annotations
 
-# Full error traceback
+   # Full error traceback
 
    import traceback
    try:
@@ -548,29 +548,10 @@ from **future** import annotations
 1. **Minimal Reproduction**
 
    ```python
-from __future__ import annotations
+   from __future__ import annotations
    # Minimal code that reproduces the issue
    from flext_core import FlextBus
    ```
-
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_api import FlextApi
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 ### Your minimal example here
 
@@ -602,7 +583,7 @@ def process(data: dict) -> ProcessedData:
 
    ```python
 
-from **future** import annotations
+from __future__ import annotations
    def process_data(data: dict) -> p.Result[dict]:
        if not data:
            return r.fail("Data required")

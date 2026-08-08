@@ -222,9 +222,7 @@ export PYTHONPATH=src
 python -c "import flext_core; u.Cli.print(flext_core.__file__)"
 
 # Check poetry environment
-poetry env info
-```
-
+poetry env info```
 ## Documentation
 
 ### Code Documentation
