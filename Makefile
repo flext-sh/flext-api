@@ -62,7 +62,11 @@ override PYTEST_PROGRESS_ARGS := --verbose
 override PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=0.001 --tb=short
 override PYTEST_DIAG_ARGS := -rA --durations=0 --tb=long --showlocals
 override PYTEST_PARALLEL_WORKERS := 12
+<<<<<<< HEAD
 override PYTEST_PARALLEL_DISTRIBUTION := worksteal
+=======
+override PYTEST_PARALLEL_DISTRIBUTION := loadgroup
+>>>>>>> 691d893db278c03b54c33f67fa6f7e8bf9cdbd86
 override PYTEST_PROFILE_SORT := cumulative
 override PYTEST_PROFILE_LIMIT := 50
 override PROCESS_TIMEOUT_COMMAND := timeout
@@ -991,19 +995,26 @@ _builtin_release_rel: _builtin_require_environment
 		$$push_flag \
 		$$projects_args
 
-# Generation preserves the caller's scope. Conform owns analyzer roots in the
-# rendered tooling context; dependency modernization owns only dependency
-# settings that conform does not render.
+# Generation has one owner. Conform preserves the caller's scope and applies
+# the complete dependency/tooling projection before it verifies its fixed point.
+# Dependency upgrades remain a separate explicit verb because they rewrite lock
+# floors; gen must never run a second pyproject writer over conform's result.
 _builtin_gen_check: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope "$(CODEGEN_SCOPE)" --mode check
+<<<<<<< HEAD
 	@$(PROJECT_FLEXT_INFRA) codegen init --workspace "$(PROJECT_ROOT)" --check
 	@$(PROJECT_FLEXT_INFRA) deps modernize --workspace "$(PROJECT_ROOT)" --check
+=======
+>>>>>>> 691d893db278c03b54c33f67fa6f7e8bf9cdbd86
 
 _builtin_gen_all: _builtin_require_environment
 	$(call _require_apply)
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope "$(CODEGEN_SCOPE)" --mode apply
+<<<<<<< HEAD
 	@$(PROJECT_FLEXT_INFRA) codegen init --workspace "$(PROJECT_ROOT)" --apply
 	@$(PROJECT_FLEXT_INFRA) deps modernize --workspace "$(PROJECT_ROOT)" --apply
+=======
+>>>>>>> 691d893db278c03b54c33f67fa6f7e8bf9cdbd86
 
 _builtin_gen_apply: _builtin_gen_all
 
