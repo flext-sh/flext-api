@@ -997,20 +997,10 @@ _builtin_release_rel: _builtin_require_environment
 # floors; gen must never run a second pyproject writer over conform's result.
 _builtin_gen_check: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope "$(CODEGEN_SCOPE)" --mode check
-<<<<<<< HEAD
-	@$(PROJECT_FLEXT_INFRA) codegen init --workspace "$(PROJECT_ROOT)" --check
-	@$(PROJECT_FLEXT_INFRA) deps modernize --workspace "$(PROJECT_ROOT)" --check
-=======
->>>>>>> 691d893db278c03b54c33f67fa6f7e8bf9cdbd86
 
 _builtin_gen_all: _builtin_require_environment
 	$(call _require_apply)
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope "$(CODEGEN_SCOPE)" --mode apply
-<<<<<<< HEAD
-	@$(PROJECT_FLEXT_INFRA) codegen init --workspace "$(PROJECT_ROOT)" --apply
-	@$(PROJECT_FLEXT_INFRA) deps modernize --workspace "$(PROJECT_ROOT)" --apply
-=======
->>>>>>> 691d893db278c03b54c33f67fa6f7e8bf9cdbd86
 
 _builtin_gen_apply: _builtin_gen_all
 

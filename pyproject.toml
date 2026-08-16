@@ -182,7 +182,7 @@ project-excludes = [
   "typings/**",
   "vendor/**",
 ]
-project-includes = ["src/**/*.py*", "tests/**/*.py*"]
+project-includes = ["examples/**/*.py*", "src/**/*.py*", "tests/**/*.py*"]
 python-version = "3.13"
 search-path = ["src", "."]
 use-ignore-files = false
@@ -302,7 +302,7 @@ exclude = [
   "vendor",
 ]
 extraPaths = ["src", "."]
-include = ["src", "tests"]
+include = ["examples", "src", "tests"]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportArgumentType = "none"
@@ -369,6 +369,24 @@ reportUnknownParameterType = "none"
 reportUnknownVariableType = "none"
 reportUnusedImport = "none"
 root = "tests"
+
+[[tool.pyright.executionEnvironments]]
+extraPaths = [".", "src"]
+reportArgumentType = "none"
+reportAssignmentType = "none"
+reportAttributeAccessIssue = "none"
+reportGeneralTypeIssues = "none"
+reportInvalidTypeForm = "none"
+reportPrivateImportUsage = "none"
+reportPrivateUsage = "none"
+reportReturnType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownMemberType = "none"
+reportUnknownParameterType = "none"
+reportUnknownVariableType = "none"
+reportUnusedImport = "none"
+root = "examples"
 
 # [MANAGED] pytest
 [tool.pytest.ini_options]
@@ -535,7 +553,20 @@ split-on-trailing-comma = false
 [tool.ruff.lint.per-file-ignores]
 "**/.vulture_whitelist.py" = ["ALL"]
 "**/*_pb2*.py" = ["ALL"]
-"**/__init__.py" = ["ALL"]
+"**/__init__.py" = [
+  "any-type",
+  "builtin-import-shadowing",
+  "implicit-namespace-package",
+  "import-private-name",
+  "invalid-module-name",
+  "non-empty-init-module",
+  "runtime-import-in-type-checking-block",
+  "undefined-export",
+  "undefined-local-with-import-star",
+  "undefined-local-with-import-star-usage",
+  "undocumented-public-init",
+  "unused-import",
+]
 "**/tests/**" = [
   "assert",
   "compare-to-empty-string",
