@@ -58,20 +58,15 @@ class FlextApiUtilitiesSettingsManager:
             return r[m.Api.ClientConfig].ok(self._client_config)
         return r[m.Api.ClientConfig].fail("No configuration set")
 
-    def _normalize_value(self, key: str, *, value: t.Scalar) -> p.Result[t.JsonPayload]:
+    def _normalize_value(
+        self, key: str, *, value: t.Scalar | t.StrMapping
+    ) -> p.Result[t.JsonPayload]:
         """Normalize configuration value based on key type - no fallbacks."""
         result: p.Result[t.JsonPayload]
         match key:
             case "headers" if isinstance(value, Mapping):
-                validated_result = u.try_(
-                    lambda: t.Api.STR_MAPPING_ADAPTER.validate_python(value),
-                    catch=(c.ValidationError, TypeError, ValueError),
-                ).map_error(lambda e: f"Failed to validate headers mapping: {e}")
-                result = (
-                    r[t.JsonPayload].fail(validated_result.error)
-                    if validated_result.failure
-                    else r[t.JsonPayload].ok(validated_result.value)
-                )
+                validated = t.Api.STR_MAPPING_ADAPTER.validate_python(value)
+                result = r[t.JsonPayload].ok(dict(validated))
             case "headers" if isinstance(value, str):
                 parsed_result = u.try_(
                     lambda: t.Api.STR_MAPPING_ADAPTER.validate_json(value),

@@ -142,6 +142,7 @@ namespace_packages = true
 no_implicit_reexport = true
 plugins = ["pydantic.mypy"]
 python_version = "3.13"
+show_traceback = true
 strict_equality = true
 warn_redundant_casts = true
 warn_return_any = true
@@ -182,7 +183,7 @@ project-excludes = [
   "typings/**",
   "vendor/**",
 ]
-project-includes = ["src/**/*.py*", "tests/**/*.py*"]
+project-includes = ["examples/**/*.py*", "src/**/*.py*", "tests/**/*.py*"]
 python-version = "3.13"
 search-path = ["src", "."]
 use-ignore-files = false
@@ -302,7 +303,7 @@ exclude = [
   "vendor",
 ]
 extraPaths = ["src", "."]
-include = ["src", "tests"]
+include = ["examples", "src", "tests"]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportArgumentType = "none"
@@ -370,6 +371,24 @@ reportUnknownVariableType = "none"
 reportUnusedImport = "none"
 root = "tests"
 
+[[tool.pyright.executionEnvironments]]
+extraPaths = [".", "src"]
+reportArgumentType = "none"
+reportAssignmentType = "none"
+reportAttributeAccessIssue = "none"
+reportGeneralTypeIssues = "none"
+reportInvalidTypeForm = "none"
+reportPrivateImportUsage = "none"
+reportPrivateUsage = "none"
+reportReturnType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownMemberType = "none"
+reportUnknownParameterType = "none"
+reportUnknownVariableType = "none"
+reportUnusedImport = "none"
+root = "examples"
+
 # [MANAGED] pytest
 [tool.pytest.ini_options]
 addopts = [
@@ -383,7 +402,7 @@ filterwarnings = [
   "error",
   "module::flext_core._constants.enforcement.FlextMroViolation",
 ]
-flext_slow_timeout_seconds = 60
+flext_slow_timeout_seconds = "60"
 markers = [
   "docker: tests requiring Docker",
   "e2e: end-to-end integration tests",
@@ -534,9 +553,20 @@ known-first-party = [
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"**/.vulture_whitelist.py" = ["ALL"]
-"**/*_pb2*.py" = ["ALL"]
-"**/__init__.py" = ["ALL"]
+"**/__init__.py" = [
+  "any-type",
+  "builtin-import-shadowing",
+  "implicit-namespace-package",
+  "import-private-name",
+  "invalid-module-name",
+  "non-empty-init-module",
+  "runtime-import-in-type-checking-block",
+  "undefined-export",
+  "undefined-local-with-import-star",
+  "undefined-local-with-import-star-usage",
+  "undocumented-public-init",
+  "unused-import",
+]
 "**/tests/**" = [
   "assert",
   "compare-to-empty-string",
@@ -557,6 +587,9 @@ sort_first = ["build-system", "dependency-groups", "project", "tool"]
 [tool.uv]
 exclude-newer = "7 days"
 link-mode = "copy"
+
+[tool.uv.exclude-newer-package]
+mypy = "2026-08-15T03:04:00Z"
 
 [tool.vulture]
 exclude = ["*/_protocols/*"]
@@ -609,7 +642,7 @@ dev = [
   "mkdocs-versioning>=0.2",
   "mkdocstrings>=0.24",
   "mkdocstrings-python>=1.7",
-  "mypy>=2.3.0",
+  "mypy>=2.3.1",
   "pip-audit>=2.7.3",
   "pre-commit>=4.6.1",
   "pylint>=3.3",
