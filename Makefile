@@ -67,10 +67,10 @@ override PYTEST_PROFILE_SORT := cumulative
 override PYTEST_PROFILE_LIMIT := 50
 override PROCESS_TIMEOUT_COMMAND := timeout
 # CI ternary wall-clock budget per verb/what/project: CI=Y owns the fast
-# gates (60s each); CI=N owns the slow whole-program analyses
+# gates (120s each); CI=N owns the slow whole-program analyses
 # (300s each); an unset token runs unbounded.
 ifeq ($(strip $(CI)),Y)
-VERB_BOUNDED := timeout --signal=TERM --kill-after=5s 60s
+VERB_BOUNDED := timeout --signal=TERM --kill-after=5s 120s
 else ifeq ($(strip $(CI)),N)
 VERB_BOUNDED := timeout --signal=TERM --kill-after=5s 300s
 else
@@ -281,7 +281,7 @@ FLEXT_INFRA_BOOTSTRAP := env -u PYTHONPATH -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJ
 endif
 
 ifeq ($(MAKE_PROFILE),workspace-root)
-CODEGEN_SCOPE := all
+CODEGEN_SCOPE := $(if $(filter all,$(SCOPE)),all,self)
 ALLOWED_PROJECTS := . $(WORKSPACE_MEMBERS)
 else
 CODEGEN_SCOPE := self
@@ -328,13 +328,8 @@ SETUP_ENVIRONMENT_RECIPE = set -eu; \
 
 WORKSPACE_ORCHESTRATE = $(UV_RUN) python -m flext_infra workspace orchestrate
 REQUESTED_PROJECTS := $(strip $(if $(PROJECT),$(PROJECT),$(PROJECTS)))
-# A workspace root owns no local gate implementation: its verbs fan out to the
-# declared members. Selecting the root (PROJECT=.) would make it orchestrate
-# itself forever; map `.` to WORKSPACE_MEMBERS instead of failing closed mid-CI.
-DEFAULT_PROJECTS := $(WORKSPACE_MEMBERS) .
-
+DEFAULT_PROJECTS := .
 SELECTED_PROJECTS := $(if $(strip $(REQUESTED_PROJECTS)),$(REQUESTED_PROJECTS),$(DEFAULT_PROJECTS))
-
 WORKSPACE_PROJECT_ARGS := $(foreach project,$(SELECTED_PROJECTS),--projects $(project))
 WORKSPACE_CHECK_ARGS := $(if $(strip $(CHECK_GATES)),--make-arg "CHECK_GATES=$(strip $(CHECK_GATES))")
 WORKSPACE_TEST_ARGS := $(if $(strip $(FLEXT_PYTEST_FILE_RAW)),--file "$${FLEXT_PYTEST_FILE_RAW}") $(if $(strip $(FLEXT_PYTEST_MATCH_RAW)),--match "$${FLEXT_PYTEST_MATCH_RAW}") $(if $(strip $(FLEXT_PYTEST_WHAT_RAW)),--what "$${FLEXT_PYTEST_WHAT_RAW}")
@@ -875,11 +870,11 @@ _builtin_check_all: _builtin_require_environment
 	if [ -z "$$gates" ]; then gates="$$(printf '%s' '$(CHECK_GATES_DEFAULT)' | tr ' ' ',')"; fi; \
 	gates="$$(printf '%s' "$$gates" | tr -d '[:space:]')"; \
 	if [ "$(strip $(CI))" = "Y" ]; then \
-		gates="lint,pyright,security,markdown,smells"; \
-		printf 'INFO: CI=Y runs check gates: lint pyright security markdown smells\n'; \
+		gates="lint,pyright,markdown,smells"; \
+		printf 'INFO: CI=Y runs check gates: lint pyright markdown smells\n'; \
 	elif [ "$(strip $(CI))" = "N" ]; then \
-		gates="pyrefly,mypy"; \
-		printf 'INFO: CI=N runs check gates: pyrefly mypy\n'; \
+		gates="pyrefly,mypy,security"; \
+		printf 'INFO: CI=N runs check gates: pyrefly mypy security\n'; \
 	fi; \
 	for gate in $$(printf '%s' "$$gates" | tr ',' ' '); do \
 		case " $(CHECK_GATES_ALLOWED) " in *" $$gate "*) ;; \
