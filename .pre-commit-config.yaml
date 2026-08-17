@@ -88,24 +88,6 @@ repos:
         always_run: true
         stages: [pre-push]
 
-      - id: flext-pre-push-fmt
-        name: make fmt APPLY=Y
-        language: system
-        entry: >-
-          bash -eu -o pipefail -c 'guard() { local branch=$(git branch --show-current); if [[ "$branch" =~ ^wip/ ]]; then echo "WIP branch $branch: skipping pre-push gate"; return 1; fi; if [[ "$branch" =~ WIP ]]; then echo "WIP branch $branch: skipping pre-push gate"; return 1; fi; if command -v gh >/dev/null 2>&1; then local draft=$(gh pr view --json isDraft --jq ".isDraft" 2>/dev/null); if [ -z "$draft" ]; then echo "PR state unresolvable: skipping pre-push gate (fail-open)"; return 1; fi; if [ "$draft" = "true" ]; then echo "DRAFT PR: skipping pre-push gate"; return 1; fi; else echo "gh unavailable: skipping pre-push gate (fail-open)"; return 1; fi; return 0; }; guard || exit 0; unset $(git rev-parse --local-env-vars); unset WHAT MAKEFLAGS APPLY; CI=N make fmt APPLY=Y'
-        pass_filenames: false
-        always_run: true
-        stages: [pre-push]
-
-      - id: flext-pre-push-fix
-        name: make fix APPLY=Y
-        language: system
-        entry: >-
-          bash -eu -o pipefail -c 'guard() { local branch=$(git branch --show-current); if [[ "$branch" =~ ^wip/ ]]; then echo "WIP branch $branch: skipping pre-push gate"; return 1; fi; if [[ "$branch" =~ WIP ]]; then echo "WIP branch $branch: skipping pre-push gate"; return 1; fi; if command -v gh >/dev/null 2>&1; then local draft=$(gh pr view --json isDraft --jq ".isDraft" 2>/dev/null); if [ -z "$draft" ]; then echo "PR state unresolvable: skipping pre-push gate (fail-open)"; return 1; fi; if [ "$draft" = "true" ]; then echo "DRAFT PR: skipping pre-push gate"; return 1; fi; else echo "gh unavailable: skipping pre-push gate (fail-open)"; return 1; fi; return 0; }; guard || exit 0; unset $(git rev-parse --local-env-vars); unset WHAT MAKEFLAGS APPLY; CI=N make fix APPLY=Y'
-        pass_filenames: false
-        always_run: true
-        stages: [pre-push]
-
       - id: flext-pre-push-check
         name: make check
         language: system
