@@ -870,11 +870,11 @@ _builtin_check_all: _builtin_require_environment
 	if [ -z "$$gates" ]; then gates="$$(printf '%s' '$(CHECK_GATES_DEFAULT)' | tr ' ' ',')"; fi; \
 	gates="$$(printf '%s' "$$gates" | tr -d '[:space:]')"; \
 	if [ "$(strip $(CI))" = "Y" ]; then \
-		gates="lint,pyright,security,markdown,smells"; \
-		printf 'INFO: CI=Y runs check gates: lint pyright security markdown smells\n'; \
+		gates="lint,pyright,markdown,smells"; \
+		printf 'INFO: CI=Y runs check gates: lint pyright markdown smells\n'; \
 	elif [ "$(strip $(CI))" = "N" ]; then \
-		gates="pyrefly,mypy"; \
-		printf 'INFO: CI=N runs check gates: pyrefly mypy\n'; \
+		gates="pyrefly,mypy,security"; \
+		printf 'INFO: CI=N runs check gates: pyrefly mypy security\n'; \
 	fi; \
 	for gate in $$(printf '%s' "$$gates" | tr ',' ' '); do \
 		case " $(CHECK_GATES_ALLOWED) " in *" $$gate "*) ;; \
