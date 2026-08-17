@@ -281,7 +281,7 @@ FLEXT_INFRA_BOOTSTRAP := env -u PYTHONPATH -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJ
 endif
 
 ifeq ($(MAKE_PROFILE),workspace-root)
-CODEGEN_SCOPE := all
+CODEGEN_SCOPE := $(if $(filter all,$(SCOPE)),all,self)
 ALLOWED_PROJECTS := . $(WORKSPACE_MEMBERS)
 else
 CODEGEN_SCOPE := self
@@ -328,13 +328,8 @@ SETUP_ENVIRONMENT_RECIPE = set -eu; \
 
 WORKSPACE_ORCHESTRATE = $(UV_RUN) python -m flext_infra workspace orchestrate
 REQUESTED_PROJECTS := $(strip $(if $(PROJECT),$(PROJECT),$(PROJECTS)))
-# A workspace root owns no local gate implementation: its verbs fan out to the
-# declared members. Selecting the root (PROJECT=.) would make it orchestrate
-# itself forever; map `.` to WORKSPACE_MEMBERS instead of failing closed mid-CI.
-DEFAULT_PROJECTS := $(WORKSPACE_MEMBERS) .
-
+DEFAULT_PROJECTS := .
 SELECTED_PROJECTS := $(if $(strip $(REQUESTED_PROJECTS)),$(REQUESTED_PROJECTS),$(DEFAULT_PROJECTS))
-
 WORKSPACE_PROJECT_ARGS := $(foreach project,$(SELECTED_PROJECTS),--projects $(project))
 WORKSPACE_CHECK_ARGS := $(if $(strip $(CHECK_GATES)),--make-arg "CHECK_GATES=$(strip $(CHECK_GATES))")
 WORKSPACE_TEST_ARGS := $(if $(strip $(FLEXT_PYTEST_FILE_RAW)),--file "$${FLEXT_PYTEST_FILE_RAW}") $(if $(strip $(FLEXT_PYTEST_MATCH_RAW)),--match "$${FLEXT_PYTEST_MATCH_RAW}") $(if $(strip $(FLEXT_PYTEST_WHAT_RAW)),--what "$${FLEXT_PYTEST_WHAT_RAW}")
