@@ -33,6 +33,7 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.failure, eq=True)
         tm.that(str(result.error), has="URL is required")
 
+    @pytest.mark.slow
     @pytest.mark.parametrize(
         "url",
         [
@@ -51,6 +52,7 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.value, eq=url)
         tm.that(result.unwrap(), eq=url)
 
+    @pytest.mark.slow
     @pytest.mark.parametrize(
         "options",
         [
@@ -92,6 +94,7 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=True)
 
+    @pytest.mark.slow
     def test_disconnect_twice_stays_successful(
         self, transport: p.Api.FlextWebTransport
     ) -> None:
@@ -114,6 +117,7 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.failure, eq=True)
         tm.that(str(result.error), has="not connected")
 
+    @pytest.mark.slow
     def test_send_after_disconnect_reports_disconnected_failure(
         self, transport: p.Api.FlextWebTransport
     ) -> None:

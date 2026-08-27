@@ -240,7 +240,7 @@ class TestsFlextApiSmoke:
     def test_client_execute_reports_success(self) -> None:
         """A configured client executes its lifecycle successfully."""
         client = FlextApiClient(
-            settings=FlextApiSettings(Api={"base_url": "https://service.example"})
+            settings=FlextApiSettings(base_url="https://service.example")
         )
         result = client.execute()
         tm.that(result.success, eq=True)
@@ -248,9 +248,7 @@ class TestsFlextApiSmoke:
 
     def test_facade_execute_reports_success_and_retains_settings(self) -> None:
         """The facade executes successfully and preserves its settings."""
-        settings = FlextApiSettings(
-            Api={"base_url": "https://api.example", "timeout": 4.0}
-        )
+        settings = FlextApiSettings(base_url="https://api.example", timeout=4.0)
         api = FlextApi(settings=settings)
         result = api.execute()
         tm.that(result.success, eq=True)

@@ -4,6 +4,10 @@
 
 # flext-api - Security Guide
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 > Project profile: `flext-api`
 
 Security practices are governed by project-specific policies and central architecture ADRs.

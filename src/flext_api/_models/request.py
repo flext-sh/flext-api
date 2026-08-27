@@ -62,7 +62,8 @@ class FlextApiModelsRequest:
             """Normalize request body."""
             if v is None:
                 return {}
-            return t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
+            validated: t.Api.RequestBody = t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
+            return validated
 
         @u.computed_field(return_type=str)
         @property

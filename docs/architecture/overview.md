@@ -1,5 +1,33 @@
 # Architecture Overview
 
+<!-- TOC START -->
+- [Overview](#overview)
+- [Layer Details](#layer-details)
+  - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
+  - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
+- [Protocol Plugin System](#protocol-plugin-system)
+  - [Protocol Registry](#protocol-registry)
+  - [Request Processing Pipeline](#request-processing-pipeline)
+  - [Storage Interface](#storage-interface)
+  - [Cache Configuration](#cache-configuration)
+  - [Security Middleware](#security-middleware)
+  - [Performance Monitoring](#performance-monitoring)
+  - [Deployment Configuration](#deployment-configuration)
+  - [Kubernetes Deployment](#kubernetes-deployment)
+- [Quality Metrics](#quality-metrics)
+  - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
+  - [Coverage by Layer](#coverage-by-layer)
+- [Extension Points](#extension-points)
+  - [Adding New Protocols](#adding-new-protocols)
+  - [Custom Middleware](#custom-middleware)
+- [Performance Considerations](#performance-considerations)
+  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
+  - [Monitoring and Optimization](#monitoring-and-optimization)
+- [Migration Guidelines](#migration-guidelines)
+  - [Version Compatibility](#version-compatibility)
+- [References](#references)
+<!-- TOC END -->
+
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
 
 ## Overview
@@ -67,9 +95,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 **Domain Patterns:**
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 **Key Components:**
 
 - **FlextApiClient**: Main HTTP client implementation
@@ -84,39 +110,27 @@ from __future__ import annotations
 FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Request Processing Pipeline
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Storage Interface
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Cache Configuration
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Security Middleware
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Performance Monitoring
 
 ```python
-from __future__ import annotations
-```
-
+from __future__ import annotations```
 ### Deployment Configuration
 
 ```text
@@ -135,9 +149,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
 # Start application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]```
 ### Kubernetes Deployment
 
 ```yaml
@@ -179,9 +191,7 @@ spec:
               path: /ready
               port: 8000
             initialDelaySeconds: 5
-            periodSeconds: 5
-```
-
+            periodSeconds: 5```
 ## Quality Metrics
 
 ### Current State (v0.12.0-dev)
@@ -225,9 +235,7 @@ class CustomProtocol:
 
 # Register new protocol
 registry = ProtocolRegistry()
-registry.register("custom", CustomProtocol())
-```
-
+registry.register("custom", CustomProtocol())```
 ### Custom Middleware
 
 ```python
@@ -249,9 +257,7 @@ class CustomBusinessMiddleware:
 
 
 # Register middleware
-app.add_middleware(CustomBusinessMiddleware())
-```
-
+app.add_middleware(CustomBusinessMiddleware())```
 ## Performance Considerations
 
 ### Bottlenecks and Optimization
@@ -297,9 +303,7 @@ async def setup_monitoring():
 @app.get("/metrics")
 async def get_metrics():
     """Prometheus metrics endpoint."""
-    return Response(content=metrics.generate_latest(), media_type="text/plain")
-```
-
+    return Response(content=metrics.generate_latest(), media_type="text/plain")```
 ## Migration Guidelines
 
 ### Version Compatibility
@@ -327,9 +331,7 @@ def create_app(settings: dict) -> FastAPI: ...  # Legacy implementation
 # New API (introduced in 0.9.x)
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
-    ...  # New implementation
-```
-
+    ...  # New implementation```
 ## References
 
 - **FLEXT-Core Documentation**: Foundation patterns and infrastructure

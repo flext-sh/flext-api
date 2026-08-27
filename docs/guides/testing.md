@@ -4,6 +4,25 @@
 
 # flext-api - FLEXT Testing Guide
 
+<!-- TOC START -->
+- [Overview](#overview)
+- [Test Structure](#test-structure)
+- [Unit Tests](#unit-tests)
+- [Integration Tests](#integration-tests)
+- [Test Fixtures](#test-fixtures)
+- [Best Practices](#best-practices)
+  - [1. Test Naming](#1-test-naming)
+  - [2. Test Organization](#2-test-organization)
+  - [3. Assertion Quality](#3-assertion-quality)
+  - [4. Test Independence](#4-test-independence)
+- [Continuous Integration](#continuous-integration)
+- [Troubleshooting](#troubleshooting)
+  - [Import Errors](#import-errors)
+  - [Test Timeout](#test-timeout)
+  - [Coverage Issues](#coverage-issues)
+- [Resources](#resources)
+<!-- TOC END -->
+
 This guide covers testing strategies, best practices, and executable examples for
 `flext-api` using the current FLEXT HTTP facade and railway result patterns.
 
@@ -74,9 +93,7 @@ def test_http_request_model_validation():
 
 
 test_get_users_returns_success()
-test_http_request_model_validation()
-```
-
+test_http_request_model_validation()```
 ## Integration Tests
 
 Integration tests exercise the real `FlextApiClient.request` pipeline with a
@@ -85,7 +102,7 @@ known, safe endpoint such as `httpbin.org` and always handle failures gracefully
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings
 
 
 def test_real_http_get():
@@ -103,9 +120,7 @@ def test_real_http_get():
         assert "url" in response.body
 
 
-test_real_http_get()
-```
-
+test_real_http_get()```
 ## Test Fixtures
 
 Avoid pytest decorators in markdown examples by showing plain factory functions
@@ -143,9 +158,7 @@ def test_user_list_with_factory():
     assert result.unwrap().body["users"][0]["name"] == "Alice"
 
 
-test_user_list_with_factory()
-```
-
+test_user_list_with_factory()```
 ## Best Practices
 
 ### 1. Test Naming
@@ -165,9 +178,7 @@ def test_parse():
     pass
 
 
-test_parse_valid_http_request_returns_success()
-```
-
+test_parse_valid_http_request_returns_success()```
 ### 2. Test Organization
 
 ```python
@@ -187,9 +198,7 @@ class TestHttpRequestModel:
         pass
 
 
-TestHttpRequestModel().test_valid_get_request()
-```
-
+TestHttpRequestModel().test_valid_get_request()```
 ### 3. Assertion Quality
 
 ```python
@@ -231,9 +240,7 @@ def test_api_result_vague():
 
 
 test_api_result()
-test_api_result_vague()
-```
-
+test_api_result_vague()```
 ### 4. Test Independence
 
 ```python
@@ -274,9 +281,7 @@ test_get_projects()
 
 # ❌ BAD - Shared mutable state between tests
 class BadSuite:
-    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))
-```
-
+    api = FlextApi(settings=FlextApiSettings(base_url="https://example.com"))```
 ## Continuous Integration
 
 Run the test suite through the FLEXT workspace dispatcher:
@@ -286,9 +291,7 @@ Run the test suite through the FLEXT workspace dispatcher:
 make test PROJECT=flext-api
 
 # Run the markdown documentation examples
-uv run pytest --markdown-docs -q
-```
-
+uv run pytest --markdown-docs -q```
 ## Troubleshooting
 
 ### Import Errors
@@ -296,16 +299,12 @@ uv run pytest --markdown-docs -q
 ```bash
 # Ensure the workspace environment is bootstrapped
 make boot
-uv run pytest --markdown-docs docs/guides/testing.md -q
-```
-
+uv run pytest --markdown-docs docs/guides/testing.md -q```
 ### Test Timeout
 
 ```bash
 # Increase the per-test timeout during debugging
-uv run pytest --markdown-docs -q --timeout=60
-```
-
+uv run pytest --markdown-docs -q --timeout=60```
 ### Coverage Issues
 
 ```bash

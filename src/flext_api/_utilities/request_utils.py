@@ -67,7 +67,8 @@ class FlextApiUtilitiesRequestUtils:
             """Validate arbitrary value as JsonValue."""
             if value is None:
                 return None
-            return t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
+            validated: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(value)
+            return validated
 
         @staticmethod
         def validate_and_extract_timeout(
