@@ -23,13 +23,13 @@ if TYPE_CHECKING:
 
     from ._config import FlextApiConfig, config
     from ._settings import FlextApiSettings, settings
-    from .api import FlextApi, FlextApiClient, api
+    from .api import FlextApi, api
     from .base import FlextApiServiceBase, FlextApiServiceBase as s
     from .constants import FlextApiConstants, FlextApiConstants as c
     from .models import FlextApiModels, FlextApiModels as m
     from .protocols import FlextApiProtocols, FlextApiProtocols as p
     from .typings import FlextApiTypes, FlextApiTypes as t
-    from .utilities import FlextApiUtilities, FlextApiUtilities as u
+    from .utilities import FlextApiClient, FlextApiUtilities, FlextApiUtilities as u
 __all__: tuple[str, ...] = (
     "FlextApi",
     "FlextApiClient",
@@ -65,26 +65,23 @@ __all__: tuple[str, ...] = (
     "x",
 )
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    MappingProxyType(
-        build_lazy_import_map(
-            MappingProxyType({
-                "._config": ("FlextApiConfig", "config"),
-                "._settings": ("FlextApiSettings", "settings"),
-                ".api": ("FlextApi", "FlextApiClient", "api"),
-                ".base": ("FlextApiServiceBase", "s"),
-                ".constants": ("FlextApiConstants", "c"),
-                ".models": ("FlextApiModels", "m"),
-                ".protocols": ("FlextApiProtocols", "p"),
-                ".typings": ("FlextApiTypes", "t"),
-                ".utilities": ("FlextApiUtilities", "u"),
-                "flext_web": ("d", "e", "h", "r", "x"),
-            }),
-            alias_groups=MappingProxyType({}),
-            sort_keys=False,
-        )
-    ),
-    public_exports=__all__,
+_LAZY_IMPORTS = MappingProxyType(
+    build_lazy_import_map(
+        MappingProxyType({
+            "._config": ("FlextApiConfig", "config"),
+            "._settings": ("FlextApiSettings", "settings"),
+            ".api": ("FlextApi", "api"),
+            ".base": ("FlextApiServiceBase", "s"),
+            ".constants": ("FlextApiConstants", "c"),
+            ".models": ("FlextApiModels", "m"),
+            ".protocols": ("FlextApiProtocols", "p"),
+            ".typings": ("FlextApiTypes", "t"),
+            ".utilities": ("FlextApiClient", "FlextApiUtilities", "u"),
+            "flext_web": ("d", "e", "h", "r", "x"),
+        }),
+        alias_groups=MappingProxyType({}),
+        sort_keys=False,
+    )
 )
+
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)
