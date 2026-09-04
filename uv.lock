@@ -740,7 +740,7 @@ wheels = [
 
 [[package]]
 name = "flext-api"
-version = "0.12.0rc0"
+version = "0.12.0"
 source = { editable = "." }
 dependencies = [
     { name = "cbor2" },
