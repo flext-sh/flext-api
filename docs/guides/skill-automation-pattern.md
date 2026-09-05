@@ -20,8 +20,11 @@ consumer rewiring.
 - Typed configuration owns enforceable policy data.
 - Canonical `c`, `t`, `p`, `m`, and `u` facades own reusable declarations and
   behavior.
-- flext-infra owns semantic discovery, ast-grep transformations, CRG/LSP-backed
-  hierarchy analysis, generation, and enforcement.
+- flext-infra owns semantic discovery, ast-grep/Rope transformations, local LSP
+  analysis, Git repositories, generation, and enforcement.
+- ai-hub owns GitHub and CRG runtime services. FLEXT may consume its public
+  commands, hooks, MCP routes, and daemons as optional enrichment, never as a
+  library dependency; absence of that runtime is not an error.
 - A skill points to those owners and explains when to use them.
 
 Generated baselines, projections, and reports are evidence, never a writable
