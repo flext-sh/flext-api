@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import TYPE_CHECKING, override
 
 import httpx
@@ -31,11 +30,14 @@ if TYPE_CHECKING:
 class FlextApiProtocolsTransports:
     """FLEXT API transport implementations."""
 
+    # Why: no member here carries @abstractmethod (TransportPlugin's Protocol
+    # bodies are structural, not abstract), so an explicit ABC base added
+    # nothing but tripped pyrefly's direct-abstract-base-instantiation check
+    # on the concrete `FlextWebTransport()` construction in tests.
     class FlextWebTransport(
         FlextApiTransportsConfigMixin,
         FlextApiTransportsRequestMixin,
         pb.TransportPlugin,
-        ABC,
     ):
         """HTTP transport implementation using httpx."""
 

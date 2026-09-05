@@ -39,12 +39,15 @@ class FlextApiModelsClient:
         ]
         headers: Annotated[
             t.StrMapping, u.Field(description="Default headers for all requests")
-        ] = u.Field(default_factory=lambda: MappingProxyType({}))
+        ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         verify_ssl: Annotated[
             bool, u.Field(default=True, description="Verify SSL certificates")
         ]
 
-        @u.computed_field(return_type=bool)
+        # Why: bare form (no return_type kwarg) resolves to the positional
+        # overload pyrefly's stub actually carries; the property's own `-> bool`
+        # annotation already tells pydantic the computed field's schema type.
+        @u.computed_field
         @property
         def configured(self) -> bool:
             """Whether the configuration is usable."""
