@@ -25,7 +25,7 @@
   `FlextApiServiceBase`, `FlextApiSettings`, `FlextApiTypes`,
   `FlextApiUtilities` (+2 more)
 - Exported module shortcuts: `api`
-- Generated module pages: `0`
+- Generated module pages: `7`
 
 ## Next Pages
 
