@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApiServiceBase, FlextApi, c, m, p, r, settings, t, u
+from flext_api import FlextApi, FlextApiServiceBase, c, m, p, r, settings, t, u
 
 
 class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
