@@ -5,7 +5,8 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Annotated, ClassVar
 
-from flext_api import c, t
+from flext_api.constants import c
+from flext_api.typings import t
 from flext_web import m, u
 
 if TYPE_CHECKING:

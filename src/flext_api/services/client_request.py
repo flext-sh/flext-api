@@ -6,13 +6,18 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from flext_api import c, m, p, t
-from flext_api._utilities.client_codec import FlextApiClientCodecMixin
 from flext_core.result import r
 from flext_web import u
 
 if TYPE_CHECKING:
-    from flext_api import FlextApiSettings
+    from flext_api._settings import FlextApiSettings
+
+from flext_api.constants import c
+from flext_api.models import m
+from flext_api.protocols import p
+from flext_api.typings import t
+
+from .client_codec import FlextApiClientCodecMixin
 
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):

@@ -12,7 +12,7 @@ from flext_web import u
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
 
-    from flext_api import t
+    from flext_api.typings import t
     from flext_core import p
 
 

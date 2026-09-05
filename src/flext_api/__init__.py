@@ -22,6 +22,7 @@ from .__version__ import (
 if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
 
+    from . import services as services
     from ._config import FlextApiConfig, config
     from ._settings import FlextApiSettings, settings
     from .api import FlextApi, api
@@ -29,11 +30,16 @@ if TYPE_CHECKING:
     from .constants import FlextApiConstants, FlextApiConstants as c
     from .models import FlextApiModels, FlextApiModels as m
     from .protocols import FlextApiProtocols, FlextApiProtocols as p
+    from .services.client import FlextApiClient
+    from .services.client_codec import FlextApiClientCodecMixin
+    from .services.client_request import FlextApiClientRequestMixin
     from .typings import FlextApiTypes, FlextApiTypes as t
-    from .utilities import FlextApiClient, FlextApiUtilities, FlextApiUtilities as u
+    from .utilities import FlextApiUtilities, FlextApiUtilities as u
 __all__: tuple[str, ...] = (
     "FlextApi",
     "FlextApiClient",
+    "FlextApiClientCodecMixin",
+    "FlextApiClientRequestMixin",
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiModels",
@@ -60,6 +66,7 @@ __all__: tuple[str, ...] = (
     "p",
     "r",
     "s",
+    "services",
     "settings",
     "t",
     "u",
@@ -76,8 +83,12 @@ _LAZY_IMPORTS = MappingProxyType(
             ".constants": ("FlextApiConstants", "c"),
             ".models": ("FlextApiModels", "m"),
             ".protocols": ("FlextApiProtocols", "p"),
+            ".services": ("services",),
+            ".services.client": ("FlextApiClient",),
+            ".services.client_codec": ("FlextApiClientCodecMixin",),
+            ".services.client_request": ("FlextApiClientRequestMixin",),
             ".typings": ("FlextApiTypes", "t"),
-            ".utilities": ("FlextApiClient", "FlextApiUtilities", "u"),
+            ".utilities": ("FlextApiUtilities", "u"),
             "flext_web": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
