@@ -79,7 +79,7 @@ class FlextApiModelsStorage:
         class State(m.FlexibleInternalModel):
             """Mutable storage runtime state kept in one central model."""
 
-            model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
+            model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
                 extra="forbid", validate_assignment=True
             )
             entries: MutableMapping[str, FlextApiModelsStorage.Storage.Metadata] = (

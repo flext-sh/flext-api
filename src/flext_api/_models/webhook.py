@@ -106,7 +106,7 @@ class FlextApiModelsWebhook:
         class State(m.FlexibleInternalModel):
             """Mutable webhook runtime state centralized in one model."""
 
-            model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
+            model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
                 extra="forbid", validate_assignment=True, arbitrary_types_allowed=True
             )
             handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = (

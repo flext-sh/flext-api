@@ -33,7 +33,7 @@ class FlextApi(FlextApiServiceBase[bool]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
+    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
     def __init__(self, settings: FlextApiSettings | None = None) -> None:

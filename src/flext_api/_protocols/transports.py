@@ -84,14 +84,10 @@ class FlextApiProtocolsTransports:
                 data, connection_url=connection
             )
             if params_result.failure:
-                return r[t.Api.HttpResponseDict | str].fail(
-                    params_result.error or "Parameter extraction failed"
-                )
+                return r[t.Api.HttpResponseDict | str].from_failure(params_result)
             response_result = self._request_model(params_result.value)
             if response_result.failure:
-                return r[t.Api.HttpResponseDict | str].fail(
-                    response_result.error or "HTTP send failed"
-                )
+                return r[t.Api.HttpResponseDict | str].from_failure(response_result)
             return r[t.Api.HttpResponseDict | str].ok(
                 self._response_mapping(response_result.value)
             )

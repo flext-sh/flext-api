@@ -29,17 +29,13 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         """Execute HTTP request from model using monadic patterns."""
         url_result = self._build_url(request.url)
         if url_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                url_result.error or "URL validation failed"
-            )
+            return r[m.Api.HttpResponse].from_failure(url_result)
         request_body: t.Api.RequestBody = (
             request.body if request.body is not None else b""
         )
         body_result = self._serialize_body(request_body)
         if body_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                body_result.error or "Body serialization failed"
-            )
+            return r[m.Api.HttpResponse].from_failure(body_result)
         return self._execute_http_request(
             request=request, url=url_result.value, serialized_body=body_result.value
         )

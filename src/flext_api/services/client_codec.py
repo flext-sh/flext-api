@@ -85,7 +85,7 @@ class FlextApiClientCodecMixin:
             try:
                 result = r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
             except c.EXC_TYPE_VALIDATION as exc:
-                result = r[bytes].fail(f"Failed to serialize body: {exc}")
+                result = r[bytes].fail(f"Failed to serialize body: {exc}", exception=exc)
         else:
             result = r[bytes].fail("Request body must be bytes, str, or JSON object")
         return result

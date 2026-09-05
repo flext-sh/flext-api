@@ -47,9 +47,7 @@ class FlextApiUtilitiesSettingsManager:
             )
             if client_config_result.failure:
                 self._client_config = None
-                return r[bool].fail(
-                    client_config_result.error or "Configuration validation failed"
-                )
+                return r[bool].from_failure(client_config_result)
             self._client_config = client_config_result.value
             return r[bool].ok(True)
         except c.EXC_HTTP_PROCESSING as e:
@@ -103,9 +101,7 @@ class FlextApiUtilitiesSettingsManager:
         for key, raw_value in settings.items():
             normalize_result = self._normalize_value(key, value=raw_value)
             if normalize_result.failure:
-                return r[m.Api.ClientConfig].fail(
-                    normalize_result.error or "Value normalization failed"
-                )
+                return r[m.Api.ClientConfig].from_failure(normalize_result)
             processed[key] = normalize_result.value
         headers_value = processed.get("headers", {})
         if not isinstance(headers_value, Mapping):
