@@ -25,7 +25,9 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             str(settings.Api.timeout)
         )
         if timeout_result.failure:
-            timeout_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].from_failure(timeout_result)
+            timeout_failure: p.Result[m.Api.HttpRequest] = r[
+                m.Api.HttpRequest
+            ].from_failure(timeout_result)
             return timeout_failure
 
         payload_result = u.Api.RequestUtils.build_request_payload(
@@ -36,7 +38,9 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             timeout=timeout_result.value,
         )
         if payload_result.failure:
-            payload_failure: p.Result[m.Api.HttpRequest] = r[m.Api.HttpRequest].from_failure(payload_result)
+            payload_failure: p.Result[m.Api.HttpRequest] = r[
+                m.Api.HttpRequest
+            ].from_failure(payload_result)
             return payload_failure
 
         request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
@@ -79,14 +83,18 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         api = FlextApi()
         execute_result = api.execute(example="basic-usage")
         if execute_result.failure:
-            execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(execute_result)
+            execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
+                execute_result
+            )
             return execute_failure
         self._emit(f"Facade ready: base_url={api.settings.Api.base_url}")
 
         self._emit("\n2. Request normalization via u.Api.RequestUtils")
         request_result = self.build_request()
         if request_result.failure:
-            request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(request_result)
+            request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
+                request_result
+            )
             return request_failure
         request = request_result.value
         self._emit(f"Request ok: {request.method} {request.url}")
@@ -94,7 +102,9 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         self._emit("\n3. Pydantic 2 models via m.Api")
         response_result = self.build_response(request)
         if response_result.failure:
-            response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(response_result)
+            response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
+                response_result
+            )
             return response_failure
         response = response_result.value
         self._emit(

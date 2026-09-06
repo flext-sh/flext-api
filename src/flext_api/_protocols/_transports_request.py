@@ -37,7 +37,9 @@ class FlextApiTransportsRequestMixin:
         try:
             request_model = m.Api.HttpRequest.model_validate(payload_result.value)
         except c.Api.EXC_HTTPX as e:
-            return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}", exception=e)
+            return r[m.Api.HttpRequest].fail(
+                f"Invalid HTTP request payload: {e}", exception=e
+            )
         return r[m.Api.HttpRequest].ok(request_model)
 
     @staticmethod
