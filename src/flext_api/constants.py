@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from flext_api._constants.api import FlextApiConstantsApi
 from flext_web import c
+
+from ._constants.api import FlextApiConstantsApi
 
 
 class FlextApiConstants(c):

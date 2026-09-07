@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import httpx
 
-from flext_api import c, p, t
+from flext_api.constants import c
+from flext_api.protocols import p
+from flext_api.typings import t
 from flext_core.result import r
 from flext_web import u
 
@@ -83,7 +85,9 @@ class FlextApiClientCodecMixin:
             try:
                 result = r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
             except c.EXC_TYPE_VALIDATION as exc:
-                result = r[bytes].fail(f"Failed to serialize body: {exc}")
+                result = r[bytes].fail(
+                    f"Failed to serialize body: {exc}", exception=exc
+                )
         else:
             result = r[bytes].fail("Request body must be bytes, str, or JSON object")
         return result

@@ -20,7 +20,9 @@ from typing import TYPE_CHECKING, Annotated
 
 from pydantic_settings import SettingsConfigDict
 
-from flext_core import FlextSettings, m, u
+from flext_api.models import m
+from flext_api.utilities import u
+from flext_core import FlextSettings
 
 
 class FlextApiSettings(FlextSettings):
