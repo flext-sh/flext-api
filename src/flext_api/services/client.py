@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api._settings import FlextApiSettings
+from flext_api import FlextApiSettings
 from flext_api.base import FlextApiServiceBase
 from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes

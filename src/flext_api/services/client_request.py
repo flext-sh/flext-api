@@ -10,7 +10,7 @@ from flext_core.result import r
 from flext_web import u
 
 if TYPE_CHECKING:
-    from flext_api._settings import FlextApiSettings
+    from flext_api import FlextApiSettings
 
 from flext_api.constants import c
 from flext_api.models import m
