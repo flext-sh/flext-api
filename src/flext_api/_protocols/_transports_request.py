@@ -88,40 +88,40 @@ class FlextApiTransportsRequestMixin:
                 return r[httpx.Response].fail("Unsupported HTTP request body type")
 
     @staticmethod
-    def _request_json_body(
-        client: httpx.Client, request: m.Api.HttpRequest, body_json: t.JsonMapping
+    def _execute_http(
+        client: httpx.Client, request: m.Api.HttpRequest, **extra: t.JsonValue
     ) -> p.Result[httpx.Response]:
-        """Execute an HTTP request with JSON body semantics."""
+        """Execute one httpx request and map failures through the result owner."""
         try:
             response = client.request(
                 method=request.method,
                 url=request.url,
                 headers=request.headers,
                 params=request.query_params,
-                json=body_json,
                 timeout=request.timeout,
+                **extra,
             )
         except c.Api.EXC_HTTPX as e:
             return r[httpx.Response].fail_op("HTTP request", e)
         return r[httpx.Response].ok(response)
 
     @staticmethod
+    def _request_json_body(
+        client: httpx.Client, request: m.Api.HttpRequest, body_json: t.JsonMapping
+    ) -> p.Result[httpx.Response]:
+        """Execute an HTTP request with JSON body semantics."""
+        return FlextApiTransportsRequestMixin._execute_http(
+            client, request, json=body_json
+        )
+
+    @staticmethod
     def _request_content_body(
         client: httpx.Client, request: m.Api.HttpRequest, body_content: str | bytes
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with raw content body semantics."""
-        try:
-            response = client.request(
-                method=request.method,
-                url=request.url,
-                headers=request.headers,
-                params=request.query_params,
-                content=body_content,
-                timeout=request.timeout,
-            )
-        except c.Api.EXC_HTTPX as e:
-            return r[httpx.Response].fail_op("HTTP request", e)
-        return r[httpx.Response].ok(response)
+        return FlextApiTransportsRequestMixin._execute_http(
+            client, request, content=body_content
+        )
 
     @staticmethod
     def _response_model(response: httpx.Response) -> m.Api.HttpResponse:
