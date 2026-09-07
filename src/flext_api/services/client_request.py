@@ -6,13 +6,18 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from flext_api import c, m, p, t
-from flext_api._utilities.client_codec import FlextApiClientCodecMixin
 from flext_core.result import r
 from flext_web import u
 
 if TYPE_CHECKING:
-    from flext_api import FlextApiSettings
+    from flext_api._settings import FlextApiSettings
+
+from flext_api.constants import c
+from flext_api.models import m
+from flext_api.protocols import p
+from flext_api.typings import t
+
+from .client_codec import FlextApiClientCodecMixin
 
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
@@ -24,17 +29,13 @@ class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
         """Execute HTTP request from model using monadic patterns."""
         url_result = self._build_url(request.url)
         if url_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                url_result.error or "URL validation failed"
-            )
+            return r[m.Api.HttpResponse].from_failure(url_result)
         request_body: t.Api.RequestBody = (
             request.body if request.body is not None else b""
         )
         body_result = self._serialize_body(request_body)
         if body_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                body_result.error or "Body serialization failed"
-            )
+            return r[m.Api.HttpResponse].from_failure(body_result)
         return self._execute_http_request(
             request=request, url=url_result.value, serialized_body=body_result.value
         )

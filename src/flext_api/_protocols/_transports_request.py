@@ -13,7 +13,10 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from flext_api import c, m, r, t
+from flext_api.constants import c
+from flext_api.models import m
+from flext_api.typings import t
+from flext_core.result import r
 
 if TYPE_CHECKING:
     from flext_web import p
@@ -30,13 +33,13 @@ class FlextApiTransportsRequestMixin:
         """Extract and validate request parameters from data."""
         payload_result = self._request_payload(data, connection_url=connection_url)
         if payload_result.failure:
-            return r[m.Api.HttpRequest].fail(
-                payload_result.error or "Unsupported HTTP request payload type"
-            )
+            return r[m.Api.HttpRequest].from_failure(payload_result)
         try:
             request_model = m.Api.HttpRequest.model_validate(payload_result.value)
         except c.Api.EXC_HTTPX as e:
-            return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
+            return r[m.Api.HttpRequest].fail(
+                f"Invalid HTTP request payload: {e}", exception=e
+            )
         return r[m.Api.HttpRequest].ok(request_model)
 
     @staticmethod
@@ -67,9 +70,7 @@ class FlextApiTransportsRequestMixin:
             return r[m.Api.HttpResponse].fail("HTTP client is not connected")
         response_result = self._httpx_response(client, request)
         if response_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                response_result.error or "HTTP request failed"
-            )
+            return r[m.Api.HttpResponse].from_failure(response_result)
         return r[m.Api.HttpResponse].ok(self._response_model(response_result.value))
 
     def _httpx_response(

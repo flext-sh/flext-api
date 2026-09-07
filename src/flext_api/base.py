@@ -8,8 +8,12 @@ from __future__ import annotations
 
 from abc import ABC
 
-from flext_api import FlextApiSettings, m, p, t
 from flext_core import s
+
+from ._settings import FlextApiSettings
+from .models import m
+from .protocols import p
+from .typings import t
 
 
 class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload]](

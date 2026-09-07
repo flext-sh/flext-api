@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from flext_api import t
-from flext_api._models.client import FlextApiModelsClient
-from flext_api._models.request import FlextApiModelsRequest
-from flext_api._models.response import FlextApiModelsResponse
-from flext_api._models.storage import FlextApiModelsStorage
-from flext_api._models.webhook import FlextApiModelsWebhook
 from flext_web import m
+
+from ._models.client import FlextApiModelsClient
+from ._models.request import FlextApiModelsRequest
+from ._models.response import FlextApiModelsResponse
+from ._models.storage import FlextApiModelsStorage
+from ._models.webhook import FlextApiModelsWebhook
+from .typings import t
 
 
 class FlextApiModels(m):

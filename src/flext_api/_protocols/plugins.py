@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from flext_api._protocols.plugin_manager import FlextApiProtocolPluginManager
-from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
+from .plugin_manager import FlextApiProtocolPluginManager
+from .plugin_types import FlextApiProtocolPluginTypes
 
 
 class FlextApiProtocolPlugins(

@@ -8,9 +8,10 @@ from flext_api._settings import FlextApiSettings
 from flext_api.base import FlextApiServiceBase
 from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
-from flext_core import r, u
+from flext_api.utilities import u
+from flext_core import r
 
-from flext_api._utilities.client_request import FlextApiClientRequestMixin
+from .client_request import FlextApiClientRequestMixin
 
 p = FlextApiProtocols
 t = FlextApiTypes

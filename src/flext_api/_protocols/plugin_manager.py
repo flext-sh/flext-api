@@ -5,14 +5,15 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING
 
-from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
 from flext_core import r
 from flext_web import u
+
+from .plugin_types import FlextApiProtocolPluginTypes
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
 
-    from flext_api import t
+    from flext_api.typings import t
     from flext_core import p
 
 

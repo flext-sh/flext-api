@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_api import c, p, t
+from flext_api.constants import c
+from flext_api.protocols import p
+from flext_api.typings import t
 from flext_core.result import r
 from flext_web import m
 
@@ -124,26 +126,18 @@ class FlextApiUtilitiesRequestUtils:
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)
             if body_result.failure:
-                return r[m.ConfigMap].fail(
-                    body_result.error or "Body extraction failed"
-                )
+                return r[m.ConfigMap].from_failure(body_result)
             headers_result = request_utils.merge_headers(headers, request_kwargs)
             if headers_result.failure:
-                return r[m.ConfigMap].fail(
-                    headers_result.error or "Header extraction failed"
-                )
+                return r[m.ConfigMap].from_failure(headers_result)
             timeout_result = request_utils.validate_and_extract_timeout(
                 timeout, request_kwargs
             )
             if timeout_result.failure:
-                return r[m.ConfigMap].fail(
-                    timeout_result.error or "Timeout extraction failed"
-                )
+                return r[m.ConfigMap].from_failure(timeout_result)
             query_result = request_utils.extract_query_params(request_kwargs)
             if query_result.failure:
-                return r[m.ConfigMap].fail(
-                    query_result.error or "Query params extraction failed"
-                )
+                return r[m.ConfigMap].from_failure(query_result)
             return r[m.ConfigMap].ok(
                 m.ConfigMap(
                     root={

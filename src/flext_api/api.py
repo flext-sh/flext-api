@@ -12,8 +12,16 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_api import FlextApiServiceBase, FlextApiSettings, c, m, p, r, t, u
-from flext_api._utilities.client import FlextApiClient
+from flext_core import r
+from flext_web import u
+
+from ._settings import FlextApiSettings
+from .base import FlextApiServiceBase
+from .constants import c
+from .models import m
+from .protocols import p
+from .services.client import FlextApiClient
+from .typings import t
 
 
 class FlextApi(FlextApiServiceBase[bool]):
@@ -25,7 +33,7 @@ class FlextApi(FlextApiServiceBase[bool]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
+    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
     def __init__(self, settings: FlextApiSettings | None = None) -> None:

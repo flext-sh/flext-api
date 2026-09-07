@@ -8,7 +8,8 @@ from flext_web import m, u
 
 if TYPE_CHECKING:
     from enum import StrEnum
-from flext_api import t
+
+from flext_api.typings import t
 
 
 class FlextApiUtilitiesApiPydantic:
