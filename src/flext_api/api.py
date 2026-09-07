@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
+from flext_api import u
 from flext_core import r
-from flext_web import u
 
 from ._settings import FlextApiSettings
 from .base import FlextApiServiceBase
