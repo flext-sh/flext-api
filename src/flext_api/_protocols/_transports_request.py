@@ -89,7 +89,11 @@ class FlextApiTransportsRequestMixin:
 
     @staticmethod
     def _execute_http(
-        client: httpx.Client, request: m.Api.HttpRequest, **extra: t.JsonValue
+        client: httpx.Client,
+        request: m.Api.HttpRequest,
+        *,
+        json_body: t.JsonMapping | None = None,
+        content: str | bytes | None = None,
     ) -> p.Result[httpx.Response]:
         """Execute one httpx request and map failures through the result owner."""
         try:
@@ -99,7 +103,8 @@ class FlextApiTransportsRequestMixin:
                 headers=request.headers,
                 params=request.query_params,
                 timeout=request.timeout,
-                **extra,
+                json=json_body,
+                content=content,
             )
         except c.Api.EXC_HTTPX as e:
             return r[httpx.Response].fail_op("HTTP request", e)
@@ -111,7 +116,7 @@ class FlextApiTransportsRequestMixin:
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with JSON body semantics."""
         return FlextApiTransportsRequestMixin._execute_http(
-            client, request, json=body_json
+            client, request, json_body=body_json
         )
 
     @staticmethod
