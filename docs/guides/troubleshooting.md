@@ -549,6 +549,7 @@ When reporting issues, include:
 
    ```python
    from __future__ import annotations
+
    # Minimal code that reproduces the issue
    from flext_core import FlextBus
    ```
