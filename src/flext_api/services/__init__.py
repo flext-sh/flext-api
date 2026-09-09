@@ -10,21 +10,11 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from .client import FlextApiClient
-    from .client_codec import FlextApiClientCodecMixin
-    from .client_request import FlextApiClientRequestMixin
-__all__: tuple[str, ...] = (
-    "FlextApiClient",
-    "FlextApiClientCodecMixin",
-    "FlextApiClientRequestMixin",
-)
+__all__: tuple[str, ...] = ("FlextApiClient",)
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
-        MappingProxyType({
-            ".client": ("FlextApiClient",),
-            ".client_codec": ("FlextApiClientCodecMixin",),
-            ".client_request": ("FlextApiClientRequestMixin",),
-        }),
+        MappingProxyType({".client": ("FlextApiClient",)}),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
     )

@@ -162,9 +162,8 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
     def main(cls) -> None:
         """Run the example and render failures through the public result contract."""
         result = cls().execute()
-        if result.success:
-            return
-        cls._emit(f"Example failed: {result.error or 'unexpected failure'}")
+        if result.failure:
+            cls._emit(f"Example failed: {result.error or 'unexpected failure'}")
 
 
 def main() -> None:

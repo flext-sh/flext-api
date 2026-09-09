@@ -18,8 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from pydantic_settings import SettingsConfigDict
-
 from flext_api.models import m
 from flext_api.utilities import u
 from flext_core import FlextSettings
@@ -28,7 +26,7 @@ from flext_core import FlextSettings
 class FlextApiSettings(FlextSettings):
     """Validated settings consumed by API facade and HTTP client; all project fields under ``settings.Api.*``."""
 
-    model_config = SettingsConfigDict(
+    model_config = m.SettingsConfigDict(
         env_prefix="FLEXT_API_", env_nested_delimiter="__", extra="ignore"
     )
 

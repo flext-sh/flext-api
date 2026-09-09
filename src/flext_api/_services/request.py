@@ -17,7 +17,7 @@ from flext_api.models import m
 from flext_api.protocols import p
 from flext_api.typings import t
 
-from .client_codec import FlextApiClientCodecMixin
+from .codec import FlextApiClientCodecMixin
 
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):
