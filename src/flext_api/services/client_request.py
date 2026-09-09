@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import httpx
+from flext_web import u
 
 from flext_core.result import r
-from flext_web import u
 
 if TYPE_CHECKING:
     from flext_api import FlextApiSettings

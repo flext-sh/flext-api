@@ -5,8 +5,9 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING
 
-from flext_core import r
 from flext_web import u
+
+from flext_core import r
 
 from .plugin_types import FlextApiProtocolPluginTypes
 

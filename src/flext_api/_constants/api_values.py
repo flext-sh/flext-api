@@ -5,9 +5,8 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from httpx import HTTPError as _HttpxError
-
 from flext_web import FlextWebConstants, t
+from httpx import HTTPError as _HttpxError
 
 from .api_enums import FlextApiConstantsEnums
 
