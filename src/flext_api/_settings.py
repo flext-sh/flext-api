@@ -3,7 +3,7 @@
 HTTP configuration using FlextSettings with env var support (``FLEXT_API_`` prefix).
 100% GENERIC - no domain coupling. Single responsibility.
 
-Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings`` / ``m`` / ``u`` facades. The universal runtime
+Layer-0 imports only stdlib + upstream ``FlextSettings``. The universal runtime
 fields (``debug``/``trace``/``log_level``/``timezone``/``async_logging``) come from
 ``FlextSettings`` by MRO and are NOT redeclared here. Every project field lives
 inside the ``Api`` namespace group with simple scalar types so each is settable via
@@ -18,8 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from flext_api.models import m
-from flext_api.utilities import u
+from flext_api import m, t, u
 from flext_core import FlextSettings
 
 
@@ -51,14 +50,14 @@ class FlextApiSettings(FlextSettings):
             bool, m.Field(default=True, description="Enable TLS certificate check")
         ]
         default_headers: Annotated[
-            dict[str, str],
+            t.MappingKV[str, str],
             m.Field(
                 default_factory=dict,
                 description="Default headers applied to all requests",
             ),
         ]
         headers: Annotated[
-            dict[str, str],
+            t.MappingKV[str, str],
             m.Field(default_factory=dict, description="Compatibility headers bag"),
         ]
         log_requests: Annotated[
@@ -77,7 +76,7 @@ class FlextApiSettings(FlextSettings):
 
     @u.model_validator(mode="before")
     @classmethod
-    def _lift_flat_api_fields(cls, data: object) -> object:
+    def _lift_flat_api_fields(cls, data: t.JsonValue) -> t.JsonValue:
         """Fold top-level ``_Api`` field kwargs into the ``Api`` namespace."""
         if not isinstance(data, dict):
             return data
