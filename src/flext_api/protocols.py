@@ -13,19 +13,21 @@ from __future__ import annotations
 from flext_web import p
 
 from ._protocols.base import FlextApiProtocolsBase
+from ._protocols.base_transport import FlextApiProtocolsTransport
 from ._protocols.plugins import FlextApiProtocolPlugins
 from ._protocols.serialization import FlextApiProtocolsSerialization
-from ._protocols.transports import FlextApiProtocolsTransports
 
 
 class FlextApiProtocols(p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
+    FlextApiProtocolsTransport = FlextApiProtocolsTransport
+
     class Api(
         FlextApiProtocolsBase,
+        FlextApiProtocolsTransport,
         FlextApiProtocolPlugins,
         FlextApiProtocolsSerialization,
-        FlextApiProtocolsTransports,
     ):
         """API-specific protocol namespace.
 

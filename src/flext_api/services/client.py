@@ -4,18 +4,11 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApiSettings
+from flext_api import FlextApiSettings, p, t
 from flext_api.base import FlextApiServiceBase
-from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
-from flext_api.utilities import u
 from flext_core import r
 
 from .._services.request import FlextApiClientRequestMixin
-
-p = FlextApiProtocols
-t = FlextApiTypes
-_LOGGER = u.fetch_logger(__name__)
 
 
 class FlextApiClient(FlextApiClientRequestMixin, FlextApiServiceBase[bool]):
@@ -40,7 +33,9 @@ class FlextApiClient(FlextApiClientRequestMixin, FlextApiServiceBase[bool]):
     def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
         """Execute service lifecycle parity."""
         if kwargs:
-            _LOGGER.info("Execute called with kwargs keys: %s", list(kwargs.keys()))
+            self.logger.info(
+                "Execute called with kwargs keys", keys=list(kwargs.keys())
+            )
         return r[bool].ok(True)
 
 

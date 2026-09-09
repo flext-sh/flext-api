@@ -113,7 +113,7 @@ class TestsFlextApiSmoke:
         ],
     )
     def test_http_request_content_type_derives_from_headers(
-        self, headers: dict[str, str], expected: str
+        self, headers: t.Api.WebHeaders, expected: str
     ) -> None:
         """content_type computed field reflects headers, defaulting to JSON."""
         request = m.Api.HttpRequest.model_validate({
