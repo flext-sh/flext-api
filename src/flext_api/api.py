@@ -21,6 +21,7 @@ from .constants import c
 from .models import m
 from .protocols import p
 from .services.client import FlextApiClient
+from .services.transports import FlextApiServicesTransports
 from .typings import t
 
 
@@ -194,4 +195,9 @@ api: FlextApi = FlextApi.fetch_global()
 """Global FlextApi facade instance used as the canonical runtime entrypoint."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApi", "FlextApiClient", "api"]
+__all__: t.MutableSequenceOf[str] = [
+    "FlextApi",
+    "FlextApiClient",
+    "FlextApiServicesTransports",
+    "api",
+]

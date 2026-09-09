@@ -34,7 +34,7 @@ class FlextApiUtilitiesSettingsManager:
     @property
     def settings(self) -> m.Api.ClientConfig | None:
         """Current configuration."""
-        return type(self)._client_config
+        return self._client_config
 
     @classmethod
     def configure(cls, settings: t.ScalarMapping | None = None) -> p.Result[bool]:
@@ -94,16 +94,12 @@ class FlextApiUtilitiesSettingsManager:
         return result
 
     @staticmethod
-    def _build_client_config(
-        settings: t.ScalarMapping,
-    ) -> p.Result[m.Api.ClientConfig]:
+    def _build_client_config(settings: t.ScalarMapping) -> p.Result[m.Api.ClientConfig]:
         """Build typed ClientConfig from scalar settings payload."""
         processed: MutableMapping[str, t.JsonPayload] = {}
         for key, raw_value in settings.items():
-            normalize_result = (
-                FlextApiUtilitiesSettingsManager._normalize_value(
-                    key, value=raw_value
-                )
+            normalize_result = FlextApiUtilitiesSettingsManager._normalize_value(
+                key, value=raw_value
             )
             if normalize_result.failure:
                 return r[m.Api.ClientConfig].from_failure(normalize_result)

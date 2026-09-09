@@ -15,9 +15,9 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
     """Minimal guided tour of flext-api through public aliases and facades."""
 
     @staticmethod
-    def _emit(message: object) -> None:
+    def _emit(message: str | t.JsonMapping) -> None:
         """Render example output through the canonical CLI facade."""
-        u.Cli.formatters_print(str(message))
+        u.Cli.formatters_print(message if isinstance(message, str) else str(message))
 
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade."""
@@ -166,10 +166,5 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             cls._emit(f"Example failed: {result.error or 'unexpected failure'}")
 
 
-def main() -> None:
-    """Main entry point for the basic usage example."""
-    FlextApiExamplesBasicUsage.main()
-
-
 if __name__ == "__main__":
-    main()
+    FlextApiExamplesBasicUsage.main()
