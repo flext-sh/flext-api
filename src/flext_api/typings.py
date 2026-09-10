@@ -14,9 +14,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_api import c
-from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_web import p, t, u
+
+from . import c
+from ._typings import FlextApiTypingsSerialization
 
 
 class FlextApiTypes(t):

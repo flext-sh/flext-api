@@ -5,8 +5,10 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
-from flext_api import c, t
 from flext_web import m, u
+
+from flext_api.constants import c
+from flext_api.typings import t
 
 
 class FlextApiModelsResponse:
@@ -29,7 +31,7 @@ class FlextApiModelsResponse:
         ]
         headers: Annotated[
             t.StrMapping, u.Field(description="HTTP response headers")
-        ] = u.Field(default_factory=lambda: MappingProxyType({}))
+        ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
             t.Api.ResponseBody | None, u.Field(description="Response body")
         ] = None
@@ -48,42 +50,54 @@ class FlextApiModelsResponse:
             )
             return validated
 
-        @u.computed_field(return_type=bool)
+        # Why: bare form (no return_type kwarg) resolves to the positional
+        # overload pyrefly's stub actually carries; each property's own
+        # `-> bool` annotation already tells pydantic the schema type.
+        @u.computed_field
         @property
         def client_error(self) -> bool:
             """Whether the response is a 4xx client error."""
             status_code: int = self.status_code
-            return (
+            result: bool = (
                 c.Api.HTTP_CLIENT_ERROR_MIN <= status_code < c.Api.HTTP_CLIENT_ERROR_MAX
             )
+            return result
 
-        @u.computed_field(return_type=bool)
+        @u.computed_field
         @property
         def error(self) -> bool:
             """Whether the response is an HTTP error."""
             status_code: int = self.status_code
-            return status_code >= c.Api.HTTP_ERROR_MIN
+            result: bool = status_code >= c.Api.HTTP_ERROR_MIN
+            return result
 
-        @u.computed_field(return_type=bool)
+        @u.computed_field
         @property
         def redirect(self) -> bool:
             """Whether the response is a redirect."""
             status_code: int = self.status_code
-            return c.Api.HTTP_REDIRECT_MIN <= status_code < c.Api.HTTP_REDIRECT_MAX
+            result: bool = (
+                c.Api.HTTP_REDIRECT_MIN <= status_code < c.Api.HTTP_REDIRECT_MAX
+            )
+            return result
 
-        @u.computed_field(return_type=bool)
+        @u.computed_field
         @property
         def server_error(self) -> bool:
             """Whether the response is a server error."""
             status_code: int = self.status_code
-            return status_code >= c.Api.HTTP_SERVER_ERROR_MIN
+            result: bool = status_code >= c.Api.HTTP_SERVER_ERROR_MIN
+            return result
 
-        @u.computed_field(return_type=bool)
+        @u.computed_field
         @property
         def success(self) -> bool:
             """Whether the response is successful."""
             status_code: int = self.status_code
-            return c.Api.HTTP_SUCCESS_MIN <= status_code < c.Api.HTTP_SUCCESS_MAX
+            result: bool = (
+                c.Api.HTTP_SUCCESS_MIN <= status_code < c.Api.HTTP_SUCCESS_MAX
+            )
+            return result
 
     @classmethod
     def create_response(

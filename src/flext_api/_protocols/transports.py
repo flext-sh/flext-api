@@ -11,15 +11,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import TYPE_CHECKING, override
 
 import httpx
 
-from flext_api import c, m, r, t
-from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
-from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
-from flext_api._protocols.base import FlextApiProtocolsBase as pb
+from .. import c, m, r, t
+from . import (
+    FlextApiProtocolsBase as pb,
+    FlextApiTransportsConfigMixin,
+    FlextApiTransportsRequestMixin,
+)
 
 if TYPE_CHECKING:
     from flext_web import p
@@ -28,11 +29,14 @@ if TYPE_CHECKING:
 class FlextApiProtocolsTransports:
     """FLEXT API transport implementations."""
 
+    # Why: no member here carries @abstractmethod (TransportPlugin's Protocol
+    # bodies are structural, not abstract), so an explicit ABC base added
+    # nothing but tripped pyrefly's direct-abstract-base-instantiation check
+    # on the concrete `FlextWebTransport()` construction in tests.
     class FlextWebTransport(
         FlextApiTransportsConfigMixin,
         FlextApiTransportsRequestMixin,
         pb.TransportPlugin,
-        ABC,
     ):
         """HTTP transport implementation using httpx."""
 
@@ -79,14 +83,10 @@ class FlextApiProtocolsTransports:
                 data, connection_url=connection
             )
             if params_result.failure:
-                return r[t.Api.HttpResponseDict | str].fail(
-                    params_result.error or "Parameter extraction failed"
-                )
+                return r[t.Api.HttpResponseDict | str].from_failure(params_result)
             response_result = self._request_model(params_result.value)
             if response_result.failure:
-                return r[t.Api.HttpResponseDict | str].fail(
-                    response_result.error or "HTTP send failed"
-                )
+                return r[t.Api.HttpResponseDict | str].from_failure(response_result)
             return r[t.Api.HttpResponseDict | str].ok(
                 self._response_mapping(response_result.value)
             )

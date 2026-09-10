@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from flext_api import c, m, r, t
+from .. import c, m, r, t
 
 if TYPE_CHECKING:
     from flext_web import p
@@ -30,13 +30,13 @@ class FlextApiTransportsRequestMixin:
         """Extract and validate request parameters from data."""
         payload_result = self._request_payload(data, connection_url=connection_url)
         if payload_result.failure:
-            return r[m.Api.HttpRequest].fail(
-                payload_result.error or "Unsupported HTTP request payload type"
-            )
+            return r[m.Api.HttpRequest].from_failure(payload_result)
         try:
             request_model = m.Api.HttpRequest.model_validate(payload_result.value)
         except c.Api.EXC_HTTPX as e:
-            return r[m.Api.HttpRequest].fail(f"Invalid HTTP request payload: {e}")
+            return r[m.Api.HttpRequest].fail(
+                f"Invalid HTTP request payload: {e}", exception=e
+            )
         return r[m.Api.HttpRequest].ok(request_model)
 
     @staticmethod
@@ -67,9 +67,7 @@ class FlextApiTransportsRequestMixin:
             return r[m.Api.HttpResponse].fail("HTTP client is not connected")
         response_result = self._httpx_response(client, request)
         if response_result.failure:
-            return r[m.Api.HttpResponse].fail(
-                response_result.error or "HTTP request failed"
-            )
+            return r[m.Api.HttpResponse].from_failure(response_result)
         return r[m.Api.HttpResponse].ok(self._response_model(response_result.value))
 
     def _httpx_response(
@@ -87,40 +85,45 @@ class FlextApiTransportsRequestMixin:
                 return r[httpx.Response].fail("Unsupported HTTP request body type")
 
     @staticmethod
-    def _request_json_body(
-        client: httpx.Client, request: m.Api.HttpRequest, body_json: t.JsonMapping
+    def _execute_http(
+        client: httpx.Client,
+        request: m.Api.HttpRequest,
+        *,
+        json_body: t.JsonMapping | None = None,
+        content: str | bytes | None = None,
     ) -> p.Result[httpx.Response]:
-        """Execute an HTTP request with JSON body semantics."""
+        """Execute one httpx request and map failures through the result owner."""
         try:
             response = client.request(
                 method=request.method,
                 url=request.url,
                 headers=request.headers,
                 params=request.query_params,
-                json=body_json,
                 timeout=request.timeout,
+                json=json_body,
+                content=content,
             )
         except c.Api.EXC_HTTPX as e:
             return r[httpx.Response].fail_op("HTTP request", e)
         return r[httpx.Response].ok(response)
 
     @staticmethod
+    def _request_json_body(
+        client: httpx.Client, request: m.Api.HttpRequest, body_json: t.JsonMapping
+    ) -> p.Result[httpx.Response]:
+        """Execute an HTTP request with JSON body semantics."""
+        return FlextApiTransportsRequestMixin._execute_http(
+            client, request, json_body=body_json
+        )
+
+    @staticmethod
     def _request_content_body(
         client: httpx.Client, request: m.Api.HttpRequest, body_content: str | bytes
     ) -> p.Result[httpx.Response]:
         """Execute an HTTP request with raw content body semantics."""
-        try:
-            response = client.request(
-                method=request.method,
-                url=request.url,
-                headers=request.headers,
-                params=request.query_params,
-                content=body_content,
-                timeout=request.timeout,
-            )
-        except c.Api.EXC_HTTPX as e:
-            return r[httpx.Response].fail_op("HTTP request", e)
-        return r[httpx.Response].ok(response)
+        return FlextApiTransportsRequestMixin._execute_http(
+            client, request, content=body_content
+        )
 
     @staticmethod
     def _response_model(response: httpx.Response) -> m.Api.HttpResponse:

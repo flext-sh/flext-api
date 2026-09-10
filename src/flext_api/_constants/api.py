@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_api._constants.api_values import FlextApiConstantsValues
+from .api_values import FlextApiConstantsValues
 
 
 class FlextApiConstantsApi(FlextApiConstantsValues):

@@ -7,7 +7,7 @@
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 - Package: `flext_api`
-- Version: `0.12.0`
+- Version: `0.12.0rc0`
 - Description: FLEXT API - High-Performance REST API with FastAPI
 - Doc summary: Flext Api package.
 - Classifiers: `Development Status :: 3 - Alpha`, `Framework :: FastAPI`,
@@ -24,8 +24,8 @@
   `FlextApiConstants`, `FlextApiModels`, `FlextApiProtocols`,
   `FlextApiServiceBase`, `FlextApiSettings`, `FlextApiTypes`,
   `FlextApiUtilities` (+2 more)
-- Exported module shortcuts: `api`
-- Generated module pages: `7`
+- Exported module shortcuts: `api`, `services`
+- Generated module pages: `9`
 
 ## Next Pages
 

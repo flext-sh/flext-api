@@ -1,0 +1,44 @@
+{
+  "context": "project",
+  "destination": ".opencode/agents",
+  "managed": {
+    "fastapi-reviewer.md": {
+      "activation": [
+        "dependency:fastapi"
+      ],
+      "adapter_version": 1,
+      "destination": "fastapi-reviewer.md",
+      "origin": "agents:agents:opencode",
+      "physical_digest": "3746a3a349ea8a3ad5576a15e6aa6e6a2f8e2282bd5e747b4ba2430602fa7da6",
+      "slug": "fastapi-reviewer",
+      "source_digest": "f1d4e7a29f6f3fabeec0c83df3e038dee4cbf4ee91405c7d2a94472e76a79f8d",
+      "source_type": "agent"
+    },
+    "python-reviewer.md": {
+      "activation": [
+        "marker:pyproject.toml"
+      ],
+      "adapter_version": 1,
+      "destination": "python-reviewer.md",
+      "origin": "agents:agents:opencode",
+      "physical_digest": "68d79a1e2d977e0c2d20c943b078816b1b9e15e093193357d7fc2efeb14a54fe",
+      "slug": "python-reviewer",
+      "source_digest": "812d1e5b772b64367fc005cf12bafb2a62898ca6e6d8ee3e3489d9020d45e12f",
+      "source_type": "agent"
+    }
+  },
+  "owner": "agents-governance",
+  "project": ".",
+  "providers": [
+    "opencode"
+  ],
+  "selection": {
+    "agents": [],
+    "opt_ins": [],
+    "selected_tags": [
+      "flext"
+    ]
+  },
+  "surface": "agents",
+  "version": 5
+}
