@@ -16,4 +16,12 @@ gc.endpoint_status: verified
 types.custom: molecule,convoy,message,event,gate,merge-request,agent,role,rig,session,spec,convergence,step
 dolt:
   mode: server
+<<<<<<< HEAD
+  host: 127.0.0.1
+  port: "3307"
+  user: root
+  database: flext
+  auto-commit: "on"
+=======
   disable-event-flush: true
+>>>>>>> origin/0.12.0-dev
