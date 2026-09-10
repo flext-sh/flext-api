@@ -34,7 +34,7 @@ class FlextApiUtilitiesSettingsManager:
     @property
     def settings(self) -> m.Api.ClientConfig | None:
         """Current configuration."""
-        return type(self)._client_config
+        return self._client_config
 
     @classmethod
     def configure(cls, settings: t.ScalarMapping | None = None) -> p.Result[bool]:
