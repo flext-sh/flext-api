@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 if TYPE_CHECKING:
     from flext_web import p
 
-    from flext_api.typings import t
+    from .. import t
 
 
 class FlextApiProtocolsTransport:

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from .base_grpc import FlextApiProtocolsGrpc
-from .base_http import FlextApiProtocolsHttpClient
-from .base_resources import FlextApiProtocolsResources
-from .base_serialization import FlextApiProtocolsSerializer
-from .base_storage import FlextApiProtocolsStorage
-from .base_transport import FlextApiProtocolsTransport
+from . import (
+    FlextApiProtocolsGrpc,
+    FlextApiProtocolsHttpClient,
+    FlextApiProtocolsResources,
+    FlextApiProtocolsSerializer,
+    FlextApiProtocolsStorage,
+    FlextApiProtocolsTransport,
+)
 
 
 class FlextApiProtocolsBase(

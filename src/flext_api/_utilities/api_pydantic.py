@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_web import m, u
+from flext_web import u
+
+from .. import m, t
 
 if TYPE_CHECKING:
     from enum import StrEnum
-
-from flext_api.typings import t
 
 
 class FlextApiUtilitiesApiPydantic:

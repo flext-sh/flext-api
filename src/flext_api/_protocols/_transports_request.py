@@ -13,10 +13,7 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from flext_api.constants import c
-from flext_api.models import m
-from flext_api.typings import t
-from flext_core.result import r
+from .. import c, m, r, t
 
 if TYPE_CHECKING:
     from flext_web import p

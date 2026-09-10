@@ -15,14 +15,12 @@ from typing import TYPE_CHECKING, override
 
 import httpx
 
-from flext_api.constants import c
-from flext_api.models import m
-from flext_api.typings import t
-from flext_core import r
-
-from ._transports_config import FlextApiTransportsConfigMixin
-from ._transports_request import FlextApiTransportsRequestMixin
-from .base import FlextApiProtocolsBase as pb
+from .. import c, m, r, t
+from . import (
+    FlextApiProtocolsBase as pb,
+    FlextApiTransportsConfigMixin,
+    FlextApiTransportsRequestMixin,
+)
 
 if TYPE_CHECKING:
     from flext_web import p

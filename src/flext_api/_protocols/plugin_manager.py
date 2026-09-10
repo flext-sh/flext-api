@@ -7,15 +7,15 @@ from typing import TYPE_CHECKING
 
 from flext_web import u
 
-from flext_core import r
-
-from .plugin_types import FlextApiProtocolPluginTypes
+from .. import r
+from . import FlextApiProtocolPluginTypes
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
 
-    from flext_api.typings import t
-    from flext_core import p
+    from flext_web import p
+
+    from .. import t
 
 
 class FlextApiProtocolPluginManager:

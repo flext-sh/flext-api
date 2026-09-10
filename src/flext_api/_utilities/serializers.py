@@ -7,10 +7,7 @@ from __future__ import annotations
 
 import msgpack
 
-from flext_api.constants import c
-from flext_api.protocols import p
-from flext_api.typings import t
-from flext_core import r
+from .. import c, p, r, t
 
 
 class FlextApiUtilitiesSerializers:
