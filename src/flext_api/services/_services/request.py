@@ -5,19 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import httpx
-from flext_web import u
 
-from flext_core.result import r
+from ... import c, m, p, r, t, u
+from . import FlextApiClientCodecMixin
 
 if TYPE_CHECKING:
-    from flext_api import FlextApiSettings
-
-from flext_api.constants import c
-from flext_api.models import m
-from flext_api.protocols import p
-from flext_api.typings import t
-
-from .codec import FlextApiClientCodecMixin
+    from ... import FlextApiSettings
 
 
 class FlextApiClientRequestMixin(FlextApiClientCodecMixin):

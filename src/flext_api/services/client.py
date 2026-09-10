@@ -11,7 +11,7 @@ from flext_api.typings import FlextApiTypes
 from flext_api.utilities import u
 from flext_core import r
 
-from .._services.request import FlextApiClientRequestMixin
+from ._services import FlextApiClientRequestMixin
 
 p = FlextApiProtocols
 t = FlextApiTypes

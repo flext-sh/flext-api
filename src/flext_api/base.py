@@ -10,10 +10,7 @@ from abc import ABC
 
 from flext_core import s
 
-from ._settings import FlextApiSettings
-from .models import m
-from .protocols import p
-from .typings import t
+from . import FlextApiSettings, m, p, t
 
 
 class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload]](

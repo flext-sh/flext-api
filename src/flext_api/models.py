@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from flext_web import m
 
+from . import t
 from ._models.client import FlextApiModelsClient
 from ._models.request import FlextApiModelsRequest
 from ._models.response import FlextApiModelsResponse
 from ._models.storage import FlextApiModelsStorage
 from ._models.webhook import FlextApiModelsWebhook
-from .typings import t
 
 
 class FlextApiModels(m):

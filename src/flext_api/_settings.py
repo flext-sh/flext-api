@@ -18,9 +18,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from flext_api.models import m
-from flext_api.utilities import u
 from flext_core import FlextSettings
+
+from . import m, u
 
 
 class FlextApiSettings(FlextSettings):

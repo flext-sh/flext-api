@@ -12,10 +12,12 @@ from __future__ import annotations
 
 from flext_web import p
 
-from ._protocols.base import FlextApiProtocolsBase
-from ._protocols.plugins import FlextApiProtocolPlugins
-from ._protocols.serialization import FlextApiProtocolsSerialization
-from ._protocols.transports import FlextApiProtocolsTransports
+from ._protocols import (
+    FlextApiProtocolPlugins,
+    FlextApiProtocolsBase,
+    FlextApiProtocolsSerialization,
+    FlextApiProtocolsTransports,
+)
 
 
 class FlextApiProtocols(p):
