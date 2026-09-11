@@ -30,7 +30,9 @@ class FlextApiClient(FlextApiClientRequestMixin, s[bool]):
     def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
         """Execute service lifecycle parity."""
         if kwargs:
-            u.info("Execute called with kwargs keys: %s", list(kwargs.keys()))
+            u.fetch_logger(__name__).info(
+                "Execute called with kwargs keys: %s", list(kwargs.keys())
+            )
         return r[bool].ok(True)
 
 
