@@ -5,12 +5,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from flext_api import t
-from flext_core import r
 from flext_web import u
 
+from .. import r, t
+
 if TYPE_CHECKING:
-    from flext_core import p
+    from flext_web import p
 
 
 class FlextApiProtocolPluginTypes:

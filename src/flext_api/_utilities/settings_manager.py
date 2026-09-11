@@ -13,8 +13,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 
-from flext_api import c, m, p, r, t
 from flext_web import u
+
+from .. import c, m, p, r, t
 
 
 class FlextApiUtilitiesSettingsManager:
@@ -24,42 +25,39 @@ class FlextApiUtilitiesSettingsManager:
     following railway-oriented error handling throughout. Domain-agnostic.
     """
 
-    _client_config: m.Api.ClientConfig | None
-
-    def __init__(self) -> None:
-        """Initialize configuration manager."""
-        self._client_config = None
+    _client_config: m.Api.ClientConfig | None = None
 
     @property
     def settings(self) -> m.Api.ClientConfig | None:
         """Current configuration."""
         return self._client_config
 
-    def configure(self, settings: t.ScalarMapping | None = None) -> p.Result[bool]:
+    @classmethod
+    def configure(cls, settings: t.ScalarMapping | None = None) -> p.Result[bool]:
         """Configure client settings through canonical ClientConfig model."""
         try:
-            client_config_result = self._build_client_config(
+            client_config_result = cls._build_client_config(
                 {} if settings is None else settings
             )
             if client_config_result.failure:
-                self._client_config = None
-                return r[bool].fail(
-                    client_config_result.error or "Configuration validation failed"
-                )
-            self._client_config = client_config_result.value
+                cls._client_config = None
+                return r[bool].from_failure(client_config_result)
+            cls._client_config = client_config_result.value
             return r[bool].ok(True)
         except c.EXC_HTTP_PROCESSING as e:
             error_msg = f"Configuration failed: {e}"
             return r[bool].fail(error_msg)
 
-    def client_config(self) -> p.Result[m.Api.ClientConfig]:
+    @classmethod
+    def client_config(cls) -> p.Result[m.Api.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
-        if self._client_config is not None:
-            return r[m.Api.ClientConfig].ok(self._client_config)
+        if cls._client_config is not None:
+            return r[m.Api.ClientConfig].ok(cls._client_config)
         return r[m.Api.ClientConfig].fail("No configuration set")
 
+    @staticmethod
     def _normalize_value(
-        self, key: str, *, value: t.Scalar | t.StrMapping
+        key: str, *, value: t.Scalar | t.StrMapping
     ) -> p.Result[t.JsonPayload]:
         """Normalize configuration value based on key type - no fallbacks."""
         result: p.Result[t.JsonPayload]
@@ -91,17 +89,16 @@ class FlextApiUtilitiesSettingsManager:
                 result = r[t.JsonPayload].ok(u.normalize_to_container(value))
         return result
 
-    def _build_client_config(
-        self, settings: t.ScalarMapping
-    ) -> p.Result[m.Api.ClientConfig]:
+    @staticmethod
+    def _build_client_config(settings: t.ScalarMapping) -> p.Result[m.Api.ClientConfig]:
         """Build typed ClientConfig from scalar settings payload."""
         processed: MutableMapping[str, t.JsonPayload] = {}
         for key, raw_value in settings.items():
-            normalize_result = self._normalize_value(key, value=raw_value)
+            normalize_result = FlextApiUtilitiesSettingsManager._normalize_value(
+                key, value=raw_value
+            )
             if normalize_result.failure:
-                return r[m.Api.ClientConfig].fail(
-                    normalize_result.error or "Value normalization failed"
-                )
+                return r[m.Api.ClientConfig].from_failure(normalize_result)
             processed[key] = normalize_result.value
         headers_value = processed.get("headers", {})
         if not isinstance(headers_value, Mapping):

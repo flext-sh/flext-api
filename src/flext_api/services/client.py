@@ -4,26 +4,17 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api._settings import FlextApiSettings
-from flext_api.base import FlextApiServiceBase
-from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
-from flext_core import r, u
-
-from flext_api._utilities.client_request import FlextApiClientRequestMixin
-
-p = FlextApiProtocols
-t = FlextApiTypes
-_LOGGER = u.fetch_logger(__name__)
+from .. import FlextApiSettings, p, r, s, t, u
+from ._services import FlextApiClientRequestMixin
 
 
-class FlextApiClient(FlextApiClientRequestMixin, FlextApiServiceBase[bool]):
+class FlextApiClient(FlextApiClientRequestMixin, s[bool]):
     """Generic HTTP client using FLEXT patterns."""
 
     def __init__(self, settings: FlextApiSettings | None = None) -> None:
         """Bind the client to explicit settings or the global singleton."""
         resolved = settings if settings is not None else FlextApiSettings.fetch_global()
-        FlextApiServiceBase.__init__(self, runtime_settings=resolved)
+        s.__init__(self, runtime_settings=resolved)
 
     @property
     def base_url(self) -> str:
@@ -39,7 +30,7 @@ class FlextApiClient(FlextApiClientRequestMixin, FlextApiServiceBase[bool]):
     def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
         """Execute service lifecycle parity."""
         if kwargs:
-            _LOGGER.info("Execute called with kwargs keys: %s", list(kwargs.keys()))
+            u.info("Execute called with kwargs keys: %s", list(kwargs.keys()))
         return r[bool].ok(True)
 
 

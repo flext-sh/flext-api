@@ -15,10 +15,12 @@ from typing import TYPE_CHECKING, override
 
 import httpx
 
-from flext_api import c, m, r, t
-from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
-from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
-from flext_api._protocols.base import FlextApiProtocolsBase as pb
+from .. import c, m, r, t
+from . import (
+    FlextApiProtocolsBase as pb,
+    FlextApiTransportsConfigMixin,
+    FlextApiTransportsRequestMixin,
+)
 
 if TYPE_CHECKING:
     from flext_web import p
@@ -81,14 +83,10 @@ class FlextApiProtocolsTransports:
                 data, connection_url=connection
             )
             if params_result.failure:
-                return r[t.Api.HttpResponseDict | str].fail(
-                    params_result.error or "Parameter extraction failed"
-                )
+                return r[t.Api.HttpResponseDict | str].from_failure(params_result)
             response_result = self._request_model(params_result.value)
             if response_result.failure:
-                return r[t.Api.HttpResponseDict | str].fail(
-                    response_result.error or "HTTP send failed"
-                )
+                return r[t.Api.HttpResponseDict | str].from_failure(response_result)
             return r[t.Api.HttpResponseDict | str].ok(
                 self._response_mapping(response_result.value)
             )
