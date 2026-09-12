@@ -14,7 +14,7 @@
   `Intended Audience :: Developers`, `Operating System :: OS Independent`,
   `Programming Language :: Python :: 3 :: Only`, `Programming Language :: Python
   :: 3.13` (+3 more)
-- Project class: `platform`
+- Project class: `domain`
 - Keywords: `enterprise`, `fastapi`, `flext`, `http`, `rest`, `typed`
 - Main facades: `FlextApi`, `FlextApiClient`, `FlextApiConfig`,
   `FlextApiConstants`, `FlextApiModels`, `FlextApiProtocols`,
