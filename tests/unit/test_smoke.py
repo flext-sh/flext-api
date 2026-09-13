@@ -14,11 +14,10 @@ from typing import TYPE_CHECKING
 import pytest
 from flext_tests import tm
 
-from flext_api import FlextApi, FlextApiClient, FlextApiSettings
-from tests import c, m, u
+from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, u
 
 if TYPE_CHECKING:
-    from tests import t
+    from flext_api import t
 
 
 class TestsFlextApiSmoke:
