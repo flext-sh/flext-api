@@ -17,16 +17,16 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
     """Shared request execution helpers for sync and async clients."""
 
     if TYPE_CHECKING:
-        # Narrowed view of the core service settings property; never a
-        # pydantic field, so the runtime `settings` property of the service
-        # base stays the single binding point and no shadowing warning fires.
-        settings: FlextApiSettings
+
+        @property
+        def client_settings(self) -> FlextApiSettings:
+            """Typed settings supplied by the concrete client base."""
 
     def _build_url(self, path: str) -> p.Result[str]:
         """Build full URL from base_url and path."""
         # NOTE (multi-agent): mro-t9s9 — request defaults belong to this
         # client's injected runtime settings, never the global singleton.
-        api_settings = self.settings.Api
+        api_settings = self.client_settings.Api
         if not path:
             return r[str].fail("URL path cannot be empty")
         path_stripped = path.strip()
@@ -41,12 +41,12 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
 
     def _prepare_request(
         self, request: m.Api.HttpRequest
-    ) -> p.Result[tuple[str, t.StrMapping, bytes, t.MappingKV[str, t.StrMapping]]]:
+    ) -> p.Result[tuple[str, t.StrMapping, bytes, t.MappingKV[str, str]]]:
         """Prepare URL, headers, body, and extensions for HTTP request."""
         url_result = self._build_url(request.url)
         if url_result.failure:
             return r[
-                tuple[str, t.StrMapping, bytes, t.MappingKV[str, t.StrMapping]]
+                tuple[str, t.StrMapping, bytes, t.MappingKV[str, str]]
             ].from_failure(url_result)
         request_body: t.Api.RequestBody = (
             request.body if request.body is not None else b""
@@ -54,13 +54,16 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         body_result = self._serialize_body(request_body)
         if body_result.failure:
             return r[
-                tuple[str, t.StrMapping, bytes, t.MappingKV[str, t.StrMapping]]
+                tuple[str, t.StrMapping, bytes, t.MappingKV[str, str]]
             ].from_failure(body_result)
-        headers: t.StrMapping = {**self.settings.Api.default_headers, **request.headers}
-        extensions = (
-            {"sni_hostname": request.sni_hostname} if request.sni_hostname else {}
-        )
-        return r[tuple[str, t.StrMapping, bytes, t.MappingKV[str, t.StrMapping]]].ok((
+        headers: t.StrMapping = {
+            **self.client_settings.Api.default_headers,
+            **request.headers,
+        }
+        extensions: t.MutableStrMapping = {}
+        if request.sni_hostname:
+            extensions["sni_hostname"] = request.sni_hostname
+        return r[tuple[str, t.StrMapping, bytes, t.MappingKV[str, str]]].ok((
             url_result.value,
             headers,
             body_result.value,

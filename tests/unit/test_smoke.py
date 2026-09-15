@@ -14,7 +14,7 @@ from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c
 
-from ._model_contract import TestsFlextApiModelContract
+from .model_contract import TestsFlextApiModelContract
 
 
 class TestsFlextApiSmoke(TestsFlextApiModelContract):

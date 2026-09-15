@@ -69,13 +69,6 @@ class TestsFlextApiSerializers:
         tm.that(result.failure, eq=True)
         tm.that(result.error, is_=str)
 
-    def test_unpackb_rejects_msgpack_nil(self) -> None:
-        """Msgpack nil is rejected: None is not a valid success payload."""
-        result = u.Api.unpackb(b"\xc0")
-
-        tm.that(result.success, eq=False)
-        tm.that(result.error, has="nil is forbidden")
-
     def test_packb_unpackb_roundtrip(self) -> None:
         """packb() followed by unpackb() yields the original value."""
         original: t.JsonValue = {"key": "value", "list": [1, 2, 3]}
@@ -118,13 +111,14 @@ class TestsFlextApiSerializers:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
 
-    def test_packb_unpackb_roundtrip_none_is_rejected(self) -> None:
-        """None payloads fail loudly: nil cannot be a success payload."""
+    def test_unpackb_rejects_nil_payload(self) -> None:
+        """An encoded msgpack nil fails because Result cannot succeed with None."""
         packed = u.Api.packb(None)
         result = u.Api.unpackb(packed)
 
         tm.that(result.success, eq=False)
-        tm.that(result.error, has="nil is forbidden")
+        tm.that(result.failure, eq=True)
+        tm.that(str(result.error), has="Result cannot carry None")
 
 
 __all__: list[str] = ["TestsFlextApiSerializers"]

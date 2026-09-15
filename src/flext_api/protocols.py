@@ -10,10 +10,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeAlias
-
-import httpx
 from flext_web import p
+from httpx import (
+    AsyncClient as HttpxAsyncClient,
+    Client as HttpxClient,
+    HTTPError as HttpxHTTPError,
+    HTTPStatusError as HttpxHTTPStatusError,
+    RequestError as HttpxRequestError,
+    Response as HttpxResponse,
+    TimeoutException as HttpxTimeoutException,
+)
 
 from ._protocols import (
     FlextApiProtocolPlugins,
@@ -42,15 +48,8 @@ class FlextApiProtocols(p):
 
 p = FlextApiProtocols
 
-# Module-level explicit aliases: valid per PEP 613, real classes at runtime,
-# so consumer isinstance narrowing keeps both its static and runtime meaning.
-HttpxClient: TypeAlias = httpx.Client
-HttpxAsyncClient: TypeAlias = httpx.AsyncClient
-HttpxResponse: TypeAlias = httpx.Response
-HttpxHTTPError: TypeAlias = httpx.HTTPError
-HttpxHTTPStatusError: TypeAlias = httpx.HTTPStatusError
-HttpxRequestError: TypeAlias = httpx.RequestError
-HttpxTimeoutException: TypeAlias = httpx.TimeoutException
+# Module-level explicit class-object re-exports: consumers can construct and
+# isinstance-narrow these names with both static and runtime class semantics.
 
 __all__: list[str] = [
     "FlextApiProtocols",
