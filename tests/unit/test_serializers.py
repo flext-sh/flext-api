@@ -26,6 +26,7 @@ class TestsFlextApiSerializers:
             (b"\x81\xa3key\xa5value", {"key": "value"}),
             (b"\x93\x01\x02\x03", [1, 2, 3]),
             (b"\x2a", 42),
+            (b"\xff", -1),
         ],
     )
     def test_unpackb_valid_input_succeeds(
@@ -63,11 +64,11 @@ class TestsFlextApiSerializers:
 
     def test_unpackb_invalid_input_fails(self) -> None:
         """Invalid msgpack yields a failure with an error message."""
-        result = u.Api.unpackb(b"\xff")
+        result = u.Api.unpackb(b"\xc1")
 
         tm.that(result.success, eq=False)
         tm.that(result.failure, eq=True)
-        tm.that(result.error, is_str=True)
+        tm.that(result.error, is_=str, empty=False)
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """packb() followed by unpackb() yields the original value."""
@@ -111,11 +112,21 @@ class TestsFlextApiSerializers:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
 
-    def test_packb_unpackb_roundtrip_none(self) -> None:
-        """Round-trip for null."""
-        original: t.JsonValue = None
-        packed = u.Api.packb(original)
-        result = u.Api.unpackb(packed)
+    def test_packb_none_encodes_nil(self) -> None:
+        """Packing None produces the MessagePack nil marker."""
+        tm.that(u.Api.packb(None), eq=b"\xc0")
+
+    def test_unpackb_nil_fails_explicitly(self) -> None:
+        """A top-level nil cannot become a successful result payload."""
+        result = u.Api.unpackb(b"\xc0")
+
+        tm.that(result.failure, eq=True)
+        tm.that(result.error, is_=str, empty=False)
+
+    def test_packb_unpackb_roundtrip_nested_none(self) -> None:
+        """Null values inside a collection survive a round-trip."""
+        original: t.JsonValue = {"nullable": None, "items": [None, "value"]}
+        result = u.Api.unpackb(u.Api.packb(original))
 
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
