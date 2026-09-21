@@ -9,16 +9,16 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tests import c, d, e, h, m, p, r, s, t, td, tf, tk, tm, tv, u, x
+    from flext_tests import d, e, h, r, s, td, tf, tk, tm, tv, x
 
     from . import unit
     from .base import TestsFlextApiServiceBase
-    from .constants import TestsFlextApiConstants
-    from .models import TestsFlextApiModels
-    from .protocols import TestsFlextApiProtocols
+    from .constants import TestsFlextApiConstants, TestsFlextApiConstants as c
+    from .models import TestsFlextApiModels, TestsFlextApiModels as m
+    from .protocols import TestsFlextApiProtocols, TestsFlextApiProtocols as p
     from .settings import TestsFlextApiSettings
-    from .typings import TestsFlextApiTypes
-    from .utilities import TestsFlextApiUtilities
+    from .typings import TestsFlextApiTypes, TestsFlextApiTypes as t
+    from .utilities import TestsFlextApiUtilities, TestsFlextApiUtilities as u
 __all__: tuple[str, ...] = (
     "TestsFlextApiConstants",
     "TestsFlextApiModels",
@@ -50,31 +50,14 @@ _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
             ".base": ("TestsFlextApiServiceBase",),
-            ".constants": ("TestsFlextApiConstants",),
-            ".models": ("TestsFlextApiModels",),
-            ".protocols": ("TestsFlextApiProtocols",),
+            ".constants": ("TestsFlextApiConstants", "c"),
+            ".models": ("TestsFlextApiModels", "m"),
+            ".protocols": ("TestsFlextApiProtocols", "p"),
             ".settings": ("TestsFlextApiSettings",),
-            ".typings": ("TestsFlextApiTypes",),
+            ".typings": ("TestsFlextApiTypes", "t"),
             ".unit": ("unit",),
-            ".utilities": ("TestsFlextApiUtilities",),
-            "flext_tests": (
-                "c",
-                "d",
-                "e",
-                "h",
-                "m",
-                "p",
-                "r",
-                "s",
-                "t",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-                "u",
-                "x",
-            ),
+            ".utilities": ("TestsFlextApiUtilities", "u"),
+            "flext_tests": ("d", "e", "h", "r", "s", "td", "tf", "tk", "tm", "tv", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

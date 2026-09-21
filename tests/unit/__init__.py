@@ -16,9 +16,6 @@ if TYPE_CHECKING:
     from .test_response_wire_content import TestsFlextApiResponseWireContent
     from .test_serializers import TestsFlextApiSerializers
     from .test_smoke import TestsFlextApiSmoke
-    from .test_transports_characterization import (
-        TestsFlextApiTransportsCharacterization,
-    )
     from .test_transports_facade_httpx import TestsFlextApiHttpxContracts
     from .test_utilities_transport import TestsFlextApiUtilitiesTransport
 __all__: tuple[str, ...] = (
@@ -28,7 +25,6 @@ __all__: tuple[str, ...] = (
     "TestsFlextApiResponseWireContent",
     "TestsFlextApiSerializers",
     "TestsFlextApiSmoke",
-    "TestsFlextApiTransportsCharacterization",
     "TestsFlextApiUtilitiesTransport",
     "c",
     "d",
@@ -56,9 +52,6 @@ _LAZY_IMPORTS = MappingProxyType(
             ".test_response_wire_content": ("TestsFlextApiResponseWireContent",),
             ".test_serializers": ("TestsFlextApiSerializers",),
             ".test_smoke": ("TestsFlextApiSmoke",),
-            ".test_transports_characterization": (
-                "TestsFlextApiTransportsCharacterization",
-            ),
             ".test_transports_facade_httpx": ("TestsFlextApiHttpxContracts",),
             ".test_utilities_transport": ("TestsFlextApiUtilitiesTransport",),
             "flext_tests": (

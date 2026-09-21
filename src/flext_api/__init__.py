@@ -20,7 +20,7 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_web import d, e, h, r, x
+    from flext_core import d, e, h, r, x
 
     from . import services
     from .__version__ import FlextApiVersion
@@ -125,7 +125,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.client": ("FlextApiClient",),
             ".typings": ("FlextApiTypes", "t"),
             ".utilities": ("FlextApiUtilities", "u"),
-            "flext_web": ("d", "e", "h", "r", "x"),
+            "flext_core": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
