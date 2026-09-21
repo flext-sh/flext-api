@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from flext_core import FlextConfig, FlextSettings
 
 from . import m
@@ -30,7 +32,10 @@ class FlextApiConfig(FlextSettings, FlextConfig):
     construction machinery stays intact.
     """
 
-    Api: _ApiNamespace = _ApiNamespace()
+    Api: Annotated[
+        _ApiNamespace,
+        m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``."),
+    ] = _ApiNamespace()
 
 
 config: FlextApiConfig = FlextApiConfig.fetch_global()
