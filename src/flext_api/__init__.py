@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
 
     from . import services
+    from .__version__ import FlextApiVersion
     from ._config import FlextApiConfig, config
     from ._settings import FlextApiSettings, settings
     from .api import FlextApi, api
@@ -33,6 +34,7 @@ if TYPE_CHECKING:
     from .protocols import (
         FlextApiProtocols,
         FlextApiProtocols as p,
+        FlextApiProtocolsTransports,
         HttpxAsyncClient,
         HttpxClient,
         HttpxHTTPError,
@@ -56,10 +58,12 @@ __all__: tuple[str, ...] = (
     "FlextApiConstants",
     "FlextApiModels",
     "FlextApiProtocols",
+    "FlextApiProtocolsTransports",
     "FlextApiServiceBase",
     "FlextApiSettings",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "FlextApiVersion",
     "HttpxAsyncClient",
     "HttpxClient",
     "HttpxHTTPError",
@@ -95,6 +99,7 @@ __all__: tuple[str, ...] = (
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
+            ".__version__": ("FlextApiVersion",),
             "._config": ("FlextApiConfig", "config"),
             "._settings": ("FlextApiSettings", "settings"),
             ".api": ("FlextApi", "api"),
@@ -104,6 +109,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".models": ("FlextApiModels", "m"),
             ".protocols": (
                 "FlextApiProtocols",
+                "FlextApiProtocolsTransports",
                 "HttpxAsyncClient",
                 "HttpxClient",
                 "HttpxHTTPError",
