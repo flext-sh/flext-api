@@ -18,14 +18,8 @@ if TYPE_CHECKING:
     from .base_client import FlextApiClientBase
     from .client import FlextApiClient
 __all__: tuple[str, ...] = (
-    "FlextApiAsyncClient",
-    "FlextApiClient",
-    "FlextApiClientAsyncRequestMixin",
-    "FlextApiClientBase",
-    "FlextApiClientBaseRequestMixin",
-    "FlextApiClientCodecMixin",
-    "FlextApiClientRequestMixin",
-    "_services",
+    "FlextApiAsyncClient", "FlextApiClient", "FlextApiClientAsyncRequestMixin", "FlextApiClientBase",
+    "FlextApiClientBaseRequestMixin", "FlextApiClientCodecMixin", "FlextApiClientRequestMixin", "_services",
 )
 
 _LAZY_IMPORTS = MappingProxyType(

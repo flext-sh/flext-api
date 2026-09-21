@@ -14,10 +14,7 @@ if TYPE_CHECKING:
     from .codec import FlextApiClientCodecMixin
     from .request import FlextApiClientRequestMixin
 __all__: tuple[str, ...] = (
-    "FlextApiClientAsyncRequestMixin",
-    "FlextApiClientBaseRequestMixin",
-    "FlextApiClientCodecMixin",
-    "FlextApiClientRequestMixin",
+    "FlextApiClientAsyncRequestMixin", "FlextApiClientBaseRequestMixin", "FlextApiClientCodecMixin", "FlextApiClientRequestMixin",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
