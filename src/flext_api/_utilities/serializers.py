@@ -34,6 +34,9 @@ class FlextApiUtilitiesSerializers:
     def unpackb(data: bytes) -> p.Result[t.JsonValue]:
         """Type-safe wrapper for msgpack.unpackb().
 
+        A top-level nil returns failure because FlextResult forbids None as a
+        success payload. Null values inside collections remain supported.
+
         Args:
             data: Binary data to unpack.
 

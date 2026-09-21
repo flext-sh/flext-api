@@ -26,6 +26,7 @@ class TestsFlextApiSerializers:
             (b"\x81\xa3key\xa5value", {"key": "value"}),
             (b"\x93\x01\x02\x03", [1, 2, 3]),
             (b"\x2a", 42),
+            (b"\xff", -1),
         ],
     )
     def test_unpackb_valid_input_succeeds(
@@ -61,13 +62,14 @@ class TestsFlextApiSerializers:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=42)
 
-    def test_unpackb_invalid_input_fails(self) -> None:
-        """Incomplete msgpack input yields a failure with an error message."""
-        result = u.Api.unpackb(b"\xd9")
+    @pytest.mark.parametrize("packed", [b"\xd9", b"\xc1"])
+    def test_unpackb_invalid_input_fails(self, packed: bytes) -> None:
+        """Incomplete or reserved MessagePack input yields a failure."""
+        result = u.Api.unpackb(packed)
 
         tm.that(result.success, eq=False)
         tm.that(result.failure, eq=True)
-        tm.that(result.error, is_=str)
+        tm.that(result.error, is_=str, empty=False)
 
     def test_packb_unpackb_roundtrip(self) -> None:
         """packb() followed by unpackb() yields the original value."""
@@ -119,6 +121,18 @@ class TestsFlextApiSerializers:
         tm.that(result.success, eq=False)
         tm.that(result.failure, eq=True)
         tm.that(str(result.error), has="Result cannot carry None")
+
+    def test_packb_none_encodes_nil(self) -> None:
+        """Packing None produces the MessagePack nil marker."""
+        tm.that(u.Api.packb(None), eq=b"\xc0")
+
+    def test_packb_unpackb_roundtrip_nested_none(self) -> None:
+        """Null values inside a collection survive a round-trip."""
+        original: t.JsonValue = {"nullable": None, "items": [None, "value"]}
+        result = u.Api.unpackb(u.Api.packb(original))
+
+        tm.that(result.success, eq=True)
+        tm.that(result.value, eq=original)
 
 
 __all__: list[str] = ["TestsFlextApiSerializers"]
