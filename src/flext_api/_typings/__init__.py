@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from .serialization import FlextApiTypingsSerialization
     from .transport import FlextApiTypingsTransport
 __all__: tuple[str, ...] = (
-    "FlextApiTypingsBase", "FlextApiTypingsSerialization", "FlextApiTypingsTransport",
+    "FlextApiTypingsBase",
+    "FlextApiTypingsSerialization",
+    "FlextApiTypingsTransport",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
