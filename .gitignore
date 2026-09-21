@@ -380,3 +380,4 @@ CLAUDE.local.md
 !.vscode/settings.json
 !config/
 !config/gitleaks-release.toml
+flext-infra-codegen-transaction-journal.json.lock
