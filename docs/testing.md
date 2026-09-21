@@ -5,8 +5,6 @@
 - [Overview](#overview)
 - [Test Structure](#test-structure)
 - [Unit Tests](#unit-tests)
-- [Integration Tests](#integration-tests)
-- [Running Tests](#running-tests)
 - [Test Data and Helpers](#test-data-and-helpers)
 - [Mocking External APIs](#mocking-external-apis)
 - [Success Metrics](#success-metrics)
@@ -50,6 +48,7 @@ backend so the tests run without network access.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
@@ -106,6 +105,7 @@ Model validation can also be tested in isolation.
 
 ```python
 from __future__ import annotations
+
 from flext_api import c, m
 
 
@@ -137,16 +137,18 @@ Integration tests exercise a sequence of API calls and transformations. Use a st
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class WorkflowApi(FlextApi):
     def __init__(self, settings: FlextApiSettings | None = None) -> None:
-        super().__init__(runtime_settings=settings)
+        """Initialize the workflow API with in-memory order storage."""
+        super().__init__(settings=settings)
         object.__setattr__(self, "_orders", {})
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        orders: dict[int, dict] = getattr(self, "_orders")
+        orders: dict[int, dict] = self._orders
         if request.url.endswith("/orders") and str(request.method) == "POST":
             body = request.body if isinstance(request.body, dict) else {}
             order_id = len(orders) + 1
@@ -207,12 +209,11 @@ Use the root `make` commands as the canonical test runner.
 
 ```bash
 # Run all tests in the flext-api project
-make test PROJECT=flext-api
+make test
 
 # Run the markdown examples
-uv run pytest --markdown-docs docs/testing.md guides/http-client.md guides/testing.md -q
+make test
 ```
-
 ## Test Data and Helpers
 
 Keep tests clean by extracting reusable helper functions. These can be used in
@@ -220,6 +221,7 @@ standalone scripts or in pytest-collected test files.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 
 
@@ -243,7 +245,7 @@ def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
 
 settings = make_settings()
 assert settings.Api.base_url == "https://api.example.com"
-assert settings.Api.timeout == 5.0
+assert settings.Api.timeout == 5
 
 client = make_client(settings)
 assert client.base_url == "https://api.example.com"
@@ -259,11 +261,12 @@ return deterministic responses and test the real `FlextApi` contract.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, _request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.HttpResponse(
                 status_code=200,
