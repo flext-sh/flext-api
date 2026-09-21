@@ -16,8 +16,12 @@ if TYPE_CHECKING:
     from .settings_manager import FlextApiUtilitiesSettingsManager
     from .transport import FlextApiUtilitiesTransport
 __all__: tuple[str, ...] = (
-    "FlextApiUtilitiesApiPydantic", "FlextApiUtilitiesBase", "FlextApiUtilitiesRequestUtils", "FlextApiUtilitiesSerializers",
-    "FlextApiUtilitiesSettingsManager", "FlextApiUtilitiesTransport",
+    "FlextApiUtilitiesApiPydantic",
+    "FlextApiUtilitiesBase",
+    "FlextApiUtilitiesRequestUtils",
+    "FlextApiUtilitiesSerializers",
+    "FlextApiUtilitiesSettingsManager",
+    "FlextApiUtilitiesTransport",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
