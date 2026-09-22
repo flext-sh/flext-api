@@ -47,13 +47,15 @@ from flext_api import FlextApiClient, FlextApiSettings, c, m
 settings = FlextApiSettings(Api={"base_url": "https://api.example.com"})
 client = FlextApiClient(runtime_settings=settings)
 
-request = m.Api.HttpRequest.model_validate({
-    "method": c.Api.Method.GET,
-    "url": "/users",
-    "headers": {"Accept": "application/json"},
-    "query_params": {"limit": "10"},
-    "timeout": settings.Api.timeout,
-})
+request = m.Api.HttpRequest.model_validate(
+    {
+        "method": c.Api.Method.GET,
+        "url": "/users",
+        "headers": {"Accept": "application/json"},
+        "query_params": {"limit": "10"},
+        "timeout": settings.Api.timeout,
+    }
+)
 
 result = client.request(request)
 ```
