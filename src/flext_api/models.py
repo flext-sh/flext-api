@@ -23,7 +23,6 @@ class FlextApiModels(m):
         FlextApiModelsClient,
         FlextApiModelsStorage,
         FlextApiModelsWebhook,
-        m.Api,
     ):
         """API domain models namespace."""
 

@@ -4,15 +4,6 @@
 
 - [What are ADRs](#what-are-adrs)
 - [ADR Template](#adr-template)
-- [Status](#status)
-- [Context](#context)
-- [Decision](#decision)
-- [Consequences](#consequences)
-  - [Positive](#positive)
-  - [Negative](#negative)
-  - [Risks](#risks)
-- [Alternatives Considered](#alternatives-considered)
-- [References](#references)
 - [Current ADRs](#current-adrs)
 - [ADR Workflow](#adr-workflow)
   - [Creating a New ADR](#creating-a-new-adr)
@@ -29,11 +20,13 @@
   - [Lessons Learned](#lessons-learned)
   <!-- TOC END -->
 
-This directory contains Architecture Decision Records (ADRs) that document important architectural decisions made for the FLEXT-API project.
+This directory contains Architecture Decision Records (ADRs) that document important
+architectural decisions made for the FLEXT-API project.
 
 ## What are ADRs
 
-Architecture Decision Records (ADRs) are documents that capture important architectural decisions along with their context and consequences.
+Architecture Decision Records (ADRs) are documents that capture important architectural
+decisions along with their context and consequences.
 
 ## ADR Template
 
@@ -48,7 +41,8 @@ Date: [YYYY-MM-DD]
 
 ## Context
 
-[Describe the context and forces at play. What problem are we trying to solve? What constraints are we under?]
+[Describe the context and forces at play. What problem are we trying to solve? What
+constraints are we under?]
 
 ## Decision
 
@@ -75,14 +69,16 @@ Date: [YYYY-MM-DD]
 
 ## Current ADRs
 
-| ADR | Title | Status | Date |
-| \--------------------------------------- | --------------------------------- | -------- | ---------- | --------------------------- |
-| [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency | Accepted | 2025-01-01 |
-| [ADR-002](002-railway-pattern.md) | Railway-Oriented Error Handling | Accepted | 2025-01-01 |
-| [ADR-003](003-protocol-abstraction.md) | Protocol Plugin Architecture | Accepted | 2025-01-01 |
-| ADR-004 | Pydantic v2 Adoption | Draft | 2025-01-15 | Pending |
-| ADR-005 | HTTPX as HTTP Client | Draft | 2025-01-15 | Pending |
-| ADR-006 | Clean Architecture Implementation | Draft | 2025-01-20 | Pending |
+- [ADR-001][adr-001] Mandatory FLEXT-Core Dependency — Accepted, 2025-01-01
+- [ADR-002][adr-002] Railway-Oriented Error Handling — Accepted, 2025-01-01
+- [ADR-003][adr-003] Protocol Plugin Architecture — Accepted, 2025-01-01
+- ADR-004 Pydantic v2 Adoption — Draft, 2025-01-15
+- ADR-005 HTTPX as HTTP Client — Draft, 2025-01-15
+- ADR-006 Clean Architecture Implementation — Draft, 2025-01-20
+
+[adr-001]: 001-flext-core-dependency.md
+[adr-002]: 002-railway-pattern.md
+[adr-003]: 003-protocol-abstraction.md
 
 ## ADR Workflow
 

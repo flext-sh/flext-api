@@ -72,23 +72,24 @@ Performance and scalability validation:
 make test
 
 # By category
-make test-unit          # Unit tests only
-make test-integration   # Integration tests
-make test-e2e          # End-to-end tests
+make test-unit        # Unit tests only
+make test-integration # Integration tests
+make test-e2e         # End-to-end tests
 
 # With markers
-pytest -m "not slow"    # Exclude slow tests
-pytest -m api          # API tests only
-pytest -m client       # Client tests only
+pytest -m "not slow" # Exclude slow tests
+pytest -m api        # API tests only
+pytest -m client     # Client tests only
 ```
 
 ## Coverage
 
 ```bash
-make coverage-html     # HTML coverage report
-make coverage-xml      # XML coverage for CI
+make coverage-html # HTML coverage report
+make coverage-xml  # XML coverage for CI
 ```
 
 ## Development
 
-See project documentation for testing patterns, fixture usage, and development guidelines.
+See project documentation for testing patterns, fixture usage, and development
+guidelines.

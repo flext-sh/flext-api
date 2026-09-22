@@ -20,9 +20,10 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_web import d, e, h, r, x
+    from flext_core import d, e, h, r, x
 
     from . import services
+    from .__version__ import FlextApiVersion
     from ._config import FlextApiConfig, config
     from ._settings import FlextApiSettings, settings
     from .api import FlextApi, api
@@ -30,7 +31,18 @@ if TYPE_CHECKING:
     from .cli import FlextApiCli
     from .constants import FlextApiConstants, FlextApiConstants as c
     from .models import FlextApiModels, FlextApiModels as m
-    from .protocols import FlextApiProtocols, FlextApiProtocols as p
+    from .protocols import (
+        FlextApiProtocols,
+        FlextApiProtocols as p,
+        FlextApiProtocolsTransports,
+        HttpxAsyncClient,
+        HttpxClient,
+        HttpxHTTPError,
+        HttpxHTTPStatusError,
+        HttpxRequestError,
+        HttpxResponse,
+        HttpxTimeoutException,
+    )
     from .services.async_client import FlextApiAsyncClient
     from .services.base_client import FlextApiClientBase
     from .services.client import FlextApiClient
@@ -46,10 +58,19 @@ __all__: tuple[str, ...] = (
     "FlextApiConstants",
     "FlextApiModels",
     "FlextApiProtocols",
+    "FlextApiProtocolsTransports",
     "FlextApiServiceBase",
     "FlextApiSettings",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "FlextApiVersion",
+    "HttpxAsyncClient",
+    "HttpxClient",
+    "HttpxHTTPError",
+    "HttpxHTTPStatusError",
+    "HttpxRequestError",
+    "HttpxResponse",
+    "HttpxTimeoutException",
     "__author__",
     "__author_email__",
     "__description__",
@@ -78,6 +99,7 @@ __all__: tuple[str, ...] = (
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
+            ".__version__": ("FlextApiVersion",),
             "._config": ("FlextApiConfig", "config"),
             "._settings": ("FlextApiSettings", "settings"),
             ".api": ("FlextApi", "api"),
@@ -85,14 +107,25 @@ _LAZY_IMPORTS = MappingProxyType(
             ".cli": ("FlextApiCli",),
             ".constants": ("FlextApiConstants", "c"),
             ".models": ("FlextApiModels", "m"),
-            ".protocols": ("FlextApiProtocols", "p"),
+            ".protocols": (
+                "FlextApiProtocols",
+                "FlextApiProtocolsTransports",
+                "HttpxAsyncClient",
+                "HttpxClient",
+                "HttpxHTTPError",
+                "HttpxHTTPStatusError",
+                "HttpxRequestError",
+                "HttpxResponse",
+                "HttpxTimeoutException",
+                "p",
+            ),
             ".services": ("services",),
             ".services.async_client": ("FlextApiAsyncClient",),
             ".services.base_client": ("FlextApiClientBase",),
             ".services.client": ("FlextApiClient",),
             ".typings": ("FlextApiTypes", "t"),
             ".utilities": ("FlextApiUtilities", "u"),
-            "flext_web": ("d", "e", "h", "r", "x"),
+            "flext_core": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

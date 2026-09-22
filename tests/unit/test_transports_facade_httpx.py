@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 
 from flext_api import (
@@ -14,6 +16,9 @@ from flext_api import (
     HttpxTimeoutException,
     p,
 )
+
+if TYPE_CHECKING:
+    from flext_core import t
 
 
 class TestsFlextApiHttpxContracts:
@@ -48,4 +53,4 @@ class TestsFlextApiHttpxContracts:
         assert client.is_closed
 
 
-__all__: tuple[str, ...] = ("TestsFlextApiHttpxContracts",)
+__all__: t.VariadicTuple[str] = ("TestsFlextApiHttpxContracts",)

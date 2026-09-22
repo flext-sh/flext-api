@@ -5,8 +5,6 @@
 - [Overview](#overview)
 - [Test Structure](#test-structure)
 - [Unit Tests](#unit-tests)
-- [Integration Tests](#integration-tests)
-- [Running Tests](#running-tests)
 - [Test Data and Helpers](#test-data-and-helpers)
 - [Mocking External APIs](#mocking-external-apis)
 - [Success Metrics](#success-metrics)
@@ -16,15 +14,19 @@
 
 ## Overview
 
-This document describes the current testing strategy for `flext_api`. The public API surface is intentionally small and testable:
+This document describes the current testing strategy for `flext_api`. The public API
+surface is intentionally small and testable:
 
 - `FlextApiSettings` for configuration.
 - `FlextApiClient` for the low-level HTTP client.
-- `FlextApi` for the high-level HTTP facade (`get`, `post`, `put`, `patch`, `delete`, `request`).
+- `FlextApi` for the high-level HTTP facade (`get`, `post`, `put`, `patch`, `delete`,
+  `request`).
 - `m.Api.HttpRequest` and `m.Api.HttpResponse` for typed request/response values.
 - `p.Result` and `r.ok` / `r.fail` for railway-style error handling.
 
-Tests should validate the real contract: every `FlextApi` method returns `p.Result[m.Api.HttpResponse]`, successes are inspected via `result.unwrap()`, and failures are inspected via `result.error`.
+Tests should validate the real contract: every `FlextApi` method returns
+`p.Result[m.Api.HttpResponse]`, successes are inspected via `result.unwrap()`, and
+failures are inspected via `result.error`.
 
 ## Test Structure
 
@@ -36,14 +38,17 @@ tests/
 └── conftest.py     # Shared pytest fixtures and configuration
 ```
 
-The examples below use plain functions and deterministic `FakeApi` subclasses. They run as standalone scripts and can also be collected by pytest.
+The examples below use plain functions and deterministic `FakeApi` subclasses. They run
+as standalone scripts and can also be collected by pytest.
 
 ## Unit Tests
 
-Unit tests exercise one behavior at a time. A `FakeApi` subclass replaces the real HTTP backend so the tests run without network access.
+Unit tests exercise one behavior at a time. A `FakeApi` subclass replaces the real HTTP
+backend so the tests run without network access.
 
-````python
+```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
@@ -93,11 +98,14 @@ def test_not_found_is_classified() -> None:
 
 
 test_get_users_returns_success()
-test_not_found_is_classified()```
+test_not_found_is_classified()
+```
+
 Model validation can also be tested in isolation.
 
 ```python
 from __future__ import annotations
+
 from flext_api import c, m
 
 
@@ -119,23 +127,28 @@ def test_response_model_classifies_errors() -> None:
 
 
 test_request_model_requires_valid_url()
-test_response_model_classifies_errors()```
+test_response_model_classifies_errors()
+```
+
 ## Integration Tests
 
-Integration tests exercise a sequence of API calls and transformations. Use a stateful `FakeApi` subclass to simulate the backend and assert the combined outcome.
+Integration tests exercise a sequence of API calls and transformations. Use a stateful
+`FakeApi` subclass to simulate the backend and assert the combined outcome.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class WorkflowApi(FlextApi):
     def __init__(self, settings: FlextApiSettings | None = None) -> None:
-        super().__init__(runtime_settings=settings)
+        """Initialize the workflow API with in-memory order storage."""
+        super().__init__(settings=settings)
         object.__setattr__(self, "_orders", {})
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        orders: dict[int, dict] = getattr(self, "_orders")
+        orders: dict[int, dict] = self._orders
         if request.url.endswith("/orders") and str(request.method) == "POST":
             body = request.body if isinstance(request.body, dict) else {}
             order_id = len(orders) + 1
@@ -187,23 +200,29 @@ def test_create_and_list_orders() -> None:
     assert len(orders) == 1
 
 
-test_create_and_list_orders()```
+test_create_and_list_orders()
+```
+
 ## Running Tests
 
 Use the root `make` commands as the canonical test runner.
 
 ```bash
 # Run all tests in the flext-api project
-make test PROJECT=flext-api
+make test
 
 # Run the markdown examples
-uv run pytest --markdown-docs docs/testing.md guides/http-client.md guides/testing.md -q```
+make test
+```
+
 ## Test Data and Helpers
 
-Keep tests clean by extracting reusable helper functions. These can be used in standalone scripts or in pytest-collected test files.
+Keep tests clean by extracting reusable helper functions. These can be used in
+standalone scripts or in pytest-collected test files.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 
 
@@ -214,7 +233,9 @@ def make_settings(
 
 
 def make_api(settings: FlextApiSettings | None = None) -> FlextApi:
-    return FlextApi(runtime_settings=settings if settings is not None else make_settings())
+    return FlextApi(
+        runtime_settings=settings if settings is not None else make_settings()
+    )
 
 
 def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
@@ -225,24 +246,28 @@ def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
 
 settings = make_settings()
 assert settings.Api.base_url == "https://api.example.com"
-assert settings.Api.timeout == 5.0
+assert settings.Api.timeout == 5
 
 client = make_client(settings)
 assert client.base_url == "https://api.example.com"
 
 api = make_api(settings)
-assert isinstance(api, FlextApi)```
+assert isinstance(api, FlextApi)
+```
+
 ## Mocking External APIs
 
-Do not use `unittest.mock` in executable examples. Use a small `FakeApi` subclass to return deterministic responses and test the real `FlextApi` contract.
+Do not use `unittest.mock` in executable examples. Use a small `FakeApi` subclass to
+return deterministic responses and test the real `FlextApi` contract.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, _request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.HttpResponse(
                 status_code=200,
@@ -265,21 +290,28 @@ def test_with_fake_api() -> None:
     assert response.body.get("name") == "Test User"
 
 
-test_with_fake_api()```
+test_with_fake_api()
+```
+
 ## Success Metrics
 
 - **Test Pass Rate**: 100% of collected tests.
 - **Coverage**: follow the thresholds in `pyproject.toml`.
-- **Determinism**: network-dependent tests should use `FakeApi` or be clearly marked as integration/e2e tests against a known environment.
-- **Maintainability**: tests validate the real `FlextApi` contract and avoid vague assertions.
+- **Determinism**: network-dependent tests should use `FakeApi` or be clearly marked as
+  integration/e2e tests against a known environment.
+- **Maintainability**: tests validate the real `FlextApi` contract and avoid vague
+  assertions.
 
 ## Risk Mitigation
 
-- **Flaky Tests**: Use `FakeApi` subclasses for deterministic unit and integration tests.
-- **External Service Dependencies**: Keep real network tests in `tests/e2e/` and run them only in controlled environments.
-- **Coverage Gaps**: Test success paths, error status codes, model validation, and request/response serialization.
+- **Flaky Tests**: Use `FakeApi` subclasses for deterministic unit and integration
+  tests.
+- **External Service Dependencies**: Keep real network tests in `tests/e2e/` and run
+  them only in controlled environments.
+- **Coverage Gaps**: Test success paths, error status codes, model validation, and
+  request/response serialization.
 
 ---
 
-**Next Priority**: Keep the markdown examples in `docs/testing.md` and `guides/testing.md` aligned with the current `FlextApi` contract as the library evolves.
-````
+**Next Priority**: Keep the markdown examples in `docs/testing.md` and
+`guides/testing.md` aligned with the current `FlextApi` contract as the library evolves.

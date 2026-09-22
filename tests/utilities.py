@@ -12,13 +12,7 @@ from flext_api import u
 class TestsFlextApiUtilities(u):
     """Test utilities for flext-api — extends flext_api.u."""
 
-    class _RequestUtilities:
-        """Request-specific test utilities."""
-
-    class _ResponseUtilities:
-        """Response-specific test utilities."""
-
-    class TestsFlextApi(_RequestUtilities, _ResponseUtilities):
+    class Tests(u):
         """Test-specific utilities."""
 
 

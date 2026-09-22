@@ -17,16 +17,16 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
     """Shared request execution helpers for sync and async clients."""
 
     if TYPE_CHECKING:
-
-        @property
-        def client_settings(self) -> FlextApiSettings:
-            """Typed settings supplied by the concrete client base."""
+        # Narrowed view of the core service settings property; never a
+        # pydantic field, so the runtime `settings` property of the service
+        # base stays the single binding point and no shadowing warning fires.
+        settings: FlextApiSettings
 
     def _build_url(self, path: str) -> p.Result[str]:
         """Build full URL from base_url and path."""
         # NOTE (multi-agent): mro-t9s9 — request defaults belong to this
         # client's injected runtime settings, never the global singleton.
-        api_settings = self.client_settings.Api
+        api_settings = self.settings.Api
         path_stripped = path.strip()
         if not path_stripped:
             return r[str].fail(c.Api.URL_PATH_EMPTY_ERROR)
@@ -55,10 +55,7 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
             return r[tuple[str, t.StrMapping, bytes, t.StrMapping]].from_failure(
                 body_result
             )
-        headers: t.StrMapping = {
-            **self.client_settings.Api.default_headers,
-            **request.headers,
-        }
+        headers: t.StrMapping = {**self.settings.Api.default_headers, **request.headers}
         extensions: t.StrMapping = (
             {c.Api.REQUEST_EXTENSION_SNI_HOSTNAME: request.sni_hostname}
             if request.sni_hostname

@@ -1,10 +1,14 @@
 # FLEXT API Examples
 
-Examples in this folder show the public `flext_api` surface through the local `examples` aliases and the typed `s` service base. The goal is to demonstrate request normalization, model validation, and response or storage ergonomics without depending on an external HTTP service.
+Examples in this folder show the public `flext_api` surface through the local `examples`
+aliases and the typed `s` service base. The goal is to demonstrate request
+normalization, model validation, and response or storage ergonomics without depending on
+an external HTTP service.
 
 ## Example Files
 
-- `01_basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and the railway result contract
+- `01_basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and
+  the railway result contract
 
 ## Running Examples
 

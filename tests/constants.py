@@ -12,13 +12,7 @@ from flext_api import c
 class TestsFlextApiConstants(c):
     """Test constants for flext-api — extends flext_api.c."""
 
-    class _ApiConstants:
-        """API-specific test constants."""
-
-    class _WebConstants:
-        """Web-specific test constants."""
-
-    class TestsFlextApi(_ApiConstants, _WebConstants):
+    class Tests(c):
         """Test-specific constants."""
 
 

@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED FILE — regenerate through `make gen` from the workspace root. -->
-<!-- Source of truth: `docs/guides/using-flext-core.md`; adjust that source, never this projection. -->
+<!-- Source of truth: `<workspace-root>/docs/guides/using-flext-core.md`; adjust that workspace source, never this member projection. -->
 
 # flext-api - Using flext-core
 
@@ -19,7 +19,8 @@
 
 <!-- TOC END -->
 
-`flext_core` is the base package for result flow, settings, container wiring, logging, and service runtime.
+`flext_core` is the base package for result flow, settings, container wiring, logging,
+and service runtime.
 
 ## Aliases
 
@@ -41,8 +42,8 @@ The examples below import only the aliases they consume from `flext_core`.
 | `u`   | utilities                          |
 | `x`   | mixins / execution                 |
 
-**Important:** `s` is the service/runtime alias. Settings classes (`FlextSettings`, `FlextCliSettings`,
-`FlextTestsSettings`) have no short alias.
+**Important:** `s` is the service/runtime alias. Settings classes (`FlextSettings`,
+`FlextCliSettings`, `FlextTestsSettings`) have no short alias.
 
 ## Result flow
 
@@ -60,7 +61,7 @@ from flext_core import p, r
 def safe_divide(a: float, b: float) -> p.Result[float]:
     if b == 0:
         return r[float].fail("division_by_zero")
-    return r.ok(a / b)
+    return r[float].ok(a / b)
 
 
 assert safe_divide(10, 2).success
@@ -133,17 +134,17 @@ assert result.value == "Hello!"
 
 - Use aliases instead of importing nested modules directly.
 - Use `r[T]` for fallible paths.
-- Reset singletons in tests with `FlextSettings.reset_for_testing()` and `FlextContainer.reset_for_testing()`.
+- Reset singletons in tests with `FlextSettings.reset_for_testing()` and
+  `FlextContainer.reset_for_testing()`.
 - Remember: `s` = service/runtime, never settings.
 
 ## Bad practices
 
-Do not instantiate the base service to execute domain logic: its `execute()`
-raises `NotImplementedError`. Implement the typed operation in a concrete service,
-and obtain its singleton through `fetch_global()`.
+Do not instantiate the base service to execute domain logic: its `execute()` raises
+`NotImplementedError`. Implement the typed operation in a concrete service, and obtain
+its singleton through `fetch_global()`.
 
 ## Related
 
-- `.agents/skills/using-flext-core/SKILL.md`
-- `.agents/skills/coding-standards/SKILL.md`
 - `flext-core/src/flext_core/README.md`
+- Foundation API reference

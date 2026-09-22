@@ -10,11 +10,11 @@
   - [Negative](#negative)
   - [Risks](#risks)
 - [Alternatives Considered](#alternatives-considered)
-  - [Option 1: [Alternative Name]](#option-1-alternative-name)
-  - [Option 2: [Alternative Name]](#option-2-alternative-name)
+  - [Option 1: \[Alternative Name\]](#option-1-alternative-name)
+  - [Option 2: \[Alternative Name\]](#option-2-alternative-name)
 - [Implementation Plan](#implementation-plan)
-  - [Phase 1: [Phase Name]](#phase-1-phase-name)
-  - [Phase 2: [Phase Name]](#phase-2-phase-name)
+  - [Phase 1: \[Phase Name\]](#phase-1-phase-name)
+  - [Phase 2: \[Phase Name\]](#phase-2-phase-name)
 - [Testing Strategy](#testing-strategy)
 - [Monitoring and Metrics](#monitoring-and-metrics)
 - [Rollback Plan](#rollback-plan)
@@ -30,15 +30,19 @@ Date: [YYYY-MM-DD]
 
 ## Context
 
-[Describe the context and forces at play. What problem are we trying to solve? What constraints are we under? What are the current pain points? Include any relevant background information.]
+[Describe the context and forces at play. What problem are we trying to solve? What
+constraints are we under? What are the current pain points? Include any relevant
+background information.]
 
 ## Decision
 
-[What decision was made? What option was chosen? Be clear and concise about what was decided.]
+[What decision was made? What option was chosen? Be clear and concise about what was
+decided.]
 
 ## Consequences
 
-[What are the positive and negative consequences of this decision? Consider impact on development, operations, performance, security, maintainability, etc.]
+[What are the positive and negative consequences of this decision? Consider impact on
+development, operations, performance, security, maintainability, etc.]
 
 ### Positive
 
@@ -50,7 +54,8 @@ Date: [YYYY-MM-DD]
 
 ## Alternatives Considered
 
-[What other options were considered? Why were they not chosen? Include pros/cons for each alternative.]
+[What other options were considered? Why were they not chosen? Include pros/cons for
+each alternative.]
 
 ### Option 1: [Alternative Name]
 
@@ -68,7 +73,8 @@ Date: [YYYY-MM-DD]
 
 ## Implementation Plan
 
-[If applicable, describe how this decision will be implemented. Break down into phases if it's a complex change.]
+[If applicable, describe how this decision will be implemented. Break down into phases
+if it's a complex change.]
 
 ### Phase 1: [Phase Name]
 
@@ -87,7 +93,8 @@ Date: [YYYY-MM-DD]
 
 ## Monitoring and Metrics
 
-[What metrics will be used to measure the success of this decision? How will it be monitored?]
+[What metrics will be used to measure the success of this decision? How will it be
+monitored?]
 
 ## Rollback Plan
 
@@ -95,7 +102,8 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[t.JsonValue references to external documents, issues, discussions, or research that informed this decision.]
+[t.JsonValue references to external documents, issues, discussions, or research that
+informed this decision.]
 
 - [Link to relevant issue/PR]
 - [Link to external documentation]
@@ -104,6 +112,5 @@ Date: [YYYY-MM-DD]
 
 ---
 
-**Decision Maker**: [Name/Team]
-**Reviewers**: [List of reviewers]
-**Approval Date**: [YYYY-MM-DD]
+**Decision Maker**: [Name/Team] **Reviewers**: [List of reviewers] **Approval Date**:
+[YYYY-MM-DD]

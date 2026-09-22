@@ -23,7 +23,8 @@
 
 ## Overview
 
-This document describes the **System Context** level of the C4 model for FLEXT-API, showing the system in relation to its users and external systems.
+This document describes the **System Context** level of the C4 model for FLEXT-API,
+showing the system in relation to its users and external systems.
 
 ## System Context Diagram
 
@@ -195,4 +196,5 @@ Rel(flext_api, external_api, "Makes HTTP requests", "REST/GraphQL")
 
 ---
 
-**Next Level**: [Container Diagram](containers.md) - Technology choices and deployment view
+**Next Level**: [Container Diagram](containers.md) - Technology choices and deployment
+view

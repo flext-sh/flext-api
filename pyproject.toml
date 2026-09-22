@@ -35,7 +35,7 @@ license = "MIT"
 name = "flext-api"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-version = "0.12.0rc0"
+version = "0.12.0"
 
 [[project.authors]]
 email = "team@flext.sh"
@@ -145,17 +145,17 @@ pep621_dev_dependency_groups = ["dev"]
 [tool.flext.docs]
 package_name = "flext_api"
 
+[tool.flext.namespace]
+scan_dirs = ["src"]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/flext_api"]
 
-[tool.hatch.build.targets.wheel.force-include]
-config = "flext_api/config"
-
 [tool.hatch.build.targets.sdist]
-only-include = ["src/flext_api", "config"]
+only-include = ["src/flext_api"]
 
 [tool.mypy]
 disable_error_code = [
