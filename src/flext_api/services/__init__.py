@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from .async_client import FlextApiAsyncClient
     from .base_client import FlextApiClientBase
     from .client import FlextApiClient
+
+
 __all__: tuple[str, ...] = (
     "FlextApiAsyncClient",
     "FlextApiClient",

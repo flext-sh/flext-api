@@ -9,9 +9,11 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_web import d, e, h, r, services, web, x
+    from flext_cli import cli
+    from flext_web import web
 
     from flext_api import api, c, config, m, main, p, s, settings, t, u
+    from flext_core import core, d, e, h, lazy_attribute, r, x
 
     from . import unit
     from .base import TestsFlextApiServiceBase
@@ -21,6 +23,8 @@ if TYPE_CHECKING:
     from .settings import TestsFlextApiSettings
     from .typings import TestsFlextApiTypes
     from .utilities import TestsFlextApiUtilities
+
+
 __all__: tuple[str, ...] = (
     "TestsFlextApiConstants",
     "TestsFlextApiModels",
@@ -31,16 +35,18 @@ __all__: tuple[str, ...] = (
     "TestsFlextApiUtilities",
     "api",
     "c",
+    "cli",
     "config",
+    "core",
     "d",
     "e",
     "h",
+    "lazy_attribute",
     "m",
     "main",
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "u",
@@ -72,7 +78,9 @@ _LAZY_IMPORTS = MappingProxyType(
                 "t",
                 "u",
             ),
-            "flext_web": ("d", "e", "h", "r", "services", "web", "x"),
+            "flext_cli": ("cli",),
+            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

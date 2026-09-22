@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from .base import FlextApiTypingsBase
     from .serialization import FlextApiTypingsSerialization
     from .transport import FlextApiTypingsTransport
+
+
 __all__: tuple[str, ...] = (
     "FlextApiTypingsBase",
     "FlextApiTypingsSerialization",
