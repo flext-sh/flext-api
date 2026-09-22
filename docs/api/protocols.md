@@ -21,7 +21,8 @@
 - [Usage Examples](#usage-examples)
   - [HTTP API Client](#http-api-client)
   - [Protocol Plugin System](#protocol-plugin-system)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 This section covers the protocol implementations and stubs that enable FLEXT-API to
 support multiple communication protocols through a plugin architecture.
@@ -200,7 +201,7 @@ This feature is not currently implemented in the public API.
 
 ### HTTP API Client
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
@@ -270,7 +271,6 @@ if created:
 
 ```python
 from __future__ import annotations
-
 
 from flext_api import (
     FlextApiProtocolPluginManager,

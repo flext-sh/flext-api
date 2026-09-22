@@ -25,7 +25,8 @@
   - [Metrics Collection](#metrics-collection)
   - [Logging Strategy](#logging-strategy)
   - [Health Checks](#health-checks)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

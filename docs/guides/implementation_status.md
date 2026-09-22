@@ -26,7 +26,8 @@
   - [For Phase 1 Completion](#for-phase-1-completion)
   - [For v1.0.0 Release](#for-v100-release)
   - [For Ecosystem Adoption](#for-ecosystem-adoption)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Project Overview
 

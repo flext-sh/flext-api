@@ -13,6 +13,9 @@
 - [Quick Start](#quick-start)
   - [Installation](#installation)
   - [Basic HTTP Client Usage](#basic-http-client-usage)
+  - [Settings-Driven Configuration](#settings-driven-configuration)
+  - [FastAPI Application Setup](#fastapi-application-setup)
+- [Testing](#testing)
 - [Current Status](#current-status)
   - [Production Readiness](#production-readiness)
 - [Contributing](#contributing)
@@ -20,7 +23,8 @@
   - [Immediate (Next Release)](#immediate-next-release)
   - [Short-term (Next Month)](#short-term-next-month)
   - [Long-term (Next Quarter)](#long-term-next-quarter)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Current](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
@@ -130,7 +134,7 @@ make setup
 
 ### Basic HTTP Client Usage
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiSettings

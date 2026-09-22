@@ -13,7 +13,8 @@
   - [Response Caching](#response-caching)
 - [Security Implementation](#security-implementation)
   - [Authentication Handlers](#authentication-handlers)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 
@@ -214,7 +215,7 @@ from __future__ import annotations
 
 ### Test Fixtures and Mocks
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 
@@ -245,7 +246,7 @@ async def async_client(test_config):
 
 ### Connection Pooling
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 
@@ -280,7 +281,7 @@ class ConnectionPoolManager:
 
 ### Response Caching
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 
@@ -320,7 +321,7 @@ class ResponseCache:
 
 ### Authentication Handlers
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 

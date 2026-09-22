@@ -19,7 +19,8 @@
 - [Risk Assessment](#risk-assessment)
   - [High Risk Items](#high-risk-items)
   - [Mitigation Strategies](#mitigation-strategies)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

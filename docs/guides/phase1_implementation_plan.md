@@ -41,7 +41,8 @@
 - [Lessons Learned & Best Practices](#lessons-learned-best-practices)
   - [Implementation Insights](#implementation-insights)
   - [Architectural Decisions](#architectural-decisions)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

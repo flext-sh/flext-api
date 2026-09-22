@@ -5,6 +5,8 @@
 - [Overview](#overview)
 - [Test Structure](#test-structure)
 - [Unit Tests](#unit-tests)
+- [Integration Tests](#integration-tests)
+- [Running Tests](#running-tests)
 - [Test Data and Helpers](#test-data-and-helpers)
 - [Mocking External APIs](#mocking-external-apis)
 - [Success Metrics](#success-metrics)
