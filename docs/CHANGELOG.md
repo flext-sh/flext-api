@@ -7,6 +7,7 @@
 Full notes: `docs/releases/v0.12.0.md`
 
 <!-- TOC START -->
+
 - [0.12.0 - 2026-09-04](#0120-2026-09-04)
 <!-- TOC END -->
 
