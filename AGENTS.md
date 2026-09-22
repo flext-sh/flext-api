@@ -47,8 +47,8 @@ per call.
 ## Commands
 
 ```bash
-make check PROJECT=flext-api
-make test PROJECT=flext-api # tests/unit
+make check
+make test
 ```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->

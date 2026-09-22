@@ -13,9 +13,6 @@
 - [Quick Start](#quick-start)
   - [Installation](#installation)
   - [Basic HTTP Client Usage](#basic-http-client-usage)
-  - [Settings-Driven Configuration](#settings-driven-configuration)
-  - [FastAPI Application Setup](#fastapi-application-setup)
-- [Testing](#testing)
 - [Current Status](#current-status)
   - [Production Readiness](#production-readiness)
 - [Contributing](#contributing)
@@ -105,7 +102,8 @@ src/flext_api/
 ### Architecture & Design
 
 - **[Architecture Overview](architecture/overview.md)** — System design and patterns
-- **[API Reference](api/)** — Core API, protocols, middleware, schemas, and storage docs
+- **[API Reference](api-reference/README.md)** — Core API, protocols, middleware,
+  schemas, and storage docs
 
 ### Development & Integration
 
@@ -124,15 +122,15 @@ src/flext_api/
 
 ```bash
 # From the FLEXT workspace (recommended for development)
-make boot
+make setup
 
-# Install flext-api specifically
-uv sync --package flext-api
+# Provision the declared workspace environment
+make setup
 ```
 
 ### Basic HTTP Client Usage
 
-````python notest
+```python notest
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiSettings
@@ -147,7 +145,8 @@ if result.success:
     print(f"Body: {response.body}")
 else:
     print(f"Error: {result.error}")
-    ```
+```
+
 ### Settings-Driven Configuration
 
 ```python
@@ -164,7 +163,7 @@ settings = FlextApiSettings(
 
 print(settings.Api.base_url)
 print(settings.Api.timeout)
-````
+```
 
 ### FastAPI Application Setup
 
@@ -178,15 +177,13 @@ needed.
 
 ```bash
 # Run the flext-api test suite
-make test PROJECT=flext-api
+make test
 
 # Run markdown documentation examples
-uv run pytest --markdown-docs -q
+make test
 
 # Run specific test categories
-uv run pytest tests/unit/        # Unit tests
-uv run pytest tests/integration/ # Integration tests
-uv run pytest tests/e2e/          # End-to-end tests
+make test              # All tests
 ```
 
 ---
@@ -207,7 +204,7 @@ uv run pytest tests/e2e/          # End-to-end tests
 - **Error Handling**: Railway-oriented error management on every HTTP path
 - **Configuration**: Environment-aware settings with validation
 - **Documentation**: User-facing guides and API reference updated to the real API
-- **Testing**: Markdown examples run under `uv run pytest --markdown-docs`
+- **Testing**: Markdown examples run under `make test`
 
 ---
 
