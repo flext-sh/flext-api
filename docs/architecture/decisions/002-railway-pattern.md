@@ -110,7 +110,8 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r
 class UserApi(FlextApi):
     def fetch_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
         return (
-            self.get(f"/users/{user_id}")
+            self
+            .get(f"/users/{user_id}")
             .flat_map(self._validate_ok)
             .map_error(lambda err: f"User fetch failed: {err}")
         )
