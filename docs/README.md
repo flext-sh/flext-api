@@ -102,7 +102,8 @@ src/flext_api/
 ### Architecture & Design
 
 - **[Architecture Overview](architecture/overview.md)** — System design and patterns
-- **[API Reference](api-reference/README.md)** — Core API, protocols, middleware, schemas, and storage docs
+- **[API Reference](api-reference/README.md)** — Core API, protocols, middleware,
+  schemas, and storage docs
 
 ### Development & Integration
 
@@ -145,6 +146,7 @@ if result.success:
 else:
     print(f"Error: {result.error}")
 ```
+
 ### Settings-Driven Configuration
 
 ```python
@@ -162,6 +164,7 @@ settings = FlextApiSettings(
 print(settings.Api.base_url)
 print(settings.Api.timeout)
 ```
+
 ### FastAPI Application Setup
 
 A FastAPI application factory is **not** currently part of the public API. Use
@@ -182,7 +185,8 @@ make test
 # Run specific test categories
 make test              # All tests
 ```
-______________________________________________________________________
+
+---
 
 ## Current Status
 
