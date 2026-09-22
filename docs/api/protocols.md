@@ -1,6 +1,7 @@
 # Protocols API Reference
 
 <!-- TOC START -->
+
 - [Protocol Architecture](#protocol-architecture)
 - [HTTP Protocol Implementation](#http-protocol-implementation)
   - [FlextApiClient Implementation](#flextapiclient-implementation)
@@ -20,13 +21,17 @@
 - [Usage Examples](#usage-examples)
   - [HTTP API Client](#http-api-client)
   - [Protocol Plugin System](#protocol-plugin-system)
-<!-- TOC END -->
+  <!-- TOC END -->
 
-This section covers the protocol implementations and stubs that enable FLEXT-API to support multiple communication protocols through a plugin architecture.
+This section covers the protocol implementations and stubs that enable FLEXT-API to
+support multiple communication protocols through a plugin architecture.
 
 ## Protocol Architecture
 
-FLEXT-API uses a protocol-based architecture that allows supporting multiple communication protocols (HTTP, GraphQL, WebSocket, etc.) through a unified interface. The currently implemented public HTTP surface is the `FlextApi` facade, `FlextApiClient`, and the protocol plugin manager.
+FLEXT-API uses a protocol-based architecture that allows supporting multiple
+communication protocols (HTTP, GraphQL, WebSocket, etc.) through a unified interface.
+The currently implemented public HTTP surface is the `FlextApi` facade,
+`FlextApiClient`, and the protocol plugin manager.
 
 ```text
 Protocol Layer
@@ -75,8 +80,8 @@ class FakeApi(FlextApi):
     """Fake API facade wired to the fake HTTP client."""
 
     def __init__(self, settings: FlextApiSettings | None = None) -> None:
-        super().__init__(settings=settings)
-        self._client = FakeHttpClient(settings=self.settings)
+        super().__init__(runtime_settings=settings)
+        self._client = FakeHttpClient(runtime_settings=self.settings)
 
 
 settings = FlextApiSettings(
@@ -84,13 +89,15 @@ settings = FlextApiSettings(
     timeout=30.0,
     default_headers={"User-Agent": "FLEXT-API/0.9.9"},
 )
-api = FakeApi(settings=settings)
+api = FakeApi(runtime_settings=settings)
 
 result = api.get("/users", request_kwargs={"params": {"limit": "10"}})
 if result.success:
     response = result.unwrap()
     print(f"Status: {response.status_code}")
-    print(f"Body: {response.body}")```
+    print(f"Body: {response.body}")
+```
+
 **Key Features:**
 
 - Standard HTTP methods (GET, POST, PUT, PATCH, DELETE)
@@ -127,7 +134,9 @@ print(f"Success: {response.success}")
 
 # Wrap it in a Result when returning from a client method
 result = r[m.Api.HttpResponse].ok(response)
-print(f"Result success: {result.success}")```
+print(f"Result success: {result.success}")
+```
+
 ## GraphQL Protocol Implementation
 
 ### GraphQL Support
@@ -156,7 +165,8 @@ This feature is not currently implemented in the public API.
 
 ### Storage Backend Object Storage
 
-Protocol implementation for various storage backends (local filesystem, cloud storage, etc.).
+Protocol implementation for various storage backends (local filesystem, cloud storage,
+etc.).
 
 This feature is not currently implemented in the public API.
 
@@ -176,21 +186,21 @@ This feature is not currently implemented in the public API.
 
 ## Quality Metrics
 
-| Module                          | Coverage | Status    | Description                        |
-| ------------------------------- | -------- | --------- | ---------------------------------- |
-| `protocols/http.py`             | 90%      | ✅ Stable | HTTP/REST implementation           |
-| `protocols/graphql.py`          | —        | ❌ N/A    | Not implemented in public API      |
-| `protocols/websocket.py`        | —        | ❌ N/A    | Not implemented in public API      |
-| `protocols/sse.py`              | —        | ❌ N/A    | Not implemented in public API      |
-| `protocols/storage_backend.py`  | —        | ❌ N/A    | Not implemented in public API      |
-| `protocol_stubs/grpc_stub.py`   | —        | ❌ N/A    | Not implemented in public API      |
-| `protocol_stubs/protobuf_stub.py` | —      | ❌ N/A    | Not implemented in public API      |
+| Module                            | Coverage | Status | Description              |
+| --------------------------------- | -------- | ------ | ------------------------ |
+| `protocols/http.py`               | 90%      | Stable | HTTP/REST implementation |
+| `protocols/graphql.py`            | —        | N/A    | Not implemented          |
+| `protocols/websocket.py`          | —        | N/A    | Not implemented          |
+| `protocols/sse.py`                | —        | N/A    | Not implemented          |
+| `protocols/storage_backend.py`    | —        | N/A    | Not implemented          |
+| `protocol_stubs/grpc_stub.py`     | —        | N/A    | Not implemented          |
+| `protocol_stubs/protobuf_stub.py` | —        | N/A    | Not implemented          |
 
 ## Usage Examples
 
 ### HTTP API Client
 
-```python
+```python notest
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
@@ -228,9 +238,11 @@ class UserApiClient:
     """Client supporting HTTP operations through the real FLEXT-API facade."""
 
     def __init__(self, base_url: str = "https://api.example.com"):
-        self.api = FlextApi(settings=FlextApiSettings(base_url=base_url, timeout=10.0))
+        self.api = FlextApi(
+            runtime_settings=FlextApiSettings(base_url=base_url, timeout=10.0)
+        )
         # Wire a fake client so the example runs without network access
-        self.api._client = FakeHttpClient(settings=self.api.settings)
+        self.api._client = FakeHttpClient(runtime_settings=self.api.settings)
 
     def get_user(self, user_id: str) -> t.JsonMapping | None:
         """Get user via REST API."""
@@ -251,7 +263,9 @@ if user:
 
 created = client.create_user({"name": "Bob", "email": "bob@example.com"})
 if created:
-    print(f"Created user: {created['name']} ({created['id']})")```
+    print(f"Created user: {created['name']} ({created['id']})")
+```
+
 ### Protocol Plugin System
 
 ```python
@@ -333,5 +347,10 @@ if resolved.success:
     print(f"Resolved plugin: {plugin.name} v{plugin.version}")
 
 shutdown_result = manager.shutdown_all()
-assert shutdown_result.success```
-This protocol-based architecture provides a flexible foundation for supporting multiple communication patterns while maintaining consistent error handling and type safety across all protocols. The public HTTP surface and plugin manager are available today; additional protocols can be added through the plugin system.
+assert shutdown_result.success
+```
+
+This protocol-based architecture provides a flexible foundation for supporting multiple
+communication patterns while maintaining consistent error handling and type safety
+across all protocols. The public HTTP surface and plugin manager are available today;
+additional protocols can be added through the plugin system.

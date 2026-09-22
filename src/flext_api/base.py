@@ -7,6 +7,7 @@ preserving flext-web service runtime behavior.
 from __future__ import annotations
 
 from abc import ABC
+from typing import override
 
 from flext_core import s
 
@@ -33,6 +34,19 @@ class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayl
             settings_overrides=settings_overrides,
             initial_context=initial_context,
         )
+
+    @property
+    @override
+    def settings(self) -> FlextApiSettings:
+        """The typed API settings bound to this service runtime."""
+        current = super().settings
+        if not isinstance(current, FlextApiSettings):
+            msg = (
+                f"{type(self).__name__} runtime settings must be FlextApiSettings, "
+                f"got {type(current).__name__}"
+            )
+            raise TypeError(msg)
+        return current
 
     @classmethod
     def _runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:

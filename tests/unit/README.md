@@ -69,4 +69,5 @@ pytest tests/unit/ -k "api" -v
 
 ## Development
 
-See parent directory documentation for detailed testing patterns, fixture usage, and debugging guidelines.
+See parent directory documentation for detailed testing patterns, fixture usage, and
+debugging guidelines.

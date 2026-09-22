@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from . import FlextApiSettings, c, m, p, r, s, t, u
+from . import c, m, p, r, s, t, u
 from .services.client import FlextApiClient
 
 
@@ -28,26 +28,12 @@ class FlextApi(s[bool]):
     model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
 
-    def __init__(self, settings: FlextApiSettings | None = None) -> None:
-        """Bind the facade to explicit settings or the global singleton."""
-        resolved = settings if settings is not None else FlextApiSettings.fetch_global()
-        super().__init__(runtime_settings=resolved)
-
-    @property
-    @override
-    def settings(self) -> FlextApiSettings:
-        """The typed API settings bound to this facade."""
-        current = super().settings
-        if isinstance(current, FlextApiSettings):
-            return current
-        return FlextApiSettings.fetch_global()
-
     @property
     def client(self) -> FlextApiClient:
         """The lazily created HTTP client bound to this facade settings."""
         client = self._client
         if client is None:
-            client = FlextApiClient(settings=self.settings)
+            client = FlextApiClient(runtime_settings=self.settings)
             self._client = client
         return client
 

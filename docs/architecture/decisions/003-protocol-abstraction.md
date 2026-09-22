@@ -1,6 +1,7 @@
 # 003. Protocol Plugin Architecture
 
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -12,6 +13,7 @@
   - [HTTP Protocol Facade](#http-protocol-facade)
 - [What Is Not Implemented](#what-is-not-implemented)
 - [References](#references)
+
 <!-- TOC END -->
 
 Date: 2025-01-01
@@ -22,16 +24,16 @@ Accepted
 
 ## Context
 
-Enterprise applications consume diverse APIs, but `flext-api` currently focuses
-on HTTP/REST. The architecture keeps the HTTP surface clean while leaving room
-for future protocol support through a plugin-style boundary.
+Enterprise applications consume diverse APIs, but `flext-api` currently focuses on
+HTTP/REST. The architecture keeps the HTTP surface clean while leaving room for future
+protocol support through a plugin-style boundary.
 
 ## Decision
 
-`flext-api` exposes a single HTTP-focused facade (`FlextApi`) and a typed
-protocol layer (`p.Api`) for HTTP operations. Protocol plugins are managed by
-the exported `FlextApiProtocolPluginManager` and `FlextApiProtocolPluginTypes`
-shards, which provide a railway result-oriented lifecycle contract.
+`flext-api` exposes a single HTTP-focused facade (`FlextApi`) and a typed protocol layer
+(`p.Api`) for HTTP operations. Protocol plugins are managed by the exported
+`FlextApiProtocolPluginManager` and `FlextApiProtocolPluginTypes` shards, which provide
+a railway result-oriented lifecycle contract.
 
 ## Consequences
 
@@ -82,7 +84,9 @@ resolve_result = manager.resolve_plugin("json-schema")
 assert resolve_result.success
 assert resolve_result.unwrap().version == "1.0.0"
 
-assert manager.unload_plugin("json-schema").success```
+assert manager.unload_plugin("json-schema").success
+```
+
 ### HTTP Protocol Facade
 
 ```python
@@ -111,10 +115,12 @@ class FakeHttpApi(HttpOnlyApi):
         return r[m.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
 
 
-api = FakeHttpApi(settings=FlextApiSettings(base_url="https://example.com"))
+api = FakeHttpApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.health_check()
 assert result.success
-assert result.unwrap().body["status"] == "healthy"```
+assert result.unwrap().body["status"] == "healthy"
+```
+
 ## What Is Not Implemented
 
 The following protocols are **not** currently exposed by `flext-api`:
@@ -125,9 +131,13 @@ The following protocols are **not** currently exposed by `flext-api`:
 - gRPC / Protocol Buffers
 - MQTT
 
-If a future release adds support for additional protocols, this page will be
-updated with real, runnable examples.
+If a future release adds support for additional protocols, this page will be updated
+with real, runnable examples.
 
 ## References
 
 - GitHub Issue: #159 - Protocol Plugin Architecture
+
+```
+
+```

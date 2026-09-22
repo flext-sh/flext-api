@@ -64,6 +64,9 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     HEADER_CONTENT_TYPE: Final[str] = "Content-Type"
     HEADER_AUTHORIZATION: Final[str] = "Authorization"
     HEADER_ACCEPT: Final[str] = "Accept"
+    URL_PATH_SEPARATOR: Final[str] = "/"
+    URL_PATH_EMPTY_ERROR: Final[str] = "URL path cannot be empty"
+    REQUEST_EXTENSION_SNI_HOSTNAME: Final[str] = "sni_hostname"
     VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
         "MAX_URL_LENGTH": MAX_URL_LENGTH,
         "MIN_TIMEOUT": 0.1,

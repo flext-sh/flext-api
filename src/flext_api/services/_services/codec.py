@@ -44,14 +44,16 @@ class FlextApiClientCodecMixin:
     @staticmethod
     def _deserialize_json(response: httpx.Response) -> p.Result[t.Api.ResponseBody]:
         """Deserialize response as JSON."""
+        json_result = u.Cli.json_loads(response.content)
+        if json_result.failure:
+            return r[t.Api.ResponseBody].fail_op(
+                "JSON deserialization", json_result.error
+            )
         try:
-            # httpx.Response.json() is stdlib-compatible, not Pydantic v1 legacy
-            json_data = response.json()
             validated: p.Result[t.Api.ResponseBody] = u.validate_value(
-                t.Api.RESPONSE_BODY_ADAPTER, json_data
+                t.Api.RESPONSE_BODY_ADAPTER, json_result.value
             )
         except (
-            AttributeError,
             ValueError,
             TypeError,
             KeyError,

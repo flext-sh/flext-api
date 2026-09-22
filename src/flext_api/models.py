@@ -5,7 +5,6 @@ from __future__ import annotations
 from flext_web import m
 
 from . import t
-from ._constants.config import FlextApiConstantsConfig
 from ._models.base import FlextApiModelsBase
 from ._models.client import FlextApiModelsClient
 from ._models.request import FlextApiModelsRequest
@@ -19,7 +18,6 @@ class FlextApiModels(m):
 
     class Api(
         FlextApiModelsBase,
-        FlextApiConstantsConfig,
         FlextApiModelsRequest,
         FlextApiModelsResponse,
         FlextApiModelsClient,

@@ -1,6 +1,7 @@
 # C4 Model - Components
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Component Diagram](#component-diagram)
 - [Component Descriptions](#component-descriptions)
@@ -18,11 +19,12 @@
   - [Reliability](#reliability)
   - [Security](#security)
   - [Maintainability](#maintainability)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 ## Overview
 
-This document describes the **Component** level of the C4 model for FLEXT-API, showing the key components within each container and their relationships.
+This document describes the **Component** level of the C4 model for FLEXT-API, showing
+the key components within each container and their relationships.
 
 ## Component Diagram
 
@@ -33,24 +35,24 @@ This document describes the **Component** level of the C4 model for FLEXT-API, s
 title FLEXT-API Component Diagram
 
 Container_Boundary(api_client, "HTTP Client Container") {
-    Component(client_core, "HTTP Client Core", "Python", "Main client orchestrator with connection management")
+    Component(client_core, "HTTP Client Core", "Python", "Main client orchestrator")
     Component(request_builder, "Request Builder", "Python", "Request construction and validation")
     Component(response_handler, "Response Handler", "Python", "Response processing and transformation")
-    Component(connection_pool, "Connection Pool", "httpx", "HTTP connection pooling and reuse")
+    Component(connection_pool, "Connection Pool", "httpx", "Connection pooling and reuse")
     Component(retry_logic, "Retry Logic", "Python", "Exponential backoff retry mechanism")
-    Component(auth_handler, "Authentication Handler", "Python", "Auth token and credential management")
+    Component(auth_handler, "Authentication Handler", "Python", "Auth token management")
 }
 
 Container_Boundary(fastapi_app, "FastAPI Application Container") {
     Component(app_factory, "Application Factory", "Python", "FastAPI app creation and configuration")
     Component(route_registry, "Route Registry", "Python", "API route registration and validation")
-    Component(middleware_stack, "Middleware Stack", "Python", "Request/response processing pipeline")
-    Component(error_formatter, "Error Formatter", "Python", "Error response formatting and logging")
+    Component(middleware_stack, "Middleware Stack", "Python", "Request/response pipeline")
+    Component(error_formatter, "Error Formatter", "Python", "Error formatting and logging")
     Component(health_checker, "Health Checker", "Python", "System health and readiness endpoints")
 }
 
 Container_Boundary(protocol_layer, "Protocol Layer Container") {
-    Component(protocol_registry, "Protocol Registry", "Python", "Protocol discovery and instantiation")
+    Component(protocol_registry, "Protocol Registry", "Python", "Protocol discovery")
     Component(http_protocol, "HTTP Protocol", "Python", "REST API protocol implementation")
     Component(graphql_protocol, "GraphQL Protocol", "Python", "GraphQL query/mutation handling")
     Component(websocket_protocol, "WebSocket Protocol", "Python", "Real-time WebSocket communication")
@@ -60,21 +62,21 @@ Container_Boundary(protocol_layer, "Protocol Layer Container") {
 Container_Boundary(storage_layer, "Storage Layer Container") {
     Component(storage_router, "Storage Router", "Python", "Backend selection and load balancing")
     Component(s3_backend, "S3 Backend", "boto3", "Amazon S3 storage operations")
-    Component(gcs_backend, "GCS Backend", "google-cloud-storage", "Google Cloud Storage operations")
-    Component(azure_backend, "Azure Backend", "azure-storage-blob", "Azure Blob Storage operations")
+    Component(gcs_backend, "GCS Backend", "google-cloud-storage", "GCS storage operations")
+    Component(azure_backend, "Azure Backend", "azure-storage-blob", "Azure Blob operations")
     Component(local_backend, "Local Backend", "Python", "Local filesystem operations")
 }
 
 Container_Boundary(config_layer, "Configuration Layer") {
-    Component(config_loader, "Config Loader", "Python", "Environment and file configuration loading")
-    Component(config_validator, "Config Validator", "Pydantic", "Configuration validation and type checking")
-    Component(secret_manager, "Secret Manager", "Python", "Secure credential and secret handling")
+    Component(config_loader, "Config Loader", "Python", "Environment and file configuration")
+    Component(config_validator, "Config Validator", "Pydantic", "Configuration validation")
+    Component(secret_manager, "Secret Manager", "Python", "Credential and secret handling")
     Component(config_watcher, "Config Watcher", "Python", "Configuration change monitoring")
 }
 
 Container_Boundary(flext_core, "FLEXT-Core Foundation") {
     Component(flext_result, "r[T]", "Python", "Railway-oriented error handling")
-    Component(flext_container, "FlextContainer", "Python", "Dependency injection and service management")
+    Component(flext_container, "FlextContainer", "Python", "Dependency injection")
     Component(flext_models, "FlextModels", "Python", "Domain modeling with Pydantic")
     Component(flext_logger, "FlextLogger", "Python", "Structured logging with correlation")
 }
@@ -527,6 +529,6 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 - **Middleware Stack**: Provides clean separation of cross-cutting concerns
 - **Config Watcher**: Supports zero-downtime configuration updates
 
-______________________________________________________________________
+---
 
 **Next Level**: [Code Diagram](code.md) - Implementation details and relationships

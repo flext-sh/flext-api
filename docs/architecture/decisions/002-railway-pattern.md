@@ -1,6 +1,7 @@
 # 002. Railway-Oriented Error Handling
 
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -20,6 +21,7 @@
   - [Railway Pattern Guidelines](#railway-pattern-guidelines)
   - [Error Message Standards](#error-message-standards)
 - [References](#references)
+
 <!-- TOC END -->
 
 Date: 2025-01-01
@@ -30,19 +32,27 @@ Accepted
 
 ## Context
 
-HTTP operations are inherently unreliable: network failures, server errors, timeouts, and malformed responses are common. Traditional exception-based error handling makes code complex and error-prone. The FLEXT ecosystem needed a consistent approach to error handling that makes errors explicit, composable, and testable.
+HTTP operations are inherently unreliable: network failures, server errors, timeouts,
+and malformed responses are common. Traditional exception-based error handling makes
+code complex and error-prone. The FLEXT ecosystem needed a consistent approach to error
+handling that makes errors explicit, composable, and testable.
 
 ## Decision
 
-FLEXT-API uses **Railway-Oriented Programming** with `r[T]` for all HTTP operations. Every public method returns `p.Result[T]`. Operations are composed using `flat_map`, `map`, and `map_error` methods.
+FLEXT-API uses **Railway-Oriented Programming** with `r[T]` for all HTTP operations.
+Every public method returns `p.Result[T]`. Operations are composed using `flat_map`,
+`map`, and `map_error` methods.
 
 ## Consequences
 
 ### Positive
 
-- **Explicit Error Handling**: Errors are visible in type signatures and cannot be ignored
-- **Composable Operations**: HTTP operations can be chained without nested try/catch blocks
-- **Testable Code**: Railway pattern makes testing success and failure paths straightforward
+- **Explicit Error Handling**: Errors are visible in type signatures and cannot be
+  ignored
+- **Composable Operations**: HTTP operations can be chained without nested try/catch
+  blocks
+- **Testable Code**: Railway pattern makes testing success and failure paths
+  straightforward
 - **Type Safety**: Type signatures catch unhandled error cases
 
 ### Negative
@@ -54,7 +64,7 @@ FLEXT-API uses **Railway-Oriented Programming** with `r[T]` for all HTTP operati
 
 ### Option 1: Traditional Exceptions
 
-```python
+```python notest
 from __future__ import annotations
 
 import httpx
@@ -64,7 +74,9 @@ def get_user(user_id: int) -> dict:
     """Traditional exception-based example (not used in FLEXT-API)."""
     response = httpx.get(f"https://api.example.com/users/{user_id}")
     response.raise_for_status()
-    return response.json()```
+    return response.json()
+```
+
 ### Option 2: Result Pattern (Custom Implementation)
 
 ```python
@@ -77,7 +89,9 @@ class Result:
     def __init__(self, success: bool, value=None, error=None):
         self.success = success
         self.value = value
-        self.error = error```
+        self.error = error
+```
+
 ### Option 3: Hybrid Approach
 
 - **Description**: Use railway pattern internally but expose traditional APIs
@@ -129,13 +143,15 @@ class FakeUserApi(UserApi):
         )
 
 
-api = FakeUserApi(settings=FlextApiSettings(base_url="https://example.com"))
+api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.fetch_user(123)
 assert result.success
-assert result.unwrap().body["name"] == "Alice"```
+assert result.unwrap().body["name"] == "Alice"
+```
+
 ### Usage in Application Code
 
-```python
+```python notest
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
@@ -154,14 +170,16 @@ class FakeProfileApi(FlextApi):
         )
 
 
-api = FakeProfileApi(settings=FlextApiSettings(base_url="https://example.com"))
+api = FakeProfileApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.get("/users/123/profile")
 
 if result.success:
     profile = result.unwrap().body
     print(f"Found profile: {profile['bio']}")
 else:
-    print(f"Error: {result.error}")```
+    print(f"Error: {result.error}")
+```
+
 ### Testing Railway Code
 
 ```python
@@ -186,21 +204,23 @@ class FakeUserApi(FlextApi):
 
 
 def test_get_user_success():
-    api = FakeUserApi(settings=FlextApiSettings(base_url="https://example.com"))
+    api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/123")
     assert result.success
     assert result.unwrap().body["name"] == "John"
 
 
 def test_get_user_not_found():
-    api = FakeUserApi(settings=FlextApiSettings(base_url="https://example.com"))
+    api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/999")
     assert result.failure
     assert "404" in result.error
 
 
 test_get_user_success()
-test_get_user_not_found()```
+test_get_user_not_found()
+```
+
 ## Migration Strategy
 
 - [x] Implement `r` integration in all HTTP operations
@@ -225,7 +245,9 @@ from flext_api import r
 
 r[str].fail("Invalid user ID: must be a positive integer")
 r[str].fail("HTTP request timeout after 30 seconds")
-r[str].fail("JSON parsing failed: invalid response format")```
+r[str].fail("JSON parsing failed: invalid response format")
+```
+
 ## References
 
 - [Railway-Oriented Programming](https://fsharpforfunandprofit.com/rop/)

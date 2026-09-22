@@ -9,18 +9,10 @@ from __future__ import annotations
 from flext_api import m
 
 
-class _RequestModels:
-    """Request-specific test models."""
-
-
-class _ResponseModels:
-    """Response-specific test models."""
-
-
 class TestsFlextApiModels(m):
     """Test models for flext-api — extends flext_api.m."""
 
-    class TestsFlextApi(_RequestModels, _ResponseModels):
+    class Tests(m):
         """Test-specific models."""
 
 

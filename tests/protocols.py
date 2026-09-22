@@ -9,18 +9,10 @@ from __future__ import annotations
 from flext_api import p
 
 
-class _ClientProtocols:
-    """Client-specific test protocols."""
-
-
-class _TransportProtocols:
-    """Transport-specific test protocols."""
-
-
 class TestsFlextApiProtocols(p):
     """Test protocols for flext-api — extends flext_api.p."""
 
-    class TestsFlextApi(_ClientProtocols, _TransportProtocols):
+    class Tests(p):
         """Test-specific protocols."""
 
 

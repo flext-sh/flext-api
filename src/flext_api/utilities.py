@@ -5,12 +5,12 @@ from __future__ import annotations
 from flext_web import u
 
 from . import t
-from ._constants.config import FlextApiConstantsConfig
 from ._utilities import (
     FlextApiUtilitiesApiPydantic,
     FlextApiUtilitiesRequestUtils,
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
+    FlextApiUtilitiesTransport,
 )
 from ._utilities.base import FlextApiUtilitiesBase
 
@@ -20,11 +20,11 @@ class FlextApiUtilities(u):
 
     class Api(
         FlextApiUtilitiesBase,
-        FlextApiConstantsConfig,
         FlextApiUtilitiesApiPydantic,
         FlextApiUtilitiesRequestUtils,
         FlextApiUtilitiesSerializers,
         FlextApiUtilitiesSettingsManager,
+        FlextApiUtilitiesTransport,
     ):
         """API-specific utility namespace."""
 

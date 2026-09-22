@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, ClassVar, Protocol, override, runtime_checkable
 
 import httpx
 
@@ -28,6 +28,18 @@ if TYPE_CHECKING:
 
 class FlextApiProtocolsTransports:
     """FLEXT API transport implementations."""
+
+    @runtime_checkable
+    class Httpx(Protocol):
+        """Protocol namespace for owner-derived HTTP status contracts.
+
+        Runtime classes and exceptions are published as module-level
+        ``Httpx*`` class-object re-exports. Keeping class identity out of this
+        protocol namespace preserves both construction/isinstance semantics and
+        the Protocol/namespace census contract.
+        """
+
+        CONFLICT: ClassVar[int] = int(httpx.codes.CONFLICT)
 
     # Why: no member here carries @abstractmethod (TransportPlugin's Protocol
     # bodies are structural, not abstract), so an explicit ABC base added

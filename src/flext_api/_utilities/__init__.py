@@ -14,12 +14,14 @@ if TYPE_CHECKING:
     from .request_utils import FlextApiUtilitiesRequestUtils
     from .serializers import FlextApiUtilitiesSerializers
     from .settings_manager import FlextApiUtilitiesSettingsManager
+    from .transport import FlextApiUtilitiesTransport
 __all__: tuple[str, ...] = (
     "FlextApiUtilitiesApiPydantic",
     "FlextApiUtilitiesBase",
     "FlextApiUtilitiesRequestUtils",
     "FlextApiUtilitiesSerializers",
     "FlextApiUtilitiesSettingsManager",
+    "FlextApiUtilitiesTransport",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
@@ -30,6 +32,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".request_utils": ("FlextApiUtilitiesRequestUtils",),
             ".serializers": ("FlextApiUtilitiesSerializers",),
             ".settings_manager": ("FlextApiUtilitiesSettingsManager",),
+            ".transport": ("FlextApiUtilitiesTransport",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

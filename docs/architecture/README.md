@@ -1,6 +1,7 @@
 # Architecture Documentation
 
 <!-- TOC START -->
+
 - [📚 Documentation Structure](#documentation-structure)
 - [🏗️ Architecture Framework](#architecture-framework)
   - [Architectural Principles](#architectural-principles)
@@ -33,9 +34,11 @@
   - [Documentation Tools](#documentation-tools)
   - [Industry Standards](#industry-standards)
 - [🎯 Architecture Vision](#architecture-vision)
+
 <!-- TOC END -->
 
-This directory contains comprehensive architecture documentation for the FLEXT-API project, following industry best practices and modern documentation standards.
+This directory contains comprehensive architecture documentation for the FLEXT-API
+project, following industry best practices and modern documentation standards.
 
 ## 📚 Documentation Structure
 
@@ -61,7 +64,8 @@ docs/architecture/
 
 ## 🏗️ Architecture Framework
 
-FLEXT-API follows a **Clean Architecture** with **Protocol-Based Design** and **Railway-Oriented Error Handling**:
+FLEXT-API follows a **Clean Architecture** with **Protocol-Based Design** and
+**Railway-Oriented Error Handling**:
 
 ### Architectural Principles
 
@@ -114,8 +118,8 @@ Architecture diagrams using PlantUML:
 
 ### Core Decisions
 
-| Decision                                                                 | Status     | Impact                          |
-| ------------------------------------------------------------------------ | ---------- | ------------------------------- |
+| Decision                                                                 | Status      | Impact                          |
+| ------------------------------------------------------------------------ | ----------- | ------------------------------- |
 | [ADR-001: FLEXT-Core Dependency](decisions/001-flext-core-dependency.md) | ✅ Accepted | Mandatory ecosystem integration |
 | [ADR-002: Railway Pattern](decisions/002-railway-pattern.md)             | ✅ Accepted | Type-safe error handling        |
 | [ADR-003: Protocol Abstraction](decisions/003-protocol-abstraction.md)   | ✅ Accepted | Multi-protocol support          |
@@ -274,7 +278,8 @@ The architecture supports extension in several areas:
 ### Architecture Methodologies
 
 - [C4 Model](https://c4model.com/) - Visual architecture documentation
-- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) - Architectural principles
+- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) -
+  Architectural principles
 - [Domain-Driven Design](https://domainlanguage.com/ddd/) - Domain modeling approach
 
 ### Documentation Tools
@@ -285,15 +290,21 @@ The architecture supports extension in several areas:
 
 ### Industry Standards
 
-- [OpenAPI Specification](https://swagger.io/specification/) - API documentation standard
+- [OpenAPI Specification](https://swagger.io/specification/) - API documentation
+  standard
 - [AsyncAPI](https://www.asyncapi.com/) - Event-driven API specification
 - [RFC 2119](https://tools.ietf.org/html/rfc2119) - Key words for requirements
 
-______________________________________________________________________
+---
 
 ## 🎯 Architecture Vision
 
-FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, scalable, and maintainable API integrations across the entire FLEXT ecosystem. By providing a unified, protocol-agnostic interface with railway-oriented error handling and clean architecture principles, FLEXT-API eliminates the complexity and inconsistency of HTTP operations while maintaining the flexibility needed for enterprise integration scenarios.
+FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, scalable,
+and maintainable API integrations across the entire FLEXT ecosystem. By providing a
+unified, protocol-agnostic interface with railway-oriented error handling and clean
+architecture principles, FLEXT-API eliminates the complexity and inconsistency of HTTP
+operations while maintaining the flexibility needed for enterprise integration
+scenarios.
 
 **Key Success Metrics:**
 
@@ -302,6 +313,7 @@ FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, s
 - **Development Speed**: 50% faster API integration development
 - **Maintenance Cost**: 60% reduction in HTTP operation maintenance
 
-______________________________________________________________________
+---
 
-_This architecture documentation is maintained using automated tools and reviewed regularly to ensure accuracy and completeness._
+_This architecture documentation is maintained using automated tools and reviewed
+regularly to ensure accuracy and completeness._

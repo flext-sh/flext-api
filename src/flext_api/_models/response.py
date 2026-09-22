@@ -35,6 +35,9 @@ class FlextApiModelsResponse:
         body: Annotated[
             t.Api.ResponseBody | None, u.Field(description="Response body")
         ] = None
+        content: Annotated[
+            bytes, u.Field(description="Exact response body bytes received on the wire")
+        ] = b""
         request_id: Annotated[
             str, u.Field(default="", description="Associated request ID for tracking")
         ]
@@ -106,11 +109,13 @@ class FlextApiModelsResponse:
         body: t.Api.ResponseBody | None = None,
         headers: t.StrMapping | None = None,
         request_id: str | None = None,
+        content: bytes = b"",
     ) -> HttpResponse:
         """Create HttpResponse from parameters."""
         return cls.HttpResponse(
             status_code=status_code,
             body=body if body is not None else {},
+            content=content,
             headers=headers if headers is not None else {},
             request_id=request_id if request_id is not None else "",
         )
