@@ -9,15 +9,73 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import c, m, p, s, t, u
-    from flext_core import d, e, h, r, x
-__all__: tuple[str, ...] = ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x")
+    from flext_cli import cli
+    from flext_web import web
+
+    from flext_api import api, c, config, m, main, p, s, settings, t, u
+    from flext_core import (
+        core,
+        d,
+        e,
+        h,
+        lazy,
+        lazy_attribute,
+        normalize_lazy_imports,
+        r,
+        x,
+    )
+__all__: tuple[str, ...] = (
+    "api",
+    "c",
+    "cli",
+    "config",
+    "core",
+    "d",
+    "e",
+    "h",
+    "lazy",
+    "lazy_attribute",
+    "m",
+    "main",
+    "normalize_lazy_imports",
+    "p",
+    "r",
+    "s",
+    "settings",
+    "t",
+    "u",
+    "web",
+    "x",
+)
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            "flext_api": ("c", "m", "p", "s", "t", "u"),
-            "flext_core": ("d", "e", "h", "r", "x"),
+            "flext_api": (
+                "api",
+                "c",
+                "config",
+                "m",
+                "main",
+                "p",
+                "s",
+                "settings",
+                "t",
+                "u",
+            ),
+            "flext_cli": ("cli",),
+            "flext_core": (
+                "core",
+                "d",
+                "e",
+                "h",
+                "lazy",
+                "lazy_attribute",
+                "normalize_lazy_imports",
+                "r",
+                "x",
+            ),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
