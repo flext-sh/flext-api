@@ -10,7 +10,11 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_cli import cli
+<<<<<<< HEAD
     from flext_web import services, web
+=======
+    from flext_web import web
+>>>>>>> origin/chore/regen-20260923
 
     from flext_api import api, c, config, m, main, p, s, settings, t, u
     from flext_core import core, d, e, h, lazy_attribute, r, x
@@ -47,7 +51,6 @@ __all__: tuple[str, ...] = (
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "u",
@@ -81,7 +84,11 @@ _LAZY_IMPORTS = MappingProxyType(
             ),
             "flext_cli": ("cli",),
             "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
+<<<<<<< HEAD
             "flext_web": ("services", "web"),
+=======
+            "flext_web": ("web",),
+>>>>>>> origin/chore/regen-20260923
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
