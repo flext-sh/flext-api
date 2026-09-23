@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from .serializers import FlextApiUtilitiesSerializers
     from .settings_manager import FlextApiUtilitiesSettingsManager
     from .transport import FlextApiUtilitiesTransport
+
+
 __all__: tuple[str, ...] = (
     "FlextApiUtilitiesApiPydantic",
     "FlextApiUtilitiesBase",

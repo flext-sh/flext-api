@@ -20,6 +20,7 @@ FLEXT-API exposes two HTTP entry points:
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings
 
 settings = FlextApiSettings(base_url="https://api.example.com")
@@ -42,6 +43,7 @@ else:
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApiClient, FlextApiSettings, c, m
 
 settings = FlextApiSettings(Api={"base_url": "https://api.example.com"})
@@ -64,6 +66,7 @@ Use the facade for typical application code:
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi
 
 api = FlextApi()
@@ -83,6 +86,7 @@ Every call returns `p.Result[m.Api.HttpResponse]`.
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi
 
 result = FlextApi().get("/health")

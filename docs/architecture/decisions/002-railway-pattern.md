@@ -64,7 +64,7 @@ Every public method returns `p.Result[T]`. Operations are composed using `flat_m
 
 ### Option 1: Traditional Exceptions
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 import httpx
@@ -151,7 +151,7 @@ assert result.unwrap().body["name"] == "Alice"
 
 ### Usage in Application Code
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r

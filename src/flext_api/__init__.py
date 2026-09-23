@@ -49,6 +49,8 @@ if TYPE_CHECKING:
     from .services.client import FlextApiClient
     from .typings import FlextApiTypes, t
     from .utilities import FlextApiUtilities, u
+
+
 __all__: tuple[str, ...] = (
     "FlextApi",
     "FlextApiAsyncClient",

@@ -19,7 +19,8 @@
   - [Reliability](#reliability)
   - [Security](#security)
   - [Maintainability](#maintainability)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

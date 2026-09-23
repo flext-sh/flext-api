@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from .base_request import FlextApiClientBaseRequestMixin
     from .codec import FlextApiClientCodecMixin
     from .request import FlextApiClientRequestMixin
+
+
 __all__: tuple[str, ...] = (
     "FlextApiClientAsyncRequestMixin",
     "FlextApiClientBaseRequestMixin",

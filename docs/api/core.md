@@ -14,7 +14,8 @@
   - [RequestUtils - Helper Functions](#requestutils-helper-functions)
 - [Usage Examples](#usage-examples)
   - [Complete HTTP Client Example](#complete-http-client-example)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 This section covers the core HTTP client and configuration types that form the public
 surface of `flext-api`.
@@ -28,7 +29,7 @@ executes validated `m.Api.HttpRequest` instances through `request(...)`. It does
 expose `get/post/put/delete/patch` directly; those methods live on the `FlextApi`
 facade.
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m, p
@@ -183,8 +184,9 @@ outside the `Api` namespace or declare an additional nested group.
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApiSettings
 from pydantic import Field
+
+from flext_api import FlextApiSettings
 
 
 class MyApiConfig(FlextApiSettings):
@@ -270,7 +272,7 @@ print(timeout_result.unwrap())
 
 ### Complete HTTP Client Example
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r

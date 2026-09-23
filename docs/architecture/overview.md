@@ -15,11 +15,6 @@
   - [Performance Monitoring](#performance-monitoring)
   - [Deployment Configuration](#deployment-configuration)
   - [Kubernetes Deployment](#kubernetes-deployment)
-- [Quality Metrics](#quality-metrics)
-  - [Current State (v0.12.0-dev)](#current-state-v0120-dev)
-  - [Coverage by Layer](#coverage-by-layer)
-- [Extension Points](#extension-points)
-  - [Adding New Protocols](#adding-new-protocols)
   - [Custom Middleware](#custom-middleware)
 - [Performance Considerations](#performance-considerations)
   - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
@@ -238,7 +233,7 @@ spec:
 
 ### Adding New Protocols
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 
@@ -261,7 +256,7 @@ registry.register("custom", CustomProtocol())
 
 ### Custom Middleware
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 from flext_api import p, r
 
@@ -345,7 +340,7 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 
 
