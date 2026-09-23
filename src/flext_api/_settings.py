@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from flext_core import FlextSettings
 
@@ -68,12 +68,9 @@ class FlextApiSettings(FlextSettings):
             bool, m.Field(default=False, description="Log inbound responses")
         ]
 
-    if TYPE_CHECKING:
-        Api: _Api
-    else:
-        Api: _Api = m.Field(
-            default_factory=_Api, description="Namespaced API settings."
-        )
+    Api: Annotated[
+        _Api, m.Field(default_factory=_Api, description="Namespaced API settings.")
+    ]
 
     @u.model_validator(mode="before")
     @classmethod
