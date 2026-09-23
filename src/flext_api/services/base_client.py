@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from .. import p, r, s, t, u
+
+if TYPE_CHECKING:
+    from .. import FlextApiSettings
 
 
 class FlextApiClientBase(s[bool]):
@@ -13,12 +16,14 @@ class FlextApiClientBase(s[bool]):
     @property
     def base_url(self) -> str:
         """The configured API base URL."""
-        return self.settings.Api.base_url
+        settings: FlextApiSettings = self.settings
+        return settings.Api.base_url
 
     @property
     def timeout(self) -> float:
         """The configured request timeout in seconds."""
-        return self.settings.Api.timeout
+        settings: FlextApiSettings = self.settings
+        return settings.Api.timeout
 
     @override
     def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
