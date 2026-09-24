@@ -16,8 +16,7 @@ from .. import t
 class FlextApiUtilitiesTransport:
     """Transport utility namespace shard for ``u.Api``."""
 
-    class Httpx:
-        """Owner facade for the httpx runtime classes consumers route through.
+    """Owner facade for the httpx runtime classes consumers route through.
 
         Consumer projects reach httpx through ``u.Api.Httpx`` so no consumer
         module imports httpx directly (transport ownership stays with
@@ -27,15 +26,13 @@ class FlextApiUtilitiesTransport:
         matching ``t.Api.Httpx`` aliases.
         """
 
-        Client: ClassVar[type[httpx.Client]] = httpx.Client
-        AsyncClient: ClassVar[type[httpx.AsyncClient]] = httpx.AsyncClient
-        Response: ClassVar[type[httpx.Response]] = httpx.Response
-        HTTPError: ClassVar[type[httpx.HTTPError]] = httpx.HTTPError
-        HTTPStatusError: ClassVar[type[httpx.HTTPStatusError]] = httpx.HTTPStatusError
-        RequestError: ClassVar[type[httpx.RequestError]] = httpx.RequestError
-        TimeoutException: ClassVar[type[httpx.TimeoutException]] = (
-            httpx.TimeoutException
-        )
+    Client: ClassVar[type[httpx.Client]] = httpx.Client
+    AsyncClient: ClassVar[type[httpx.AsyncClient]] = httpx.AsyncClient
+    Response: ClassVar[type[httpx.Response]] = httpx.Response
+    HTTPError: ClassVar[type[httpx.HTTPError]] = httpx.HTTPError
+    HTTPStatusError: ClassVar[type[httpx.HTTPStatusError]] = httpx.HTTPStatusError
+    RequestError: ClassVar[type[httpx.RequestError]] = httpx.RequestError
+    TimeoutException: ClassVar[type[httpx.TimeoutException]] = httpx.TimeoutException
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesTransport"]

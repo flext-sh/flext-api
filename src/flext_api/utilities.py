@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_web import u
+from flext_web import FlextWebUtilities
 
 from . import t
 from ._utilities import (
@@ -15,7 +15,7 @@ from ._utilities import (
 from ._utilities.base import FlextApiUtilitiesBase
 
 
-class FlextApiUtilities(u):
+class FlextApiUtilities(FlextWebUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers."""
 
     class Api(

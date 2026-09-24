@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_web import m
+from flext_web import FlextWebModels
 
 from . import t
 from ._models.base import FlextApiModelsBase
@@ -13,7 +13,7 @@ from ._models.storage import FlextApiModelsStorage
 from ._models.webhook import FlextApiModelsWebhook
 
 
-class FlextApiModels(m):
+class FlextApiModels(FlextWebModels):
     """HTTP domain models for flext-api."""
 
     class Api(
