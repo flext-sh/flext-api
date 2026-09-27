@@ -20,23 +20,7 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_cli import cli
-    from flext_infra import docs_main, infra
-    from flext_tests import (
-        active_rules,
-        discover_repository_root,
-        install_local_packages,
-        load_infra_report,
-        split_csv,
-        td,
-        tf,
-        tk,
-        tm,
-        tv,
-    )
-    from flext_web import web
-
-    from flext_core import core, d, e, h, lazy_attribute, r, x
+    from flext_web import d, e, h, r, x
 
     from . import services
     from ._config import FlextApiConfig, config
@@ -44,10 +28,11 @@ if TYPE_CHECKING:
     from .api import FlextApi, api
     from .base import FlextApiServiceBase, s
     from .cli import FlextApiCli, main
-    from .constants import FlextApiConstants, c
-    from .models import FlextApiModels, m
+    from .constants import FlextApiConstants, FlextApiConstants as c
+    from .models import FlextApiModels, FlextApiModels as m
     from .protocols import (
         FlextApiProtocols,
+        FlextApiProtocols as p,
         FlextApiProtocolsTransports,
         HttpxAsyncClient,
         HttpxClient,
@@ -56,13 +41,12 @@ if TYPE_CHECKING:
         HttpxRequestError,
         HttpxResponse,
         HttpxTimeoutException,
-        p,
     )
     from .services.async_client import FlextApiAsyncClient
     from .services.base_client import FlextApiClientBase
     from .services.client import FlextApiClient
     from .typings import FlextApiTypes, t
-    from .utilities import FlextApiUtilities, u
+    from .utilities import FlextApiUtilities, FlextApiUtilities as u
 
 
 __all__: tuple[str, ...] = (
@@ -95,21 +79,12 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "active_rules",
     "api",
     "c",
-    "cli",
     "config",
-    "core",
     "d",
-    "discover_repository_root",
-    "docs_main",
     "e",
     "h",
-    "infra",
-    "install_local_packages",
-    "lazy_attribute",
-    "load_infra_report",
     "m",
     "main",
     "p",
@@ -117,15 +92,8 @@ __all__: tuple[str, ...] = (
     "s",
     "services",
     "settings",
-    "split_csv",
     "t",
-    "td",
-    "tf",
-    "tk",
-    "tm",
-    "tv",
     "u",
-    "web",
     "x",
 )
 
@@ -157,22 +125,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.client": ("FlextApiClient",),
             ".typings": ("FlextApiTypes", "t"),
             ".utilities": ("FlextApiUtilities", "u"),
-            "flext_cli": ("cli",),
-            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
-            "flext_infra": ("docs_main", "infra"),
-            "flext_tests": (
-                "active_rules",
-                "discover_repository_root",
-                "install_local_packages",
-                "load_infra_report",
-                "split_csv",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-            ),
-            "flext_web": ("web",),
+            "flext_web": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
