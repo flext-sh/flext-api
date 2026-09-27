@@ -28,10 +28,11 @@ if TYPE_CHECKING:
     from .api import FlextApi, api
     from .base import FlextApiServiceBase, s
     from .cli import FlextApiCli, main
-    from .constants import FlextApiConstants, c
-    from .models import FlextApiModels, m
+    from .constants import FlextApiConstants, FlextApiConstants as c
+    from .models import FlextApiModels, FlextApiModels as m
     from .protocols import (
         FlextApiProtocols,
+        FlextApiProtocols as p,
         FlextApiProtocolsTransports,
         HttpxAsyncClient,
         HttpxClient,
@@ -40,13 +41,12 @@ if TYPE_CHECKING:
         HttpxRequestError,
         HttpxResponse,
         HttpxTimeoutException,
-        p,
     )
     from .services.async_client import FlextApiAsyncClient
     from .services.base_client import FlextApiClientBase
     from .services.client import FlextApiClient
     from .typings import FlextApiTypes, t
-    from .utilities import FlextApiUtilities, u
+    from .utilities import FlextApiUtilities, FlextApiUtilities as u
 
 
 __all__: tuple[str, ...] = (
