@@ -1,4 +1,4 @@
-"""Behavioral tests for the httpx transport owner exposed through ``u.Api.Httpx``.
+"""Behavioral tests for the httpx transport owner exposed through ``u.Api``.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -16,8 +16,8 @@ class TestsFlextApiUtilitiesTransport:
     """Consumers construct, annotate, raise and catch httpx through the owner."""
 
     def test_client_constructs_and_closes_through_the_owner(self) -> None:
-        """A real client constructs, narrows and closes through ``u.Api.Httpx``."""
-        client: t.Api.Httpx.Client = u.Api.HttpxClient(timeout=2.0)
+        """A real client constructs, narrows and closes through ``u.Api.HttpxClient``."""
+        client: t.Api.HttpxClient = u.Api.HttpxClient(timeout=2.0)
         try:
             tm.that(isinstance(client, u.Api.HttpxClient), eq=True)
             tm.that(client.is_closed, eq=False)
@@ -27,9 +27,9 @@ class TestsFlextApiUtilitiesTransport:
 
     @pytest.mark.asyncio
     async def test_async_client_constructs_and_closes_through_the_owner(self) -> None:
-        """A real async client opens and closes through ``u.Api.Httpx``."""
+        """A real async client opens and closes through ``u.Api.HttpxAsyncClient``."""
         async with u.Api.HttpxAsyncClient(timeout=2.0) as client:
-            opened: t.Api.Httpx.AsyncClient = client
+            opened: t.Api.HttpxAsyncClient = client
             tm.that(opened.is_closed, eq=False)
         tm.that(opened.is_closed, eq=True)
 
@@ -37,7 +37,7 @@ class TestsFlextApiUtilitiesTransport:
         """A conflict response raises the owner status error and its base."""
         with u.Api.HttpxClient() as client:
             request = client.build_request("GET", "https://service.example/items")
-        response: t.Api.Httpx.Response = u.Api.HttpxResponse(
+        response: t.Api.HttpxResponse = u.Api.HttpxResponse(
             int(c.Web.StatusCode.CONFLICT), request=request
         )
         with pytest.raises(u.Api.HttpxHTTPStatusError) as caught:

@@ -14,17 +14,16 @@ from .. import t
 
 
 class FlextApiUtilitiesTransport:
-    """Transport utility namespace shard for ``u.Api``."""
+    """Transport utility namespace shard for ``u.Api``.
 
-    """Owner facade for the httpx runtime classes consumers route through.
-
-        Consumer projects reach httpx through ``u.Api.Httpx`` so no consumer
-        module imports httpx directly (transport ownership stays with
-        flext-api). Members are the real class objects typed as
-        ``ClassVar[type[...]]`` so construction, ``raise``, ``isinstance`` and
-        ``except`` keep their runtime and static meaning; annotations use the
-        matching ``t.Api.Httpx`` aliases.
-        """
+    Owner facade for the httpx runtime classes consumers route through.
+    Consumer projects reach httpx through the ``u.Api.Httpx*`` members so no
+    consumer module imports httpx directly (transport ownership stays with
+    flext-api). Members are the real class objects typed as
+    ``ClassVar[type[...]]`` so construction, ``raise``, ``isinstance`` and
+    ``except`` keep their runtime and static meaning; annotations use the
+    matching ``t.Api.Httpx*`` aliases.
+    """
 
     HttpxClient: ClassVar[type[httpx.Client]] = httpx.Client
     HttpxAsyncClient: ClassVar[type[httpx.AsyncClient]] = httpx.AsyncClient

@@ -10,9 +10,10 @@ import httpx
 
 
 class FlextApiTypingsTransport:
-    """Transport typing namespace shard for ``t.Api``."""
+    """Transport typing namespace shard for ``t.Api``.
 
-    """Annotation aliases for the httpx runtime classes in ``u.Api.Httpx``."""
+    Annotation aliases for the httpx runtime classes in ``u.Api.Httpx*``.
+    """
 
     type HttpxClient = httpx.Client
     type HttpxAsyncClient = httpx.AsyncClient
