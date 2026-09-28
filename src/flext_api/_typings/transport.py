@@ -12,12 +12,11 @@ import httpx
 class FlextApiTypingsTransport:
     """Transport typing namespace shard for ``t.Api``."""
 
-    class Httpx:
-        """Annotation aliases for the httpx runtime classes in ``u.Api.Httpx``."""
+    """Annotation aliases for the httpx runtime classes in ``u.Api.Httpx``."""
 
-        type Client = httpx.Client
-        type AsyncClient = httpx.AsyncClient
-        type Response = httpx.Response
+    type HttpxClient = httpx.Client
+    type HttpxAsyncClient = httpx.AsyncClient
+    type HttpxResponse = httpx.Response
 
 
 __all__: list[str] = ["FlextApiTypingsTransport"]

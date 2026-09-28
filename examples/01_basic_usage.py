@@ -119,19 +119,19 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         ttl = int(settings.Api.timeout)
         # NOTE (multi-agent): avoid shadowing the module-level ``settings``
         # singleton (ADR-005 namespaced settings); use a distinct local name.
-        storage_settings = m.Api.Storage.Settings(namespace=namespace, default_ttl=ttl)
-        entry = m.Api.Storage.Metadata.model_validate({
+        storage_settings = m.Api.StorageSettings(namespace=namespace, default_ttl=ttl)
+        entry = m.Api.StorageMetadata.model_validate({
             "value": entry_value,
             "timestamp": u.generate_iso_timestamp(),
             "ttl": storage_settings.default_ttl,
         })
-        state = m.Api.Storage.State(
+        state = m.Api.StorageState(
             entries={"latest-response": entry},
             operations_count=2,
             cache_hits=1,
             cache_misses=0,
         )
-        stats = m.Api.Storage.Stats(
+        stats = m.Api.StorageStats(
             total_operations=state.operations_count,
             cache_hits=state.cache_hits,
             cache_misses=state.cache_misses,
