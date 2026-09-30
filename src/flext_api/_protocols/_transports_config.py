@@ -21,7 +21,7 @@ class FlextApiTransportsConfigMixin:
         raw_timeout = options.get("timeout")
         return (
             float(raw_timeout)
-            if isinstance(raw_timeout, t.NUMERIC_TYPES)
+            if isinstance(raw_timeout, c.NUMERIC_TYPES)
             else c.Api.DEFAULT_TIMEOUT
         )
 
