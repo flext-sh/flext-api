@@ -5,7 +5,7 @@ title FLEXT Enterprise System Landscape
 
 Person(enterprise_developer, "Enterprise Developer", "Builds enterprise applications")
 Person(data_engineer, "Data Engineer", "Manages data pipelines")
-Person(system_REDACTED_LDAP_BIND_PASSWORD, "System Administrator", "Manages infrastructure")
+Person(system_admin, "System Administrator", "Manages infrastructure")
 
 Enterprise_Boundary(flext_ecosystem, "FLEXT Ecosystem") {
     System(flext_api, "FLEXT-API", "HTTP client and FastAPI foundation")
@@ -31,7 +31,7 @@ System_Ext(kubernetes, "Kubernetes", "Container orchestration")
 Rel(enterprise_developer, flext_api, "Uses for HTTP operations")
 Rel(enterprise_developer, flext_core, "Depends on foundation")
 Rel(data_engineer, flext_data, "Uses for data integration")
-Rel(system_REDACTED_LDAP_BIND_PASSWORD, kubernetes, "Manages containers")
+Rel(system_admin, kubernetes, "Manages containers")
 
 Rel(flext_api, flext_core, "Depends on", "patterns & utilities")
 Rel(flext_ldap, flext_core, "Depends on", "patterns & utilities")
