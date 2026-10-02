@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 import httpx
 
-
 if TYPE_CHECKING:
     from flext_api import t
 
