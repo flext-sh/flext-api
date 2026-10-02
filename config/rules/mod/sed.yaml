@@ -1,0 +1,20 @@
+rules:
+  - id: api-type-adapter-import-models
+    description: Import the public model facade for adapter type annotations.
+    include: [src/flext_api/typings.py]
+    distributions: [flext-api]
+    find: '^from flext_web import p, t, u$'
+    replace: 'from flext_web import m, p, t, u'
+    flags: [MULTILINE]
+  - id: api-type-adapter-annotations
+    description: Type adapters through the public model facade.
+    include: [src/flext_api/typings.py]
+    distributions: [flext-api]
+    find: '\bu\.TypeAdapter\['
+    replace: 'm.TypeAdapter['
+  - id: api-type-adapter-construction
+    description: Construct adapters through the public utilities facade.
+    include: [src/flext_api/typings.py]
+    distributions: [flext-api]
+    find: '\bu\.TypeAdapter\('
+    replace: 'u.type_adapter('
