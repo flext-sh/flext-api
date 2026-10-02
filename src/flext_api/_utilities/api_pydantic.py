@@ -1,4 +1,8 @@
-"""API Pydantic utility shard."""
+"""API Pydantic utility shard.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -6,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from flext_web import u
 
-from .. import m, t
+from flext_api import m, t
 
 if TYPE_CHECKING:
     from enum import StrEnum
@@ -20,7 +24,11 @@ class FlextApiUtilitiesApiPydantic:
 
         @staticmethod
         def coerced_enum_validator(enum_cls: type[StrEnum]) -> m.BeforeValidator:
-            """Create a validator for automatic StrEnum coercion."""
+            """Create a validator for automatic StrEnum coercion.
+
+            Returns:
+                The resulting ``m.BeforeValidator``.
+            """
 
             def _coerce(v: str | StrEnum) -> StrEnum:
                 result = u.parse(v, enum_cls)

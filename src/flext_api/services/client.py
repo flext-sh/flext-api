@@ -1,10 +1,14 @@
-"""Generic HTTP client facade."""
+"""Generic HTTP client facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from .. import t
-from ._services import FlextApiClientRequestMixin
-from .base_client import FlextApiClientBase
+from flext_api import t
+from flext_api.services._services import FlextApiClientRequestMixin
+from flext_api.services.base_client import FlextApiClientBase
 
 
 class FlextApiClient(FlextApiClientRequestMixin, FlextApiClientBase):

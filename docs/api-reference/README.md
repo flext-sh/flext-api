@@ -29,6 +29,6 @@ This section is generated from public exports and real docstrings.
 
 - Primary facades: `FlextApi`, `FlextApiAsyncClient`, `FlextApiCli`, `FlextApiClient`,
   `FlextApiClientBase`, `FlextApiConfig` (+8 more)
-- Generated module pages: `12`
+- Generated module pages: `8`
 
 Back to [project docs](../index.md).

@@ -1,4 +1,8 @@
-"""API response models."""
+"""API response models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -30,26 +34,34 @@ class FlextApiModelsResponse:
             ),
         ]
         headers: Annotated[
-            t.StrMapping, u.Field(description="HTTP response headers")
+            t.StrMapping,
+            u.Field(description="HTTP response headers"),
         ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
-            t.Api.ResponseBody | None, u.Field(description="Response body")
+            t.Api.ResponseBody | None,
+            u.Field(description="Response body"),
         ] = None
         content: Annotated[
-            bytes, u.Field(description="Exact response body bytes received on the wire")
+            bytes,
+            u.Field(description="Exact response body bytes received on the wire"),
         ] = b""
         request_id: Annotated[
-            str, u.Field(default="", description="Associated request ID for tracking")
+            str,
+            u.Field(default="", description="Associated request ID for tracking"),
         ]
 
         @u.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.ResponseBody:
-            """Normalize response body."""
+            """Normalize response body.
+
+            Returns:
+                The resulting ``t.Api.ResponseBody``.
+            """
             if v is None:
                 return None
             validated: t.Api.ResponseBody = t.Api.RESPONSE_BODY_ADAPTER.validate_python(
-                v
+                v,
             )
             return validated
 
@@ -111,7 +123,11 @@ class FlextApiModelsResponse:
         request_id: str | None = None,
         content: bytes = b"",
     ) -> HttpResponse:
-        """Create HttpResponse from parameters."""
+        """Create HttpResponse from parameters.
+
+        Returns:
+            The resulting ``HttpResponse``.
+        """
         return cls.HttpResponse(
             status_code=status_code,
             body=body if body is not None else {},

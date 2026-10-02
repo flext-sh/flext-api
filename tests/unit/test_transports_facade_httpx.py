@@ -1,8 +1,10 @@
-"""The public HTTP class contracts own httpx construction and exception identity."""
+"""The public HTTP class contracts own httpx construction and exception identity.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 
 import httpx
 
@@ -16,9 +18,6 @@ from flext_api import (
     HttpxTimeoutException,
     p,
 )
-
-if TYPE_CHECKING:
-    from flext_core import t
 
 
 class TestsFlextApiHttpxContracts:
@@ -51,6 +50,3 @@ class TestsFlextApiHttpxContracts:
         finally:
             client.close()
         assert client.is_closed
-
-
-__all__: t.VariadicTuple[str] = ("TestsFlextApiHttpxContracts",)

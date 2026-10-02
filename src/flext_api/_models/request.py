@@ -1,4 +1,8 @@
-"""API request models."""
+"""API request models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -32,13 +36,16 @@ class FlextApiModelsRequest:
             u.Field(..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"),
         ]
         headers: Annotated[
-            t.StrMapping, u.Field(description="HTTP request headers")
+            t.StrMapping,
+            u.Field(description="HTTP request headers"),
         ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
-            t.Api.RequestBody | None, u.Field(description="Request body")
+            t.Api.RequestBody | None,
+            u.Field(description="Request body"),
         ] = None
         query_params: Annotated[
-            t.Api.WebParams | None, u.Field(description="Query parameters")
+            t.Api.WebParams | None,
+            u.Field(description="Query parameters"),
         ] = None
         timeout: Annotated[
             t.PositiveTimeout,
@@ -61,7 +68,11 @@ class FlextApiModelsRequest:
         @u.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.RequestBody:
-            """Normalize request body."""
+            """Normalize request body.
+
+            Returns:
+                The resulting ``t.Api.RequestBody``.
+            """
             if v is None:
                 return {}
             validated: t.Api.RequestBody = t.Api.REQUEST_BODY_ADAPTER.validate_python(v)

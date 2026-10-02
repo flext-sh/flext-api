@@ -1,18 +1,22 @@
-"""FlextApi utilities facade."""
+"""FlextApi utilities facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from flext_web import FlextWebUtilities
 
-from . import t
-from ._utilities import (
+from flext_api import t
+from flext_api._utilities import (
     FlextApiUtilitiesApiPydantic,
     FlextApiUtilitiesRequestUtils,
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesSettingsManager,
     FlextApiUtilitiesTransport,
 )
-from ._utilities.base import FlextApiUtilitiesBase
+from flext_api._utilities.base import FlextApiUtilitiesBase
 
 
 class FlextApiUtilities(FlextWebUtilities):
@@ -29,6 +33,6 @@ class FlextApiUtilities(FlextWebUtilities):
         """API-specific utility namespace."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]
-
 u = FlextApiUtilities
+
+__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]

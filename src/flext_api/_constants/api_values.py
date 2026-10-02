@@ -1,4 +1,8 @@
-"""API scalar constants."""
+"""API scalar constants.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,7 @@ from typing import TYPE_CHECKING, Final
 from flext_web import FlextWebConstants, t
 from httpx import HTTPError as _HttpxError
 
-from .api_enums import FlextApiConstantsEnums
+from flext_api._constants.api_enums import FlextApiConstantsEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

@@ -1,38 +1,40 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Flext Api package."""
+"""Flext Api package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
-
-from .__version__ import (
-    __author__ as __author__,
-    __author_email__ as __author_email__,
-    __description__ as __description__,
-    __license__ as __license__,
-    __title__ as __title__,
-    __url__ as __url__,
-    __version__ as __version__,
-    __version_info__ as __version_info__,
+from flext_api.__version__ import (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
 )
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
 
-    from . import services
-    from ._config import FlextApiConfig, config
-    from ._settings import FlextApiSettings, settings
-    from .api import FlextApi, api
-    from .base import FlextApiServiceBase, s
-    from .cli import FlextApiCli, main
-    from .constants import FlextApiConstants, FlextApiConstants as c
-    from .models import FlextApiModels, FlextApiModels as m
-    from .protocols import (
+    from flext_api import services
+    from flext_api._config import FlextApiConfig, config
+    from flext_api._settings import FlextApiSettings, settings
+    from flext_api.api import FlextApi, api
+    from flext_api.base import FlextApiServiceBase, s
+    from flext_api.cli import FlextApiCli, main
+    from flext_api.constants import FlextApiConstants, c
+    from flext_api.models import FlextApiModels, m
+    from flext_api.protocols import (
         FlextApiProtocols,
-        FlextApiProtocols as p,
         FlextApiProtocolsTransports,
         HttpxAsyncClient,
         HttpxClient,
@@ -41,12 +43,13 @@ if TYPE_CHECKING:
         HttpxRequestError,
         HttpxResponse,
         HttpxTimeoutException,
+        p,
     )
-    from .services.async_client import FlextApiAsyncClient
-    from .services.base_client import FlextApiClientBase
-    from .services.client import FlextApiClient
-    from .typings import FlextApiTypes, t
-    from .utilities import FlextApiUtilities, FlextApiUtilities as u
+    from flext_api.services.async_client import FlextApiAsyncClient
+    from flext_api.services.base_client import FlextApiClientBase
+    from flext_api.services.client import FlextApiClient
+    from flext_api.typings import FlextApiTypes, t
+    from flext_api.utilities import FlextApiUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -129,7 +132,7 @@ _LAZY_IMPORTS = MappingProxyType(
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

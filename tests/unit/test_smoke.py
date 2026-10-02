@@ -13,8 +13,7 @@ import pytest
 from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c
-
-from .model_contract import TestsFlextApiModelContract
+from tests.unit.model_contract import TestsFlextApiModelContract
 
 
 class TestsFlextApiSmoke(TestsFlextApiModelContract):
@@ -33,7 +32,9 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         ],
     )
     def test_http_method_enum_resolves_to_wire_string(
-        self, method: c.Api.Method, expected: str
+        self,
+        method: c.Api.Method,
+        expected: str,
     ) -> None:
         """Each HTTP method compares equal to its wire string value."""
         tm.that(method, eq=expected)
@@ -54,7 +55,9 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         ],
     )
     def test_content_type_maps_to_mime(
-        self, content_type: c.Api.ContentType, expected: str
+        self,
+        content_type: c.Api.ContentType,
+        expected: str,
     ) -> None:
         """ContentType members map to their MIME type strings."""
         tm.that(content_type.value, eq=expected)
@@ -94,7 +97,7 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
     def test_client_execute_reports_success(self) -> None:
         """A configured client executes its lifecycle successfully."""
         client = FlextApiClient(
-            runtime_settings=FlextApiSettings(base_url="https://service.example")
+            runtime_settings=FlextApiSettings(base_url="https://service.example"),
         )
         result = client.execute()
         tm.that(result.success, eq=True)
@@ -115,6 +118,3 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         api = FlextApi()
         tm.that(api.settings.Api.base_url, is_=str)
         tm.that(api.execute().success, eq=True)
-
-
-__all__: list[str] = ["TestsFlextApiSmoke"]
