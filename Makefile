@@ -708,7 +708,6 @@ caller_mise_version=; \
 	# configured tool in one pass so removed selectors cannot survive beside \
 	# their replacement in mise.lock. \
 	if [ "$(TOOL_BOOTSTRAP_LOCK)" = "1" ]; then \
-<<<<<<< HEAD
 		lock_snapshot() { \
 			for lock in mise.lock uv.lock; do \
 				if [ -f "$$project_root/$$lock" ]; then cp "$$project_root/$$lock" "$$project_root/$$lock.bak"; fi; \
@@ -726,16 +725,11 @@ caller_mise_version=; \
 			done; \
 		lock_snapshot; \
 		trap 'lock_restore' EXIT; \
-=======
->>>>>>> origin/0.12.0-dev
 		mise_checked "$$scratch/lock.log" mise_exec project "$$pinned_mise" -C "$$project_root" lock --bump; \
 	fi; \
 	# ``locked`` mode installs exactly what the committed mise.lock pins. \
 	mise_checked "$$scratch/install.log" mise_exec project "$$pinned_mise" -C "$$project_root" install --yes; \
-<<<<<<< HEAD
 	if [ "$(TOOL_BOOTSTRAP_LOCK)" = "1" ]; then trap - EXIT; rm -f "$$project_root/mise.lock.bak" "$$project_root/uv.lock.bak"; fi; \
-=======
->>>>>>> origin/0.12.0-dev
 	mise_checked_stdout "$$scratch/ast-grep-version.stdout" "$$scratch/ast-grep-version.stderr" mise_exec project "$$pinned_mise" -C "$$project_root" exec -- ast-grep --version; \
 	if [ -s "$$scratch/ast-grep-version.stderr" ]; then \
 		printf 'ERROR: ast-grep emitted diagnostics after installation\n' >&2; exit 2; \
@@ -1523,20 +1517,16 @@ _upg_relock: TOOL_BOOTSTRAP_LIFECYCLE := _upg_converge
 _upg_relock: TOOL_BOOTSTRAP_LOCK := 1
 _upg_relock: _bootstrap_setup_tools
 
-<<<<<<< HEAD
 # An upgrade publishes only after the cycle it changed still passes: the
 # generation fixed point is proven above, and every active gate must be
 # green on the upgraded tree, so a package update that breaks types, lint
 # or consistency fails the upgrade itself instead of surfacing later as
 # red tests or red CI.
-=======
->>>>>>> origin/0.12.0-dev
 .PHONY: _upg_converge
 _upg_converge:
 	$(call _lock_project,)
 	@$(SELF_MAKE) _builtin_setup_environment
 	@$(UV) lock --check --project "$(PROJECT_ROOT)"
-<<<<<<< HEAD
 	@set -eu; \
 	before="$$(git -C "$(PROJECT_ROOT)" status --porcelain --untracked-files=all --ignore-submodules=none | sort)"; \
 	$(SELF_MAKE) gen > /dev/null; \
@@ -1546,8 +1536,6 @@ _upg_converge:
 		exit 2; \
 	fi
 	@$(SELF_MAKE) _lock_mise_verify
-=======
->>>>>>> origin/0.12.0-dev
 	+@XDG_DATA_HOME="$${SETUP_DIRENV_XDG_DATA_HOME:?missing persistent direnv data home}" \
 		"$${SETUP_DIRENV:?missing Mise-resolved direnv executable}" exec "$(PROJECT_ROOT)" $(SELF_MAKE) _upg_activated
 	@$(SELF_MAKE) check

@@ -6,14 +6,6 @@ __mise_bootstrap() {
     # mise itself expands a leading ~ in these (env::var_path -> file::replace_path); parameter
     # expansion does not, so without this a tilde value ends up as a relative directory. CI YAML
     # supplies exactly this shape (MISE_DATA_DIR: ~/.local/share/mise).
-<<<<<<< HEAD
-    case $mise_data_dir in
-      "~") mise_data_dir=$HOME ;;
-      "~/"*) mise_data_dir=$HOME/${mise_data_dir#\~/} ;;
-    esac
-    local cache_home="${XDG_CACHE_HOME:-$HOME/.cache}/mise"
-    local mise_version="${MISE_VERSION:-2026.9.16}"
-=======
     case ${mise_data_dir} in
       "~") mise_data_dir=${HOME} ;;
       "~"*) mise_data_dir=${HOME}/${mise_data_dir#\~/} ;;
@@ -21,7 +13,6 @@ __mise_bootstrap() {
     esac
     local cache_home="${XDG_CACHE_HOME:-${HOME}/.cache}/mise"
     local mise_version="${MISE_VERSION:-2026.9.17}"
->>>>>>> origin/0.12.0-dev
     mise_version="${mise_version#v}"
     # Only a defaulted path may fall back: an explicit MISE_INSTALL_PATH wins even while its file
     # does not exist yet.
@@ -97,21 +88,12 @@ __mise_bootstrap() {
           if type ldd >/dev/null 2>/dev/null; then
             if [ "${MISE_INSTALL_MUSL-}" = "1" ] || [ "${MISE_INSTALL_MUSL-}" = "true" ]; then
               musl="-musl"
-<<<<<<< HEAD
-            elif [ "$(uname -o)" = "Android" ]; then
-              # Android (Termux) always uses musl
-              musl="-musl"
-            else
-              libc=$(ldd /bin/ls | grep 'musl' | head -1 | cut -d ' ' -f1)
-              if [ -n "$libc" ]; then
-=======
             elif [ "$(uname -o || true)" = "Android" ]; then
               # Android (Termux) always uses musl
               musl="-musl"
             else
               libc=$(ldd /bin/ls | grep 'musl' | head -1 | cut -d ' ' -f1 || true)
               if [ -n "${libc}" ]; then
->>>>>>> origin/0.12.0-dev
                 musl="-musl"
               fi
             fi
@@ -145,26 +127,15 @@ __mise_bootstrap() {
           if ! command -v zstd >/dev/null 2>&1; then
             false
           # tar is bsdtar
-<<<<<<< HEAD
-          elif tar --version | grep -q 'bsdtar'; then
-=======
           elif tar --version | grep -q 'bsdtar' || true; then
->>>>>>> origin/0.12.0-dev
             true
           # busybox tar reports a "1.3x" version that matches the GNU check below, but it
           # cannot decompress .tar.zst itself. Detect it so we fall back to the zstd pipe
           # (or a .tar.gz download) instead of running `tar -xf` on a zstd tarball.
-<<<<<<< HEAD
-          elif tar --version 2>&1 | grep -qi 'busybox'; then
-            false
-          # tar version is >= 1.31
-          elif tar --version | grep -q '1\.\(3[1-9]\|[4-9][0-9]\)'; then
-=======
           elif tar --version 2>&1 | grep -qi 'busybox' || true; then
             false
           # tar version is >= 1.31
           elif tar --version | grep -q '1\.\(3[1-9]\|[4-9][0-9]\)' || true; then
->>>>>>> origin/0.12.0-dev
             true
           else
             false
@@ -187,91 +158,11 @@ __mise_bootstrap() {
           arch=$3
           ext=$4
           url="https://github.com/jdx/mise/releases/download/v${version}/SHASUMS256.txt"
-<<<<<<< HEAD
-          current_version="v2026.9.16"
-=======
           current_version="v2026.9.17"
->>>>>>> origin/0.12.0-dev
           current_version="${current_version#v}"
 
           # For current version use static checksum otherwise
           # use checksum from releases
-<<<<<<< HEAD
-          if [ "$version" = "$current_version" ]; then
-            checksum_linux_x86_64="2e022482d62a3b9e6c0bc51d3e883401bfa7e4684b60f3b819b21eae4ebdb438  ./mise-v2026.9.16-linux-x64.tar.gz"
-            checksum_linux_x86_64_musl="e35454f16624fc4ea19546317589bf773608fd8f275c4d608c8e755ff3b4f72c  ./mise-v2026.9.16-linux-x64-musl.tar.gz"
-            checksum_linux_arm64="a19097ac76225b3ebe78b1a93ad302f1fe3e6fa9f40edf724deb3b83244bb7ff  ./mise-v2026.9.16-linux-arm64.tar.gz"
-            checksum_linux_arm64_musl="d591a1aac4a4cca3fa1b5eb671dc693e636d22bf3aebaa9485c30da7091aea14  ./mise-v2026.9.16-linux-arm64-musl.tar.gz"
-            checksum_linux_armv7="43c461826e9dea708e723f8b743c2ae2e120ac37398645c477b7a54e56b346bb  ./mise-v2026.9.16-linux-armv7.tar.gz"
-            checksum_linux_armv7_musl="bc50b4a6cefd554b95d9779369f98777494584ad51890a3e2eb435471de0bb2a  ./mise-v2026.9.16-linux-armv7-musl.tar.gz"
-            checksum_macos_x86_64="12eabbec662f87fbe8e39bd5e2cc5b0796cd18ebf58cf5ad41fef981c6757d51  ./mise-v2026.9.16-macos-x64.tar.gz"
-            checksum_macos_arm64="ce340c6c4bfd4b515557062276184a4b2be4aeec4120173b017bb1179414de88  ./mise-v2026.9.16-macos-arm64.tar.gz"
-            checksum_linux_x86_64_zstd="9b4658fca05dfd25c78d8c380aaebd4ada8f4e6cb9241eaf6b40d9d6b9d32f96  ./mise-v2026.9.16-linux-x64.tar.zst"
-            checksum_linux_x86_64_musl_zstd="c9693511aa04377365bed0f93a48850d0b32ec9c0cc2e53cf52eedc8b79c3865  ./mise-v2026.9.16-linux-x64-musl.tar.zst"
-            checksum_linux_arm64_zstd="80855b3915d6b11c5ed7407b05781f33636bfd95ca6ba480efccff8df7a3a1d7  ./mise-v2026.9.16-linux-arm64.tar.zst"
-            checksum_linux_arm64_musl_zstd="b6264702bc718aa93269bd8675dd88ecff68d29ff5eee6352f9c415d04aa93d6  ./mise-v2026.9.16-linux-arm64-musl.tar.zst"
-            checksum_linux_armv7_zstd="0fccb4f5caea53e7ef55d9769d2535428841cbed90c1c5af730a142ff51037a9  ./mise-v2026.9.16-linux-armv7.tar.zst"
-            checksum_linux_armv7_musl_zstd="059223bf81d908ba77d619420d9fe15854d6423e9a7ba6d06ff22d509c5bd66f  ./mise-v2026.9.16-linux-armv7-musl.tar.zst"
-            checksum_macos_x86_64_zstd="ff27e64a04288a30b1d03e8725f42a868edd2bea2fe671d1cd9582b778f2c82e  ./mise-v2026.9.16-macos-x64.tar.zst"
-            checksum_macos_arm64_zstd="7d12e81ea1a05de715b97d5a810e05d71fde57bd80581a2ab9a07e9812e1476d  ./mise-v2026.9.16-macos-arm64.tar.zst"
-
-            # TODO: refactor this, it's a bit messy
-            if [ "$ext" = "tar.zst" ]; then
-              if [ "$os" = "linux" ]; then
-                if [ "$arch" = "x64" ]; then
-                  echo "$checksum_linux_x86_64_zstd"
-                elif [ "$arch" = "x64-musl" ]; then
-                  echo "$checksum_linux_x86_64_musl_zstd"
-                elif [ "$arch" = "arm64" ]; then
-                  echo "$checksum_linux_arm64_zstd"
-                elif [ "$arch" = "arm64-musl" ]; then
-                  echo "$checksum_linux_arm64_musl_zstd"
-                elif [ "$arch" = "armv7" ]; then
-                  echo "$checksum_linux_armv7_zstd"
-                elif [ "$arch" = "armv7-musl" ]; then
-                  echo "$checksum_linux_armv7_musl_zstd"
-                else
-                  warn "no checksum for $os-$arch"
-                fi
-              elif [ "$os" = "macos" ]; then
-                if [ "$arch" = "x64" ]; then
-                  echo "$checksum_macos_x86_64_zstd"
-                elif [ "$arch" = "arm64" ]; then
-                  echo "$checksum_macos_arm64_zstd"
-                else
-                  warn "no checksum for $os-$arch"
-                fi
-              else
-                warn "no checksum for $os-$arch"
-              fi
-            else
-              if [ "$os" = "linux" ]; then
-                if [ "$arch" = "x64" ]; then
-                  echo "$checksum_linux_x86_64"
-                elif [ "$arch" = "x64-musl" ]; then
-                  echo "$checksum_linux_x86_64_musl"
-                elif [ "$arch" = "arm64" ]; then
-                  echo "$checksum_linux_arm64"
-                elif [ "$arch" = "arm64-musl" ]; then
-                  echo "$checksum_linux_arm64_musl"
-                elif [ "$arch" = "armv7" ]; then
-                  echo "$checksum_linux_armv7"
-                elif [ "$arch" = "armv7-musl" ]; then
-                  echo "$checksum_linux_armv7_musl"
-                else
-                  warn "no checksum for $os-$arch"
-                fi
-              elif [ "$os" = "macos" ]; then
-                if [ "$arch" = "x64" ]; then
-                  echo "$checksum_macos_x86_64"
-                elif [ "$arch" = "arm64" ]; then
-                  echo "$checksum_macos_arm64"
-                else
-                  warn "no checksum for $os-$arch"
-                fi
-              else
-                warn "no checksum for $os-$arch"
-=======
           if [ "${version}" = "${current_version}" ]; then
             checksum_linux_x86_64="2e022482d62a3b9e6c0bc51d3e883401bfa7e4684b60f3b819b21eae4ebdb438  ./mise-v2026.9.17-linux-x64.tar.gz"
             checksum_linux_x86_64_musl="e35454f16624fc4ea19546317589bf773608fd8f275c4d608c8e755ff3b4f72c  ./mise-v2026.9.17-linux-x64-musl.tar.gz"
@@ -346,45 +237,27 @@ __mise_bootstrap() {
                 fi
               else
                 warn "no checksum for ${os}-${arch}"
->>>>>>> origin/0.12.0-dev
               fi
             fi
           else
             if command -v curl >/dev/null 2>&1; then
-<<<<<<< HEAD
-              debug ">" curl -fsSL "$url"
-              checksums="$(curl --compressed -fsSL "$url")"
-            else
-              if command -v wget >/dev/null 2>&1; then
-                debug ">" wget -qO - "$url"
-                checksums="$(wget -qO - "$url")"
-=======
               debug ">" curl -fsSL "${url}"
               checksums="$(curl --compressed -fsSL "${url}")"
             else
               if command -v wget >/dev/null 2>&1; then
                 debug ">" wget -qO - "${url}"
                 checksums="$(wget -qO - "${url}")"
->>>>>>> origin/0.12.0-dev
               else
                 error "mise standalone install specific version requires curl or wget but neither is installed. Aborting."
               fi
             fi
             # TODO: verify with minisign or gpg if available
 
-<<<<<<< HEAD
-            checksum="$(echo "$checksums" | grep "$os-$arch.$ext")"
-            if ! echo "$checksum" | grep -Eq "^([0-9a-f]{32}|[0-9a-f]{64})"; then
-              warn "no checksum for mise $version and $os-$arch"
-            else
-              echo "$checksum"
-=======
             checksum="$(echo "${checksums}" | grep "${os}-${arch}.${ext}")"
             if ! echo "${checksum}" | grep -Eq "^([0-9a-f]{32}|[0-9a-f]{64})"; then
               warn "no checksum for mise ${version} and ${os}-${arch}"
             else
               echo "${checksum}"
->>>>>>> origin/0.12.0-dev
             fi
           fi
         }
@@ -404,17 +277,10 @@ __mise_bootstrap() {
             curl -#fLo "$file" "$url"
           else
             if command -v wget >/dev/null 2>&1; then
-<<<<<<< HEAD
-              debug ">" wget -qO "$file" "$url"
-              stderr=$(mktemp)
-              wget -O "$file" "$url" >"$stderr" 2>&1 || error "wget failed: $(cat "$stderr")"
-              rm "$stderr"
-=======
               debug ">" wget -qO "${file}" "${url}"
               stderr=$(mktemp)
               wget -O "${file}" "${url}" >"${stderr}" 2>&1 || error "wget failed: $(cat "${stderr}" || true)"
               rm "${stderr}"
->>>>>>> origin/0.12.0-dev
             else
               error "mise standalone install requires curl or wget but neither is installed. Aborting."
             fi
@@ -428,38 +294,22 @@ __mise_bootstrap() {
         # nothing if the binary is missing or fails to report a version.
         installed_mise_version() {
           bin="$1"
-<<<<<<< HEAD
-          if [ -x "$bin" ]; then
-            installed_version="$("$bin" version 2>/dev/null | head -n1 | cut -d' ' -f1)"
-=======
           if [ -x "${bin}" ]; then
             installed_version="$("${bin}" version 2>/dev/null | head -n1 | cut -d' ' -f1 || true)"
->>>>>>> origin/0.12.0-dev
             echo "${installed_version#v}"
           fi
         }
 
         install_mise() {
-<<<<<<< HEAD
-          version="${MISE_VERSION:-v2026.9.16}"
-          version="${version#v}"
-          current_version="v2026.9.16"
-=======
           version="${MISE_VERSION:-v2026.9.17}"
           version="${version#v}"
           current_version="v2026.9.17"
->>>>>>> origin/0.12.0-dev
           current_version="${current_version#v}"
           os="${MISE_INSTALL_OS:-$(get_os)}"
           arch="${MISE_INSTALL_ARCH:-$(get_arch)}"
           ext="${MISE_INSTALL_EXT:-$(get_ext)}"
-<<<<<<< HEAD
-          install_path="${MISE_INSTALL_PATH:-$HOME/.local/bin/mise}"
-          install_dir="$(dirname "$install_path")"
-=======
           install_path="${MISE_INSTALL_PATH:-${HOME}/.local/bin/mise}"
           install_dir="$(dirname "${install_path}")"
->>>>>>> origin/0.12.0-dev
           install_from_github="${MISE_INSTALL_FROM_GITHUB:-}"
 
           # Opt-in: skip the download/install if the binary already at the install
@@ -475,17 +325,10 @@ __mise_bootstrap() {
               fi
             fi
           fi
-<<<<<<< HEAD
-          if [ "$version" != "$current_version" ] || [ "$install_from_github" = "1" ] || [ "$install_from_github" = "true" ]; then
-            tarball_url="https://github.com/jdx/mise/releases/download/v${version}/mise-v${version}-${os}-${arch}.${ext}"
-          elif [ -n "${MISE_TARBALL_URL-}" ]; then
-            tarball_url="$MISE_TARBALL_URL"
-=======
           if [ "${version}" != "${current_version}" ] || [ "${install_from_github}" = "1" ] || [ "${install_from_github}" = "true" ]; then
             tarball_url="https://github.com/jdx/mise/releases/download/v${version}/mise-v${version}-${os}-${arch}.${ext}"
           elif [ -n "${MISE_TARBALL_URL-}" ]; then
             tarball_url="${MISE_TARBALL_URL}"
->>>>>>> origin/0.12.0-dev
           else
             tarball_url="https://mise.jdx.dev/v${version}/mise-v${version}-${os}-${arch}.${ext}"
           fi
@@ -495,11 +338,7 @@ __mise_bootstrap() {
           debug "mise-setup: tarball=$cache_file"
 
           debug "validating checksum"
-<<<<<<< HEAD
-          cd "$(dirname "$cache_file")" && get_checksum "$version" "$os" "$arch" "$ext" | "$(shasum_bin)" -c >/dev/null
-=======
           cd "$(dirname "${cache_file}")" && get_checksum "${version}" "${os}" "${arch}" "${ext}" | "$(shasum_bin)" -c || true >/dev/null
->>>>>>> origin/0.12.0-dev
 
           # extract tarball
           if [ -d "$install_path" ]; then
@@ -508,23 +347,13 @@ __mise_bootstrap() {
           mkdir -p "$install_dir"
           rm -f "$install_path"
           extract_dir="$(mktemp -d)"
-<<<<<<< HEAD
-          cd "$extract_dir"
-          if [ "$ext" = "tar.zst" ] && ! tar_supports_zstd; then
-            zstd -d -c "$cache_file" | tar --no-same-owner -xf -
-=======
           cd "${extract_dir}"
           if [ "${ext}" = "tar.zst" ] && ! tar_supports_zstd; then
             zstd -d -c "${cache_file}" | tar --no-same-owner -xf - || true
->>>>>>> origin/0.12.0-dev
           else
             tar --no-same-owner -xf "$cache_file"
           fi
-<<<<<<< HEAD
-          if [ "$(id -u)" = "0" ]; then
-=======
           if [ "$(id -u || true)" = "0" ]; then
->>>>>>> origin/0.12.0-dev
             chown 0:0 mise/bin/mise
             chmod 755 mise/bin/mise
           fi
@@ -575,8 +404,4 @@ __mise_bootstrap() {
     test -f "$MISE_INSTALL_PATH" || install
 }
 __mise_bootstrap
-<<<<<<< HEAD
-exec -a "$0" "$MISE_INSTALL_PATH" "$@"
-=======
 exec -a "$0" "${MISE_INSTALL_PATH}" "$@"
->>>>>>> origin/0.12.0-dev
