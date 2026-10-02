@@ -38,7 +38,8 @@ class TestsFlextApiUtilitiesTransport:
         with u.Api.HttpxClient() as client:
             request = client.build_request("GET", "https://service.example/items")
         response: t.Api.HttpxResponse = u.Api.HttpxResponse(
-            int(c.Web.StatusCode.CONFLICT), request=request
+            int(c.Web.StatusCode.CONFLICT),
+            request=request,
         )
         with pytest.raises(u.Api.HttpxHTTPStatusError) as caught:
             response.raise_for_status()
@@ -54,8 +55,6 @@ class TestsFlextApiUtilitiesTransport:
             client.get("ftp://service.example/items")
         tm.that(isinstance(caught.value, u.Api.HttpxHTTPError), eq=True)
         tm.that(
-            issubclass(u.Api.HttpxTimeoutException, u.Api.HttpxRequestError), eq=True
+            issubclass(u.Api.HttpxTimeoutException, u.Api.HttpxRequestError),
+            eq=True,
         )
-
-
-__all__: list[str] = ["TestsFlextApiUtilitiesTransport"]

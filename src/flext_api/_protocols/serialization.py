@@ -1,11 +1,15 @@
-"""Serialization protocol contracts for flext-api internal composition."""
+"""Serialization protocol contracts for flext-api internal composition.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from .. import t
+    from flext_api import t
 
 
 @runtime_checkable

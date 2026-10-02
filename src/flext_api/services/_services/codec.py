@@ -1,10 +1,14 @@
-"""HTTP client serialization helpers."""
+"""HTTP client serialization helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 import httpx
 
-from ... import c, p, r, t, u
+from flext_api import c, p, r, t, u
 
 
 class FlextApiClientCodecMixin:
@@ -12,7 +16,11 @@ class FlextApiClientCodecMixin:
 
     @staticmethod
     def _deserialize_body(response: httpx.Response) -> p.Result[t.Api.ResponseBody]:
-        """Deserialize response body based on content-type."""
+        """Deserialize response body based on content-type.
+
+        Returns:
+            The resulting ``p.Result[t.Api.ResponseBody]``.
+        """
         content_type = response.headers.get("content-type", "").lower()
         if any(
             token in content_type for token in ("application/octet-stream", "binary")
@@ -33,25 +41,35 @@ class FlextApiClientCodecMixin:
             if result.success:
                 return result
         return r[t.Api.ResponseBody].fail(
-            "Failed to deserialize response body: no valid format found"
+            "Failed to deserialize response body: no valid format found",
         )
 
     @staticmethod
     def _deserialize_bytes(response: httpx.Response) -> p.Result[t.Api.ResponseBody]:
-        """Deserialize response as bytes."""
+        """Deserialize response as bytes.
+
+        Returns:
+            The resulting ``p.Result[t.Api.ResponseBody]``.
+        """
         return r[t.Api.ResponseBody].ok(response.content)
 
     @staticmethod
     def _deserialize_json(response: httpx.Response) -> p.Result[t.Api.ResponseBody]:
-        """Deserialize response as JSON."""
+        """Deserialize response as JSON.
+
+        Returns:
+            The resulting ``p.Result[t.Api.ResponseBody]``.
+        """
         json_result = u.Cli.json_loads(response.content)
         if json_result.failure:
             return r[t.Api.ResponseBody].fail_op(
-                "JSON deserialization", json_result.error
+                "JSON deserialization",
+                json_result.error,
             )
         try:
             validated: p.Result[t.Api.ResponseBody] = u.validate_value(
-                t.Api.RESPONSE_BODY_ADAPTER, json_result.value
+                t.Api.RESPONSE_BODY_ADAPTER,
+                json_result.value,
             )
         except (
             ValueError,
@@ -67,12 +85,20 @@ class FlextApiClientCodecMixin:
 
     @staticmethod
     def _deserialize_text(response: httpx.Response) -> p.Result[t.Api.ResponseBody]:
-        """Deserialize response as text."""
+        """Deserialize response as text.
+
+        Returns:
+            The resulting ``p.Result[t.Api.ResponseBody]``.
+        """
         return r[t.Api.ResponseBody].ok(response.text)
 
     @staticmethod
     def _serialize_body(body: t.Api.RequestBody | None) -> p.Result[bytes]:
-        """Serialize request body to bytes."""
+        """Serialize request body to bytes.
+
+        Returns:
+            The resulting ``p.Result[bytes]``.
+        """
         result: p.Result[bytes]
         if body is None or (isinstance(body, dict) and not body):
             result = r[bytes].ok(b"")
@@ -85,7 +111,8 @@ class FlextApiClientCodecMixin:
                 result = r[bytes].ok(t.Api.DICT_BODY_ADAPTER.dump_json(body))
             except c.EXC_TYPE_VALIDATION as exc:
                 result = r[bytes].fail(
-                    f"Failed to serialize body: {exc}", exception=exc
+                    f"Failed to serialize body: {exc}",
+                    exception=exc,
                 )
         else:
             result = r[bytes].fail("Request body must be bytes, str, or JSON object")

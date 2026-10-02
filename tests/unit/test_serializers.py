@@ -30,7 +30,9 @@ class TestsFlextApiSerializers:
         ],
     )
     def test_unpackb_valid_input_succeeds(
-        self, packed: bytes, expected: t.JsonValue
+        self,
+        packed: bytes,
+        expected: t.JsonValue,
     ) -> None:
         """Valid msgpack decodes to its JSON value inside a successful result."""
         result = u.Api.unpackb(packed)
@@ -56,7 +58,7 @@ class TestsFlextApiSerializers:
     def test_unpackb_success_supports_flat_map_combinator(self) -> None:
         """A successful result chains a further fallible step via flat_map()."""
         result = u.Api.unpackb(b"\x2a").flat_map(
-            lambda value: u.Api.unpackb(u.Api.packb(value))
+            lambda value: u.Api.unpackb(u.Api.packb(value)),
         )
 
         tm.that(result.success, eq=True)
@@ -133,6 +135,3 @@ class TestsFlextApiSerializers:
 
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
-
-
-__all__: list[str] = ["TestsFlextApiSerializers"]

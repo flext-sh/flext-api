@@ -1,4 +1,8 @@
-"""Common HTTP request execution helpers shared by sync and async clients."""
+"""Common HTTP request execution helpers shared by sync and async clients.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -6,11 +10,11 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from ... import c, m, p, r, t, u
-from . import FlextApiClientCodecMixin
+from flext_api import c, m, p, r, t, u
+from flext_api.services._services import FlextApiClientCodecMixin
 
 if TYPE_CHECKING:
-    from ... import FlextApiSettings
+    from flext_api import FlextApiSettings
 
 
 class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
@@ -23,7 +27,11 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         settings: FlextApiSettings
 
     def _build_url(self, path: str) -> p.Result[str]:
-        """Build full URL from base_url and path."""
+        """Build full URL from base_url and path.
+
+        Returns:
+            The resulting ``p.Result[str]``.
+        """
         # NOTE (multi-agent): mro-t9s9 — request defaults belong to this
         # client's injected runtime settings, never the global singleton.
         api_settings = self.settings.Api
@@ -39,13 +47,18 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         return r[str].ok(f"{base}{separator}{path_stripped}")
 
     def _prepare_request(
-        self, request: m.Api.HttpRequest
+        self,
+        request: m.Api.HttpRequest,
     ) -> p.Result[tuple[str, t.StrMapping, bytes, t.StrMapping]]:
-        """Prepare URL, headers, body, and extensions for HTTP request."""
+        """Prepare URL, headers, body, and extensions for HTTP request.
+
+        Returns:
+            The resulting ``p.Result[tuple[str, t.StrMapping, bytes, t.StrMapping]]``.
+        """
         url_result = self._build_url(request.url)
         if url_result.failure:
             return r[tuple[str, t.StrMapping, bytes, t.StrMapping]].from_failure(
-                url_result
+                url_result,
             )
         request_body: t.Api.RequestBody = (
             request.body if request.body is not None else b""
@@ -53,7 +66,7 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         body_result = self._serialize_body(request_body)
         if body_result.failure:
             return r[tuple[str, t.StrMapping, bytes, t.StrMapping]].from_failure(
-                body_result
+                body_result,
             )
         headers: t.StrMapping = {**self.settings.Api.default_headers, **request.headers}
         extensions: t.StrMapping = (
@@ -69,9 +82,14 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         ))
 
     def _handle_response(
-        self, response: httpx.Response
+        self,
+        response: httpx.Response,
     ) -> p.Result[m.Api.HttpResponse]:
-        """Process HTTP response into HttpResponse model."""
+        """Process HTTP response into HttpResponse model.
+
+        Returns:
+            The resulting ``p.Result[m.Api.HttpResponse]``.
+        """
         return self._deserialize_body(response).flat_map(
             lambda body: u.try_(
                 lambda: m.Api.HttpResponse(
@@ -82,13 +100,19 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
                     request_id="",
                 ),
                 catch=(c.ValidationError, ValueError, TypeError),
-            ).map_error(lambda exc: f"Response model validation failed: {exc}")
+            ).map_error(lambda exc: f"Response model validation failed: {exc}"),
         )
 
     def _handle_transport_error(
-        self, exc: Exception, op: str
+        self,
+        exc: Exception,
+        op: str,
     ) -> p.Result[m.Api.HttpResponse]:
-        """Convert transport exception to failure result."""
+        """Convert transport exception to failure result.
+
+        Returns:
+            The resulting ``p.Result[m.Api.HttpResponse]``.
+        """
         return r[m.Api.HttpResponse].fail_op(op, exc)
 
 

@@ -1,12 +1,16 @@
-"""FlextApi constants facade."""
+"""FlextApi constants facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from flext_web import FlextWebConstants
 
-from ._constants import FlextApiConstantsApi
-from ._constants.base import FlextApiConstantsBase
-from ._constants.config import FlextApiConstantsConfig
+from flext_api._constants import FlextApiConstantsApi
+from flext_api._constants.base import FlextApiConstantsBase
+from flext_api._constants.config import FlextApiConstantsConfig
 
 
 class FlextApiConstants(FlextWebConstants):

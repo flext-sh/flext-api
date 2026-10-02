@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from .. import c, m, t
+from flext_api import c, m, t
 
 
 class FlextApiTransportsConfigMixin:
@@ -17,29 +17,45 @@ class FlextApiTransportsConfigMixin:
 
     @staticmethod
     def _client_timeout(options: t.MappingKV[str, t.JsonValue]) -> float:
-        """Resolve the httpx timeout option from validated scalar inputs."""
+        """Resolve the httpx timeout option from validated scalar inputs.
+
+        Returns:
+            The resulting ``float``.
+        """
         raw_timeout = options.get("timeout")
         return (
             float(raw_timeout)
-            if isinstance(raw_timeout, t.NUMERIC_TYPES)
+            if isinstance(raw_timeout, c.NUMERIC_TYPES)
             else c.Api.DEFAULT_TIMEOUT
         )
 
     @staticmethod
     def _client_follow_redirects(options: t.MappingKV[str, t.JsonValue]) -> bool:
-        """Resolve the httpx follow-redirects option."""
+        """Resolve the httpx follow-redirects option.
+
+        Returns:
+            The resulting ``bool``.
+        """
         raw_follow_redirects = options.get("follow_redirects")
         return raw_follow_redirects if isinstance(raw_follow_redirects, bool) else True
 
     @staticmethod
     def _client_max_redirects(options: t.MappingKV[str, t.JsonValue]) -> int:
-        """Resolve the httpx maximum redirects option."""
+        """Resolve the httpx maximum redirects option.
+
+        Returns:
+            The resulting ``int``.
+        """
         raw_max_redirects = options.get("max_redirects")
         return raw_max_redirects if isinstance(raw_max_redirects, int) else 20
 
     @staticmethod
     def _response_mapping(response: m.Api.HttpResponse) -> t.Api.HttpResponseDict:
-        """Convert the central response model to the public mapping contract."""
+        """Convert the central response model to the public mapping contract.
+
+        Returns:
+            The resulting ``t.Api.HttpResponseDict``.
+        """
         return {
             "status_code": response.status_code,
             "headers": response.headers,

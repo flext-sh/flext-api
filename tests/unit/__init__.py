@@ -1,47 +1,25 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Tests.unit package."""
+"""Tests.unit package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
-
-if TYPE_CHECKING:
-    from .model_contract import TestsFlextApiModelContract
-    from .test_async_client import TestsFlextApiAsyncClientSmoke
-    from .test_response_wire_content import TestsFlextApiResponseWireContent
-    from .test_serializers import TestsFlextApiSerializers
-    from .test_smoke import TestsFlextApiSmoke
-    from .test_transports_facade_httpx import TestsFlextApiHttpxContracts
-    from .test_utilities_transport import TestsFlextApiUtilitiesTransport
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 
-__all__: tuple[str, ...] = (
-    "TestsFlextApiAsyncClientSmoke",
-    "TestsFlextApiHttpxContracts",
-    "TestsFlextApiModelContract",
-    "TestsFlextApiResponseWireContent",
-    "TestsFlextApiSerializers",
-    "TestsFlextApiSmoke",
-    "TestsFlextApiUtilitiesTransport",
-)
+__all__: tuple[str, ...] = ()
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
-        MappingProxyType({
-            ".model_contract": ("TestsFlextApiModelContract",),
-            ".test_async_client": ("TestsFlextApiAsyncClientSmoke",),
-            ".test_response_wire_content": ("TestsFlextApiResponseWireContent",),
-            ".test_serializers": ("TestsFlextApiSerializers",),
-            ".test_smoke": ("TestsFlextApiSmoke",),
-            ".test_transports_facade_httpx": ("TestsFlextApiHttpxContracts",),
-            ".test_utilities_transport": ("TestsFlextApiUtilitiesTransport",),
-        }),
+        MappingProxyType({}),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

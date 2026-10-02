@@ -15,8 +15,7 @@ import pytest
 from flext_tests import tm
 
 from flext_api import FlextApiAsyncClient, FlextApiSettings
-
-from .model_contract import TestsFlextApiModelContract
+from tests.unit.model_contract import TestsFlextApiModelContract
 
 
 class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
@@ -38,7 +37,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
     async def test_async_client_execute_reports_success(self) -> None:
         """A configured async client executes its lifecycle successfully."""
         client = FlextApiAsyncClient(
-            runtime_settings=FlextApiSettings(base_url="https://service.example")
+            runtime_settings=FlextApiSettings(base_url="https://service.example"),
         )
         result = client.execute()
         tm.that(result.success, eq=True)
@@ -50,7 +49,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
     async def test_async_client_request_method_is_async(self) -> None:
         """Async client request method is a coroutine function."""
         client = FlextApiAsyncClient(
-            runtime_settings=FlextApiSettings(base_url="https://httpbin.org")
+            runtime_settings=FlextApiSettings(base_url="https://httpbin.org"),
         )
         tm.that(inspect.iscoroutinefunction(client.request), eq=True)
 
@@ -72,7 +71,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
     async def test_async_client_same_interface_as_sync(self) -> None:
         """Async client mirrors sync client's public properties and methods."""
         client = FlextApiAsyncClient(
-            runtime_settings=FlextApiSettings(base_url="https://service.example")
+            runtime_settings=FlextApiSettings(base_url="https://service.example"),
         )
 
         # Same properties
@@ -89,6 +88,3 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
 
         # Verify request is async
         tm.that(inspect.iscoroutinefunction(client.request), eq=True)
-
-
-__all__: list[str] = ["TestsFlextApiAsyncClientSmoke"]

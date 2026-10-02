@@ -1,20 +1,24 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Flext Api. Utilities package."""
+"""Flext Api. Utilities package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from .api_pydantic import FlextApiUtilitiesApiPydantic
-    from .base import FlextApiUtilitiesBase
-    from .request_utils import FlextApiUtilitiesRequestUtils
-    from .serializers import FlextApiUtilitiesSerializers
-    from .settings_manager import FlextApiUtilitiesSettingsManager
-    from .transport import FlextApiUtilitiesTransport
+    from flext_api._utilities.api_pydantic import FlextApiUtilitiesApiPydantic
+    from flext_api._utilities.base import FlextApiUtilitiesBase
+    from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
+    from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
+    from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
+    from flext_api._utilities.transport import FlextApiUtilitiesTransport
 
 
 __all__: tuple[str, ...] = (
@@ -38,7 +42,7 @@ _LAZY_IMPORTS = MappingProxyType(
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

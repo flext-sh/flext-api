@@ -1,10 +1,14 @@
-"""Common HTTP client base class shared by sync and async clients."""
+"""Common HTTP client base class shared by sync and async clients.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import override
 
-from .. import p, r, s, t, u
+from flext_api import p, r, s, t, u
 
 
 class FlextApiClientBase(s[bool]):
@@ -22,10 +26,15 @@ class FlextApiClientBase(s[bool]):
 
     @override
     def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
-        """Execute service lifecycle parity."""
+        """Execute service lifecycle parity.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         if kwargs:
             u.fetch_logger(__name__).info(
-                "Execute called with kwargs keys: %s", list(kwargs.keys())
+                "Execute called with kwargs keys: %s",
+                list(kwargs.keys()),
             )
         return r[bool].ok(True)
 

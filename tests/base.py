@@ -1,4 +1,8 @@
-"""Service base for flext-api tests."""
+"""Service base for flext-api tests.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -21,4 +25,6 @@ class TestsFlextApiServiceBase(tests_s):
         return m.RuntimeBootstrapOptions(settings_type=TestsFlextApiSettings)
 
 
-__all__: list[str] = ["TestsFlextApiServiceBase"]
+s = TestsFlextApiServiceBase
+
+__all__: list[str] = ["TestsFlextApiServiceBase", "s"]

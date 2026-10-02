@@ -15,7 +15,7 @@ from collections.abc import Mapping, MutableMapping
 
 from flext_web import u
 
-from .. import c, m, p, r, t
+from flext_api import c, m, p, r, t
 
 
 class FlextApiUtilitiesSettingsManager:
@@ -34,10 +34,14 @@ class FlextApiUtilitiesSettingsManager:
 
     @classmethod
     def configure(cls, settings: t.ScalarMapping | None = None) -> p.Result[bool]:
-        """Configure client settings through canonical ClientConfig model."""
+        """Configure client settings through canonical ClientConfig model.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         try:
             client_config_result = cls._build_client_config(
-                {} if settings is None else settings
+                {} if settings is None else settings,
             )
             if client_config_result.failure:
                 cls._client_config = None
@@ -50,16 +54,26 @@ class FlextApiUtilitiesSettingsManager:
 
     @classmethod
     def client_config(cls) -> p.Result[m.Api.ClientConfig]:
-        """Get validated client configuration - no fallbacks."""
+        """Get validated client configuration - no fallbacks.
+
+        Returns:
+            The resulting ``p.Result[m.Api.ClientConfig]``.
+        """
         if cls._client_config is not None:
             return r[m.Api.ClientConfig].ok(cls._client_config)
         return r[m.Api.ClientConfig].fail("No configuration set")
 
     @staticmethod
     def _normalize_value(
-        key: str, *, value: t.Scalar | t.StrMapping
+        key: str,
+        *,
+        value: t.Scalar | t.StrMapping,
     ) -> p.Result[t.JsonPayload]:
-        """Normalize configuration value based on key type - no fallbacks."""
+        """Normalize configuration value based on key type - no fallbacks.
+
+        Returns:
+            The resulting ``p.Result[t.JsonPayload]``.
+        """
         result: p.Result[t.JsonPayload]
         match key:
             case "headers" if isinstance(value, Mapping):
@@ -91,11 +105,16 @@ class FlextApiUtilitiesSettingsManager:
 
     @staticmethod
     def _build_client_config(settings: t.ScalarMapping) -> p.Result[m.Api.ClientConfig]:
-        """Build typed ClientConfig from scalar settings payload."""
+        """Build typed ClientConfig from scalar settings payload.
+
+        Returns:
+            The resulting ``p.Result[m.Api.ClientConfig]``.
+        """
         processed: MutableMapping[str, t.JsonPayload] = {}
         for key, raw_value in settings.items():
             normalize_result = FlextApiUtilitiesSettingsManager._normalize_value(
-                key, value=raw_value
+                key,
+                value=raw_value,
             )
             if normalize_result.failure:
                 return r[m.Api.ClientConfig].from_failure(normalize_result)
@@ -103,17 +122,17 @@ class FlextApiUtilitiesSettingsManager:
         headers_value = processed.get("headers", {})
         if not isinstance(headers_value, Mapping):
             return r[m.Api.ClientConfig].fail(
-                f"Invalid headers type: {type(headers_value)}"
+                f"Invalid headers type: {type(headers_value)}",
             )
         timeout_result = u.try_(
             lambda: t.Api.FLOAT_ADAPTER.validate_python(
-                processed.get("timeout", c.Api.DEFAULT_TIMEOUT)
+                processed.get("timeout", c.Api.DEFAULT_TIMEOUT),
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )
         retries_result = u.try_(
             lambda: t.Api.INTEGER_ADAPTER.validate_python(
-                processed.get("max_retries", c.MAX_RETRY_ATTEMPTS)
+                processed.get("max_retries", c.MAX_RETRY_ATTEMPTS),
             ),
             catch=(c.ValidationError, TypeError, ValueError),
         )
@@ -128,7 +147,8 @@ class FlextApiUtilitiesSettingsManager:
         for result in (timeout_result, retries_result, headers_result, verify_result):
             if result.failure:
                 return r[m.Api.ClientConfig].fail_op(
-                    "Client configuration validation", result.error
+                    "Client configuration validation",
+                    result.error,
                 )
         config_model = m.Api.ClientConfig(
             base_url=str(processed.get("base_url", c.Api.DEFAULT_BASE_URL)),

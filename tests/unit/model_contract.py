@@ -1,4 +1,8 @@
-"""Shared model contract tests for flext-api HTTP request/response models."""
+"""Shared model contract tests for flext-api HTTP request/response models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -38,7 +42,9 @@ class TestsFlextApiModelContract:
         ],
     )
     def test_http_request_content_type_derives_from_headers(
-        self, headers: t.StrMapping, expected: str
+        self,
+        headers: t.StrMapping,
+        expected: str,
     ) -> None:
         """content_type computed field reflects headers, defaulting to JSON."""
         request = m.Api.HttpRequest.model_validate({
@@ -145,13 +151,11 @@ class TestsFlextApiModelContract:
         tm.that(packed, is_=bytes, length_gt=0)
 
     @pytest.mark.parametrize(
-        "original", [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}]
+        "original",
+        [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}],
     )
     def test_packb_unpackb_is_lossless_roundtrip(self, original: t.JsonMapping) -> None:
         """Packing then unpacking reproduces the original payload."""
         result = u.Api.unpackb(u.Api.packb(original))
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=original)
-
-
-__all__: list[str] = ["TestsFlextApiModelContract"]

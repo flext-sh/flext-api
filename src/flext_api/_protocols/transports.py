@@ -15,8 +15,8 @@ from typing import TYPE_CHECKING, ClassVar, Protocol, override, runtime_checkabl
 
 import httpx
 
-from .. import c, m, r, t
-from . import (
+from flext_api import c, m, r, t
+from flext_api._protocols import (
     FlextApiProtocolsBase as pb,
     FlextApiTransportsConfigMixin,
     FlextApiTransportsRequestMixin,
@@ -58,7 +58,11 @@ class FlextApiProtocolsTransports:
 
         @override
         def connect(self, url: str, **options: t.JsonValue) -> p.Result[str]:
-            """Connect to HTTP endpoint."""
+            """Connect to HTTP endpoint.
+
+            Returns:
+                The resulting ``p.Result[str]``.
+            """
             if not url:
                 return r[str].fail("URL is required for HTTP connection")
             timeout = self._client_timeout(options)
@@ -76,7 +80,11 @@ class FlextApiProtocolsTransports:
 
         @override
         def disconnect(self, connection: str) -> p.Result[bool]:
-            """Disconnect HTTP connection."""
+            """Disconnect HTTP connection.
+
+            Returns:
+                The resulting ``p.Result[bool]``.
+            """
             try:
                 _ = connection
                 if self._client is not None:
@@ -88,11 +96,18 @@ class FlextApiProtocolsTransports:
 
         @override
         def send(
-            self, connection: str, data: t.JsonMapping | t.Api.RequestBody
+            self,
+            connection: str,
+            data: t.JsonMapping | t.Api.RequestBody,
         ) -> p.Result[t.Api.HttpResponseDict | str]:
-            """Send HTTP request."""
+            """Send HTTP request.
+
+            Returns:
+                The resulting ``p.Result[t.Api.HttpResponseDict | str]``.
+            """
             params_result = self._extract_request_params(
-                data, connection_url=connection
+                data,
+                connection_url=connection,
             )
             if params_result.failure:
                 return r[t.Api.HttpResponseDict | str].from_failure(params_result)
@@ -100,13 +115,18 @@ class FlextApiProtocolsTransports:
             if response_result.failure:
                 return r[t.Api.HttpResponseDict | str].from_failure(response_result)
             return r[t.Api.HttpResponseDict | str].ok(
-                self._response_mapping(response_result.value)
+                self._response_mapping(response_result.value),
             )
 
         def request_model(
-            self, request: m.Api.HttpRequest
+            self,
+            request: m.Api.HttpRequest,
         ) -> p.Result[m.Api.HttpResponse]:
-            """Public wrapper around request-model execution for protocol consumers."""
+            """Public wrapper around request-model execution for protocol consumers.
+
+            Returns:
+                The resulting ``p.Result[m.Api.HttpResponse]``.
+            """
             return self._request_model(request)
 
 

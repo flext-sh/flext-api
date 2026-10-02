@@ -25,7 +25,8 @@ class TestsFlextApiTransportsCharacterization:
         return p.Api.FlextWebTransport()
 
     def test_connect_rejects_empty_url(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Connecting with an empty URL fails with a required-URL error."""
         result = transport.connect("")
@@ -43,7 +44,9 @@ class TestsFlextApiTransportsCharacterization:
         ],
     )
     def test_connect_accepts_url_and_echoes_it(
-        self, transport: p.Api.FlextWebTransport, url: str
+        self,
+        transport: p.Api.FlextWebTransport,
+        url: str,
     ) -> None:
         """A valid URL connects successfully and is echoed back as the value."""
         result = transport.connect(url)
@@ -64,7 +67,9 @@ class TestsFlextApiTransportsCharacterization:
         ],
     )
     def test_connect_accepts_documented_client_options(
-        self, transport: p.Api.FlextWebTransport, options: t.MappingKV[str, t.JsonValue]
+        self,
+        transport: p.Api.FlextWebTransport,
+        options: t.MappingKV[str, t.JsonValue],
     ) -> None:
         """Each documented client-option combination still connects successfully."""
         # connect's public signature accepts optional httpx client options; each
@@ -75,7 +80,8 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.value, eq="https://example.test")
 
     def test_disconnect_after_connect_succeeds(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Disconnecting an established connection reports success."""
         _ = transport.connect("https://example.test")
@@ -86,7 +92,8 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.value, eq=True)
 
     def test_disconnect_without_connect_is_idempotent(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Disconnecting without a prior connect is idempotent and succeeds."""
         result = transport.disconnect("https://example.test")
@@ -96,7 +103,8 @@ class TestsFlextApiTransportsCharacterization:
 
     @pytest.mark.slow
     def test_disconnect_twice_stays_successful(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Disconnecting twice stays successful and returns the disconnected state."""
         _ = transport.connect("https://example.test")
@@ -109,7 +117,8 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(second.value, eq=True)
 
     def test_send_without_connect_reports_disconnected_failure(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Sending without connecting fails with a not-connected error."""
         result = transport.send("https://example.test", {"method": "GET"})
@@ -119,7 +128,8 @@ class TestsFlextApiTransportsCharacterization:
 
     @pytest.mark.slow
     def test_send_after_disconnect_reports_disconnected_failure(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Sending after disconnect fails with a not-connected error."""
         _ = transport.connect("https://example.test")
@@ -131,11 +141,14 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(str(result.error), has="not connected")
 
     def test_request_model_without_connect_reports_disconnected_failure(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """request_model without connecting fails with a not-connected error."""
         request = m.Api.HttpRequest(
-            url="https://example.test", method="GET", timeout=30.0
+            url="https://example.test",
+            method="GET",
+            timeout=30.0,
         )
 
         result = transport.request_model(request)
@@ -144,7 +157,8 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(str(result.error), has="not connected")
 
     def test_transport_satisfies_transport_plugin_protocol(
-        self, transport: p.Api.FlextWebTransport
+        self,
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """The transport satisfies the TransportPlugin protocol contract."""
         tm.that(transport, is_=p.Api.TransportPlugin)

@@ -20,9 +20,13 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         u.Cli.formatters_print(str(message))
 
     def build_request(self) -> p.Result[m.Api.HttpRequest]:
-        """Build a validated HTTP request through the public utility facade."""
+        """Build a validated HTTP request through the public utility facade.
+
+        Returns:
+            The resulting ``p.Result[m.Api.HttpRequest]``.
+        """
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
-            str(settings.Api.timeout)
+            str(settings.Api.timeout),
         )
         if timeout_result.failure:
             timeout_failure: p.Result[m.Api.HttpRequest] = r[
@@ -44,13 +48,18 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             return payload_failure
 
         request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
-            payload_result.value.root, m.Api.HttpRequest
+            payload_result.value.root,
+            m.Api.HttpRequest,
         )
         return request_result
 
     @staticmethod
     def build_response(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        """Build a response model without leaving the public API surface."""
+        """Build a response model without leaving the public API surface.
+
+        Returns:
+            The resulting ``p.Result[m.Api.HttpResponse]``.
+        """
         response_payload: t.JsonMapping = {
             "status_code": c.Api.HTTP_SUCCESS_MIN,
             "body": {
@@ -61,13 +70,17 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             "request_id": "example-request",
         }
         response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
-            m.Api.HttpResponse.model_validate(response_payload)
+            m.Api.HttpResponse.model_validate(response_payload),
         )
         return response_result
 
     @override
     def execute(self) -> p.Result[t.JsonMapping]:
-        """Run the public basic-usage flow through typed examples aliases."""
+        """Run the public basic-usage flow through typed examples aliases.
+
+        Returns:
+            The resulting ``p.Result[t.JsonMapping]``.
+        """
         self._emit("FLEXT API - Basic Usage")
         self._emit("=======================")
 
@@ -84,7 +97,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         execute_result = api.execute(example="basic-usage")
         if execute_result.failure:
             execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
-                execute_result
+                execute_result,
             )
             return execute_failure
         self._emit(f"Facade ready: base_url={api.settings.Api.base_url}")
@@ -93,7 +106,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         request_result = self.build_request()
         if request_result.failure:
             request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
-                request_result
+                request_result,
             )
             return request_failure
         request = request_result.value
@@ -103,17 +116,17 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         response_result = self.build_response(request)
         if response_result.failure:
             response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
-                response_result
+                response_result,
             )
             return response_failure
         response = response_result.value
         self._emit(
-            f"Response ok: status={response.status_code}, success={response.success}"
+            f"Response ok: status={response.status_code}, success={response.success}",
         )
 
         self._emit("\n4. Storage models + railway result ergonomics")
         entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
-            response.body or {}
+            response.body or {},
         )
         namespace = type(self).__name__.lower()
         ttl = int(settings.Api.timeout)
@@ -144,7 +157,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         self._emit(
             "Result contract: "
             f"ok.success={r[str].ok('ready').success}, "
-            f"fail.failure={r[str].fail('example failure').failure}"
+            f"fail.failure={r[str].fail('example failure').failure}",
         )
 
         summary: t.JsonMapping = {

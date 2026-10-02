@@ -10,7 +10,7 @@ from typing import ClassVar
 
 import httpx
 
-from .. import t
+from flext_api import t
 
 
 class FlextApiUtilitiesTransport:

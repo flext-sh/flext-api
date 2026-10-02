@@ -1,4 +1,8 @@
-"""Public HTTP client contract for parsed and exact response payloads."""
+"""Public HTTP client contract for parsed and exact response payloads.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -43,13 +47,10 @@ class TestsFlextApiResponseWireContent:
         payload = b'{"answer":"ok"}'
         with self._server(payload) as base_url:
             client = FlextApiClient(
-                runtime_settings=FlextApiSettings(base_url=base_url)
+                runtime_settings=FlextApiSettings(base_url=base_url),
             )
             result = client.request(m.Api.HttpRequest(url=base_url, method="GET"))
 
         tm.that(result.success, eq=True)
         tm.that(result.value.content, eq=payload)
         tm.that(result.value.body, eq={"answer": "ok"})
-
-
-__all__: list[str] = ["TestsFlextApiResponseWireContent"]

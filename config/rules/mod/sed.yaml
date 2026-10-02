@@ -18,3 +18,13 @@ rules:
     distributions: [flext-api]
     find: '\bu\.TypeAdapter\('
     replace: 'u.type_adapter('
+  - id: api-tests-service-facade
+    description: Publish the test service base from its own source module.
+    include: [tests/base.py]
+    distributions: [flext-api]
+    find: '^__all__: list\[str\] = \["TestsFlextApiServiceBase"\]$'
+    replace: |-
+      s = TestsFlextApiServiceBase
+
+      __all__: list[str] = ["TestsFlextApiServiceBase", "s"]
+    flags: [MULTILINE]

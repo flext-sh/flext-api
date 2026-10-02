@@ -1,4 +1,8 @@
-"""API client configuration models."""
+"""API client configuration models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -39,10 +43,12 @@ class FlextApiModelsClient:
             u.Field(default=c.MAX_RETRY_ATTEMPTS, description="Maximum retry attempts"),
         ]
         headers: Annotated[
-            t.StrMapping, u.Field(description="Default headers for all requests")
+            t.StrMapping,
+            u.Field(description="Default headers for all requests"),
         ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         verify_ssl: Annotated[
-            bool, u.Field(default=True, description="Verify SSL certificates")
+            bool,
+            u.Field(default=True, description="Verify SSL certificates"),
         ]
 
         # Why: bare form (no return_type kwarg) resolves to the positional
