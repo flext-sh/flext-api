@@ -20,6 +20,7 @@ from flext_api.__version__ import (
     __version__,
     __version_info__,
 )
+
 from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
