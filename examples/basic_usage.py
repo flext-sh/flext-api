@@ -39,8 +39,10 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             method=c.Api.Method.GET,
             url=f"{settings.Api.base_url.rstrip('/')}/resources",
             headers={"accept": c.Api.ContentType.JSON.value},
-            request_kwargs={"params": {"page": 1, "active": True}},
-            timeout=timeout_result.value,
+            request_kwargs={
+                "params": {"page": 1, "active": True},
+                "timeout": timeout_result.value,
+            },
         )
         if payload_result.failure:
             payload_failure: p.Result[m.Api.HttpRequest] = r[
@@ -75,6 +77,64 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         )
         return response_result
 
+    @staticmethod
+    def build_storage(
+        response: m.Api.HttpResponse,
+    ) -> p.Result[tuple[m.Api.StorageState, m.Api.StorageStats]]:
+        """Build storage state and stats from one validated response.
+
+        Returns:
+            The resulting ``p.Result[tuple[m.Api.StorageState, m.Api.StorageStats]]``.
+        """
+        entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
+            response.body or {},
+        )
+        namespace = FlextApiExamplesBasicUsage.__name__.lower()
+        ttl = int(settings.Api.timeout)
+        # NOTE (multi-agent): avoid shadowing the module-level ``settings``
+        # singleton (ADR-005 namespaced settings); use a distinct local name.
+        storage_settings = m.Api.StorageSettings(namespace=namespace, default_ttl=ttl)
+        entry = m.Api.StorageMetadata.model_validate({
+            "value": entry_value,
+            "timestamp": u.generate_iso_timestamp(),
+            "ttl": storage_settings.default_ttl,
+        })
+        state = m.Api.StorageState(
+            entries={"latest-response": entry},
+            operations_count=2,
+            cache_hits=1,
+            cache_misses=0,
+        )
+        stats = m.Api.StorageStats(
+            total_operations=state.operations_count,
+            cache_hits=state.cache_hits,
+            cache_misses=state.cache_misses,
+            storage_size=len(state.entries),
+            memory_usage=len(repr(state.entries)),
+            namespace=storage_settings.namespace,
+        )
+        return r[tuple[m.Api.StorageState, m.Api.StorageStats]].ok((state, stats))
+
+    @staticmethod
+    def setup_facade() -> p.Result[FlextApi]:
+        """Initialize the facade and emit the runtime settings snapshot.
+
+        Returns:
+            The resulting ``p.Result[FlextApi]``.
+        """
+        runtime_snapshot: t.JsonValue = {
+            "base_url": settings.Api.base_url,
+            "timeout": settings.Api.timeout,
+            "max_retries": settings.Api.max_retries,
+            "verify_ssl": settings.Api.verify_ssl,
+        }
+        u.Cli.formatters_print(str(runtime_snapshot))
+        api = FlextApi()
+        execute_result = api.execute(example="basic-usage")
+        if execute_result.failure:
+            return r[FlextApi].from_failure(execute_result)
+        return r[FlextApi].ok(api)
+
     @override
     def execute(self) -> p.Result[t.JsonMapping]:
         """Run the public basic-usage flow through typed examples aliases.
@@ -86,21 +146,13 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         self._emit("=======================")
 
         self._emit("\n1. Setup via s/base.py")
-        runtime_snapshot: t.JsonValue = {
-            "base_url": settings.Api.base_url,
-            "timeout": settings.Api.timeout,
-            "max_retries": settings.Api.max_retries,
-            "verify_ssl": settings.Api.verify_ssl,
-        }
-        self._emit(runtime_snapshot)
-
-        api = FlextApi()
-        execute_result = api.execute(example="basic-usage")
-        if execute_result.failure:
-            execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
-                execute_result,
+        facade_result = self.setup_facade()
+        if facade_result.failure:
+            facade_failure: p.Result[FlextApi] = r[FlextApi].from_failure(
+                facade_result,
             )
-            return execute_failure
+            return facade_failure
+        api = facade_result.value
         self._emit(f"Facade ready: base_url={api.settings.Api.base_url}")
 
         self._emit("\n2. Request normalization via u.Api.RequestUtils")
@@ -126,33 +178,15 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         )
 
         self._emit("\n4. Storage models + railway result ergonomics")
-        entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
-            response.body or {},
-        )
-        namespace = type(self).__name__.lower()
-        ttl = int(settings.Api.timeout)
-        # NOTE (multi-agent): avoid shadowing the module-level ``settings``
-        # singleton (ADR-005 namespaced settings); use a distinct local name.
-        storage_settings = m.Api.StorageSettings(namespace=namespace, default_ttl=ttl)
-        entry = m.Api.StorageMetadata.model_validate({
-            "value": entry_value,
-            "timestamp": u.generate_iso_timestamp(),
-            "ttl": storage_settings.default_ttl,
-        })
-        state = m.Api.StorageState(
-            entries={"latest-response": entry},
-            operations_count=2,
-            cache_hits=1,
-            cache_misses=0,
-        )
-        stats = m.Api.StorageStats(
-            total_operations=state.operations_count,
-            cache_hits=state.cache_hits,
-            cache_misses=state.cache_misses,
-            storage_size=len(state.entries),
-            memory_usage=len(repr(state.entries)),
-            namespace=storage_settings.namespace,
-        )
+        storage_pair = self.build_storage(response)
+        if storage_pair.failure:
+            storage_failure: p.Result[tuple[m.Api.StorageState, m.Api.StorageStats]] = (
+                r[tuple[m.Api.StorageState, m.Api.StorageStats]].from_failure(
+                    storage_pair,
+                )
+            )
+            return storage_failure
+        state, stats = storage_pair.value
         self._emit(f"Storage entry: {state.entries['latest-response'].value}")
         self._emit(f"Stats: {stats.model_dump(mode='python')}")
         self._emit(
