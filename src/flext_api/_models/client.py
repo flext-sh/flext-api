@@ -7,12 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Annotated, ClassVar
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
 from flext_web import m, u
 
 from flext_api.constants import c
-from flext_api.typings import t
+
+if TYPE_CHECKING:
+    from flext_api.typings import t
 
 
 class FlextApiModelsClient:

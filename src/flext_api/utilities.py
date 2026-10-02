@@ -6,9 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_web import FlextWebUtilities
 
-from flext_api import t
+if TYPE_CHECKING:
+    from flext_api import t
 from flext_api._utilities import (
     FlextApiUtilitiesApiPydantic,
     FlextApiUtilitiesRequestUtils,

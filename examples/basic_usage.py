@@ -19,7 +19,8 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         """Render example output through the canonical CLI facade."""
         u.Cli.formatters_print(str(message))
 
-    def build_request(self) -> p.Result[m.Api.HttpRequest]:
+    @staticmethod
+    def build_request() -> p.Result[m.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade.
 
         Returns:
@@ -38,8 +39,10 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             method=c.Api.Method.GET,
             url=f"{settings.Api.base_url.rstrip('/')}/resources",
             headers={"accept": c.Api.ContentType.JSON.value},
-            request_kwargs={"params": {"page": 1, "active": True}},
-            timeout=timeout_result.value,
+            request_kwargs={
+                "params": {"page": 1, "active": True},
+                "timeout": timeout_result.value,
+            },
         )
         if payload_result.failure:
             payload_failure: p.Result[m.Api.HttpRequest] = r[
@@ -125,10 +128,35 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         )
 
         self._emit("\n4. Storage models + railway result ergonomics")
+        state = self._emit_storage_demo(response)
+        self._emit(
+            "Result contract: "
+            f"ok.success={r[str].ok('ready').success}, "
+            f"fail.failure={r[str].fail('example failure').failure}",
+        )
+
+        summary: t.JsonMapping = {
+            "base_url": api.settings.Api.base_url,
+            "request_method": str(request.method),
+            "response_status": response.status_code,
+            "storage_entries": len(state.entries),
+            "result_contract": "public-r",
+        }
+        self._emit("\nExamples completed")
+        summary_result: p.Result[t.JsonMapping] = r[t.JsonMapping].ok(summary)
+        return summary_result
+
+    @staticmethod
+    def _emit_storage_demo(response: m.Api.HttpResponse) -> m.Api.StorageState:
+        """Exercise storage models and railway result ergonomics for one response.
+
+        Returns:
+            The resulting ``m.Api.StorageState``.
+        """
         entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
             response.body or {},
         )
-        namespace = type(self).__name__.lower()
+        namespace = FlextApiExamplesBasicUsage.__name__.lower()
         ttl = int(settings.Api.timeout)
         # NOTE (multi-agent): avoid shadowing the module-level ``settings``
         # singleton (ADR-005 namespaced settings); use a distinct local name.
@@ -152,24 +180,11 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             memory_usage=len(repr(state.entries)),
             namespace=storage_settings.namespace,
         )
-        self._emit(f"Storage entry: {state.entries['latest-response'].value}")
-        self._emit(f"Stats: {stats.model_dump(mode='python')}")
-        self._emit(
-            "Result contract: "
-            f"ok.success={r[str].ok('ready').success}, "
-            f"fail.failure={r[str].fail('example failure').failure}",
+        FlextApiExamplesBasicUsage._emit(
+            f"Storage entry: {state.entries['latest-response'].value}",
         )
-
-        summary: t.JsonMapping = {
-            "base_url": api.settings.Api.base_url,
-            "request_method": str(request.method),
-            "response_status": response.status_code,
-            "storage_entries": len(state.entries),
-            "result_contract": "public-r",
-        }
-        self._emit("\nExamples completed")
-        summary_result: p.Result[t.JsonMapping] = r[t.JsonMapping].ok(summary)
-        return summary_result
+        FlextApiExamplesBasicUsage._emit(f"Stats: {stats.model_dump(mode='python')}")
+        return state
 
     @classmethod
     def main(cls) -> None:

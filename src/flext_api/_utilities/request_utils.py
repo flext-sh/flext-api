@@ -149,7 +149,6 @@ class FlextApiUtilitiesRequestUtils:
             data: t.Api.RequestBody | None = None,
             headers: t.StrMapping | None = None,
             request_kwargs: t.Api.RequestKwargs | None = None,
-            timeout: float | str | None = None,
         ) -> p.Result[m.ConfigMap]:
             """Build one normalized request payload for HttpRequest validation.
 
@@ -164,7 +163,7 @@ class FlextApiUtilitiesRequestUtils:
             if headers_result.failure:
                 return r[m.ConfigMap].from_failure(headers_result)
             timeout_result = request_utils.validate_and_extract_timeout(
-                timeout,
+                None,
                 request_kwargs,
             )
             if timeout_result.failure:

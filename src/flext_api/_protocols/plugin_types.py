@@ -39,7 +39,8 @@ class FlextApiProtocolPluginTypes:
             self.description = description
             self.logger = u.fetch_logger(__name__)
 
-        def initialize(self) -> p.Result[bool]:
+        @staticmethod
+        def initialize() -> p.Result[bool]:
             """Initialize plugin resources.
 
             Returns:
@@ -47,7 +48,8 @@ class FlextApiProtocolPluginTypes:
             """
             return r[bool].ok(value=True)
 
-        def shutdown(self) -> p.Result[bool]:
+        @staticmethod
+        def shutdown() -> p.Result[bool]:
             """Shutdown plugin resources.
 
             Returns:
@@ -61,7 +63,8 @@ class FlextApiProtocolPluginTypes:
     class Protocol(_FlextApiPluginBase, ABC):
         """Abstract protocol plugin for API protocol implementations."""
 
-        def supported_protocols(self) -> t.StrSequence:
+        @staticmethod
+        def supported_protocols() -> t.StrSequence:
             """Get list of supported protocols.
 
             Returns:
@@ -86,7 +89,8 @@ class FlextApiProtocolPluginTypes:
     class Schema(_FlextApiPluginBase, ABC):
         """Abstract schema plugin for schema validation and introspection."""
 
-        def schema_version(self) -> str:
+        @staticmethod
+        def schema_version() -> str:
             """Get schema specification version.
 
             Returns:
@@ -99,7 +103,8 @@ class FlextApiProtocolPluginTypes:
             """Load schema from source."""
             ...
 
-        def supports_schema_type(self) -> bool:
+        @staticmethod
+        def supports_schema_type() -> bool:
             """Check if this plugin supports the given schema type.
 
             Returns:
@@ -138,7 +143,8 @@ class FlextApiProtocolPluginTypes:
             """Close connection."""
             ...
 
-        def connection_info(self) -> t.JsonMapping:
+        @staticmethod
+        def connection_info() -> t.JsonMapping:
             """Get connection information.
 
             Returns:
@@ -165,7 +171,8 @@ class FlextApiProtocolPluginTypes:
             """Send data through connection."""
             ...
 
-        def supports_streaming(self) -> bool:
+        @staticmethod
+        def supports_streaming() -> bool:
             """Check if transport supports streaming.
 
             Returns:
@@ -185,7 +192,8 @@ class FlextApiProtocolPluginTypes:
             """Add authentication to request."""
             ...
 
-        def auth_scheme(self) -> str:
+        @staticmethod
+        def auth_scheme() -> str:
             """Get authentication scheme name.
 
             Returns:
@@ -193,8 +201,8 @@ class FlextApiProtocolPluginTypes:
             """
             return "Unknown"
 
+        @staticmethod
         def refresh_credentials(
-            self,
             credentials: t.JsonMapping,
         ) -> p.Result[t.JsonMapping]:
             """Refresh authentication credentials.
@@ -205,7 +213,8 @@ class FlextApiProtocolPluginTypes:
             _ = credentials
             return r[t.JsonMapping].fail("Refresh not supported by this plugin")
 
-        def requires_refresh(self) -> bool:
+        @staticmethod
+        def requires_refresh() -> bool:
             """Check if credentials need refresh.
 
             Returns:

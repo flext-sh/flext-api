@@ -17,7 +17,8 @@ class TestsFlextApiModelContract:
 
     # ---- HttpRequest model contract -------------------------------------
 
-    def test_http_request_applies_documented_defaults(self) -> None:
+    @staticmethod
+    def test_http_request_applies_documented_defaults() -> None:
         """A minimal request defaults to GET with empty headers and body."""
         request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
         tm.that(request.method, eq="GET")
@@ -25,7 +26,8 @@ class TestsFlextApiModelContract:
         tm.that(dict(request.headers), eq={})
         tm.that(request.body, eq={})
 
-    def test_http_request_preserves_supplied_method(self) -> None:
+    @staticmethod
+    def test_http_request_preserves_supplied_method() -> None:
         """A supplied method survives validation unchanged."""
         request = m.Api.HttpRequest.model_validate({
             "url": "https://example.com",
@@ -41,8 +43,8 @@ class TestsFlextApiModelContract:
             ({"content-type": "text/plain"}, "text/plain"),
         ],
     )
+    @staticmethod
     def test_http_request_content_type_derives_from_headers(
-        self,
         headers: t.StrMapping,
         expected: str,
     ) -> None:
@@ -53,12 +55,14 @@ class TestsFlextApiModelContract:
         })
         tm.that(request.content_type, eq=expected)
 
-    def test_http_request_rejects_empty_url(self) -> None:
+    @staticmethod
+    def test_http_request_rejects_empty_url() -> None:
         """An empty URL fails validation."""
         with pytest.raises(c.ValidationError):
             m.Api.HttpRequest.model_validate({"url": ""})
 
-    def test_http_request_rejects_unknown_method(self) -> None:
+    @staticmethod
+    def test_http_request_rejects_unknown_method() -> None:
         """A method outside the allowed pattern fails validation."""
         with pytest.raises(c.ValidationError):
             m.Api.HttpRequest.model_validate({
@@ -66,7 +70,8 @@ class TestsFlextApiModelContract:
                 "method": "FETCH",
             })
 
-    def test_http_request_roundtrips_through_model_dump(self) -> None:
+    @staticmethod
+    def test_http_request_roundtrips_through_model_dump() -> None:
         """model_dump preserves the observable request fields."""
         request = m.Api.HttpRequest.model_validate({
             "url": "https://example.com",
@@ -76,12 +81,14 @@ class TestsFlextApiModelContract:
         tm.that(dumped["url"], eq="https://example.com")
         tm.that(dumped["method"], eq="POST")
 
-    def test_http_request_defaults_sni_hostname_to_none(self) -> None:
+    @staticmethod
+    def test_http_request_defaults_sni_hostname_to_none() -> None:
         """A request without an explicit SNI hostname exposes None."""
         request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
         tm.that(request.sni_hostname, none=True)
 
-    def test_http_request_preserves_sni_hostname_for_ip_targets(self) -> None:
+    @staticmethod
+    def test_http_request_preserves_sni_hostname_for_ip_targets() -> None:
         """An IP-targeted request keeps the SNI hostname for TLS verification."""
         request = m.Api.HttpRequest.model_validate({
             "url": "https://185.199.108.153/path",
@@ -93,7 +100,8 @@ class TestsFlextApiModelContract:
 
     # ---- HttpResponse model contract ------------------------------------
 
-    def test_http_response_accepts_valid_payload(self) -> None:
+    @staticmethod
+    def test_http_response_accepts_valid_payload() -> None:
         """A 200 response exposes its status code and body verbatim."""
         response = m.Api.HttpResponse.model_validate({
             "status_code": 200,
@@ -103,7 +111,8 @@ class TestsFlextApiModelContract:
         tm.that(response.body, eq={"result": "ok"})
 
     @pytest.mark.parametrize("status_code", [0, 99, 600, 999])
-    def test_http_response_rejects_out_of_range_status(self, status_code: int) -> None:
+    @staticmethod
+    def test_http_response_rejects_out_of_range_status(status_code: int) -> None:
         """Status codes outside 100-599 fail validation."""
         with pytest.raises(c.ValidationError):
             m.Api.HttpResponse.model_validate({"status_code": status_code})
@@ -118,8 +127,8 @@ class TestsFlextApiModelContract:
             (500, False, False, False, True),
         ],
     )
+    @staticmethod
     def test_http_response_classification_computed_fields(
-        self,
         *,
         status_code: int,
         success: bool,
@@ -135,7 +144,8 @@ class TestsFlextApiModelContract:
         tm.that(response.server_error, eq=server_error)
         tm.that(response.error, eq=client_error or server_error)
 
-    def test_create_response_builds_equivalent_model(self) -> None:
+    @staticmethod
+    def test_create_response_builds_equivalent_model() -> None:
         """create_response yields the same state as direct validation."""
         built = m.Api.create_response(status_code=200, body={"a": 1})
         tm.that(built.status_code, eq=200)
@@ -144,7 +154,8 @@ class TestsFlextApiModelContract:
 
     # ---- Serializer contract --------------------------------------------
 
-    def test_packb_returns_non_empty_bytes(self) -> None:
+    @staticmethod
+    def test_packb_returns_non_empty_bytes() -> None:
         """Packb serializes a mapping into non-empty bytes."""
         payload: t.StrMapping = {"key": "value"}
         packed = u.Api.packb(payload)
@@ -154,7 +165,8 @@ class TestsFlextApiModelContract:
         "original",
         [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}],
     )
-    def test_packb_unpackb_is_lossless_roundtrip(self, original: t.JsonMapping) -> None:
+    @staticmethod
+    def test_packb_unpackb_is_lossless_roundtrip(original: t.JsonMapping) -> None:
         """Packing then unpacking reproduces the original payload."""
         result = u.Api.unpackb(u.Api.packb(original))
         tm.that(result.success, eq=True)

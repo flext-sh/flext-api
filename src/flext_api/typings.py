@@ -75,7 +75,7 @@ class FlextApiTypes(t):
         REQUEST_BODY_ADAPTER: m.TypeAdapter[RequestBody] = u.type_adapter(RequestBody)
 
         RESPONSE_BODY_ADAPTER: m.TypeAdapter[ResponseBody] = u.type_adapter(
-            ResponseBody
+            ResponseBody,
         )
         DICT_BODY_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
         JSON_HEADERS_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
