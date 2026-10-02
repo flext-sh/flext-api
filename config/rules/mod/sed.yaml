@@ -154,3 +154,15 @@ rules:
 
       if TYPE_CHECKING:
           from flext_api import m
+  - id: api-tests-service-parent-class
+    description: Extend the public parent service class instead of its letter alias.
+    include: [tests/base.py]
+    distributions: [flext-api]
+    find: 'from flext_tests import s as tests_s'
+    replace: 'from flext_tests import FlextTestsServiceBase'
+  - id: api-tests-service-parent-base
+    description: Inherit the public parent service class directly.
+    include: [tests/base.py]
+    distributions: [flext-api]
+    find: 'class TestsFlextApiServiceBase\(tests_s\):'
+    replace: 'class TestsFlextApiServiceBase(FlextTestsServiceBase):'
