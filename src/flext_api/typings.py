@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_web import p, t, u
+from flext_web import m, p, t, u
 
 from flext_api import c
 from flext_api._typings.base import FlextApiTypingsBase
@@ -61,24 +61,24 @@ class FlextApiTypes(t):
             t.StrMapping | t.JsonMapping | t.ScalarOrStrSequenceMapping | float | None,
         ]
         type CacheDict = t.MappingKV[str, t.Primitives]
-        API_JSON_VALUE_ADAPTER: u.type_adapter[t.JsonValue] = t.json_value_adapter()
-        BINARY_CONTENT_ADAPTER: u.type_adapter[t.StrictBytes] = (
+        API_JSON_VALUE_ADAPTER: m.TypeAdapter[t.JsonValue] = t.json_value_adapter()
+        BINARY_CONTENT_ADAPTER: m.TypeAdapter[t.StrictBytes] = (
             t.binary_content_adapter()
         )
-        STR_MAPPING_ADAPTER: u.type_adapter[t.StrMapping] = t.str_mapping_adapter()
-        HOSTNAME_ADAPTER: u.type_adapter[t.HostnameStr] = t.hostname_str_adapter()
-        PORT_NUMBER_ADAPTER: u.type_adapter[t.PortNumber] = t.port_number_adapter()
-        STRING_ADAPTER: u.type_adapter[t.StrictStr] = t.str_adapter()
-        INTEGER_ADAPTER: u.type_adapter[t.StrictInt] = t.int_adapter()
-        FLOAT_ADAPTER: u.type_adapter[t.StrictFloat] = t.float_adapter()
-        STORAGE_ENTRY_ADAPTER: u.type_adapter[t.JsonMapping] = t.json_mapping_adapter()
-        REQUEST_BODY_ADAPTER: u.type_adapter[RequestBody] = u.type_adapter(RequestBody)
+        STR_MAPPING_ADAPTER: m.TypeAdapter[t.StrMapping] = t.str_mapping_adapter()
+        HOSTNAME_ADAPTER: m.TypeAdapter[t.HostnameStr] = t.hostname_str_adapter()
+        PORT_NUMBER_ADAPTER: m.TypeAdapter[t.PortNumber] = t.port_number_adapter()
+        STRING_ADAPTER: m.TypeAdapter[t.StrictStr] = t.str_adapter()
+        INTEGER_ADAPTER: m.TypeAdapter[t.StrictInt] = t.int_adapter()
+        FLOAT_ADAPTER: m.TypeAdapter[t.StrictFloat] = t.float_adapter()
+        STORAGE_ENTRY_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        REQUEST_BODY_ADAPTER: m.TypeAdapter[RequestBody] = u.type_adapter(RequestBody)
 
-        RESPONSE_BODY_ADAPTER: u.type_adapter[ResponseBody] = u.type_adapter(
+        RESPONSE_BODY_ADAPTER: m.TypeAdapter[ResponseBody] = u.type_adapter(
             ResponseBody,
         )
-        DICT_BODY_ADAPTER: u.type_adapter[t.JsonMapping] = t.json_mapping_adapter()
-        JSON_HEADERS_ADAPTER: u.type_adapter[t.JsonMapping] = t.json_mapping_adapter()
+        DICT_BODY_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        JSON_HEADERS_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
 
 
 t = FlextApiTypes

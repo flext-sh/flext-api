@@ -44,7 +44,8 @@ class TestsFlextApiModelContract:
         ],
     )
     @staticmethod
-    def test_http_request_content_type_derives_from_headers(headers: t.StrMapping,
+    def test_http_request_content_type_derives_from_headers(
+        headers: t.StrMapping,
         expected: str,
     ) -> None:
         """content_type computed field reflects headers, defaulting to JSON."""
@@ -109,8 +110,8 @@ class TestsFlextApiModelContract:
         tm.that(response.status_code, eq=200)
         tm.that(response.body, eq={"result": "ok"})
 
-    @staticmethod
     @pytest.mark.parametrize("status_code", [0, 99, 600, 999])
+    @staticmethod
     def test_http_response_rejects_out_of_range_status(status_code: int) -> None:
         """Status codes outside 100-599 fail validation."""
         with pytest.raises(c.ValidationError):
@@ -127,7 +128,8 @@ class TestsFlextApiModelContract:
         ],
     )
     @staticmethod
-    def test_http_response_classification_computed_fields(*,
+    def test_http_response_classification_computed_fields(
+        *,
         status_code: int,
         success: bool,
         redirect: bool,

@@ -11,17 +11,12 @@ from typing import TYPE_CHECKING, Annotated, ClassVar
 
 from flext_web import m, u
 
-from flext_api import typings
 from flext_api.constants import c
-
-JsonMapping = typings.t.JsonMapping
-MutableSequenceOf = typings.t.MutableSequenceOf
-WebhookAlgorithm = typings.t.Api.WebhookAlgorithm
-WebhookDeliveryStatus = typings.t.Api.WebhookDeliveryStatus
-WebhookHandler = typings.t.Api.WebhookHandler
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping, MutableSequence
+
+    from flext_api.typings import t
 
 
 class FlextApiModelsWebhook:
@@ -45,7 +40,7 @@ class FlextApiModelsWebhook:
             ),
         ] = "X-Webhook-Signature"
         algorithm: Annotated[
-            WebhookAlgorithm,
+            t.Api.WebhookAlgorithm,
             u.Field("sha256", description="Supported HMAC signature algorithm"),
         ] = c.Api.WebhookAlgorithm.SHA256
         max_retries: Annotated[
@@ -82,7 +77,7 @@ class FlextApiModelsWebhook:
 
         id: str = u.Field(description="Unique event identifier", min_length=1)
         type: str = u.Field(description="Canonical event type", min_length=1)
-        data: JsonMapping = u.Field(description="Normalized event payload")
+        data: t.JsonMapping = u.Field(description="Normalized event payload")
         timestamp: float = u.Field(
             default_factory=time.time,
             description="Event creation timestamp",
@@ -100,7 +95,7 @@ class FlextApiModelsWebhook:
             default_factory=time.time,
             description="Delivery status timestamp",
         )
-        status: WebhookDeliveryStatus = u.Field(
+        status: t.Api.WebhookDeliveryStatus = u.Field(
             description="Delivery terminal status",
         )
         attempts: Annotated[
@@ -127,7 +122,7 @@ class FlextApiModelsWebhook:
             validate_assignment=True,
             arbitrary_types_allowed=True,
         )
-        handlers: MutableMapping[str, MutableSequence[WebhookHandler]] = u.Field(
+        handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = u.Field(
             default_factory=dict,
             description="Registered webhook handlers by event type",
         )
@@ -177,4 +172,4 @@ class FlextApiModelsWebhook:
             )
 
 
-__all__: MutableSequenceOf[str] = ["FlextApiModelsWebhook"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsWebhook"]

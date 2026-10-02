@@ -8,18 +8,12 @@ from __future__ import annotations
 
 import time
 from collections.abc import MutableMapping
-from typing import Annotated, ClassVar
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
-# NOTE (multi-agent): runtime import (not TYPE_CHECKING) so pydantic can
-# resolve ``JsonValue``/``MutableMapping`` forward refs at class build —
-# matches the sibling model modules (request.py, response.py, client.py).
 from flext_web import m, u
 
-from flext_api import typings
-
-JsonValue = typings.t.JsonValue
-Numeric = typings.t.Numeric
-MutableSequenceOf = typings.t.MutableSequenceOf
+if TYPE_CHECKING:
+    from flext_api.typings import t
 
 
 class FlextApiModelsStorage:
@@ -59,7 +53,7 @@ class FlextApiModelsStorage:
         _flext_enforcement_exempt: ClassVar[bool] = True
 
         value: Annotated[
-            JsonValue,
+            t.JsonValue,
             u.Field(description="Stored JSON-compatible value payload"),
         ]
         timestamp: Annotated[
@@ -67,7 +61,7 @@ class FlextApiModelsStorage:
             u.Field(description="Entry creation timestamp in ISO format"),
         ]
         ttl: Annotated[
-            Numeric | None,
+            t.Numeric | None,
             u.Field(default=None, description="Optional time-to-live seconds"),
         ] = None
         created_at: Annotated[
@@ -158,4 +152,4 @@ class FlextApiModelsStorage:
             return self.cache_hits / self.total_operations
 
 
-__all__: MutableSequenceOf[str] = ["FlextApiModelsStorage"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsStorage"]

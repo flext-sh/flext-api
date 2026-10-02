@@ -32,7 +32,8 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         ],
     )
     @staticmethod
-    def test_http_method_enum_resolves_to_wire_string(method: c.Api.Method,
+    def test_http_method_enum_resolves_to_wire_string(
+        method: c.Api.Method,
         expected: str,
     ) -> None:
         """Each HTTP method compares equal to its wire string value."""
@@ -55,7 +56,8 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         ],
     )
     @staticmethod
-    def test_content_type_maps_to_mime(content_type: c.Api.ContentType,
+    def test_content_type_maps_to_mime(
+        content_type: c.Api.ContentType,
         expected: str,
     ) -> None:
         """ContentType members map to their MIME type strings."""

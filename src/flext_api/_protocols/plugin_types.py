@@ -202,7 +202,8 @@ class FlextApiProtocolPluginTypes:
             return "Unknown"
 
         @staticmethod
-        def refresh_credentials(credentials: t.JsonMapping,
+        def refresh_credentials(
+            credentials: t.JsonMapping,
         ) -> p.Result[t.JsonMapping]:
             """Refresh authentication credentials.
 

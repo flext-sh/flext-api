@@ -3,9 +3,9 @@
 HTTP configuration using FlextSettings with env var support (``FLEXT_API_`` prefix).
 100% GENERIC - no domain coupling. Single responsibility.
 
-Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings`` / ``m`` / ``u``
-facades. The universal runtime fields
-(``debug``/``trace``/``log_level``/``timezone``/``async_logging``) come from
+Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings``
+/ ``m`` / ``u`` facades. The universal runtime
+fields (``debug``/``trace``/``log_level``/``timezone``/``async_logging``) come from
 ``FlextSettings`` by MRO and are NOT redeclared here. Every project field lives
 inside the ``Api`` namespace group with simple scalar types so each is settable via
 ``.env`` / env vars / params (``FLEXT_API_API__BASE_URL`` …). Defaults are inlined
@@ -24,7 +24,10 @@ from flext_core import FlextSettings
 
 
 class FlextApiSettings(FlextSettings):
-    """Validated API facade and HTTP client settings under ``settings.Api.*``."""
+    """Validated settings consumed by API facade and HTTP client.
+
+    All project fields live under ``settings.Api.*``.
+    """
 
     model_config = m.SettingsConfigDict(
         env_prefix="FLEXT_API_",

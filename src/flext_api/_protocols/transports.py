@@ -15,15 +15,17 @@ from typing import TYPE_CHECKING, ClassVar, Protocol, override, runtime_checkabl
 
 import httpx
 
-from flext_api import c, m, r, t
+from flext_api import c, r, t
 from flext_api._protocols import (
-    FlextApiProtocolsBase as pb,
+    FlextApiProtocolsBase,
     FlextApiTransportsConfigMixin,
     FlextApiTransportsRequestMixin,
 )
 
 if TYPE_CHECKING:
     from flext_web import p
+
+    from flext_api import m
 
 
 class FlextApiProtocolsTransports:
@@ -48,7 +50,7 @@ class FlextApiProtocolsTransports:
     class FlextWebTransport(
         FlextApiTransportsConfigMixin,
         FlextApiTransportsRequestMixin,
-        pb.TransportPlugin,
+        FlextApiProtocolsBase.TransportPlugin,
     ):
         """HTTP transport implementation using httpx."""
 

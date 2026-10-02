@@ -17,7 +17,10 @@ class TestsFlextApiUtilitiesTransport:
 
     @staticmethod
     def test_client_constructs_and_closes_through_the_owner() -> None:
-        """A real client constructs, narrows and closes through the owner."""
+        """A real client constructs, narrows and closes.
+
+        Construction routes through ``u.Api.HttpxClient``.
+        """
         client: t.Api.HttpxClient = u.Api.HttpxClient(timeout=2.0)
         try:
             tm.that(isinstance(client, u.Api.HttpxClient), eq=True)
@@ -26,8 +29,8 @@ class TestsFlextApiUtilitiesTransport:
             client.close()
         tm.that(client.is_closed, eq=True)
 
-    @staticmethod
     @pytest.mark.asyncio
+    @staticmethod
     async def test_async_client_constructs_and_closes_through_the_owner() -> None:
         """A real async client opens and closes through ``u.Api.HttpxAsyncClient``."""
         async with u.Api.HttpxAsyncClient(timeout=2.0) as client:

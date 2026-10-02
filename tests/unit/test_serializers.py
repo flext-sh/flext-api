@@ -30,7 +30,8 @@ class TestsFlextApiSerializers:
         ],
     )
     @staticmethod
-    def test_unpackb_valid_input_succeeds(packed: bytes,
+    def test_unpackb_valid_input_succeeds(
+        packed: bytes,
         expected: t.JsonValue,
     ) -> None:
         """Valid msgpack decodes to its JSON value inside a successful result."""
@@ -66,8 +67,8 @@ class TestsFlextApiSerializers:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=42)
 
-    @staticmethod
     @pytest.mark.parametrize("packed", [b"\xd9", b"\xc1"])
+    @staticmethod
     def test_unpackb_invalid_input_fails(packed: bytes) -> None:
         """Incomplete or reserved MessagePack input yields a failure."""
         result = u.Api.unpackb(packed)

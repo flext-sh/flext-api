@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 from flext_web import FlextWebUtilities
 
+if TYPE_CHECKING:
+    from flext_api import t
 from flext_api._utilities import (
     FlextApiUtilitiesApiPydantic,
     FlextApiUtilitiesRequestUtils,
@@ -18,9 +20,6 @@ from flext_api._utilities import (
     FlextApiUtilitiesTransport,
 )
 from flext_api._utilities.base import FlextApiUtilitiesBase
-
-if TYPE_CHECKING:
-    from flext_api import t
 
 
 class FlextApiUtilities(FlextWebUtilities):

@@ -7,17 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Annotated, ClassVar
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
 from flext_web import m, u
 
-from flext_api import typings
 from flext_api.constants import c
 
-MutableSequenceOf = typings.t.MutableSequenceOf
-PositiveTimeout = typings.t.PositiveTimeout
-RetryCount = typings.t.RetryCount
-StrMapping = typings.t.StrMapping
+if TYPE_CHECKING:
+    from flext_api.typings import t
 
 
 class FlextApiModelsClient:
@@ -37,18 +34,18 @@ class FlextApiModelsClient:
             ),
         ]
         timeout: Annotated[
-            PositiveTimeout,
+            t.PositiveTimeout,
             u.Field(
                 default=float(c.Api.DEFAULT_TIMEOUT),
                 description="Request timeout in seconds",
             ),
         ]
         max_retries: Annotated[
-            RetryCount,
+            t.RetryCount,
             u.Field(default=c.MAX_RETRY_ATTEMPTS, description="Maximum retry attempts"),
         ]
         headers: Annotated[
-            StrMapping,
+            t.StrMapping,
             u.Field(description="Default headers for all requests"),
         ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         verify_ssl: Annotated[
@@ -66,4 +63,4 @@ class FlextApiModelsClient:
             return bool(self.base_url) and self.timeout > 0
 
 
-__all__: MutableSequenceOf[str] = ["FlextApiModelsClient"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiModelsClient"]

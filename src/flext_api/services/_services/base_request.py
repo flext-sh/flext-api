@@ -104,7 +104,8 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         )
 
     @staticmethod
-    def _handle_transport_error(exc: Exception,
+    def _handle_transport_error(
+        exc: Exception,
         op: str,
     ) -> p.Result[m.Api.HttpResponse]:
         """Convert transport exception to failure result.

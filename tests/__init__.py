@@ -13,9 +13,9 @@ from typing import TYPE_CHECKING
 from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import c, d, e, h, m, p, r, s, t, u, x
+    from flext_api import c, d, e, h, m, p, r, t, u, x
     from tests import unit
-    from tests.base import TestsFlextApiServiceBase
+    from tests.base import TestsFlextApiServiceBase, s
     from tests.constants import TestsFlextApiConstants
     from tests.models import TestsFlextApiModels
     from tests.protocols import TestsFlextApiProtocols
@@ -49,7 +49,7 @@ __all__: tuple[str, ...] = (
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            ".base": ("TestsFlextApiServiceBase",),
+            ".base": ("TestsFlextApiServiceBase", "s"),
             ".constants": ("TestsFlextApiConstants",),
             ".models": ("TestsFlextApiModels",),
             ".protocols": ("TestsFlextApiProtocols",),
@@ -57,7 +57,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".typings": ("TestsFlextApiTypes",),
             ".unit": ("unit",),
             ".utilities": ("TestsFlextApiUtilities",),
-            "flext_api": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x"),
+            "flext_api": ("c", "d", "e", "h", "m", "p", "r", "t", "u", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

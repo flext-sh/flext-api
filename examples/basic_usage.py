@@ -77,14 +77,81 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         )
         return response_result
 
-    @staticmethod
-    def build_storage(
-        response: m.Api.HttpResponse,
-    ) -> p.Result[tuple[m.Api.StorageState, m.Api.StorageStats]]:
-        """Build storage state and stats from one validated response.
+    @override
+    def execute(self) -> p.Result[t.JsonMapping]:
+        """Run the public basic-usage flow through typed examples aliases.
 
         Returns:
-            The resulting ``p.Result[tuple[m.Api.StorageState, m.Api.StorageStats]]``.
+            The resulting ``p.Result[t.JsonMapping]``.
+        """
+        self._emit("FLEXT API - Basic Usage")
+        self._emit("=======================")
+
+        self._emit("\n1. Setup via s/base.py")
+        runtime_snapshot: t.JsonValue = {
+            "base_url": settings.Api.base_url,
+            "timeout": settings.Api.timeout,
+            "max_retries": settings.Api.max_retries,
+            "verify_ssl": settings.Api.verify_ssl,
+        }
+        self._emit(runtime_snapshot)
+
+        api = FlextApi()
+        execute_result = api.execute(example="basic-usage")
+        if execute_result.failure:
+            execute_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
+                execute_result,
+            )
+            return execute_failure
+        self._emit(f"Facade ready: base_url={api.settings.Api.base_url}")
+
+        self._emit("\n2. Request normalization via u.Api.RequestUtils")
+        request_result = self.build_request()
+        if request_result.failure:
+            request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
+                request_result,
+            )
+            return request_failure
+        request = request_result.value
+        self._emit(f"Request ok: {request.method} {request.url}")
+
+        self._emit("\n3. Pydantic 2 models via m.Api")
+        response_result = self.build_response(request)
+        if response_result.failure:
+            response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
+                response_result,
+            )
+            return response_failure
+        response = response_result.value
+        self._emit(
+            f"Response ok: status={response.status_code}, success={response.success}",
+        )
+
+        self._emit("\n4. Storage models + railway result ergonomics")
+        state = self._emit_storage_demo(response)
+        self._emit(
+            "Result contract: "
+            f"ok.success={r[str].ok('ready').success}, "
+            f"fail.failure={r[str].fail('example failure').failure}",
+        )
+
+        summary: t.JsonMapping = {
+            "base_url": api.settings.Api.base_url,
+            "request_method": str(request.method),
+            "response_status": response.status_code,
+            "storage_entries": len(state.entries),
+            "result_contract": "public-r",
+        }
+        self._emit("\nExamples completed")
+        summary_result: p.Result[t.JsonMapping] = r[t.JsonMapping].ok(summary)
+        return summary_result
+
+    @staticmethod
+    def _emit_storage_demo(response: m.Api.HttpResponse) -> m.Api.StorageState:
+        """Exercise storage models and railway result ergonomics for one response.
+
+        Returns:
+            The resulting ``m.Api.StorageState``.
         """
         entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
             response.body or {},
@@ -113,98 +180,11 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             memory_usage=len(repr(state.entries)),
             namespace=storage_settings.namespace,
         )
-        return r[tuple[m.Api.StorageState, m.Api.StorageStats]].ok((state, stats))
-
-    @staticmethod
-    def setup_facade() -> p.Result[FlextApi]:
-        """Initialize the facade and emit the runtime settings snapshot.
-
-        Returns:
-            The resulting ``p.Result[FlextApi]``.
-        """
-        runtime_snapshot: t.JsonValue = {
-            "base_url": settings.Api.base_url,
-            "timeout": settings.Api.timeout,
-            "max_retries": settings.Api.max_retries,
-            "verify_ssl": settings.Api.verify_ssl,
-        }
-        u.Cli.formatters_print(str(runtime_snapshot))
-        api = FlextApi()
-        execute_result = api.execute(example="basic-usage")
-        if execute_result.failure:
-            return r[FlextApi].from_failure(execute_result)
-        return r[FlextApi].ok(api)
-
-    @override
-    def execute(self) -> p.Result[t.JsonMapping]:
-        """Run the public basic-usage flow through typed examples aliases.
-
-        Returns:
-            The resulting ``p.Result[t.JsonMapping]``.
-        """
-        self._emit("FLEXT API - Basic Usage")
-        self._emit("=======================")
-
-        self._emit("\n1. Setup via s/base.py")
-        facade_result = self.setup_facade()
-        if facade_result.failure:
-            facade_failure: p.Result[FlextApi] = r[FlextApi].from_failure(
-                facade_result,
-            )
-            return facade_failure
-        api = facade_result.value
-        self._emit(f"Facade ready: base_url={api.settings.Api.base_url}")
-
-        self._emit("\n2. Request normalization via u.Api.RequestUtils")
-        request_result = self.build_request()
-        if request_result.failure:
-            request_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
-                request_result,
-            )
-            return request_failure
-        request = request_result.value
-        self._emit(f"Request ok: {request.method} {request.url}")
-
-        self._emit("\n3. Pydantic 2 models via m.Api")
-        response_result = self.build_response(request)
-        if response_result.failure:
-            response_failure: p.Result[t.JsonMapping] = r[t.JsonMapping].from_failure(
-                response_result,
-            )
-            return response_failure
-        response = response_result.value
-        self._emit(
-            f"Response ok: status={response.status_code}, success={response.success}",
+        FlextApiExamplesBasicUsage._emit(
+            f"Storage entry: {state.entries['latest-response'].value}",
         )
-
-        self._emit("\n4. Storage models + railway result ergonomics")
-        storage_pair = self.build_storage(response)
-        if storage_pair.failure:
-            storage_failure: p.Result[tuple[m.Api.StorageState, m.Api.StorageStats]] = (
-                r[tuple[m.Api.StorageState, m.Api.StorageStats]].from_failure(
-                    storage_pair,
-                )
-            )
-            return storage_failure
-        state, stats = storage_pair.value
-        self._emit(f"Storage entry: {state.entries['latest-response'].value}")
-        self._emit(f"Stats: {stats.model_dump(mode='python')}")
-        self._emit(
-            "Result contract: "
-            f"ok.success={r[str].ok('ready').success}, "
-            f"fail.failure={r[str].fail('example failure').failure}",
-        )
-
-        summary: t.JsonMapping = {
-            "base_url": api.settings.Api.base_url,
-            "request_method": str(request.method),
-            "response_status": response.status_code,
-            "storage_entries": len(state.entries),
-            "result_contract": "public-r",
-        }
-        self._emit("\nExamples completed")
-        summary_result: p.Result[t.JsonMapping] = r[t.JsonMapping].ok(summary)
-        return summary_result
+        FlextApiExamplesBasicUsage._emit(f"Stats: {stats.model_dump(mode='python')}")
+        return state
 
     @classmethod
     def main(cls) -> None:

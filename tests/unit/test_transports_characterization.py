@@ -19,14 +19,15 @@ from flext_api import m, p, t
 class TestsFlextApiTransportsCharacterization:
     """Lock the observable behavior of the HTTP transport public contract."""
 
-    @staticmethod
     @pytest.fixture
+    @staticmethod
     def transport() -> p.Api.FlextWebTransport:
         """Return a fresh, disconnected HTTP transport."""
         return p.Api.FlextWebTransport()
 
     @staticmethod
-    def test_connect_rejects_empty_url(transport: p.Api.FlextWebTransport,
+    def test_connect_rejects_empty_url(
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Connecting with an empty URL fails with a required-URL error."""
         result = transport.connect("")
@@ -44,7 +45,8 @@ class TestsFlextApiTransportsCharacterization:
         ],
     )
     @staticmethod
-    def test_connect_accepts_url_and_echoes_it(transport: p.Api.FlextWebTransport,
+    def test_connect_accepts_url_and_echoes_it(
+        transport: p.Api.FlextWebTransport,
         url: str,
     ) -> None:
         """A valid URL connects successfully and is echoed back as the value."""
@@ -79,7 +81,8 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.value, eq="https://example.test")
 
     @staticmethod
-    def test_disconnect_after_connect_succeeds(transport: p.Api.FlextWebTransport,
+    def test_disconnect_after_connect_succeeds(
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Disconnecting an established connection reports success."""
         _ = transport.connect("https://example.test")
@@ -99,9 +102,10 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.success, eq=True)
         tm.that(result.value, eq=True)
 
-    @staticmethod
     @pytest.mark.slow
-    def test_disconnect_twice_stays_successful(transport: p.Api.FlextWebTransport,
+    @staticmethod
+    def test_disconnect_twice_stays_successful(
+        transport: p.Api.FlextWebTransport,
     ) -> None:
         """Disconnecting twice stays successful and returns the disconnected state."""
         _ = transport.connect("https://example.test")
@@ -123,8 +127,8 @@ class TestsFlextApiTransportsCharacterization:
         tm.that(result.failure, eq=True)
         tm.that(str(result.error), has="not connected")
 
-    @staticmethod
     @pytest.mark.slow
+    @staticmethod
     def test_send_after_disconnect_reports_disconnected_failure(
         transport: p.Api.FlextWebTransport,
     ) -> None:
