@@ -7,13 +7,13 @@ an external HTTP service.
 
 ## Example Files
 
-- `01_basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and
+- `basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and
   the railway result contract
 
 ## Running Examples
 
 ```bash
-PYTHONPATH=src python -m examples.01_basic_usage
+PYTHONPATH=src python -m examples.basic_usage
 ```
 
 Run commands from the `flext-api` project root.

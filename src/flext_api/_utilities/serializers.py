@@ -1,13 +1,16 @@
 """Serialization utilities for flext-api.
 
 Provides type-safe wrappers for untyped serialization libraries like msgpack.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
 import msgpack
 
-from .. import c, p, r, t
+from flext_api import c, p, r, t
 
 
 class FlextApiUtilitiesSerializers:
@@ -48,7 +51,8 @@ class FlextApiUtilitiesSerializers:
             result = msgpack.unpackb(data)
             if result is None:
                 return r[t.JsonValue].fail(
-                    "msgpack nil is forbidden because Result cannot carry None as success"
+                    "msgpack nil is forbidden because Result cannot carry None"
+                    " as success",
                 )
             normalized = t.Api.API_JSON_VALUE_ADAPTER.validate_python(result)
             return r[t.JsonValue].ok(normalized)

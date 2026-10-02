@@ -26,7 +26,7 @@
   `FlextApiClient`, `FlextApiClientBase`, `FlextApiConfig`, `FlextApiConstants`,
   `FlextApiModels`, `FlextApiProtocols`, `FlextApiProtocolsTransports` (+14 more)
 - Exported module shortcuts: `api`, `services`
-- Generated module pages: `12`
+- Generated module pages: `8`
 
 ## Next Pages
 

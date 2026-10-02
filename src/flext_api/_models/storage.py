@@ -1,17 +1,19 @@
-"""API storage models."""
+"""API storage models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 import time
 from collections.abc import MutableMapping
-from typing import Annotated, ClassVar
+from typing import TYPE_CHECKING, Annotated, ClassVar
 
-# NOTE (multi-agent): runtime import (not TYPE_CHECKING) so pydantic can
-# resolve ``t.JsonValue``/``MutableMapping`` forward refs at class build —
-# matches the sibling model modules (request.py, response.py, client.py).
 from flext_web import m, u
 
-from flext_api.typings import t
+if TYPE_CHECKING:
+    from flext_api.typings import t
 
 
 class FlextApiModelsStorage:
@@ -28,7 +30,9 @@ class FlextApiModelsStorage:
             validate_default=True,
         )
         backend: str = u.Field(
-            "memory", description="Storage backend identifier", validate_default=True
+            "memory",
+            description="Storage backend identifier",
+            validate_default=True,
         )
         max_size: int | None = u.Field(
             None,
@@ -49,10 +53,12 @@ class FlextApiModelsStorage:
         _flext_enforcement_exempt: ClassVar[bool] = True
 
         value: Annotated[
-            t.JsonValue, u.Field(description="Stored JSON-compatible value payload")
+            t.JsonValue,
+            u.Field(description="Stored JSON-compatible value payload"),
         ]
         timestamp: Annotated[
-            str, u.Field(description="Entry creation timestamp in ISO format")
+            str,
+            u.Field(description="Entry creation timestamp in ISO format"),
         ]
         ttl: Annotated[
             t.Numeric | None,
@@ -61,7 +67,8 @@ class FlextApiModelsStorage:
         created_at: Annotated[
             float,
             u.Field(
-                default_factory=time.time, description="Monotonic creation timestamp"
+                default_factory=time.time,
+                description="Monotonic creation timestamp",
             ),
         ]
 
@@ -76,10 +83,12 @@ class FlextApiModelsStorage:
         """Mutable storage runtime state kept in one central model."""
 
         model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
-            extra="forbid", validate_assignment=True
+            extra="forbid",
+            validate_assignment=True,
         )
         entries: MutableMapping[str, FlextApiModelsStorage.StorageMetadata] = u.Field(
-            default_factory=dict, description="Storage entries by key"
+            default_factory=dict,
+            description="Storage entries by key",
         )
         operations_count: int = u.Field(
             0,
@@ -87,10 +96,14 @@ class FlextApiModelsStorage:
             validate_default=True,
         )
         cache_hits: int = u.Field(
-            0, description="Successful cache reads", validate_default=True
+            0,
+            description="Successful cache reads",
+            validate_default=True,
         )
         cache_misses: int = u.Field(
-            0, description="Failed cache reads", validate_default=True
+            0,
+            description="Failed cache reads",
+            validate_default=True,
         )
         created_at: str = u.Field(
             default_factory=u.generate_iso_timestamp,
@@ -101,22 +114,34 @@ class FlextApiModelsStorage:
         """Storage statistics model."""
 
         total_operations: int = u.Field(
-            0, description="Total storage operations count", validate_default=True
+            0,
+            description="Total storage operations count",
+            validate_default=True,
         )
         cache_hits: int = u.Field(
-            0, description="Number of cache hits", validate_default=True
+            0,
+            description="Number of cache hits",
+            validate_default=True,
         )
         cache_misses: int = u.Field(
-            0, description="Number of cache misses", validate_default=True
+            0,
+            description="Number of cache misses",
+            validate_default=True,
         )
         storage_size: int = u.Field(
-            0, description="Current storage size in entries", validate_default=True
+            0,
+            description="Current storage size in entries",
+            validate_default=True,
         )
         memory_usage: int = u.Field(
-            0, description="Estimated memory usage in bytes", validate_default=True
+            0,
+            description="Estimated memory usage in bytes",
+            validate_default=True,
         )
         namespace: str = u.Field(
-            "flext", description="Storage namespace identifier", validate_default=True
+            "flext",
+            description="Storage namespace identifier",
+            validate_default=True,
         )
 
         @property

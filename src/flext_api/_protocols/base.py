@@ -1,8 +1,12 @@
-"""Base protocol facade for flext-api."""
+"""Base protocol facade for flext-api.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from . import (
+from flext_api._protocols import (
     FlextApiProtocolsGrpc,
     FlextApiProtocolsHttpClient,
     FlextApiProtocolsResources,

@@ -12,9 +12,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
+from flext_api import m
 from flext_core import FlextConfig, FlextSettings
-
-from . import m
 
 
 class _ApiNamespace(m.BaseModel):

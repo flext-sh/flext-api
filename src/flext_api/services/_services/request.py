@@ -1,18 +1,26 @@
-"""HTTP client request execution helpers."""
+"""HTTP client request execution helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 import httpx
 
-from ... import c, m, p, r, t
-from .base_request import FlextApiClientBaseRequestMixin
+from flext_api import c, m, p, r, t
+from flext_api.services._services.base_request import FlextApiClientBaseRequestMixin
 
 
 class FlextApiClientRequestMixin(FlextApiClientBaseRequestMixin):
     """Request execution helpers for FlextApiClient."""
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        """Execute HTTP request from model using monadic patterns."""
+        """Execute HTTP request from model using monadic patterns.
+
+        Returns:
+            The resulting ``p.Result[m.Api.HttpResponse]``.
+        """
         prep = self._prepare_request(request)
         if prep.failure:
             return r[m.Api.HttpResponse].from_failure(prep)

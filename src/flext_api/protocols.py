@@ -21,7 +21,7 @@ from httpx import (
     TimeoutException as HttpxTimeoutException,
 )
 
-from ._protocols import (
+from flext_api._protocols import (
     FlextApiProtocolPlugins,
     FlextApiProtocolsBase,
     FlextApiProtocolsSerialization,
