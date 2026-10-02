@@ -23,6 +23,8 @@ from flext_api.__version__ import (
 from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_web import d, e, h, r, x
+
     from flext_api import services
     from flext_api._config import FlextApiConfig, config
     from flext_api._settings import FlextApiSettings, settings
@@ -48,7 +50,6 @@ if TYPE_CHECKING:
     from flext_api.services.client import FlextApiClient
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
-    from flext_web import d, e, h, r, x
 
 
 __all__: tuple[str, ...] = (
