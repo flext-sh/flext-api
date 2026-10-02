@@ -36,7 +36,7 @@ class FlextApiClientBase(s[bool]):
                 "Execute called with kwargs keys: %s",
                 list(kwargs.keys()),
             )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextApiClientBase"]

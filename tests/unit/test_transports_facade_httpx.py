@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import httpx
 
 from flext_api import (
@@ -20,9 +18,7 @@ from flext_api import (
     HttpxTimeoutException,
     p,
 )
-
-if TYPE_CHECKING:
-    from flext_core import t
+from flext_tests import tm
 
 
 class TestsFlextApiHttpxContracts:
@@ -30,28 +26,28 @@ class TestsFlextApiHttpxContracts:
 
     def test_client_primitives_are_the_owner_types(self) -> None:
         """Client factories and response type are the httpx owner types."""
-        assert HttpxClient is httpx.Client
-        assert HttpxAsyncClient is httpx.AsyncClient
-        assert HttpxResponse is httpx.Response
+        tm.that(HttpxClient is httpx.Client, eq=True)
+        tm.that(HttpxAsyncClient is httpx.AsyncClient, eq=True)
+        tm.that(HttpxResponse is httpx.Response, eq=True)
 
     def test_exception_primitives_are_the_owner_types(self) -> None:
         """Exception types match the httpx owner for consumer except clauses."""
-        assert HttpxHTTPError is httpx.HTTPError
-        assert HttpxHTTPStatusError is httpx.HTTPStatusError
-        assert HttpxRequestError is httpx.RequestError
-        assert HttpxTimeoutException is httpx.TimeoutException
+        tm.that(HttpxHTTPError is httpx.HTTPError, eq=True)
+        tm.that(HttpxHTTPStatusError is httpx.HTTPStatusError, eq=True)
+        tm.that(HttpxRequestError is httpx.RequestError, eq=True)
+        tm.that(HttpxTimeoutException is httpx.TimeoutException, eq=True)
 
     def test_conflict_status_is_derived_from_the_owner(self) -> None:
         """The conflict constant stays int-typed and equals the httpx owner."""
         conflict = p.Api.Httpx.CONFLICT
-        assert isinstance(conflict, int)
-        assert conflict == int(httpx.codes.CONFLICT)
+        tm.that(type(conflict), eq=int)
+        tm.that(conflict, eq=int(httpx.codes.CONFLICT))
 
     def test_client_constructs_through_the_public_contract(self) -> None:
         """A real client constructs and closes through the owner type."""
         client = HttpxClient(timeout=2.0)
         try:
-            assert not client.is_closed
+            tm.that(client.is_closed, eq=False)
         finally:
             client.close()
-        assert client.is_closed
+        tm.that(client.is_closed, eq=True)

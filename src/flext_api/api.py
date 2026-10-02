@@ -64,7 +64,7 @@ class FlextApi(s[bool]):
         """
         if kwargs:
             self.logger.info("Execute called with kwargs: %s", kwargs)
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get(
         self,
