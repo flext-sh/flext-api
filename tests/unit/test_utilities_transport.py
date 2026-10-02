@@ -15,8 +15,9 @@ from flext_api import c, t, u
 class TestsFlextApiUtilitiesTransport:
     """Consumers construct, annotate, raise and catch httpx through the owner."""
 
-    def test_client_constructs_and_closes_through_the_owner(self) -> None:
-        """A real client constructs, narrows and closes through ``u.Api.HttpxClient``."""
+    @staticmethod
+    def test_client_constructs_and_closes_through_the_owner() -> None:
+        """A real client constructs, narrows and closes through the owner."""
         client: t.Api.HttpxClient = u.Api.HttpxClient(timeout=2.0)
         try:
             tm.that(isinstance(client, u.Api.HttpxClient), eq=True)
@@ -25,15 +26,17 @@ class TestsFlextApiUtilitiesTransport:
             client.close()
         tm.that(client.is_closed, eq=True)
 
+    @staticmethod
     @pytest.mark.asyncio
-    async def test_async_client_constructs_and_closes_through_the_owner(self) -> None:
+    async def test_async_client_constructs_and_closes_through_the_owner() -> None:
         """A real async client opens and closes through ``u.Api.HttpxAsyncClient``."""
         async with u.Api.HttpxAsyncClient(timeout=2.0) as client:
             opened: t.Api.HttpxAsyncClient = client
             tm.that(opened.is_closed, eq=False)
         tm.that(opened.is_closed, eq=True)
 
-    def test_status_error_is_raised_and_caught_through_the_owner(self) -> None:
+    @staticmethod
+    def test_status_error_is_raised_and_caught_through_the_owner() -> None:
         """A conflict response raises the owner status error and its base."""
         with u.Api.HttpxClient() as client:
             request = client.build_request("GET", "https://service.example/items")
@@ -46,7 +49,8 @@ class TestsFlextApiUtilitiesTransport:
         tm.that(isinstance(caught.value, u.Api.HttpxHTTPError), eq=True)
         tm.that(caught.value.response.status_code, eq=int(c.Web.StatusCode.CONFLICT))
 
-    def test_request_error_is_caught_through_the_owner(self) -> None:
+    @staticmethod
+    def test_request_error_is_caught_through_the_owner() -> None:
         """An unsupported scheme fails before I/O with the owner request error."""
         with (
             u.Api.HttpxClient() as client,

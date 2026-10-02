@@ -103,9 +103,8 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
             ).map_error(lambda exc: f"Response model validation failed: {exc}"),
         )
 
-    def _handle_transport_error(
-        self,
-        exc: Exception,
+    @staticmethod
+    def _handle_transport_error(exc: Exception,
         op: str,
     ) -> p.Result[m.Api.HttpResponse]:
         """Convert transport exception to failure result.
