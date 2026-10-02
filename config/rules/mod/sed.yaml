@@ -102,3 +102,55 @@ rules:
     find: '^        assert client\.is_closed$'
     replace: '        tm.that(client.is_closed, eq=True)'
     flags: [MULTILINE]
+  - id: api-protocol-transport-type-only-model-import
+    description: Keep model types used only in annotations out of the protocol runtime layer.
+    include: [src/flext_api/_protocols/transports.py]
+    distributions: [flext-api]
+    find: 'from flext_api import c, m, r, t\n'
+    replace: 'from flext_api import c, r, t\n'
+  - id: api-protocol-transport-model-type-checking
+    description: Resolve transport model annotations under TYPE_CHECKING.
+    include: [src/flext_api/_protocols/transports.py]
+    distributions: [flext-api]
+    find: 'if TYPE_CHECKING:\n    from flext_web import p(?!\n\n    from flext_api import m)'
+    replace: |-
+      if TYPE_CHECKING:
+          from flext_web import p
+
+          from flext_api import m
+  - id: api-protocol-transport-model-import-order
+    description: Order dependency and first-party imports inside the type-checking block.
+    include: [src/flext_api/_protocols/transports.py]
+    distributions: [flext-api]
+    find: 'if TYPE_CHECKING:\n    from flext_api import m\n    from flext_web import p'
+    replace: |-
+      if TYPE_CHECKING:
+          from flext_web import p
+
+          from flext_api import m
+  - id: api-protocol-transport-base-name
+    description: Use the published protocol class without a local import alias.
+    include: [src/flext_api/_protocols/transports.py]
+    distributions: [flext-api]
+    find: 'FlextApiProtocolsBase as pb'
+    replace: 'FlextApiProtocolsBase'
+  - id: api-protocol-transport-base-reference
+    description: Reference the public base class for the transport plugin port.
+    include: [src/flext_api/_protocols/transports.py]
+    distributions: [flext-api]
+    find: 'pb\.TransportPlugin'
+    replace: 'FlextApiProtocolsBase.TransportPlugin'
+  - id: api-protocol-config-type-checking-import
+    description: Keep config mixin model annotations out of the protocol runtime layer.
+    include: [src/flext_api/_protocols/_transports_config.py]
+    distributions: [flext-api]
+    find: 'from __future__ import annotations\n\nfrom flext_api import c, m, t'
+    replace: |-
+      from __future__ import annotations
+
+      from typing import TYPE_CHECKING
+
+      from flext_api import c, t
+
+      if TYPE_CHECKING:
+          from flext_api import m
