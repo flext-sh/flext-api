@@ -69,8 +69,6 @@ class FlextApiTypes(t):
         HOSTNAME_ADAPTER: m.TypeAdapter[t.HostnameStr] = t.hostname_str_adapter()
         PORT_NUMBER_ADAPTER: m.TypeAdapter[t.PortNumber] = t.port_number_adapter()
         STRING_ADAPTER: m.TypeAdapter[t.StrictStr] = t.str_adapter()
-        INTEGER_ADAPTER: m.TypeAdapter[t.StrictInt] = t.int_adapter()
-        FLOAT_ADAPTER: m.TypeAdapter[t.StrictFloat] = t.float_adapter()
         STORAGE_ENTRY_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
         REQUEST_BODY_ADAPTER: m.TypeAdapter[RequestBody] = u.type_adapter(RequestBody)
 

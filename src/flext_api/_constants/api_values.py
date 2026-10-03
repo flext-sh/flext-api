@@ -39,7 +39,6 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
         member.value for member in FlextApiConstantsEnums.Status.__members__.values()
     )
     DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
-    DEFAULT_BASE_URL: Final[str] = "http://localhost:8000"
     MAX_HOSTNAME_LENGTH: Final[int] = 253
     MAX_URL_LENGTH: Final[int] = 2048
     MIN_PORT: Final[int] = 1

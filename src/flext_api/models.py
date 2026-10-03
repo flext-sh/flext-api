@@ -13,7 +13,6 @@ from flext_web import FlextWebModels
 if TYPE_CHECKING:
     from flext_api import t
 from flext_api._models.base import FlextApiModelsBase
-from flext_api._models.client import FlextApiModelsClient
 from flext_api._models.request import FlextApiModelsRequest
 from flext_api._models.response import FlextApiModelsResponse
 from flext_api._models.storage import FlextApiModelsStorage
@@ -27,7 +26,6 @@ class FlextApiModels(FlextWebModels):
         FlextApiModelsBase,
         FlextApiModelsRequest,
         FlextApiModelsResponse,
-        FlextApiModelsClient,
         FlextApiModelsStorage,
         FlextApiModelsWebhook,
     ):

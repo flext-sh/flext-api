@@ -14,7 +14,6 @@ from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api._models.base import FlextApiModelsBase
-    from flext_api._models.client import FlextApiModelsClient
     from flext_api._models.request import FlextApiModelsRequest
     from flext_api._models.response import FlextApiModelsResponse
     from flext_api._models.storage import FlextApiModelsStorage
@@ -23,7 +22,6 @@ if TYPE_CHECKING:
 
 __all__: tuple[str, ...] = (
     "FlextApiModelsBase",
-    "FlextApiModelsClient",
     "FlextApiModelsRequest",
     "FlextApiModelsResponse",
     "FlextApiModelsStorage",
@@ -34,7 +32,6 @@ _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
             ".base": ("FlextApiModelsBase",),
-            ".client": ("FlextApiModelsClient",),
             ".request": ("FlextApiModelsRequest",),
             ".response": ("FlextApiModelsResponse",),
             ".storage": ("FlextApiModelsStorage",),
