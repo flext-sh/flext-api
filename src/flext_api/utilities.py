@@ -16,7 +16,6 @@ from flext_api._utilities import (
     FlextApiUtilitiesApiPydantic,
     FlextApiUtilitiesRequestUtils,
     FlextApiUtilitiesSerializers,
-    FlextApiUtilitiesSettingsManager,
     FlextApiUtilitiesTransport,
 )
 from flext_api._utilities.base import FlextApiUtilitiesBase
@@ -30,7 +29,6 @@ class FlextApiUtilities(FlextWebUtilities):
         FlextApiUtilitiesApiPydantic,
         FlextApiUtilitiesRequestUtils,
         FlextApiUtilitiesSerializers,
-        FlextApiUtilitiesSettingsManager,
         FlextApiUtilitiesTransport,
     ):
         """API-specific utility namespace."""

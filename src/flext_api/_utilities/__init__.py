@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from flext_api._utilities.base import FlextApiUtilitiesBase
     from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
     from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
-    from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
     from flext_api._utilities.transport import FlextApiUtilitiesTransport
 
 
@@ -26,7 +25,6 @@ __all__: tuple[str, ...] = (
     "FlextApiUtilitiesBase",
     "FlextApiUtilitiesRequestUtils",
     "FlextApiUtilitiesSerializers",
-    "FlextApiUtilitiesSettingsManager",
     "FlextApiUtilitiesTransport",
 )
 
@@ -37,7 +35,6 @@ _LAZY_IMPORTS = MappingProxyType(
             ".base": ("FlextApiUtilitiesBase",),
             ".request_utils": ("FlextApiUtilitiesRequestUtils",),
             ".serializers": ("FlextApiUtilitiesSerializers",),
-            ".settings_manager": ("FlextApiUtilitiesSettingsManager",),
             ".transport": ("FlextApiUtilitiesTransport",),
         }),
         alias_groups=MappingProxyType({}),

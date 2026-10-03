@@ -31,7 +31,6 @@ rules:
   - id: api-result-bool-keyword
     description: Name the public result payload at Boolean call sites.
     include:
-      - src/flext_api/_utilities/settings_manager.py
       - src/flext_api/api.py
       - src/flext_api/services/base_client.py
     distributions: [flext-api]
