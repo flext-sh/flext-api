@@ -1,11 +1,17 @@
-"""gRPC protocol shard."""
+"""gRPC protocol shard.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from flext_api import p, t
+    from flext_web import p
+
+    from flext_api import t
 
 
 class FlextApiProtocolsGrpc:

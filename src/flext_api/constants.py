@@ -1,15 +1,22 @@
-"""FlextApi constants facade."""
+"""FlextApi constants facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from flext_api._constants.api import FlextApiConstantsApi
-from flext_web import c
+from flext_web import FlextWebConstants
+
+from flext_api._constants import FlextApiConstantsApi
+from flext_api._constants.base import FlextApiConstantsBase
+from flext_api._constants.config import FlextApiConstantsConfig
 
 
-class FlextApiConstants(c):
+class FlextApiConstants(FlextWebConstants):
     """FlextApi domain constants extending FlextWebConstants via MRO."""
 
-    class Api(FlextApiConstantsApi):
+    class Api(FlextApiConstantsBase, FlextApiConstantsConfig, FlextApiConstantsApi):
         """API domain constants namespace."""
 
 

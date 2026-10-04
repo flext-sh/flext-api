@@ -6,18 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsConstants
-
 from flext_api import c
-from tests import t
 
 
-class TestsFlextApiConstants(FlextTestsConstants, c):
-    """Test constants for flext-api."""
+class TestsFlextApiConstants(c):
+    """Test constants for flext-api — extends flext_api.c."""
 
-    class Tests(FlextTestsConstants.Tests):
+    class Tests(c):
         """Test-specific constants."""
 
 
-c = TestsFlextApiConstants
-__all__: t.MutableSequenceOf[str] = ["TestsFlextApiConstants", "c"]
+__all__: list[str] = ["TestsFlextApiConstants"]

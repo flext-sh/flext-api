@@ -1,12 +1,18 @@
-"""API request models."""
+"""API request models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
-from flext_api import c, t
 from flext_web import m, u
+
+from flext_api.constants import c
+from flext_api.typings import t
 
 
 class FlextApiModelsRequest:
@@ -30,13 +36,16 @@ class FlextApiModelsRequest:
             u.Field(..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"),
         ]
         headers: Annotated[
-            t.StrMapping, u.Field(description="HTTP request headers")
-        ] = u.Field(default_factory=lambda: MappingProxyType({}))
+            t.StrMapping,
+            u.Field(description="HTTP request headers"),
+        ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
-            t.Api.RequestBody | None, u.Field(description="Request body")
+            t.Api.RequestBody | None,
+            u.Field(description="Request body"),
         ] = None
         query_params: Annotated[
-            t.Api.WebParams | None, u.Field(description="Query parameters")
+            t.Api.WebParams | None,
+            u.Field(description="Query parameters"),
         ] = None
         timeout: Annotated[
             t.PositiveTimeout,
@@ -59,12 +68,20 @@ class FlextApiModelsRequest:
         @u.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.RequestBody:
-            """Normalize request body."""
+            """Normalize request body.
+
+            Returns:
+                The resulting ``t.Api.RequestBody``.
+            """
             if v is None:
                 return {}
-            return t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
+            validated: t.Api.RequestBody = t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
+            return validated
 
-        @u.computed_field(return_type=str)
+        # Why: bare form (no return_type kwarg) resolves to the positional
+        # overload pyrefly's stub actually carries; the property's own `-> str`
+        # annotation already tells pydantic the computed field's schema type.
+        @u.computed_field
         @property
         def content_type(self) -> str:
             """Content type resolved from headers."""

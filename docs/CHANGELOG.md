@@ -1,3 +1,15 @@
 # Changelog
 
-This file is managed by `make docs DOCS_PHASE=generate`.
+## 0.12.0 - 2026-09-04
+
+- Release tag: `v0.12.0`
+
+Full notes: `docs/releases/v0.12.0.md`
+
+<!-- TOC START -->
+
+- [0.12.0 - 2026-09-04](#0120-2026-09-04)
+
+<!-- TOC END -->
+
+This file is managed by `make docs`.

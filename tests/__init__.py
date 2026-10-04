@@ -1,27 +1,67 @@
-# AUTO-GENERATED FILE — canonical lazy tests facade. Regenerate with: make gen
-"""Test package facade exposing the project test aliases lazily."""
+# AUTO-GENERATED FILE — Regenerate with: make gen
+"""Tests package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from tests.base import TestsFlextApiServiceBase as TestsFlextApiServiceBase, s as s
-    from tests.constants import TestsFlextApiConstants as TestsFlextApiConstants, c as c
-    from tests.models import TestsFlextApiModels as TestsFlextApiModels, m as m
-    from tests.protocols import TestsFlextApiProtocols as TestsFlextApiProtocols, p
-    from tests.typings import TestsFlextApiTypes as TestsFlextApiTypes, t as t
-    from tests.utilities import TestsFlextApiUtilities as TestsFlextApiUtilities, u
+    from flext_api import c, d, e, h, m, p, r, t, u, x
+    from tests import unit
+    from tests.base import TestsFlextApiServiceBase, s
+    from tests.constants import TestsFlextApiConstants
+    from tests.models import TestsFlextApiModels
+    from tests.protocols import TestsFlextApiProtocols
+    from tests.settings import TestsFlextApiSettings
+    from tests.typings import TestsFlextApiTypes
+    from tests.utilities import TestsFlextApiUtilities
 
-_LAZY_IMPORTS = build_lazy_import_map({
-    ".constants": ("TestsFlextApiConstants", "c"),
-    ".typings": ("TestsFlextApiTypes", "t"),
-    ".protocols": ("TestsFlextApiProtocols", "p"),
-    ".models": ("TestsFlextApiModels", "m"),
-    ".utilities": ("TestsFlextApiUtilities", "u"),
-    ".base": ("TestsFlextApiServiceBase", "s"),
-})
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
+__all__: tuple[str, ...] = (
+    "TestsFlextApiConstants",
+    "TestsFlextApiModels",
+    "TestsFlextApiProtocols",
+    "TestsFlextApiServiceBase",
+    "TestsFlextApiSettings",
+    "TestsFlextApiTypes",
+    "TestsFlextApiUtilities",
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
+    "unit",
+    "x",
+)
+
+_LAZY_IMPORTS = MappingProxyType(
+    build_lazy_import_map(
+        MappingProxyType({
+            ".base": ("TestsFlextApiServiceBase", "s"),
+            ".constants": ("TestsFlextApiConstants",),
+            ".models": ("TestsFlextApiModels",),
+            ".protocols": ("TestsFlextApiProtocols",),
+            ".settings": ("TestsFlextApiSettings",),
+            ".typings": ("TestsFlextApiTypes",),
+            ".unit": ("unit",),
+            ".utilities": ("TestsFlextApiUtilities",),
+            "flext_api": ("c", "d", "e", "h", "m", "p", "r", "t", "u", "x"),
+        }),
+        alias_groups=MappingProxyType({}),
+        sort_keys=False,
+    ),
+)
+
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

@@ -1,31 +1,39 @@
-"""FlextApi utilities facade."""
+"""FlextApi utilities facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_api._utilities.api_pydantic import FlextApiUtilitiesApiPydantic
-from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
-from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
-from flext_api._utilities.settings_manager import FlextApiUtilitiesSettingsManager
-from flext_web import u
+from flext_web import FlextWebUtilities
 
 if TYPE_CHECKING:
     from flext_api import t
+from flext_api._utilities import (
+    FlextApiUtilitiesApiPydantic,
+    FlextApiUtilitiesRequestUtils,
+    FlextApiUtilitiesSerializers,
+    FlextApiUtilitiesTransport,
+)
+from flext_api._utilities.base import FlextApiUtilitiesBase
 
 
-class FlextApiUtilities(u):
+class FlextApiUtilities(FlextWebUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers."""
 
     class Api(
+        FlextApiUtilitiesBase,
         FlextApiUtilitiesApiPydantic,
         FlextApiUtilitiesRequestUtils,
         FlextApiUtilitiesSerializers,
-        FlextApiUtilitiesSettingsManager,
+        FlextApiUtilitiesTransport,
     ):
         """API-specific utility namespace."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]
-
 u = FlextApiUtilities
+
+__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]

@@ -6,17 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsModels
-
 from flext_api import m
 
 
-class TestsFlextApiModels(FlextTestsModels, m):
-    """Test models for flext-api."""
+class TestsFlextApiModels(m):
+    """Test models for flext-api — extends flext_api.m."""
 
-    class Tests(FlextTestsModels.Tests):
+    class Tests(m):
         """Test-specific models."""
 
 
-m = TestsFlextApiModels
-__all__: list[str] = ["TestsFlextApiModels", "m"]
+__all__: list[str] = ["TestsFlextApiModels"]

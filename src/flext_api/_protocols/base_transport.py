@@ -1,11 +1,17 @@
-"""Transport protocol shard."""
+"""Transport protocol shard.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from flext_api import p, t
+    from flext_web import p
+
+    from flext_api import t
 
 
 class FlextApiProtocolsTransport:
@@ -24,7 +30,9 @@ class FlextApiProtocolsTransport:
             ...
 
         def send(
-            self, connection: str, data: t.JsonMapping | t.Api.RequestBody
+            self,
+            connection: str,
+            data: t.JsonMapping | t.Api.RequestBody,
         ) -> p.Result[t.Api.HttpResponseDict | str]:
             """Send data through connection."""
             ...

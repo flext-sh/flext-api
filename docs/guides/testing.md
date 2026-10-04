@@ -1,250 +1,102 @@
-<!-- Generated from docs/guides/testing.md for flext-api. -->
+<!-- AUTO-GENERATED FILE — regenerate through `make gen` from the workspace root. -->
+<!-- Source of truth: `<workspace-root>/docs/guides/testing.md`; adjust that workspace source, never this member projection. -->
 
-<!-- Source of truth: workspace docs/guides/. -->
-
-# flext-api - FLEXT Testing Guide
+# flext-api - Testing
 
 > Project profile: `flext-api`
 
-This guide covers testing strategies, best practices, and procedures for FLEXT applications and libraries.
+<!-- TOC START -->
 
-## Overview
+- [Test design](#test-design)
+- [Canonical execution](#canonical-execution)
+- [Generated documentation](#generated-documentation)
+- [Related guides](#related-guides)
 
-FLEXT maintains comprehensive test coverage across all **33 projects** with the following standards:
+<!-- TOC END -->
 
-- **85%+ coverage** for foundation libraries (flext-core)
-- **75%+ coverage** for applications and domain libraries
-- **100% test pass rate** across all projects
-- **Zero Pyrefly errors** in strict mode (successor to MyPy)
-- **Zero Ruff violations** in production code
+FLEXT tests prove observable runtime behavior through public package facades. The
+workspace root `AGENTS.md` and the nearest package scope remain authoritative.
 
-## Test Structure
+## Test design
 
-FLEXT uses a hierarchical test structure:
+- Exercise only public `api.py` surfaces and canonical `c`, `t`, `p`, `m`, and `u`
+  facades.
+- Put shared setup in the unified `conftest.py` and typed fixtures under
+  `tests/fixtures/`.
+- Use `tm` matchers and shared `flext-tests` builders for assertions and test data.
+- Read project-owned values from typed config or settings. Never freeze current defaults
+  in tests, examples, or golden files.
+- Use real, bounded dependencies. Mocks, fakes, stubs, patching, monkeypatch mutation,
+  and assertions about private construction are prohibited.
+- Treat warnings, skips, empty collection, and suppressed failures as red.
 
-```
-tests/
-├── unit/           # Unit tests (fast, isolated)
-├── integration/    # Integration tests (component interaction)
-├── e2e/           # End-to-end tests (full workflow)
-├── fixtures/      # Test data and fixtures
-└── conftest.py    # Pytest configuration
-```
+## Canonical execution
 
-## Test Categories
-
-### Unit Tests
-
-Test individual functions and classes in isolation:
-
-```python
-```
-
-### Parallel Test Execution
+Run tests only through the dispatcher at the workspace root:
 
 ```bash
-# Run tests in parallel
-pytest -n auto
-
-# Specific number of workers
-pytest -n 4
+make test
 ```
 
-## Test Fixtures
+`make test` owns incremental impact selection and the project's persistent Testmon
+database, whose location the flext-infra generated configuration owns. Its collection
+inventory uses the same marker scope as execution. The runner accounts for every
+selected and deselected test; it never infers selection from console output. Never clear
+or bypass the database, or invoke the underlying runner directly.
 
-### Pytest Fixtures
+Run the complete suite through its declared verb:
 
-```python
+```bash
+make test-full
 ```
 
-### Loading Test Data
+The runner first completes the incremental operation, then executes the full suite using
+the same database and one monotonic deadline. The first failure stops the sequence. The
+full phase includes both configured `external-gate-markers` and `ci-excluded-markers` in
+every context. External tests retain their declared services, network access, and
+authentication requirements.
 
-```python
-import json
-from pathlib import Path
+Incremental execution excludes `tooling.tools.pytest.external-gate-markers`. CI and
+generated pre-commit hooks use the configured `make.ci.value` token and also exclude
+`ci-excluded-markers`, consistently in collection, execution, and coverage. The runner
+records these as `not_executed_external_gates` and `not_executed_ci_markers`; exclusions
+are not passed tests. Both fields are empty for the full phase. Marker policy belongs to
+the typed tooling configuration, not a separate command-line expression.
 
-def load_test_fixture(fixture_name: str) -> str:
-    """Load test fixture from fixtures directory."""
-    fixture_path = Path(__file__).parent / "fixtures" / fixture_name
-    return fixture_path.read_text()
+Each phase retains its mode, database, raw process outcome, collection manifest, and
+diagnostics. The latest receipt names the current attempt even when collection fails.
+Warning totals include selection, inventory, and suite occurrences, with blocking and
+explicitly suspended warnings reported separately. The existing non-strict MRO
+enforcement suspension remains visible in those receipts; skips still block acceptance.
 
-def load_json_fixture(fixture_name: str) -> t.JsonMapping:
-    """Load JSON test fixture."""
-    fixture_path = Path(__file__).parent / "fixtures" / fixture_name
-    return json.loads(fixture_path.read_text())
+Zero execution is accepted only as a typed incremental `cache_hit`: the database must
+pass integrity checks, a complete nonempty inventory must be entirely deselected, and
+there must be no failures, blocking warnings, or skips. A cache hit is never reported as
+tests passed. Empty collection or zero execution in the full phase fails.
 
-# Usage
-def test_with_fixture():
-    """Test using loaded fixture data."""
-    ldif_content = load_test_fixture("ldif/valid.ldif")
-    config_data = load_json_fixture("settings/dev.yaml")
+Run the complete verification gate through the same dispatcher:
 
-    # Use fixture data in test
-    result = process_ldif(ldif_content, config_data)
-    assert result.success```
-## Continuous Integration
+```bash
+make check
+```
 
-### GitHub Actions Workflow
+Selectors such as project names, file names, patterns, or changed-only flags are not
+part of this command surface. If a required workflow is missing, repair the root Make
+owner and rerun its declared verb.
 
-```yaml
-name: Test Suite
+## Generated documentation
 
-on: [push, pull_request]
+Member copies of this guide are generated projections. Change this root source and
+regenerate from the workspace root:
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.13]
+```bash
+make gen
+```
 
-    steps:
-      - uses: actions/checkout@v3
+Do not edit a member projection by hand.
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+## Related guides
 
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
-
-      - name: Run tests
-        run: |
-          poetry run pytest --cov=src --cov-report=xml
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.xml```
-## Best Practices
-
-### 1. Test Naming
-
-```python
-# ✅ GOOD - Descriptive test names
-def test_parse_valid_ldif_returns_success():
-    """Test that parsing valid LDIF returns success result."""
-    pass
-
-def test_parse_invalid_ldif_returns_failure():
-    """Test that parsing invalid LDIF returns failure result."""
-    pass
-
-# ❌ BAD - Vague test names
-def test_parse():
-    pass
-
-def test_ldif():
-    pass```
-### 2. Test Organization
-
-```python
-class TestLdifParsing:
-    """Test LDIF parsing functionality."""
-
-    def test_parse_valid_single_entry(self):
-        """Test parsing single valid LDIF entry."""
-        pass
-
-    def test_parse_valid_multiple_entries(self):
-        """Test parsing multiple valid LDIF entries."""
-        pass
-
-    def test_parse_invalid_format(self):
-        """Test parsing invalid LDIF format."""
-        pass
-
-class TestLdifMigration:
-    """Test LDIF migration functionality."""
-
-    def test_migrate_oid_to_oud(self):
-        """Test OID to OUD migration."""
-        pass```
-### 3. Assertion Quality
-
-```python
-# ✅ GOOD - Specific assertions
-def test_parse_result():
-    result = ldif.parse(content)
-
-    assert result.success
-    entries = result.unwrap()
-    assert len(entries) == 1
-    assert entries[0].dn == "cn=test,dc=example,dc=com"
-    assert "cn" in entries[0].attributes
-
-
-# ❌ BAD - Vague assertions
-def test_parse_result():
-    result = ldif.parse(content)
-    assert result  # Too vague```
-
-
-### 4. Test Independence
-```python
-# ✅ GOOD - Independent tests
-def test_parse_valid_ldif():
-    ldif = ldif()  # Fresh instance
-    result = ldif.parse("dn: test")
-    assert result.success
-
-def test_parse_invalid_ldif():
-    ldif = ldif()  # Fresh instance
-    result = ldif.parse("invalid")
-    assert result.failure
-
-# ❌ BAD - Dependent tests
-ldif = ldif()  # Shared instance
-
-def test_parse_valid_ldif():
-    result = ldif.parse("dn: test")
-    assert result.success
-
-def test_parse_invalid_ldif():
-    result = ldif.parse("invalid")
-    assert result.failure```
-## Troubleshooting
-
-### Common Test Issues
-
-1. **Import Errors**
-
-   ```bash
-   # Set PYTHONPATH
-   export PYTHONPATH=src
-   pytest
-   ```
-
-1. **Fixture Not Found**
-
-   ```python notest
-   # Check fixture scope and dependencies
-   @pytest.fixture(scope="function")
-   def my_fixture():
-       return "value"
-   ```
-
-1. **Test Timeout**
-
-   ```bash
-   # Increase timeout
-   pytest --timeout=300
-   ```
-
-1. **Coverage Issues**
-
-   ```bash
-   # Check coverage configuration
-   pytest --cov=src --cov-report=term-missing
-   ```
-
-## Resources
-
-- [Pytest Documentation](https://docs.pytest.org/)
-- [Coverage.py Documentation](https://coverage.readthedocs.io/)
-- FLEXT Quality Standards
-- Test Examples
-- CI/CD Configuration
+- Development
+- Troubleshooting
+- Testing standards

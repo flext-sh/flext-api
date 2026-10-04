@@ -69,4 +69,5 @@ src/flext_api/
 
 ## Development
 
-See project root documentation for development guidelines, testing procedures, and API usage examples.
+See project root documentation for development guidelines, testing procedures, and API
+usage examples.

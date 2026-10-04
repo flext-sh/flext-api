@@ -1,8 +1,31 @@
 # C4 Model - System Context
 
+<!-- TOC START -->
+
+- [Overview](#overview)
+- [System Context Diagram](#system-context-diagram)
+- [Context Description](#context-description)
+  - [Primary Users](#primary-users)
+  - [External Systems](#external-systems)
+- [System Responsibilities](#system-responsibilities)
+  - [Core Responsibilities](#core-responsibilities)
+  - [Quality Attributes](#quality-attributes)
+- [System Boundaries](#system-boundaries)
+  - [Included Scope](#included-scope)
+  - [Excluded Scope](#excluded-scope)
+- [Key Constraints](#key-constraints)
+  - [Technical Constraints](#technical-constraints)
+  - [Business Constraints](#business-constraints)
+- [Risk Assessment](#risk-assessment)
+  - [High Risk Items](#high-risk-items)
+  - [Mitigation Strategies](#mitigation-strategies)
+
+<!-- TOC END -->
+
 ## Overview
 
-This document describes the **System Context** level of the C4 model for FLEXT-API, showing the system in relation to its users and external systems.
+This document describes the **System Context** level of the C4 model for FLEXT-API,
+showing the system in relation to its users and external systems.
 
 ## System Context Diagram
 
@@ -14,7 +37,7 @@ title FLEXT-API System Context
 
 Person(developer, "Application Developer", "Builds applications using FLEXT ecosystem")
 Person(enterprise_user, "Enterprise User", "Uses applications built with FLEXT")
-Person(system_REDACTED_LDAP_BIND_PASSWORD, "System Administrator", "Manages FLEXT deployments")
+Person(system_admin, "System Administrator", "Manages FLEXT deployments")
 
 System(flext_api, "FLEXT-API", "HTTP client and FastAPI foundation library")
 System(flext_core, "FLEXT-Core", "Foundation library with patterns and utilities")
@@ -27,7 +50,7 @@ System_Ext(external_api, "External APIs", "Third-party REST APIs and services")
 
 Rel(developer, flext_api, "Builds applications using")
 Rel(enterprise_user, flext_api, "Uses applications built with", "HTTP/REST")
-Rel(system_REDACTED_LDAP_BIND_PASSWORD, flext_api, "Deploys and manages")
+Rel(system_admin, flext_api, "Deploys and manages")
 
 Rel(flext_api, flext_core, "Depends on", "patterns & utilities")
 Rel(flext_api, ldap_server, "Authenticates users", "LDAP/LDAPS")
@@ -172,6 +195,7 @@ Rel(flext_api, external_api, "Makes HTTP requests", "REST/GraphQL")
 1. **Monitoring**: Extensive logging and performance monitoring
 1. **Documentation**: Detailed architecture and API documentation
 
-______________________________________________________________________
+---
 
-**Next Level**: [Container Diagram](containers.md) - Technology choices and deployment view
+**Next Level**: [Container Diagram](containers.md) - Technology choices and deployment
+view

@@ -1,244 +1,78 @@
-<!-- Generated from docs/guides/configuration.md for flext-api. -->
+<!-- AUTO-GENERATED FILE — regenerate through `make gen` from the workspace root. -->
+<!-- Source of truth: `<workspace-root>/docs/guides/configuration.md`; adjust that workspace source, never this member projection. -->
 
-<!-- Source of truth: workspace docs/guides/. -->
-
-# flext-api - FLEXT Configuration Guide
+# flext-api - Configuration
 
 > Project profile: `flext-api`
 
-This guide covers how to configure FLEXT for your specific environment and requirements.
+<!-- TOC START -->
 
-## Overview
+- [Ownership order](#ownership-order)
+- [Public exports manifest](#public-exports-manifest)
+- [Documentation configuration](#documentation-configuration)
+- [Apply and validate](#apply-and-validate)
+- [Related guides](#related-guides)
 
-FLEXT uses a hierarchical configuration system that supports environment variables, configuration files,
-and programmatic configuration. All configuration is validated using Pydantic v2 models for type safety and validation.
+<!-- TOC END -->
 
-## Configuration Sources
+Configuration has one writable authority. Prefer typed `config/*.yaml` and settings; use
+`pyproject.toml` only for package and tool metadata that it owns. Derived files are
+generated projections.
 
-FLEXT loads configuration in the following order (later sources override earlier ones):
+## Ownership order
 
-1. **Default values** in Pydantic models
-1. **Environment variables** (prefixed with `FLEXT_`)
-1. **Configuration files** (YAML, JSON, or TOML)
-1. **Programmatic configuration** in code
+1. Typed config and settings own business rules, operational values, and
+   environment-tunable behavior.
+2. `pyproject.toml` owns package metadata and declared tool configuration.
+3. Generators derive managed code, docs, CI, and workspace projections.
 
-## Basic Configuration
+Never duplicate an owned value in tests, examples, JSON side files, templates, or local
+registries. Tests read the same typed owner as production.
 
-### Environment Variables
+## Public exports manifest
 
-Set configuration using environment variables with the `FLEXT_` prefix:
+`config/exports.yaml` is the declarative SSOT for the workspace root's public export
+contract (RC-B). When the manifest exists, the lazy-init filesystem scan becomes a
+validator: any divergence between the manifest and the scan fails generation instead of
+mutating silently.
 
-```bash
-# Core configuration
-export FLEXT_LOG_LEVEL=INFO
-export FLEXT_DEBUG=false
-export FLEXT_ENVIRONMENT=production
+- The manifest lists the names of the root package's static public export contract.
+- Runtime lazy-alias machinery (single-letter facade aliases such as `d`, `e`, `h`, `r`,
+  `x`) is not part of the static contract; the scan does not attribute those aliases to
+  the root package and the manifest must not list them.
+- Intentional public-API changes update the manifest in the same change; deleting a
+  module without updating the manifest fails gen pointing at the orphaned entry.
 
-# LDIF processing
-export FLEXT_LDIF_DEFAULT_ENCODING=utf-8
-export FLEXT_LDIF_STRICT_VALIDATION=true
-export FLEXT_LDIF_SERVERS_ENABLED=true
+## Documentation configuration
 
-# API configuration
-export FLEXT_API_BASE_URL=https://api.example.com
-export FLEXT_API_TIMEOUT=30
-```
+Public API documentation is derived from declared public exports and docstrings. Project
+descriptions, versions, package names, and URLs come from canonical package metadata.
+Docs-only policy exists only when it cannot be derived from a typed owner.
 
-### Configuration Files
+Root files under `docs/guides/` own generated member guides. Change the root source,
+never the member projection.
 
-Create configuration files in YAML, JSON, or TOML format:
+## Apply and validate
 
-**settings.YAML:**
-
-```yaml
-# FLEXT Configuration
-log_level: INFO
-debug: false
-environment: production
-
-# LDIF Processing
-ldif:
-  default_encoding: utf-8
-  strict_validation: true
-  servers_enabled: true
-  batch_size: 1000
-
-# API Configuration
-api:
-  base_url: https://api.example.com
-  timeout: 30
-  retry_attempts: 3
-```
-
-### Programmatic Configuration
-
-Configure FLEXT programmatically in your code:
-
-```python
-```
-
-## Configuration Validation
-
-All configuration is validated using Pydantic v2 models:
-
-```python
-from flext_core import FlextSettings, e
-
-try:
-    settings = FlextSettings(
-        log_level="INVALID_LEVEL"  # This will raise ValidationError
-    )
-except c.ValidationError as e:
-    print(f"Configuration error: {e}")```
-## Configuration Inheritance
-
-FLEXT supports configuration inheritance for complex setups:
-
-```python
-from flext_core import FlextSettings
-
-# Base configuration
-base_config = FlextSettings(log_level="INFO", environment="production")
-
-# Extended configuration
-extended_config = FlextSettings(
-    **base_config.dict(),
-    debug=True,  # Override for development
-    custom_setting="value",
-)```
-## Best Practices
-
-### 1. Use Environment Variables for Secrets
+Run configuration propagation and validation from the workspace root:
 
 ```bash
-# Never put secrets in configuration files
-export FLEXT_DATABASE_PASSWORD=secret_password
-export FLEXT_API_KEY=your_api_key```
-### 2. Validate Configuration Early
+make gen
+make gen
+make check
+make test
+make gen
+```
 
-```python
-from flext_core import FlextSettings
+The second generation run must be a fixed point. Test validation retains the canonical
+Testmon cache. Do not invoke underlying tools or add project, file, pattern, phase, fix,
+or changed-only selectors.
 
-def main():
-    # Validate configuration at startup
-    settings = FlextSettings()
+Warnings, missing tools, stale projections, and empty output are failures. Fix their
+canonical owner and rerun the same root verb.
 
-    if not settings.is_valid():
-        print("Invalid configuration")
-        return 1
+## Related guides
 
-    # Continue with application logic
-    return 0```
-### 3. Use Configuration Classes
-
-```python
-from flext_core import FlextSettings, u
-
-class MyAppConfig(FlextSettings):
-    custom_setting: str = "default_value"
-    another_setting: int = 42
-
-    @u.field_validator("another_setting")
-    @classmethod
-    def validate_another_setting(cls, v):
-        if v < 0:
-            raise ValueError("another_setting must be positive")
-        return v```
-### 4. Document Configuration Options
-
-```python
-class FlextLdifSettings(m.BaseModel):
-    """Configuration for LDIF processing."""
-
-    default_encoding: str = u.Field(
-        default="utf-8", description="Default encoding for LDIF files"
-    )
-
-    strict_validation: bool = u.Field(
-        default=True, description="Enable strict RFC validation"
-    )```
-## Troubleshooting
-
-### Common Configuration Issues
-
-1. **Environment Variables Not Loading**
-
-   - Ensure variables are prefixed with `FLEXT_`
-   - Check for typos in variable names
-   - Verify environment is set before running application
-
-1. **Configuration File Not Found**
-
-   - Check file path is correct
-   - Ensure file has proper permissions
-   - Verify file format (YAML, JSON, or TOML)
-
-1. **Validation Errors**
-
-   - Check Pydantic model field types
-   - Verify required fields are provided
-   - Review field validators for constraints
-
-### Debug Configuration
-
-```python
-from flext_core import FlextSettings
-
-# Enable debug logging
-settings = FlextSettings(debug=True)
-
-# Print configuration
-print(settings.dict())
-
-# Validate configuration
-if settings.is_valid():
-    print("Configuration is valid")
-else:
-    print("Configuration has errors")```
-## Examples
-
-### Complete Configuration Example
-
-```python
-#!/usr/bin/env python3
-"""Complete FLEXT configuration example."""
-
-import os
-
-from flext_ldif import FlextLdifSettings
-
-from flext_api import FlextApiSettings
-from flext_core import (
-    FlextSettings,
-)
-
-def main():
-    # Load configuration from environment
-    settings = FlextSettings()
-
-    # Configure LDIF processing
-    ldif_config = FlextLdifSettings(
-        source_server=os.getenv("FLEXT_SOURCE_SERVER", "oid"),
-        target_server=os.getenv("FLEXT_TARGET_SERVER", "oud"),
-        batch_size=int(os.getenv("FLEXT_BATCH_SIZE", "1000")),
-    )
-
-    # Configure API client
-    api_config = FlextApiSettings(
-        base_url=os.getenv("FLEXT_API_URL", "http://localhost:8000"),
-        timeout=int(os.getenv("FLEXT_API_TIMEOUT", "30")),
-    )
-
-    print("Configuration loaded successfully")
-    print(f"Log level: {settings.log_level}")
-    print(f"LDIF batch size: {ldif_config.batch_size}")
-    print(f"API base URL: {api_config.base_url}")
-
-if __name__ == "__main__":
-    main()```
-## Reference
-
-- FLEXT Core Configuration
-- Environment Variables
-- [Pydantic v2 Documentation](https://docs.pydantic.dev/2.0/)
-- Configuration Best Practices
+- Development
+- Testing
+- Troubleshooting

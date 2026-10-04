@@ -2,18 +2,23 @@
 
 Provides typed access to the registered ``api`` settings namespace while
 preserving flext-web service runtime behavior.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
 from abc import ABC
+from typing import override
 
 from flext_api import FlextApiSettings, m, p, t
 from flext_core import s
 
 
 class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload]](
-    s[TDomainResult], ABC
+    s[TDomainResult],
+    ABC,
 ):
     """Base class for flext-api services with typed API settings access."""
 
@@ -33,8 +38,25 @@ class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayl
             initial_context=initial_context,
         )
 
+    @property
+    @override
+    def settings(self) -> FlextApiSettings:
+        """The typed API settings bound to this service runtime.
+
+        Raises:
+            TypeError: If ``not isinstance(current, FlextApiSettings)``.
+        """
+        current = super().settings
+        if not isinstance(current, FlextApiSettings):
+            msg = (
+                f"{type(self).__name__} runtime settings must be FlextApiSettings, "
+                f"got {type(current).__name__}"
+            )
+            raise TypeError(msg)
+        return current
+
     @classmethod
-    def _runtime_bootstrap_options(cls) -> p.RuntimeBootstrapOptions:
+    def runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
         """Return runtime bootstrap options for API services."""
         return m.RuntimeBootstrapOptions(settings_type=FlextApiSettings)
 

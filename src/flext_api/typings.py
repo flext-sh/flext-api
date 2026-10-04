@@ -7,22 +7,28 @@ Note: Protocols are in protocols.py, not here. Use p.Api.* for protocols.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
 
+from flext_web import m, p, t, u
+
 from flext_api import c
+from flext_api._typings.base import FlextApiTypingsBase
 from flext_api._typings.serialization import FlextApiTypingsSerialization
-from flext_web import p, t, u
+from flext_api._typings.transport import FlextApiTypingsTransport
 
 
 class FlextApiTypes(t):
     """Unified API type definitions extending t via MRO."""
 
-    class Api(FlextApiTypingsSerialization):
+    class Api(
+        FlextApiTypingsBase,
+        FlextApiTypingsSerialization,
+        FlextApiTypingsTransport,
+    ):
         """API types namespace for cross-project access."""
 
         type WebHeaders = t.ScalarOrStrSequenceMapping
@@ -30,7 +36,8 @@ class FlextApiTypes(t):
         type RequestBody = t.JsonValue | t.StrictBytes
         type ResponseBody = t.JsonValue | t.StrictBytes | None
         type HttpResponseDict = t.MappingKV[
-            str, t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None
+            str,
+            t.JsonValue | t.StrMapping | t.JsonMapping | t.StrictBytes | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
         type RouteData = t.MappingKV[
@@ -46,29 +53,30 @@ class FlextApiTypes(t):
         type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
         type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
         type WebhookHandler = Callable[
-            [t.JsonMapping], t.JsonValue | p.ResultLike[bool] | None
+            [t.JsonMapping],
+            t.JsonValue | p.Result[bool] | None,
         ]
         type RequestKwargs = t.MappingKV[
             str,
             t.StrMapping | t.JsonMapping | t.ScalarOrStrSequenceMapping | float | None,
         ]
         type CacheDict = t.MappingKV[str, t.Primitives]
-        API_JSON_VALUE_ADAPTER: u.TypeAdapter[t.JsonValue] = t.json_value_adapter()
-        BINARY_CONTENT_ADAPTER: u.TypeAdapter[t.StrictBytes] = (
+        API_JSON_VALUE_ADAPTER: m.TypeAdapter[t.JsonValue] = t.json_value_adapter()
+        BINARY_CONTENT_ADAPTER: m.TypeAdapter[t.StrictBytes] = (
             t.binary_content_adapter()
         )
-        STR_MAPPING_ADAPTER: u.TypeAdapter[t.StrMapping] = t.str_mapping_adapter()
-        HOSTNAME_ADAPTER: u.TypeAdapter[t.HostnameStr] = t.hostname_str_adapter()
-        PORT_NUMBER_ADAPTER: u.TypeAdapter[t.PortNumber] = t.port_number_adapter()
-        STRING_ADAPTER: u.TypeAdapter[t.StrictStr] = t.str_adapter()
-        INTEGER_ADAPTER: u.TypeAdapter[t.StrictInt] = t.int_adapter()
-        FLOAT_ADAPTER: u.TypeAdapter[t.StrictFloat] = t.float_adapter()
-        STORAGE_ENTRY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
-        REQUEST_BODY_ADAPTER: u.TypeAdapter[RequestBody] = u.TypeAdapter(RequestBody)
+        STR_MAPPING_ADAPTER: m.TypeAdapter[t.StrMapping] = t.str_mapping_adapter()
+        HOSTNAME_ADAPTER: m.TypeAdapter[t.HostnameStr] = t.hostname_str_adapter()
+        PORT_NUMBER_ADAPTER: m.TypeAdapter[t.PortNumber] = t.port_number_adapter()
+        STRING_ADAPTER: m.TypeAdapter[t.StrictStr] = t.str_adapter()
+        STORAGE_ENTRY_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        REQUEST_BODY_ADAPTER: m.TypeAdapter[RequestBody] = u.type_adapter(RequestBody)
 
-        RESPONSE_BODY_ADAPTER: u.TypeAdapter[ResponseBody] = u.TypeAdapter(ResponseBody)
-        DICT_BODY_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
-        JSON_HEADERS_ADAPTER: u.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        RESPONSE_BODY_ADAPTER: m.TypeAdapter[ResponseBody] = u.type_adapter(
+            ResponseBody,
+        )
+        DICT_BODY_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+        JSON_HEADERS_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
 
 
 t = FlextApiTypes

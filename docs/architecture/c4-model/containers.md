@@ -1,8 +1,38 @@
 # C4 Model - Containers
 
+<!-- TOC START -->
+
+- [Overview](#overview)
+- [Container Diagram](#container-diagram)
+- [Container Descriptions](#container-descriptions)
+  - [HTTP Client Container](#http-client-container)
+  - [FastAPI Application Container](#fastapi-application-container)
+  - [Protocol Layer Container](#protocol-layer-container)
+  - [Storage Layer Container](#storage-layer-container)
+  - [Configuration Layer Container](#configuration-layer-container)
+- [Technology Choices](#technology-choices)
+  - [Core Technologies](#core-technologies)
+  - [Infrastructure Dependencies](#infrastructure-dependencies)
+- [Deployment Considerations](#deployment-considerations)
+  - [Container Packaging](#container-packaging)
+  - [Environment Configuration](#environment-configuration)
+- [Quality Attributes](#quality-attributes)
+  - [Performance](#performance)
+  - [Reliability](#reliability)
+  - [Security](#security)
+  - [Maintainability](#maintainability)
+- [Monitoring and Observability](#monitoring-and-observability)
+  - [Metrics Collection](#metrics-collection)
+  - [Logging Strategy](#logging-strategy)
+  - [Health Checks](#health-checks)
+
+<!-- TOC END -->
+
 ## Overview
 
-This document describes the **Container** level of the C4 model for FLEXT-API, showing the high-level technology choices and how responsibilities are distributed across containers.
+This document describes the **Container** level of the C4 model for FLEXT-API, showing
+the high-level technology choices and how responsibilities are distributed across
+containers.
 
 ## Container Diagram
 
@@ -16,15 +46,15 @@ Person(developer, "Application Developer", "Python developer using FLEXT-API")
 Person(end_user, "End User", "Uses FLEXT-API based applications")
 
 System_Boundary(flext_api_system, "FLEXT-API System") {
-    Container(api_client, "HTTP Client Container", "Python/FastAPI", "Enterprise HTTP client with connection pooling, retry logic, and railway error handling")
-    Container(fastapi_app, "FastAPI Application Container", "Python/FastAPI", "Web API server with middleware, routing, and request processing")
-    Container(protocol_layer, "Protocol Layer Container", "Python", "Protocol abstractions for HTTP, GraphQL, WebSocket, SSE, and custom protocols")
-    Container(storage_layer, "Storage Layer Container", "Python", "Multi-backend file storage with S3, GCS, Azure, and local filesystem support")
-    Container(config_layer, "Configuration Layer", "Python/Pydantic", "Environment-aware configuration management with validation")
+    Container(api_client, "HTTP Client", "FastAPI", "Enterprise HTTP client")
+    Container(fastapi_app, "FastAPI App", "FastAPI", "Web API server")
+    Container(protocol_layer, "Protocol Layer", "Python", "Protocol abstractions")
+    Container(storage_layer, "Storage Layer", "Python", "Multi-backend storage")
+    Container(config_layer, "Configuration", "Pydantic", "Config management")
 }
 
 System_Boundary(flext_core_system, "FLEXT-Core Foundation") {
-    Container(flext_core, "FLEXT-Core Library", "Python", "Foundation patterns: r, FlextContainer, FlextModels, FlextLogger")
+    Container(flext_core, "FLEXT-Core Library", "Python", "Foundation patterns and facades")
 }
 
 System_Ext(httpx_lib, "HTTPX Library", "Python HTTP library")
@@ -73,8 +103,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 ### HTTP Client Container
 
-**Technology**: Python with HTTPX and FastAPI
-**Responsibilities**:
+**Technology**: Python with HTTPX and FastAPI **Responsibilities**:
 
 - Enterprise-grade HTTP client operations
 - Connection pooling and lifecycle management
@@ -92,8 +121,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 ### FastAPI Application Container
 
-**Technology**: Python with FastAPI framework
-**Responsibilities**:
+**Technology**: Python with FastAPI framework **Responsibilities**:
 
 - Web API server with automatic OpenAPI generation
 - Request routing and middleware processing
@@ -110,8 +138,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 ### Protocol Layer Container
 
-**Technology**: Python with protocol abstractions
-**Responsibilities**:
+**Technology**: Python with protocol abstractions **Responsibilities**:
 
 - Multi-protocol support (HTTP, GraphQL, WebSocket, SSE)
 - Protocol-specific client implementations
@@ -127,8 +154,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 ### Storage Layer Container
 
-**Technology**: Python with multi-backend support
-**Responsibilities**:
+**Technology**: Python with multi-backend support **Responsibilities**:
 
 - Multi-cloud storage abstraction (S3, GCS, Azure)
 - Local filesystem operations
@@ -145,8 +171,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "settings loading")
 
 ### Configuration Layer Container
 
-**Technology**: Python with Pydantic validation
-**Responsibilities**:
+**Technology**: Python with Pydantic validation **Responsibilities**:
 
 - Environment-aware configuration loading
 - Configuration validation and type safety
@@ -193,17 +218,12 @@ FROM python:3.13-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+  gcc \
+  && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && poetry settings virtualenvs.create false
-RUN poetry install --only=main --no-dev
-
-# Copy application code
-COPY src/ ./src/
-COPY scripts/ ./scripts/
+# Copy the project-owned Make/config sources, then provision through Make
+COPY . .
+RUN make setup
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app
@@ -211,7 +231,7 @@ USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "from flext_api import FlextApiClient; print('OK')"
+  CMD python -c "from flext_api import FlextApiClient; u.Cli.print('OK')"
 
 # Start application
 CMD ["python", "-m", "flext_api.app"]
@@ -301,6 +321,6 @@ database:
 - **Performance Health**: Response time thresholds and error rates
 - **Business Health**: Critical business logic validation
 
-______________________________________________________________________
+---
 
 **Next Level**: [Component Diagram](components.md) - Detailed component relationships

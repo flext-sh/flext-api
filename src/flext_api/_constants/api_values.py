@@ -1,14 +1,18 @@
-"""API scalar constants."""
+"""API scalar constants.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
+from flext_web import FlextWebConstants, t
 from httpx import HTTPError as _HttpxError
 
 from flext_api._constants.api_enums import FlextApiConstantsEnums
-from flext_web import FlextWebConstants, t
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -35,7 +39,6 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
         member.value for member in FlextApiConstantsEnums.Status.__members__.values()
     )
     DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
-    DEFAULT_BASE_URL: Final[str] = "http://localhost:8000"
     MAX_HOSTNAME_LENGTH: Final[int] = 253
     MAX_URL_LENGTH: Final[int] = 2048
     MIN_PORT: Final[int] = 1
@@ -64,6 +67,9 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     HEADER_CONTENT_TYPE: Final[str] = "Content-Type"
     HEADER_AUTHORIZATION: Final[str] = "Authorization"
     HEADER_ACCEPT: Final[str] = "Accept"
+    URL_PATH_SEPARATOR: Final[str] = "/"
+    URL_PATH_EMPTY_ERROR: Final[str] = "URL path cannot be empty"
+    REQUEST_EXTENSION_SNI_HOSTNAME: Final[str] = "sni_hostname"
     VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
         "MAX_URL_LENGTH": MAX_URL_LENGTH,
         "MIN_TIMEOUT": 0.1,

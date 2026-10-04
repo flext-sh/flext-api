@@ -1,10 +1,37 @@
 # Architecture Overview
 
-Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
+<!-- TOC START -->
+
+- [Overview](#overview)
+- [Layer Details](#layer-details)
+  - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
+  - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
+- [Protocol Plugin System](#protocol-plugin-system)
+  - [Protocol Registry](#protocol-registry)
+  - [Request Processing Pipeline](#request-processing-pipeline)
+  - [Storage Interface](#storage-interface)
+  - [Cache Configuration](#cache-configuration)
+  - [Security Middleware](#security-middleware)
+  - [Performance Monitoring](#performance-monitoring)
+  - [Deployment Configuration](#deployment-configuration)
+  - [Kubernetes Deployment](#kubernetes-deployment)
+  - [Custom Middleware](#custom-middleware)
+- [Performance Considerations](#performance-considerations)
+  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
+  - [Monitoring and Optimization](#monitoring-and-optimization)
+- [Migration Guidelines](#migration-guidelines)
+  - [Version Compatibility](#version-compatibility)
+- [References](#references)
+
+<!-- TOC END -->
+
+Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration
+foundation for the FLEXT enterprise data integration platform.
 
 ## Overview
 
-FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation of concerns across multiple layers, designed for extensibility and maintainability.
+FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation of
+concerns across multiple layers, designed for extensibility and maintainability.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -67,6 +94,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 **Domain Patterns:**
 
 ```python
+from __future__ import annotations
 ```
 
 **Key Components:**
@@ -83,36 +111,42 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
+from __future__ import annotations
 ```
 
 ### Request Processing Pipeline
 
 ```python
+from __future__ import annotations
 ```
 
 ### Storage Interface
 
 ```python
+from __future__ import annotations
 ```
 
 ### Cache Configuration
 
 ```python
+from __future__ import annotations
 ```
 
 ### Security Middleware
 
 ```python
+from __future__ import annotations
 ```
 
 ### Performance Monitoring
 
 ```python
+from __future__ import annotations
 ```
 
 ### Deployment Configuration
 
-```python
+```text
 # Docker configuration
 FROM python:3.13-slim
 
@@ -128,10 +162,12 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
 # Start application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]```
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
 ### Kubernetes Deployment
 
-```yaml
+````yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -170,23 +206,24 @@ spec:
               path: /ready
               port: 8000
             initialDelaySeconds: 5
-            periodSeconds: 5```
+            periodSeconds: 5
+            ```
 ## Quality Metrics
 
 ### Current State (v0.20.0-dev)
 
-| Metric              | Value | Target (1.0.0) | Status        |
-| ------------------- | ----- | -------------- | ------------- |
+| Metric              | Value | Target (1.0.0) | Status          |
+| ------------------- | ----- | -------------- | --------------- |
 | **Test Coverage**   | 85%   | 90%+           | 🔄 Improving   |
 | **Total Tests**     | 334   | 400+           | 🔄 In Progress |
-| **Ruff Violations** | 0     | 0              | ✅ Complete    |
-| **Type Errors**     | 0     | 0              | ✅ Complete    |
-| **Modules**         | 25    | 25 (stable)    | ✅ Complete    |
+| **Ruff Violations** | 0     | 0              | ✅ Complete     |
+| **Type Errors**     | 0     | 0              | ✅ Complete     |
+| **Modules**         | 25    | 25 (stable)    | ✅ Complete     |
 
 ### Coverage by Layer
 
-| Layer           | Coverage | Status      | Description                    |
-| --------------- | -------- | ----------- | ------------------------------ |
+| Layer           | Coverage | Status       | Description                    |
+| --------------- | -------- | ------------ | ------------------------------ |
 | **Foundation**  | 90%+     | ✅ Excellent | Core HTTP client and utilities |
 | **Domain**      | 80-85%   | ✅ Good      | HTTP models and validation     |
 | **Application** | 85-90%   | ✅ Good      | Protocol implementations       |
@@ -196,10 +233,11 @@ spec:
 
 ### Adding New Protocols
 
-```python
-from flext_api import Base
+```{.python .notest}
+from __future__ import annotations
 
-class CustomBase
+
+class CustomProtocol:
     """Custom protocol implementation."""
 
     def create_client(self, settings: dict):
@@ -208,18 +246,22 @@ class CustomBase
 
     async def execute_request(self, request) -> p.Result[t.JsonValue]:
         """Execute protocol-specific request."""
-        # Custom protocol implementation
         pass
+
 
 # Register new protocol
 registry = ProtocolRegistry()
-registry.register("custom", Custom```
+registry.register("custom", CustomProtocol())
+````
+
 ### Custom Middleware
 
-```python
-from flext_api import FlextApiMiddleware
+```{.python .notest}
+from __future__ import annotations
+from flext_api import p, r
 
-class CustomBusinessMiddleware(FlextApiMiddleware):
+
+class CustomBusinessMiddleware:
     """Custom middleware for business logic."""
 
     async def process_request(self, request) -> p.Result[dict]:
@@ -229,11 +271,13 @@ class CustomBusinessMiddleware(FlextApiMiddleware):
             "tenant_id": request.headers.get("X-Tenant-ID"),
             "user_role": request.headers.get("X-User-Role"),
         }
-
         return r[dict].ok({})
 
+
 # Register middleware
-app.add_middleware(CustomBusinessMiddleware())```
+app.add_middleware(CustomBusinessMiddleware())
+```
+
 ## Performance Considerations
 
 ### Bottlenecks and Optimization
@@ -261,7 +305,10 @@ app.add_middleware(CustomBusinessMiddleware())```
 
 ### Monitoring and Optimization
 
-```python
+````python notest
+from __future__ import annotations
+
+
 # Performance monitoring setup
 @app.on_event("startup")
 async def setup_monitoring():
@@ -271,11 +318,13 @@ async def setup_monitoring():
     # Setup tracing
     tracer.setup(service_name="flext-api")
 
+
 # Performance metrics endpoint
 @app.get("/metrics")
 async def get_metrics():
     """Prometheus metrics endpoint."""
-    return Response(content=metrics.generate_latest(), media_type="text/plain")```
+    return Response(content=metrics.generate_latest(), media_type="text/plain")
+    ```
 ## Migration Guidelines
 
 ### Version Compatibility
@@ -291,16 +340,20 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```python
+```{.python .notest}
+from __future__ import annotations
+
+
 # Old API (deprecated in 0.9.x)
 @deprecated("Use create_fastapi_app() instead")
-def create_app(settings: dict) -> FastAPI:
-    # Legacy implementation
+def create_app(settings: dict) -> FastAPI: ...  # Legacy implementation
+
 
 # New API (introduced in 0.9.x)
 def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
-    # New implementation```
+    ...  # New implementation
+    ```
 ## References
 
 - **FLEXT-Core Documentation**: Foundation patterns and infrastructure
@@ -311,3 +364,4 @@ def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
 ______________________________________________________________________
 
 **FLEXT-API Architecture** - Protocol-based, extensible HTTP foundation for enterprise applications.
+````

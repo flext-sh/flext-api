@@ -1,17 +1,30 @@
 # HTTP Client Guide
 
+<!-- TOC START -->
+
+- [Facade Usage](#facade-usage)
+- [Client Usage](#client-usage)
+- [Request Body](#request-body)
+- [Error Handling](#error-handling)
+
+<!-- TOC END -->
+
 FLEXT-API exposes two HTTP entry points:
 
-- `FlextApi` is the public facade for convenience methods such as `get`, `post`, `put`, `patch`, and `delete`.
-- `FlextApiClient` is the lower-level client. It accepts only `settings=` at construction time and executes a validated `m.Api.HttpRequest` through `request(...)`.
+- `FlextApi` is the public facade for convenience methods such as `get`, `post`, `put`,
+  `patch`, and `delete`.
+- `FlextApiClient` is the lower-level client. It accepts only `runtime_settings=` at
+  construction time and executes a validated `m.Api.HttpRequest` through `request(...)`.
 
 ## Facade Usage
 
 ```python
+from __future__ import annotations
+
 from flext_api import FlextApi, FlextApiSettings
 
 settings = FlextApiSettings(base_url="https://api.example.com")
-api = FlextApi(settings=settings)
+api = FlextApi(runtime_settings=settings)
 
 result = api.get(
     "/users",
@@ -29,10 +42,12 @@ else:
 ## Client Usage
 
 ```python
+from __future__ import annotations
+
 from flext_api import FlextApiClient, FlextApiSettings, c, m
 
 settings = FlextApiSettings(Api={"base_url": "https://api.example.com"})
-client = FlextApiClient(settings=settings)
+client = FlextApiClient(runtime_settings=settings)
 
 request = m.Api.HttpRequest.model_validate({
     "method": c.Api.Method.GET,
@@ -50,6 +65,8 @@ result = client.request(request)
 Use the facade for typical application code:
 
 ```python
+from __future__ import annotations
+
 from flext_api import FlextApi
 
 api = FlextApi()
@@ -60,20 +77,26 @@ result = api.post(
 )
 ```
 
-Use `request_kwargs` for query parameters and request options that belong to `m.Api.HttpRequest` normalization.
+Use `request_kwargs` for query parameters and request options that belong to
+`m.Api.HttpRequest` normalization.
 
 ## Error Handling
 
 Every call returns `p.Result[p.Api.HttpResponse]`.
 
 ```python
+from __future__ import annotations
+
 from flext_api import FlextApi
 
 result = FlextApi().get("/health")
 if result.failure:
-    raise RuntimeError(result.error or "HTTP request failed")
-
-response = result.value
+    print(result.error or "HTTP request failed")
+else:
+    response = result.value
+    print(response.status_code)
 ```
 
-The result contract is the canonical FLEXT railway contract: inspect `success` or `failure`, then use `value`, `error`, `unwrap()`, or higher-order methods such as `map` and `flat_map`.
+The result contract is the canonical FLEXT railway contract: inspect `success` or
+`failure`, then use `value`, `error`, `unwrap()`, or higher-order methods such as `map`
+and `flat_map`.

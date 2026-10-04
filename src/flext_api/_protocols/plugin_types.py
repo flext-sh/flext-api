@@ -1,11 +1,20 @@
-"""Plugin protocol type shard."""
+"""Plugin protocol type shard.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from flext_core import p, r, t
 from flext_web import u
+
+from flext_api import r, t
+
+if TYPE_CHECKING:
+    from flext_web import p
 
 
 class FlextApiProtocolPluginTypes:
@@ -20,19 +29,32 @@ class FlextApiProtocolPluginTypes:
         logger: p.Logger
 
         def __init__(
-            self, name: str = "plugin", version: str = "0.0.0", description: str = ""
+            self,
+            name: str = "plugin",
+            version: str = "0.0.0",
+            description: str = "",
         ) -> None:
             self.name = name
             self.version = version
             self.description = description
             self.logger = u.fetch_logger(__name__)
 
-        def initialize(self) -> p.Result[bool]:
-            """Initialize plugin resources."""
+        @staticmethod
+        def initialize() -> p.Result[bool]:
+            """Initialize plugin resources.
+
+            Returns:
+                The resulting ``p.Result[bool]``.
+            """
             return r[bool].ok(value=True)
 
-        def shutdown(self) -> p.Result[bool]:
-            """Shutdown plugin resources."""
+        @staticmethod
+        def shutdown() -> p.Result[bool]:
+            """Shutdown plugin resources.
+
+            Returns:
+                The resulting ``p.Result[bool]``.
+            """
             return r[bool].ok(value=True)
 
     class Plugin(_FlextApiPluginBase, ABC):
@@ -41,13 +63,20 @@ class FlextApiProtocolPluginTypes:
     class Protocol(_FlextApiPluginBase, ABC):
         """Abstract protocol plugin for API protocol implementations."""
 
-        def supported_protocols(self) -> t.StrSequence:
-            """Get list of supported protocols."""
+        @staticmethod
+        def supported_protocols() -> t.StrSequence:
+            """Get list of supported protocols.
+
+            Returns:
+                The resulting ``t.StrSequence``.
+            """
             return []
 
         @abstractmethod
         def send_request(
-            self, request: t.JsonMapping, **kwargs: t.Scalar
+            self,
+            request: t.JsonMapping,
+            **kwargs: t.Scalar,
         ) -> p.Result[t.JsonMapping]:
             """Send request using this protocol."""
             ...
@@ -60,8 +89,13 @@ class FlextApiProtocolPluginTypes:
     class Schema(_FlextApiPluginBase, ABC):
         """Abstract schema plugin for schema validation and introspection."""
 
-        def schema_version(self) -> str:
-            """Get schema specification version."""
+        @staticmethod
+        def schema_version() -> str:
+            """Get schema specification version.
+
+            Returns:
+                The resulting ``str``.
+            """
             return "unknown"
 
         @abstractmethod
@@ -69,20 +103,29 @@ class FlextApiProtocolPluginTypes:
             """Load schema from source."""
             ...
 
-        def supports_schema_type(self) -> bool:
-            """Check if this plugin supports the given schema type."""
+        @staticmethod
+        def supports_schema_type() -> bool:
+            """Check if this plugin supports the given schema type.
+
+            Returns:
+                The resulting ``bool``.
+            """
             return False
 
         @abstractmethod
         def validate_request(
-            self, request: t.JsonMapping, schema: t.JsonMapping
+            self,
+            request: t.JsonMapping,
+            schema: t.JsonMapping,
         ) -> p.Result[bool]:
             """Validate request against schema."""
             ...
 
         @abstractmethod
         def validate_response(
-            self, response: t.JsonMapping, schema: t.JsonMapping
+            self,
+            response: t.JsonMapping,
+            schema: t.JsonMapping,
         ) -> p.Result[bool]:
             """Validate response against schema."""
             ...
@@ -100,13 +143,20 @@ class FlextApiProtocolPluginTypes:
             """Close connection."""
             ...
 
-        def connection_info(self) -> t.JsonMapping:
-            """Get connection information."""
+        @staticmethod
+        def connection_info() -> t.JsonMapping:
+            """Get connection information.
+
+            Returns:
+                The resulting ``t.JsonMapping``.
+            """
             return {}
 
         @abstractmethod
         def receive(
-            self, connection: t.JsonValue, **options: t.Scalar
+            self,
+            connection: t.JsonValue,
+            **options: t.Scalar,
         ) -> p.Result[t.JsonMapping | str | bytes]:
             """Receive data from connection."""
             ...
@@ -121,8 +171,13 @@ class FlextApiProtocolPluginTypes:
             """Send data through connection."""
             ...
 
-        def supports_streaming(self) -> bool:
-            """Check if transport supports streaming."""
+        @staticmethod
+        def supports_streaming() -> bool:
+            """Check if transport supports streaming.
+
+            Returns:
+                The resulting ``bool``.
+            """
             return False
 
     class Authentication(_FlextApiPluginBase, ABC):
@@ -130,24 +185,41 @@ class FlextApiProtocolPluginTypes:
 
         @abstractmethod
         def authenticate(
-            self, request: t.JsonMapping, credentials: t.JsonMapping
+            self,
+            request: t.JsonMapping,
+            credentials: t.JsonMapping,
         ) -> p.Result[t.JsonMapping]:
             """Add authentication to request."""
             ...
 
-        def auth_scheme(self) -> str:
-            """Get authentication scheme name."""
+        @staticmethod
+        def auth_scheme() -> str:
+            """Get authentication scheme name.
+
+            Returns:
+                The resulting ``str``.
+            """
             return "Unknown"
 
+        @staticmethod
         def refresh_credentials(
-            self, credentials: t.JsonMapping
+            credentials: t.JsonMapping,
         ) -> p.Result[t.JsonMapping]:
-            """Refresh authentication credentials."""
+            """Refresh authentication credentials.
+
+            Returns:
+                The resulting ``p.Result[t.JsonMapping]``.
+            """
             _ = credentials
             return r[t.JsonMapping].fail("Refresh not supported by this plugin")
 
-        def requires_refresh(self) -> bool:
-            """Check if credentials need refresh."""
+        @staticmethod
+        def requires_refresh() -> bool:
+            """Check if credentials need refresh.
+
+            Returns:
+                The resulting ``bool``.
+            """
             return False
 
         @abstractmethod

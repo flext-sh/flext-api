@@ -10,14 +10,26 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api._protocols.base import FlextApiProtocolsBase
-from flext_api._protocols.plugins import FlextApiProtocolPlugins
-from flext_api._protocols.serialization import FlextApiProtocolsSerialization
-from flext_api._protocols.transports import FlextApiProtocolsTransports
-from flext_web import p
+from flext_web import FlextWebProtocols
+from httpx import (
+    AsyncClient as HttpxAsyncClient,
+    Client as HttpxClient,
+    HTTPError as HttpxHTTPError,
+    HTTPStatusError as HttpxHTTPStatusError,
+    RequestError as HttpxRequestError,
+    Response as HttpxResponse,
+    TimeoutException as HttpxTimeoutException,
+)
+
+from flext_api._protocols import (
+    FlextApiProtocolPlugins,
+    FlextApiProtocolsBase,
+    FlextApiProtocolsSerialization,
+    FlextApiProtocolsTransports,
+)
 
 
-class FlextApiProtocols(p):
+class FlextApiProtocols(FlextWebProtocols):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api(
@@ -36,4 +48,18 @@ class FlextApiProtocols(p):
 
 p = FlextApiProtocols
 
-__all__: list[str] = ["FlextApiProtocols", "p"]
+# Module-level explicit class-object re-exports: consumers can construct and
+# isinstance-narrow these names with both static and runtime class semantics.
+
+__all__: list[str] = [
+    "FlextApiProtocols",
+    "FlextApiProtocolsTransports",
+    "HttpxAsyncClient",
+    "HttpxClient",
+    "HttpxHTTPError",
+    "HttpxHTTPStatusError",
+    "HttpxRequestError",
+    "HttpxResponse",
+    "HttpxTimeoutException",
+    "p",
+]

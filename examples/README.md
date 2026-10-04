@@ -1,15 +1,19 @@
 # FLEXT API Examples
 
-Examples in this folder show the public `flext_api` surface through the local `examples` aliases and the typed `s` service base. The goal is to demonstrate request normalization, model validation, and response or storage ergonomics without depending on an external HTTP service.
+Examples in this folder show the public `flext_api` surface through the local `examples`
+aliases and the typed `s` service base. The goal is to demonstrate request
+normalization, model validation, and response or storage ergonomics without depending on
+an external HTTP service.
 
 ## Example Files
 
-- `01_basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and the railway result contract
+- `basic_usage.py` — guided tour of `FlextApi`, `m.Api.*`, `u.Api.RequestUtils`, and
+  the railway result contract
 
 ## Running Examples
 
 ```bash
-PYTHONPATH=src python -m examples.01_basic_usage
+PYTHONPATH=src python -m examples.basic_usage
 ```
 
 Run commands from the `flext-api` project root.
@@ -18,19 +22,13 @@ Run commands from the `flext-api` project root.
 
 ```python
 from __future__ import annotations
-
-from typing import override
-
-from flext_api import FlextApi, c, m, p, r, s, t, u
+from flext_api import FlextApiSettings, p, r, s, t
 
 
 class FlextApiExamplesDemo(s[t.JsonMapping]):
-    @override
     def execute(self) -> p.Result[t.JsonMapping]:
-        api = FlextApi(settings=settings)
-        return api.execute().map(
-            lambda ready: {"ready": ready, "base_url": settings.Api.base_url}
-        )
+        settings = FlextApiSettings()
+        return r.ok({"base_url": settings.Api.base_url})
 ```
 
 ## Public Surfaces To Prefer

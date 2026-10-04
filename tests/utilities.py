@@ -6,18 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsUtilities
-
 from flext_api import u
 
 
-class TestsFlextApiUtilities(FlextTestsUtilities, u):
-    """Test utilities for flext-api."""
+class TestsFlextApiUtilities(u):
+    """Test utilities for flext-api — extends flext_api.u."""
 
-    class Tests(FlextTestsUtilities.Tests):
+    class Tests(u):
         """Test-specific utilities."""
 
 
-u = TestsFlextApiUtilities
-
-__all__: list[str] = ["TestsFlextApiUtilities", "u"]
+__all__: list[str] = ["TestsFlextApiUtilities"]

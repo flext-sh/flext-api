@@ -10,21 +10,31 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from typing import Annotated
 
-from flext_core import FlextConfig
+from flext_api import m
+from flext_core import FlextConfig, FlextSettings
 
 
-class _ApiNamespace(BaseModel):
+class _ApiNamespace(m.BaseModel):
     """Open, frozen namespace exposing every ``config/*.yaml`` domain model-less."""
 
-    model_config = ConfigDict(extra="allow", frozen=True)
+    model_config = m.ConfigDict(extra="allow", frozen=True)
 
 
-class FlextApiConfig(FlextConfig):
-    """Api config auto-loaded model-less from ``config/*.yaml``."""
+class FlextApiConfig(FlextSettings, FlextConfig):
+    """Api config auto-loaded model-less from ``config/*.yaml``.
 
-    Api: _ApiNamespace = _ApiNamespace()
+    MRO carries ``FlextSettings`` FIRST (ENFORCE-042); unlike never-instantiated
+    namespace holders, this class IS instantiated by ``fetch_global``, so the
+    instance-inert holder contract does not apply and pydantic settings
+    construction machinery stays intact.
+    """
+
+    Api: Annotated[
+        _ApiNamespace,
+        m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``."),
+    ] = _ApiNamespace()
 
 
 config: FlextApiConfig = FlextApiConfig.fetch_global()

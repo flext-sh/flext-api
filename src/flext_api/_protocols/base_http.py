@@ -1,11 +1,17 @@
-"""HTTP client protocol shard."""
+"""HTTP client protocol shard.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from flext_api import c, p, t
+    from flext_web import p
+
+    from flext_api import c, t
 
 
 class FlextApiProtocolsHttpClient:
@@ -16,31 +22,42 @@ class FlextApiProtocolsHttpClient:
         """Protocol for generic HTTP client implementations."""
 
         def delete(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP DELETE request."""
             ...
 
         def get(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP GET request."""
             ...
 
         def post(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP POST request."""
             ...
 
         def put(
-            self, url: str, **kwargs: t.JsonValue
+            self,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute HTTP PUT request."""
             ...
 
         def request(
-            self, method: c.Api.Method | str, url: str, **kwargs: t.JsonValue
+            self,
+            method: c.Api.Method | str,
+            url: str,
+            **kwargs: t.JsonValue,
         ) -> p.Result[t.Api.HttpResponseDict]:
             """Execute an HTTP request."""
             ...
