@@ -10,9 +10,6 @@ supported-markers = [
     "sys_platform == 'darwin'",
 ]
 
-[manifest]
-constraints = [{ name = "mypy", specifier = "<2.4.0" }]
-
 [[package]]
 name = "actionlint-py"
 version = "1.7.12.25"
