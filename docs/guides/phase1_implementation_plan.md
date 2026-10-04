@@ -375,7 +375,7 @@ foundation with basic HTTP operations **Current Status**: 70% complete
 
 ### Internal Dependencies
 
-- **flext-core v0.12.0-dev RC**: r, s, FlextModels
+- **flext-core v0.20.0-dev RC**: r, s, FlextModels
 - **Python 3.13+**: Type safety and performance features
 - **httpx**: HTTP protocol implementation (internal only)
 
