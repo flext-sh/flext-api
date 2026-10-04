@@ -10,9 +10,6 @@ supported-markers = [
     "sys_platform == 'darwin'",
 ]
 
-[manifest]
-constraints = [{ name = "mypy", specifier = "<2.4.0" }]
-
 [[package]]
 name = "actionlint-py"
 version = "1.7.12.25"
@@ -669,7 +666,7 @@ dependencies = [
 [[package]]
 name = "flext-infra"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#939141d6c905f5f61d27f78d5a0c36984e8a368a" }
+source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#903d7025e60eaa68e3b11a57aba2ebba66de5d15" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
