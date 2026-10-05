@@ -75,7 +75,9 @@ class FlextApiModelsRequest:
             """
             if v is None:
                 return {}
-            validated: t.Api.RequestBody = t.Api.REQUEST_BODY_ADAPTER.validate_python(v)
+            validated: t.Api.RequestBody = t.Api.REQUEST_BODY_ADAPTER.validate_python(
+                v,
+            )
             return validated
 
         # Why: bare form (no return_type kwarg) resolves to the positional
