@@ -13,12 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_web import (
-    FlextWebModels,
-    FlextWebProtocols,
-    FlextWebTypes,
-    FlextWebUtilities,
-)
+from flext_web import FlextWebTypes, m, p, u
 
 from flext_api import c
 from flext_api._typings.base import FlextApiTypingsBase
@@ -63,7 +58,7 @@ class FlextApiTypes(FlextWebTypes):
         type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
         type WebhookHandler = Callable[
             [FlextWebTypes.JsonMapping],
-            FlextWebTypes.JsonValue | FlextWebProtocols.Result[bool] | None,
+            FlextWebTypes.JsonValue | p.Result[bool] | None,
         ]
         type RequestKwargs = FlextWebTypes.MappingKV[
             str,
@@ -74,37 +69,35 @@ class FlextApiTypes(FlextWebTypes):
             | None,
         ]
         type CacheDict = FlextWebTypes.MappingKV[str, FlextWebTypes.Primitives]
-        API_JSON_VALUE_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.JsonValue] = (
+        API_JSON_VALUE_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonValue] = (
             FlextWebTypes.json_value_adapter()
         )
-        BINARY_CONTENT_ADAPTER: FlextWebModels.TypeAdapter[
-            FlextWebTypes.StrictBytes
-        ] = FlextWebTypes.binary_content_adapter()
-        STR_MAPPING_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.StrMapping] = (
+        BINARY_CONTENT_ADAPTER: m.TypeAdapter[FlextWebTypes.StrictBytes] = (
+            FlextWebTypes.binary_content_adapter()
+        )
+        STR_MAPPING_ADAPTER: m.TypeAdapter[FlextWebTypes.StrMapping] = (
             FlextWebTypes.str_mapping_adapter()
         )
-        HOSTNAME_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.HostnameStr] = (
+        HOSTNAME_ADAPTER: m.TypeAdapter[FlextWebTypes.HostnameStr] = (
             FlextWebTypes.hostname_str_adapter()
         )
-        PORT_NUMBER_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.PortNumber] = (
+        PORT_NUMBER_ADAPTER: m.TypeAdapter[FlextWebTypes.PortNumber] = (
             FlextWebTypes.port_number_adapter()
         )
-        STRING_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.StrictStr] = (
+        STRING_ADAPTER: m.TypeAdapter[FlextWebTypes.StrictStr] = (
             FlextWebTypes.str_adapter()
         )
-        STORAGE_ENTRY_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.JsonMapping] = (
+        STORAGE_ENTRY_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonMapping] = (
             FlextWebTypes.json_mapping_adapter()
         )
-        REQUEST_BODY_ADAPTER: FlextWebModels.TypeAdapter[RequestBody] = (
-            FlextWebUtilities.type_adapter(RequestBody)
+        REQUEST_BODY_ADAPTER: m.TypeAdapter[RequestBody] = u.type_adapter(RequestBody)
+        RESPONSE_BODY_ADAPTER: m.TypeAdapter[ResponseBody] = u.type_adapter(
+            ResponseBody,
         )
-        RESPONSE_BODY_ADAPTER: FlextWebModels.TypeAdapter[ResponseBody] = (
-            FlextWebUtilities.type_adapter(ResponseBody)
-        )
-        DICT_BODY_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.JsonMapping] = (
+        DICT_BODY_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonMapping] = (
             FlextWebTypes.json_mapping_adapter()
         )
-        JSON_HEADERS_ADAPTER: FlextWebModels.TypeAdapter[FlextWebTypes.JsonMapping] = (
+        JSON_HEADERS_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonMapping] = (
             FlextWebTypes.json_mapping_adapter()
         )
 
