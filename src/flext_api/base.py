@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import override
 
 from flext_api import FlextApiSettings, m, p, t
@@ -18,7 +17,6 @@ from flext_core import FlextService
 
 class FlextApiServiceBase[TDomainResult: t.JsonPayload | t.SequenceOf[t.JsonPayload]](
     FlextService[TDomainResult],
-    ABC,
 ):
     """Base class for flext-api services with typed API settings access."""
 
