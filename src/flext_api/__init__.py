@@ -20,7 +20,7 @@ from flext_api.__version__ import (
     __version__,
     __version_info__,
 )
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
@@ -100,39 +100,47 @@ __all__: tuple[str, ...] = (
     "x",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._config": ("FlextApiConfig", "config"),
-            "._settings": ("FlextApiSettings", "settings"),
-            ".api": ("FlextApi", "api"),
-            ".base": ("FlextApiServiceBase", "s"),
-            ".cli": ("FlextApiCli", "main"),
-            ".constants": ("FlextApiConstants", "c"),
-            ".models": ("FlextApiModels", "m"),
-            ".protocols": (
-                "FlextApiProtocols",
-                "FlextApiProtocolsTransports",
-                "HttpxAsyncClient",
-                "HttpxClient",
-                "HttpxHTTPError",
-                "HttpxHTTPStatusError",
-                "HttpxRequestError",
-                "HttpxResponse",
-                "HttpxTimeoutException",
-                "p",
-            ),
-            ".services": ("services",),
-            ".services.async_client": ("FlextApiAsyncClient",),
-            ".services.base_client": ("FlextApiClientBase",),
-            ".services.client": ("FlextApiClient",),
-            ".typings": ("FlextApiTypes", "t"),
-            ".utilities": ("FlextApiUtilities", "u"),
-            "flext_web": ("d", "e", "h", "r", "x"),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextApi": ".api",
+        "FlextApiAsyncClient": ".services.async_client",
+        "FlextApiCli": ".cli",
+        "FlextApiClient": ".services.client",
+        "FlextApiClientBase": ".services.base_client",
+        "FlextApiConfig": "._config",
+        "FlextApiConstants": ".constants",
+        "FlextApiModels": ".models",
+        "FlextApiProtocols": ".protocols",
+        "FlextApiProtocolsTransports": ".protocols",
+        "FlextApiServiceBase": ".base",
+        "FlextApiSettings": "._settings",
+        "FlextApiTypes": ".typings",
+        "FlextApiUtilities": ".utilities",
+        "HttpxAsyncClient": ".protocols",
+        "HttpxClient": ".protocols",
+        "HttpxHTTPError": ".protocols",
+        "HttpxHTTPStatusError": ".protocols",
+        "HttpxRequestError": ".protocols",
+        "HttpxResponse": ".protocols",
+        "HttpxTimeoutException": ".protocols",
+        "api": ".api",
+        "c": ".constants",
+        "config": "._config",
+        "d": "flext_web",
+        "e": "flext_web",
+        "h": "flext_web",
+        "m": ".models",
+        "main": ".cli",
+        "p": ".protocols",
+        "r": "flext_web",
+        "s": ".base",
+        "services": ".services",
+        "settings": "._settings",
+        "t": ".typings",
+        "u": ".utilities",
+        "x": "flext_web",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

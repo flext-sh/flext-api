@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api.services import _services
@@ -36,21 +36,18 @@ __all__: tuple[str, ...] = (
     "_services",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._services": ("_services",),
-            "._services.async_request": ("FlextApiClientAsyncRequestMixin",),
-            "._services.base_request": ("FlextApiClientBaseRequestMixin",),
-            "._services.codec": ("FlextApiClientCodecMixin",),
-            "._services.request": ("FlextApiClientRequestMixin",),
-            ".async_client": ("FlextApiAsyncClient",),
-            ".base_client": ("FlextApiClientBase",),
-            ".client": ("FlextApiClient",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextApiAsyncClient": ".async_client",
+        "FlextApiClient": ".client",
+        "FlextApiClientAsyncRequestMixin": "._services.async_request",
+        "FlextApiClientBase": ".base_client",
+        "FlextApiClientBaseRequestMixin": "._services.base_request",
+        "FlextApiClientCodecMixin": "._services.codec",
+        "FlextApiClientRequestMixin": "._services.request",
+        "_services": "._services",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)
