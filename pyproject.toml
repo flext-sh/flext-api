@@ -411,15 +411,12 @@ quote-style = "double"
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint]
-extend-safe-fixes = [
-  "camelcase-imported-as-lowercase",
-  "relative-imports",
-  "typing-only-first-party-import",
-]
+extend-safe-fixes = ["camelcase-imported-as-lowercase", "relative-imports"]
 ignore = [
   "camelcase-imported-as-lowercase",
   "implicit-namespace-package",
   "missing-required-import",
+  "runtime-import-in-type-checking-block",
   "typing-only-first-party-import",
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
@@ -447,11 +444,9 @@ runtime-evaluated-base-classes = [
   "flext_api.m.BaseModel",
   "flext_api.s",
   "flext_api.services.base_client.FlextApiClientBase",
-  "flext_cli.services.cli.FlextCliCli",
   "flext_core.FlextConfig",
   "flext_core.FlextSettings",
   "flext_core.s",
-  "flext_tests.FlextTestsServiceBase",
   "flext_tests.FlextTestsSettings",
   "flext_web.m.FlexibleInternalModel",
   "flext_web.m.Value",
@@ -483,12 +478,7 @@ known-first-party = ["flext_api", "flext_core"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"**/__init__.py" = [
-  "non-empty-init-module",
-  "runtime-import-in-type-checking-block",
-  "typing-only-first-party-import",
-  "unused-import",
-]
+"**/__init__.py" = ["non-empty-init-module", "unused-import"]
 "**/tests/python/**" = [
   "raise-vanilla-args",
   "start-process-with-partial-path",
@@ -549,11 +539,7 @@ split-on-trailing-comma = false
   "verbose-raise",
   "write-whole-file",
 ]
-"scripts/**/*.py" = [
-  "commented-out-code",
-  "line-too-long",
-  "typing-only-first-party-import",
-]
+"scripts/**/*.py" = ["commented-out-code", "line-too-long"]
 "tests/**/*.py" = ["assert"]
 
 [tool.ruff.lint.pydocstyle]
