@@ -669,7 +669,7 @@ dependencies = [
 [[package]]
 name = "flext-infra"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#20ebbd92622306b74f9b370f73609497fc111c35" }
+source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#229fff782cf2cafd7587db0431390872195af485" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
