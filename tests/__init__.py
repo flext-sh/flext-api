@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api import c, d, e, h, m, p, r, t, u, x
@@ -46,22 +46,29 @@ __all__: tuple[str, ...] = (
     "x",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            ".base": ("TestsFlextApiServiceBase", "s"),
-            ".constants": ("TestsFlextApiConstants",),
-            ".models": ("TestsFlextApiModels",),
-            ".protocols": ("TestsFlextApiProtocols",),
-            ".settings": ("TestsFlextApiSettings",),
-            ".typings": ("TestsFlextApiTypes",),
-            ".unit": ("unit",),
-            ".utilities": ("TestsFlextApiUtilities",),
-            "flext_api": ("c", "d", "e", "h", "m", "p", "r", "t", "u", "x"),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "TestsFlextApiConstants": ".constants",
+        "TestsFlextApiModels": ".models",
+        "TestsFlextApiProtocols": ".protocols",
+        "TestsFlextApiServiceBase": ".base",
+        "TestsFlextApiSettings": ".settings",
+        "TestsFlextApiTypes": ".typings",
+        "TestsFlextApiUtilities": ".utilities",
+        "c": "flext_api",
+        "d": "flext_api",
+        "e": "flext_api",
+        "h": "flext_api",
+        "m": "flext_api",
+        "p": "flext_api",
+        "r": "flext_api",
+        "s": ".base",
+        "t": "flext_api",
+        "u": "flext_api",
+        "unit": ".unit",
+        "x": "flext_api",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

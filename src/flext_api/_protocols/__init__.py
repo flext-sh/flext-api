@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
@@ -46,27 +46,24 @@ __all__: tuple[str, ...] = (
     "FlextApiTransportsRequestMixin",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._transports_config": ("FlextApiTransportsConfigMixin",),
-            "._transports_request": ("FlextApiTransportsRequestMixin",),
-            ".base": ("FlextApiProtocolsBase",),
-            ".base_grpc": ("FlextApiProtocolsGrpc",),
-            ".base_http": ("FlextApiProtocolsHttpClient",),
-            ".base_resources": ("FlextApiProtocolsResources",),
-            ".base_serialization": ("FlextApiProtocolsSerializer",),
-            ".base_storage": ("FlextApiProtocolsStorage",),
-            ".base_transport": ("FlextApiProtocolsTransport",),
-            ".plugin_manager": ("FlextApiProtocolPluginManager",),
-            ".plugin_types": ("FlextApiProtocolPluginTypes",),
-            ".plugins": ("FlextApiProtocolPlugins",),
-            ".serialization": ("FlextApiProtocolsSerialization",),
-            ".transports": ("FlextApiProtocolsTransports",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextApiProtocolPluginManager": ".plugin_manager",
+        "FlextApiProtocolPluginTypes": ".plugin_types",
+        "FlextApiProtocolPlugins": ".plugins",
+        "FlextApiProtocolsBase": ".base",
+        "FlextApiProtocolsGrpc": ".base_grpc",
+        "FlextApiProtocolsHttpClient": ".base_http",
+        "FlextApiProtocolsResources": ".base_resources",
+        "FlextApiProtocolsSerialization": ".serialization",
+        "FlextApiProtocolsSerializer": ".base_serialization",
+        "FlextApiProtocolsStorage": ".base_storage",
+        "FlextApiProtocolsTransport": ".base_transport",
+        "FlextApiProtocolsTransports": ".transports",
+        "FlextApiTransportsConfigMixin": "._transports_config",
+        "FlextApiTransportsRequestMixin": "._transports_request",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)
