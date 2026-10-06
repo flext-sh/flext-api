@@ -582,6 +582,14 @@ specifiers = ["latest"]
 [tools."npm:@ast-grep/cli".options]
 bun_args = "--trust"
 
+[[tools."npm:@ast-grep/cli"]]
+version = "0.45.3"
+backend = "npm:@ast-grep/cli"
+specifiers = ["latest"]
+
+[tools."npm:@ast-grep/cli".options]
+bun_args = "--trust"
+
 [[tools."npm:prettier"]]
 version = "3.5.3"
 backend = "npm:prettier"
