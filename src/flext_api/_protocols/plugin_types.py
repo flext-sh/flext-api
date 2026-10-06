@@ -12,8 +12,9 @@ from typing import TYPE_CHECKING
 from flext_web import r, u
 
 if TYPE_CHECKING:
-    from flext_api import t
     from flext_web import p
+
+    from flext_api import t
 
 
 class FlextApiProtocolPluginTypes:

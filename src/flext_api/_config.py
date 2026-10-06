@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-import flext_api._models._api_namespace
 from flext_api import m
+from flext_api._models._api_namespace import ApiNamespace
 from flext_core import FlextConfig, FlextSettings
 
 
@@ -27,9 +27,9 @@ class FlextApiConfig(FlextSettings, FlextConfig):
     """
 
     Api: Annotated[
-        flext_api._models._api_namespace._ApiNamespace,
+        ApiNamespace,
         m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``."),
-    ] = flext_api._models._api_namespace._ApiNamespace()
+    ] = ApiNamespace()
 
 
 config: FlextApiConfig = FlextApiConfig.fetch_global()

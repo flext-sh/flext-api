@@ -12,7 +12,7 @@ from typing import Annotated, ClassVar
 
 from flext_web import m, u
 
-from flext_api.typings import t
+from flext_api._typings.types import t
 
 
 class FlextApiModelsStorage:
