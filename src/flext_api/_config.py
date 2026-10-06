@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated
 
+import flext_api._models._api_namespace
 from flext_api import m
 from flext_core import FlextConfig, FlextSettings
-import flext_api._models._api_namespace
 
 
 class FlextApiConfig(FlextSettings, FlextConfig):

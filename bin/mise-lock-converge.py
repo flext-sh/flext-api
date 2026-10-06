@@ -52,7 +52,10 @@ class MiseLockConverge:
         ("MISE_GITHUB_OAUTH_OPEN_BROWSER", "false"),
         ("MISE_LOCKFILE", "true"),
         ("MISE_LOCKED", "true"),
-        ("MISE_LOCKFILE_PLATFORMS", "linux-x64,linux-x64-musl,linux-arm64,macos-x64,macos-arm64,windows-x64"),
+        (
+            "MISE_LOCKFILE_PLATFORMS",
+            "linux-x64,linux-x64-musl,linux-arm64,macos-x64,macos-arm64,windows-x64",
+        ),
         ("MISE_MINIMUM_RELEASE_AGE", "7d"),
         ("MISE_NPM_PACKAGE_MANAGER", "bun"),
     )
@@ -135,7 +138,8 @@ class MiseLockConverge:
             (scratch / relative).write_bytes(b"")
         environment = dict(cls.FIXED_ENVIRONMENT)
         environment.update(
-            (name, str(scratch / relative)) for name, relative in cls.TRANSIENT_ENVIRONMENT
+            (name, str(scratch / relative))
+            for name, relative in cls.TRANSIENT_ENVIRONMENT
         )
         environment.update(
             (name, str(storage if relative == "." else storage / relative))
@@ -169,13 +173,17 @@ class MiseLockConverge:
             )
         if "mise WARN" in diagnostics:
             sys.stderr.write(diagnostics)
-            raise ValueError(f"Mise warned during {' '.join(arguments)}; converge stopped")
+            raise ValueError(
+                f"Mise warned during {' '.join(arguments)}; converge stopped"
+            )
         if completed.stderr:
             sys.stderr.write(completed.stderr)
         return completed.stdout.strip()
 
     @staticmethod
-    def _probe(runtime: Path, stage: Path, environment: dict[str, str]) -> tuple[bool, str]:
+    def _probe(
+        runtime: Path, stage: Path, environment: dict[str, str]
+    ) -> tuple[bool, str]:
         """Prove the staged lock installs without mutating tools."""
         completed = subprocess.run(
             [str(runtime), "-C", str(stage), "install", "--dry-run"],
@@ -298,13 +306,17 @@ class MiseLockConverge:
                 return
             holds: dict[str, str] = {}
             for selector, failed_version in cls.failing_install_tools(probe_output):
-                holds[selector] = cls._hold(runtime, stage, environment, selector, failed_version)
+                holds[selector] = cls._hold(
+                    runtime, stage, environment, selector, failed_version
+                )
                 print(
                     f"hold: {selector} held at {holds[selector]}: release {failed_version}"
                     " failed install; the next upg retries the newest release",
                 )
             if not cls._probe(runtime, stage, environment)[0]:
-                raise ValueError(f"converge: held lock still fails install: {sorted(holds)}")
+                raise ValueError(
+                    f"converge: held lock still fails install: {sorted(holds)}"
+                )
             print(f"converge: staged lock installs with holds {sorted(holds)}")
         finally:
             shutil.rmtree(scratch, ignore_errors=True)
@@ -313,7 +325,9 @@ class MiseLockConverge:
     def main(cls, arguments: list[str]) -> int:
         if len(arguments) != 3:
             raise ValueError("usage: mise-lock-converge.py STORAGE STAGE RELEASE")
-        cls.converge(Path(arguments[0]).absolute(), Path(arguments[1]).absolute(), arguments[2])
+        cls.converge(
+            Path(arguments[0]).absolute(), Path(arguments[1]).absolute(), arguments[2]
+        )
         return 0
 
 

@@ -1,6 +1,13 @@
+"""Api namespace module.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+src/flext_api/_models/_api_namespace
+SPDX-License-Identifier: MIT
+"""
+
 from __future__ import annotations
+
 from flext_api import m
-from flext_api._config import FlextApiConfig, config, __all__
 
 
 class _ApiNamespace(m.BaseModel):
