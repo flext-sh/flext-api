@@ -11,14 +11,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from collections.abc import Callable
 
 from flext_web import FlextWebTypes
 
-from flext_api import c, m, p, u
+# Owner-direct imports: routing these through the package root re-enters
+# the lazy root getattr mid-module (this file defines the root's ``t``), and
+# the owners' own submodule chains re-import ``t`` back from here.
+from flext_api.constants import c
+from flext_api.protocols import p
+from flext_api.utilities import u
+
 from flext_api._typings.base import FlextApiTypingsBase
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_api._typings.transport import FlextApiTypingsTransport
+
+if TYPE_CHECKING:
+    from flext_api import m
 
 
 class FlextApiTypes(FlextWebTypes):
