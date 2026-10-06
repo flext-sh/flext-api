@@ -1,21 +1,16 @@
 # Copyright 2026 FLEXT
-"""Publish a Mise lock with its native sidecars from one physical stage.
+"""Generated shim: the Mise lock transaction lives in the flext-infra library.
 
-This bootstrap runs with the Python selected by the staged Mise lock, before
-the project's virtual environment exists. It intentionally uses only stdlib.
-Its journal and project-scoped mutex recover process interruption on every
-platform. Directory fsync is POSIX-only; Windows power-loss durability is not
-promised by this transaction.
+Owner: flext-infra/src/flext_infra/bootstrap.py (stdlib-only and executable by
+file path, so it works even when the workspace environment is broken). This
+projection only locates the library and delegates; keep it minimal (Makefile
+simplicity law, operator 2026-10-02).
 """
 
 from __future__ import annotations
 
-import hashlib
-import json
 import os
-import shutil
-import stat
-import subprocess
+import runpy
 import sys
 import time
 import tomllib
@@ -670,4 +665,4 @@ class MiseLockTransaction:
 
 
 if __name__ == "__main__":
-    raise SystemExit(MiseLockTransaction.main(sys.argv[1:]))
+    raise SystemExit(main())
