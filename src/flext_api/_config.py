@@ -12,14 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated
 
+import flext_api._models._api_namespace
 from flext_api import m
 from flext_core import FlextConfig, FlextSettings
-
-
-class _ApiNamespace(m.BaseModel):
-    """Open, frozen namespace exposing every ``config/*.yaml`` domain model-less."""
-
-    model_config = m.ConfigDict(extra="allow", frozen=True)
 
 
 class FlextApiConfig(FlextSettings, FlextConfig):
@@ -32,9 +27,9 @@ class FlextApiConfig(FlextSettings, FlextConfig):
     """
 
     Api: Annotated[
-        _ApiNamespace,
+        flext_api._models._api_namespace._ApiNamespace,
         m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``."),
-    ] = _ApiNamespace()
+    ] = flext_api._models._api_namespace._ApiNamespace()
 
 
 config: FlextApiConfig = FlextApiConfig.fetch_global()
