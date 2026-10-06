@@ -386,6 +386,7 @@ markers = [
   "resilience: resilience tests",
   "discovery: catalog and stream discovery tests",
   "singer: Singer protocol contract tests",
+  "requires_engine: native check engine required by this test",
 ]
 minversion = "8.0"
 python_classes = ["Test*"]
@@ -411,7 +412,11 @@ quote-style = "double"
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint]
-extend-safe-fixes = ["camelcase-imported-as-lowercase", "relative-imports"]
+extend-safe-fixes = [
+  "camelcase-imported-as-lowercase",
+  "relative-imports",
+  "typing-only-first-party-import",
+]
 ignore = [
   "camelcase-imported-as-lowercase",
   "implicit-namespace-package",
@@ -444,9 +449,11 @@ runtime-evaluated-base-classes = [
   "flext_api.m.BaseModel",
   "flext_api.s",
   "flext_api.services.base_client.FlextApiClientBase",
+  "flext_cli.services.cli.FlextCliCli",
   "flext_core.FlextConfig",
   "flext_core.FlextSettings",
   "flext_core.s",
+  "flext_tests.FlextTestsServiceBase",
   "flext_tests.FlextTestsSettings",
   "flext_web.m.FlexibleInternalModel",
   "flext_web.m.Value",
@@ -478,13 +485,21 @@ known-first-party = ["flext_api", "flext_core"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"**/__init__.py" = ["non-empty-init-module", "unused-import"]
+"**/__init__.py" = ["line-too-long", "non-empty-init-module", "unused-import"]
+"**/_config.py" = ["invalid-function-name"]
+"**/docx.py" = ["import-outside-top-level"]
+"**/file_test_helpers.py" = ["line-too-long"]
+"**/flextcliutilitiesfiletesthelpersmixin_part_03.py" = ["line-too-long"]
+"**/framework.py" = ["banned-api", "import-outside-top-level"]
+"**/pptx.py" = ["import-outside-top-level"]
+"**/test_public_contracts_cov.py" = ["line-too-long"]
 "**/tests/python/**" = [
   "raise-vanilla-args",
   "start-process-with-partial-path",
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
+"**/xlsx.py" = ["import-outside-top-level"]
 "scripts/**" = [
   "any-type",
   "avoidable-escaped-quote",
@@ -539,7 +554,11 @@ split-on-trailing-comma = false
   "verbose-raise",
   "write-whole-file",
 ]
-"scripts/**/*.py" = ["commented-out-code", "line-too-long"]
+"scripts/**/*.py" = [
+  "commented-out-code",
+  "line-too-long",
+  "typing-only-first-party-import",
+]
 "tests/**/*.py" = ["assert"]
 
 [tool.ruff.lint.pydocstyle]
