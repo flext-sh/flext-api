@@ -55,6 +55,8 @@ a railway result-oriented lifecycle contract.
 ```python
 from __future__ import annotations
 
+from typing import ClassVar
+
 from flext_api import FlextApiProtocolPluginManager, FlextApiProtocolPluginTypes, p, r
 
 
@@ -63,7 +65,7 @@ class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Plugin):
 
     name = "json-schema"
     version = "1.0.0"
-    capabilities = {"schema_validation", "serialization"}
+    capabilities: ClassVar[set[str]] = {"schema_validation", "serialization"}
 
     def initialize(self) -> p.Result[bool]:
         print(f"{self.name} initialized")
@@ -92,7 +94,7 @@ assert manager.unload_plugin("json-schema").success
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class HttpOnlyApi(FlextApi):
@@ -102,15 +104,22 @@ class HttpOnlyApi(FlextApi):
 
 class FakeHttpApi(HttpOnlyApi):
     def get(
-        self, url, headers=None, request_kwargs=None
+        self,
+        url: str,
+        headers: t.StrMapping | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/health"):
             return r[m.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
-                    body={"status": "healthy"},
+                    body={
+                        "status": "healthy",
+                        "headers": headers or {},
+                        "request_kwargs": request_kwargs or {},
+                    },
                     headers={"Content-Type": "application/json"},
-                )
+                ),
             )
         return r[m.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
 
