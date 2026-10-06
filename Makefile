@@ -77,6 +77,12 @@ GITHUB_TOKEN := $(shell command -v gh >/dev/null 2>&1 && gh auth token 2>/dev/nu
 else ifeq ($(strip $(CI)),)
 GITHUB_TOKEN := $(shell command -v gh >/dev/null 2>&1 && gh auth token 2>/dev/null)
 endif
+ifneq ($(GITHUB_TOKEN),)
+GH_TOKEN := $(GITHUB_TOKEN)
+MISE_GITHUB_TOKEN := $(GITHUB_TOKEN)
+export GITHUB_TOKEN GH_TOKEN MISE_GITHUB_TOKEN
+else
+unexport GITHUB_TOKEN GH_TOKEN MISE_GITHUB_TOKEN
 endif
 ifneq ($(GITHUB_TOKEN),)
 GH_TOKEN := $(GITHUB_TOKEN)
@@ -163,6 +169,11 @@ else
 override TRACKED_MISE := $(PROJECT_ROOT)/bin/mise
 endif
 override SETUP_MISE := $(TRACKED_MISE)
+# Caller-overridable test target (a directory or a single test file under
+# it): `make test FLEXT_PYTEST_TARGET_RAW=tests/unit/foo_test.py` runs one
+# file through the same bounded runner. The default stays the declared
+# target_directory; the runner validates the path's shape.
+export FLEXT_PYTEST_TARGET_RAW := tests
 # Caller-overridable test target (a directory or a single test file under
 # it): `make test FLEXT_PYTEST_TARGET_RAW=tests/unit/foo_test.py` runs one
 # file through the same bounded runner. The default stays the declared
@@ -277,9 +288,23 @@ override MISE_VERSION_PIN := $(RUNTIME_ROOT)/mise.version
 RUNTIME_LINKED_WORKTREE :=
 ifneq ($(wildcard $(RUNTIME_ROOT)/.git),)
 RUNTIME_GIT_DIR := $(shell git -C "$(RUNTIME_ROOT)" rev-parse --path-format=absolute --git-dir)
+# The pin is read by the bootstrap recipe after any interrupted lock journal
+# has been recovered. Parsing it here would freeze a torn pre-recovery value.
+# End SECTION: profile routing
+
+# Git identity distinguishes a linked worktree from a primary submodule:
+# both can have a .git file, but only a linked worktree has distinct Git
+# directory and common directory. The environment path cannot be overridden.
+RUNTIME_LINKED_WORKTREE :=
+ifneq ($(wildcard $(RUNTIME_ROOT)/.git),)
+RUNTIME_GIT_DIR := $(shell git -C "$(RUNTIME_ROOT)" rev-parse --path-format=absolute --git-dir)
 ifneq ($(.SHELLSTATUS),0)
 $(error Cannot resolve Git directory for $(RUNTIME_ROOT))
+$(error Cannot resolve Git directory for $(RUNTIME_ROOT))
 endif
+RUNTIME_GIT_COMMON_DIR := $(shell git -C "$(RUNTIME_ROOT)" rev-parse --path-format=absolute --git-common-dir)
+ifneq ($(.SHELLSTATUS),0)
+$(error Cannot resolve Git common directory for $(RUNTIME_ROOT))
 RUNTIME_GIT_COMMON_DIR := $(shell git -C "$(RUNTIME_ROOT)" rev-parse --path-format=absolute --git-common-dir)
 ifneq ($(.SHELLSTATUS),0)
 $(error Cannot resolve Git common directory for $(RUNTIME_ROOT))
@@ -291,7 +316,15 @@ endif
 ifeq ($(RUNTIME_LINKED_WORKTREE),Y)
 override RUNTIME_VENV := $(abspath $(RUNTIME_ROOT)/../.flext-venvs/$(notdir $(RUNTIME_ROOT)))
 else
+ifneq ($(RUNTIME_GIT_DIR),$(RUNTIME_GIT_COMMON_DIR))
+RUNTIME_LINKED_WORKTREE := Y
+endif
+endif
+ifeq ($(RUNTIME_LINKED_WORKTREE),Y)
+override RUNTIME_VENV := $(abspath $(RUNTIME_ROOT)/../.flext-venvs/$(notdir $(RUNTIME_ROOT)))
+else
 override RUNTIME_VENV := $(RUNTIME_ROOT)/.venv
+endif
 endif
 ifeq ($(OS),Windows_NT)
 override RUNTIME_BIN := $(RUNTIME_VENV)/Scripts
@@ -353,272 +386,6 @@ caller_windir="$${WINDIR:-}"; \
 caller_github_token="$${GITHUB_TOKEN:-}"; \
 caller_gh_token="$${GH_TOKEN:-}"; \
 caller_mise_github_token="$${MISE_GITHUB_TOKEN:-}"; \
-caller_mise_http_timeout="$${MISE_HTTP_TIMEOUT:-}"; \
-caller_flext_mypy_profile_output="$${FLEXT_MYPY_PROFILE_OUTPUT:-}"; \
-caller_mise_version="$${MISE_VERSION:-}"; \
-mise_pin_file="$(MISE_VERSION_PIN)"; \
-	mise_pin=; \
-	if [ -f "$$mise_pin_file" ]; then \
-		mise_pin=$$(awk '!/^[[:space:]]*(#|$$)/ { lines++; release = $$0 } END { if (lines == 1) print release }' "$$mise_pin_file"); \
-		if ! printf '%s\n' "$$mise_pin" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
-			printf 'ERROR: %s records no resolved Mise release; only make upg writes it (delete a hand-edited pin first)\n' "$$mise_pin_file" >&2; \
-			exit 2; \
-		fi; \
-	elif [ "$(TOOL_BOOTSTRAP_RESOLVE)" != "1" ]; then \
-		printf 'ERROR: missing %s; make upg resolves and records the Mise release\n' "$$mise_pin_file" >&2; \
-		exit 2; \
-	fi; \
-	if [ "$(TOOL_BOOTSTRAP_RESOLVE)" != "1" ] && [ -n "$$caller_mise_version" ] && [ "$${caller_mise_version#v}" != "$$mise_pin" ]; then \
-		printf 'ERROR: MISE_VERSION=%s conflicts with %s=%s\n' "$$caller_mise_version" "$$mise_pin_file" "$$mise_pin" >&2; \
-		exit 2; \
-	fi; \
-	caller_mise_version="$$mise_pin"; \
-	if [ -z "$$mise_storage_root" ]; then \
-		if [ -n "$$caller_xdg_data_home" ]; then \
-			mise_storage_root="$$caller_xdg_data_home/mise"; \
-		elif [ -n "$$caller_home" ]; then \
-			mise_storage_root="$$caller_home/.local/share/mise"; \
-		else \
-			printf 'ERROR: MISE_DATA_DIR, XDG_DATA_HOME, or HOME must identify persistent Mise storage\n' >&2; \
-			exit 2; \
-		fi; \
-	fi; \
-	case "$$mise_storage_root" in \
-		/*) ;; \
-		*) printf 'ERROR: MISE_DATA_DIR must be absolute: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
-	esac; \
-	case "$$mise_storage_root/" in \
-		*'/../'*|*'/./'*|*'//'*) printf 'ERROR: MISE_DATA_DIR must be normalized: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
-	esac; \
-	if [ -L "$$mise_storage_root" ]; then \
-		printf 'ERROR: MISE_DATA_DIR must not be a symlink: %s\n' "$$mise_storage_root" >&2; \
-		exit 2; \
-	fi; \
-	umask 077; \
-	mkdir -p "$$mise_storage_root"; \
-	if [ -L "$$mise_storage_root" ]; then \
-		printf 'ERROR: MISE_DATA_DIR became a symlink: %s\n' "$$mise_storage_root" >&2; \
-		exit 2; \
-	fi; \
-	mise_storage_root=$$(cd "$$mise_storage_root" && pwd -P); \
-	case "$$mise_storage_root/" in \
-		/tmp/|/tmp/*) printf 'ERROR: persistent Mise storage must not live under /tmp: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
-	esac; \
-	project_root=$$(cd "$$project_root" && pwd -P); \
-	project_parent=$${project_root%/*}; \
-	if [ -z "$$project_parent" ]; then project_parent=/; fi; \
-	project_root=$$(cd "$$project_root" && pwd -P); \
-	project_parent=$${project_root%/*}; \
-	if [ -z "$$project_parent" ]; then project_parent=/; fi; \
-	case "$$mise_storage_root/" in \
-		"$$project_root/"*) printf 'ERROR: persistent Mise storage must be outside the checkout: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
-	esac; \
-	case "$$project_root/" in \
-		"$$mise_storage_root/"*) printf 'ERROR: persistent Mise storage must not contain the checkout: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
-	esac; \
-	for persistent_path in "$$mise_storage_root" "$$mise_storage_root/cache" "$$mise_storage_root/state" "$$mise_storage_root/installs" "$$mise_storage_root/shims" "$$mise_storage_root/uv-cache" "$$mise_storage_root/bootstrap"; do \
-		if [ -L "$$persistent_path" ]; then \
-			printf 'ERROR: persistent Mise path must not be a symlink: %s\n' "$$persistent_path" >&2; exit 2; \
-		fi; \
-		mkdir -p "$$persistent_path"; \
-		if [ -L "$$persistent_path" ]; then \
-			printf 'ERROR: persistent Mise path became a symlink: %s\n' "$$persistent_path" >&2; exit 2; \
-		fi; \
-		persistent_physical=$$(cd "$$persistent_path" && pwd -P); \
-		case "$$persistent_physical" in \
-			"$$mise_storage_root"|"$$mise_storage_root"/*) ;; \
-			*) printf 'ERROR: persistent Mise path escaped storage: %s\n' "$$persistent_physical" >&2; exit 2 ;; \
-		esac; \
-	done; \
-	scratch=$$(mktemp -d "$$project_parent/.$${project_root##*/}.mise-bootstrap.XXXXXX"); \
-	if [ -z "$$scratch" ] || [ ! -d "$$scratch" ]; then \
-		printf 'ERROR: mise bootstrap scratch creation failed (template: %s/.%s.mise-bootstrap.XXXXXX)\n' "$$project_parent" "$${project_root##*/}" >&2; exit 2; \
-	fi; \
-	readonly scratch; \
-	lock_stage=; \
-	trap 'bootstrap_status=$$?; trap - EXIT; \
-		lock_cleanup_status=0; scratch_cleanup_status=0; diagnostic_status=0; scratch_present=0; \
-		if [ -d "$$scratch" ]; then scratch_present=1; fi; \
-		if printf "mise scratch: cleanup path=%s present=%s entering_status=%s\n" "$$scratch" "$$scratch_present" "$$bootstrap_status" >&2; then :; \
-		else diagnostic_status=$$?; fi; \
-		if [ -n "$$lock_stage" ] && [ -d "$$lock_stage" ] && [ ! -f "$$lock_stage/transaction.json" ]; then \
-			if find "$$lock_stage" -depth -delete; then :; else \
-				lock_cleanup_status=$$?; \
-				if printf "ERROR: Mise lock stage cleanup failed: %s exit=%s\n" "$$lock_stage" "$$lock_cleanup_status" >&2; then :; \
-				else diagnostic_status=$$?; fi; \
-			fi; \
-		fi; \
-		if find "$$scratch" -depth -delete; then :; else \
-			scratch_cleanup_status=$$?; \
-			if printf "ERROR: Mise scratch cleanup failed: %s exit=%s\n" "$$scratch" "$$scratch_cleanup_status" >&2; then :; \
-			else diagnostic_status=$$?; fi; \
-		fi; \
-		if [ "$$bootstrap_status" -eq 0 ]; then \
-			if [ "$$lock_cleanup_status" -ne 0 ]; then bootstrap_status=$$lock_cleanup_status; \
-			elif [ "$$scratch_cleanup_status" -ne 0 ]; then bootstrap_status=$$scratch_cleanup_status; \
-			else bootstrap_status=$$diagnostic_status; fi; \
-		fi; \
-		if printf "mise scratch: cleaned path=%s lock_cleanup_status=%s scratch_cleanup_status=%s exit=%s\n" "$$scratch" "$$lock_cleanup_status" "$$scratch_cleanup_status" "$$bootstrap_status" >&2; then :; \
-		else diagnostic_status=$$?; if [ "$$bootstrap_status" -eq 0 ]; then bootstrap_status=$$diagnostic_status; fi; fi; \
-		exit "$$bootstrap_status"' EXIT; \
-	printf 'mise scratch: allocated path=%s\n' "$$scratch" >&2; \
-	mkdir -p "$$scratch/home" "$$scratch/home" "$$scratch/appdata" "$$scratch/appdata" "$$scratch/xdg-config" "$$scratch/xdg-data" "$$scratch/xdg-cache" "$$scratch/xdg-state" "$$scratch/config" "$$scratch/tmp" "$$scratch/." "$$scratch/system-config" "$$scratch/system-data" "$$scratch/system-installs" "$$scratch/system-shims" "$$scratch/tmp" "$$scratch/tmp" "$$scratch/tmp"; \
-: > "$$scratch/global-config.toml"; chmod 600 "$$scratch/global-config.toml"; \
-: > "$$scratch/system-config/config.toml"; chmod 600 "$$scratch/system-config/config.toml"; \
-: > "$$scratch/gitconfig"; chmod 600 "$$scratch/gitconfig"; \
-: > "$$scratch/netrc"; chmod 600 "$$scratch/netrc"; \
-mise_exec() { \
-		mise_config_mode="$$1"; shift; \
-		case "$$mise_config_mode" in \
-			no-config) mise_config_argument='MISE_NO_CONFIG=1' ;; \
-			project) mise_config_argument= ;; \
-			*) printf 'ERROR: invalid Mise config mode: %s\n' "$$mise_config_mode" >&2; return 2 ;; \
-		esac; \
-		mise_runtime_path=; \
-		if [ -n "$$caller_mise_version" ]; then \
-			mise_runtime_path="$$mise_storage_root/bootstrap/mise-$${caller_mise_version#v}"; \
-			if [ "$(OS)" = "Windows_NT" ]; then mise_runtime_path="$$mise_runtime_path.exe"; fi; \
-		fi; \
-		env -i \
-'GIT_CONFIG_NOSYSTEM=1' \
-'GIT_TERMINAL_PROMPT=0' \
-'LANG=C' \
-'LC_ALL=C' \
-'MISE_SAFE=1' \
-'MISE_PARANOID=true' \
-'MISE_NO_ENV=1' \
-'MISE_NO_HOOKS=1' \
-'MISE_AUTO_ENV=false' \
-'MISE_AUTO_INSTALL=false' \
-'MISE_EXEC_AUTO_INSTALL=false' \
-'MISE_TASK_RUN_AUTO_INSTALL=false' \
-'MISE_AUTO_UPDATE=false' \
-'MISE_HTTP_RETRIES=0' \
-'MISE_NETRC=false' \
-'MISE_NOT_FOUND_AUTO_INSTALL=false' \
-'MISE_NOT_FOUND_SYSTEM_FALLBACK=false' \
-'MISE_OVERRIDE_CONFIG_FILENAMES=.mise.toml' \
-'MISE_OVERRIDE_TOOL_VERSIONS_FILENAMES=none' \
-'MISE_GITHUB_GH_CLI_TOKENS=false' \
-'MISE_GITHUB_USE_GIT_CREDENTIALS=false' \
-'MISE_GITHUB_OAUTH_CLIENT_ID=' \
-'MISE_GITHUB_OAUTH_EXPORT_ENV=' \
-'MISE_GITHUB_OAUTH_OPEN_BROWSER=false' \
-'MISE_LOCKFILE=true' \
-'MISE_LOCKED=true' \
-'MISE_MINIMUM_RELEASE_AGE=7d' \
-'MISE_NPM_PACKAGE_MANAGER=bun' \
-$${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
-"HOME=$$scratch/home" \
-"USERPROFILE=$$scratch/home" \
-"APPDATA=$$scratch/appdata" \
-"LOCALAPPDATA=$$scratch/appdata" \
-"XDG_CONFIG_HOME=$$scratch/xdg-config" \
-"XDG_DATA_HOME=$$scratch/xdg-data" \
-"XDG_CACHE_HOME=$$scratch/xdg-cache" \
-"XDG_STATE_HOME=$$scratch/xdg-state" \
-"NETRC=$$scratch/netrc" \
-"GIT_CONFIG_GLOBAL=$$scratch/gitconfig" \
-"MISE_NETRC_FILE=$$scratch/netrc" \
-"MISE_GLOBAL_CONFIG_FILE=$$scratch/global-config.toml" \
-"MISE_CONFIG_DIR=$$scratch/config" \
-"MISE_TMP_DIR=$$scratch/tmp" \
-"MISE_GLOBAL_CONFIG_ROOT=$$scratch/." \
-"MISE_SYSTEM_CONFIG_DIR=$$scratch/system-config" \
-"MISE_SYSTEM_CONFIG_FILE=$$scratch/system-config/config.toml" \
-"MISE_SYSTEM_DATA_DIR=$$scratch/system-data" \
-"MISE_SYSTEM_INSTALLS_DIR=$$scratch/system-installs" \
-"MISE_SYSTEM_SHIMS_DIR=$$scratch/system-shims" \
-"TMPDIR=$$scratch/tmp" \
-"TMP=$$scratch/tmp" \
-"TEMP=$$scratch/tmp" \
-"MISE_DATA_DIR=$$mise_storage_root" \
-"MISE_CACHE_DIR=$$mise_storage_root/cache" \
-"MISE_STATE_DIR=$$mise_storage_root/state" \
-"MISE_INSTALLS_DIR=$$mise_storage_root/installs" \
-"MISE_SHIMS_DIR=$$mise_storage_root/shims" \
-"UV_CACHE_DIR=$$mise_storage_root/uv-cache" \
-"GIT_CEILING_DIRECTORIES=$$project_parent" \
-			"MISE_CEILING_PATHS=$$project_parent" \
-			"MISE_TRUSTED_CONFIG_PATHS=$$mise_trusted_config_paths" \
-			"MISE_TRUSTED_CONFIG_PATHS=$$mise_trusted_config_paths" \
-$${caller_path:+"PATH=$$caller_path"} \
-$${caller_comspec:+"COMSPEC=$$caller_comspec"} \
-$${caller_pathext:+"PATHEXT=$$caller_pathext"} \
-$${caller_systemroot:+"SYSTEMROOT=$$caller_systemroot"} \
-$${caller_windir:+"WINDIR=$$caller_windir"} \
-$${caller_github_token:+"GITHUB_TOKEN=$$caller_github_token"} \
-$${caller_gh_token:+"GH_TOKEN=$$caller_gh_token"} \
-$${caller_mise_github_token:+"MISE_GITHUB_TOKEN=$$caller_mise_github_token"} \
-$${caller_mise_http_timeout:+"MISE_HTTP_TIMEOUT=$$caller_mise_http_timeout"} \
-$${caller_flext_mypy_profile_output:+"FLEXT_MYPY_PROFILE_OUTPUT=$$caller_flext_mypy_profile_output"} \
-$${caller_mise_version:+"MISE_VERSION=$$caller_mise_version"} \
-$${mise_config_argument:+"$$mise_config_argument"} \
-			$${mise_runtime_path:+"MISE_INSTALL_PATH=$$mise_runtime_path"} \
-			"$$@"; \
-	}; \
-	mise_offline() { \
-		mise_offline_mode="$$1"; shift; \
-		mise_exec "$$mise_offline_mode" env 'MISE_OFFLINE=true' "$$@"; \
-	}; \
-	mise_runtime="$$mise_storage_root/bootstrap/mise-$${caller_mise_version#v}"; \
-	if [ "$(OS)" = "Windows_NT" ]; then mise_runtime="$$mise_runtime.exe"; fi; \
-	if [ ! -x "$$mise_runtime" ]; then \
-		printf 'ERROR: missing pinned Mise runtime %s; run make setup\n' "$$mise_runtime" >&2; exit 2; \
-	fi; \
-	if mise_offline project "$$mise_runtime" -C "$$project_root" bin-paths >"$$scratch/paths" 2>"$$scratch/stderr"; then \
-		cat "$$scratch/stderr" >&2; \
-	else \
-		mise_status=$$?; cat "$$scratch/stderr" >&2; cat "$$scratch/paths" >&2; exit "$$mise_status"; \
-	fi; \
-	if [ -s "$$scratch/stderr" ]; then \
-		printf 'ERROR: Mise emitted diagnostics during runtime selection\n' >&2; exit 2; \
-	fi; \
-	tool_paths=; \
-	while IFS= read -r tool_path; do \
-		case "$$tool_path" in /*) ;; *) printf 'ERROR: Mise returned a non-absolute tool path: %s\n' "$$tool_path" >&2; exit 2 ;; esac; \
-		if [ ! -d "$$tool_path" ]; then printf 'ERROR: missing tool directory: %s; run make setup\n' "$$tool_path" >&2; exit 2; fi; \
-		tool_paths="$${tool_paths:+$$tool_paths:}$$tool_path"; \
-	done < "$$scratch/paths"; \
-	if [ -z "$$tool_paths" ]; then printf 'ERROR: Mise returned no installed tool paths; run make setup\n' >&2; exit 2; fi; \
-	PATH="$(RUNTIME_BIN):$$tool_paths:$$caller_path" "$$@"
-endef
-override PROJECT_TOOL_EXEC = $(SHELL) -c '$(subst ','"'"',$(PROJECT_TOOL_RUNTIME))' --
-
-# One bootstrap serves `setup` (frozen) and `upg` (resolving); the public verb
-# selects its lifecycle, Mise release resolution and tool locking through
-# target-specific variables.
-TOOL_BOOTSTRAP_LIFECYCLE := _setup_lifecycle
-TOOL_BOOTSTRAP_RESOLVE :=
-TOOL_BOOTSTRAP_LOCK :=
-.PHONY: _bootstrap_setup_tools
-
-_bootstrap_setup_tools:
-	# The lifecycle invokes recursive make through mise, so preserve jobserver FDs.
-	+@set -eu; \
-	uv_selector="latest"; \
-	if [ ! -f "$(SETUP_MISE)" ]; then \
-		printf 'ERROR: missing generated mise launcher: %s; run make gen\n' "$(SETUP_MISE)" >&2; \
-		exit 2; \
-	fi; \
-	project_root="$(PROJECT_ROOT)"; \
-	mise="$(SETUP_MISE)"; \
-	mise_storage_root="$(MISE_DATA_DIR)"; \
-	caller_home="$${HOME:-}"; \
-	caller_xdg_data_home="$${XDG_DATA_HOME:-}"; \
-	if [ -z "$$caller_xdg_data_home" ] && [ -n "$$caller_home" ]; then \
-		caller_xdg_data_home="$$caller_home/.local/share"; \
-	fi; \
-	caller_path="$$PATH"; \
-	mise_trusted_config_paths="$$project_root"; \
-	mise_trusted_config_paths="$$project_root"; \
-mise_lockfile_platforms="linux-x64,linux-x64-musl,linux-arm64,macos-x64,macos-arm64,windows-x64"; \
-caller_comspec="$${COMSPEC:-}"; \
-caller_pathext="$${PATHEXT:-}"; \
-caller_systemroot="$${SYSTEMROOT:-}"; \
-caller_windir="$${WINDIR:-}"; \
-caller_github_token="$${GITHUB_TOKEN:-}"; \
-caller_gh_token="$${GH_TOKEN:-}"; \
 caller_mise_github_token="$${MISE_GITHUB_TOKEN:-}"; \
 caller_mise_http_timeout="$${MISE_HTTP_TIMEOUT:-}"; \
 caller_flext_mypy_profile_output="$${FLEXT_MYPY_PROFILE_OUTPUT:-}"; \
@@ -775,7 +542,11 @@ mise_exec() { \
 'MISE_LOCKED=true' \
 'MISE_MINIMUM_RELEASE_AGE=7d' \
 'MISE_NPM_PACKAGE_MANAGER=bun' \
+'MISE_MINIMUM_RELEASE_AGE=7d' \
+'MISE_NPM_PACKAGE_MANAGER=bun' \
 $${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
+			$${mise_lock_drift:+"MISE_LOCKFILE=false"} \
+			$${mise_lock_drift:+"MISE_LOCKED=false"} \
 "HOME=$$scratch/home" \
 "USERPROFILE=$$scratch/home" \
 "APPDATA=$$scratch/appdata" \
@@ -817,6 +588,285 @@ $${caller_windir:+"WINDIR=$$caller_windir"} \
 $${caller_github_token:+"GITHUB_TOKEN=$$caller_github_token"} \
 $${caller_gh_token:+"GH_TOKEN=$$caller_gh_token"} \
 $${caller_mise_github_token:+"MISE_GITHUB_TOKEN=$$caller_mise_github_token"} \
+$${caller_mise_github_token:+"MISE_GITHUB_TOKEN=$$caller_mise_github_token"} \
+$${caller_mise_http_timeout:+"MISE_HTTP_TIMEOUT=$$caller_mise_http_timeout"} \
+$${caller_flext_mypy_profile_output:+"FLEXT_MYPY_PROFILE_OUTPUT=$$caller_flext_mypy_profile_output"} \
+$${caller_mise_version:+"MISE_VERSION=$$caller_mise_version"} \
+$${mise_config_argument:+"$$mise_config_argument"} \
+			$${mise_runtime_path:+"MISE_INSTALL_PATH=$$mise_runtime_path"} \
+			"$$@"; \
+	}; \
+	mise_offline() { \
+		mise_offline_mode="$$1"; shift; \
+		mise_exec "$$mise_offline_mode" env 'MISE_OFFLINE=true' "$$@"; \
+	}; \
+	mise_offline() { \
+		mise_offline_mode="$$1"; shift; \
+		mise_exec "$$mise_offline_mode" env 'MISE_OFFLINE=true' "$$@"; \
+	}; \
+	mise_runtime="$$mise_storage_root/bootstrap/mise-$${caller_mise_version#v}"; \
+	if [ "$(OS)" = "Windows_NT" ]; then mise_runtime="$$mise_runtime.exe"; fi; \
+	if [ ! -x "$$mise_runtime" ]; then \
+		printf 'ERROR: missing pinned Mise runtime %s; run make setup\n' "$$mise_runtime" >&2; exit 2; \
+	fi; \
+	if mise_offline project "$$mise_runtime" -C "$$project_root" bin-paths >"$$scratch/paths" 2>"$$scratch/stderr"; then \
+	if mise_offline project "$$mise_runtime" -C "$$project_root" bin-paths >"$$scratch/paths" 2>"$$scratch/stderr"; then \
+		cat "$$scratch/stderr" >&2; \
+	else \
+		mise_status=$$?; cat "$$scratch/stderr" >&2; cat "$$scratch/paths" >&2; exit "$$mise_status"; \
+	fi; \
+	if [ -s "$$scratch/stderr" ]; then \
+		printf 'ERROR: Mise emitted diagnostics during runtime selection\n' >&2; exit 2; \
+	fi; \
+	tool_paths=; \
+	while IFS= read -r tool_path; do \
+		case "$$tool_path" in /*) ;; *) printf 'ERROR: Mise returned a non-absolute tool path: %s\n' "$$tool_path" >&2; exit 2 ;; esac; \
+		if [ ! -d "$$tool_path" ]; then printf 'ERROR: missing tool directory: %s; run make setup\n' "$$tool_path" >&2; exit 2; fi; \
+		tool_paths="$${tool_paths:+$$tool_paths:}$$tool_path"; \
+	done < "$$scratch/paths"; \
+	if [ -z "$$tool_paths" ]; then printf 'ERROR: Mise returned no installed tool paths; run make setup\n' >&2; exit 2; fi; \
+	PATH="$(RUNTIME_BIN):$$tool_paths:$$caller_path" "$$@"
+endef
+override PROJECT_TOOL_EXEC = $(SHELL) -c '$(subst ','"'"',$(PROJECT_TOOL_RUNTIME))' --
+
+# One bootstrap serves `setup` (frozen) and `upg` (resolving); the public verb
+# selects its lifecycle, Mise release resolution and tool locking through
+# target-specific variables.
+TOOL_BOOTSTRAP_LIFECYCLE := _setup_lifecycle
+TOOL_BOOTSTRAP_RESOLVE :=
+TOOL_BOOTSTRAP_LOCK :=
+.PHONY: _bootstrap_setup_tools
+
+_bootstrap_setup_tools:
+	# The lifecycle invokes recursive make through mise, so preserve jobserver FDs.
+	+@set -eu; \
+	uv_selector="latest"; \
+	if [ ! -f "$(SETUP_MISE)" ]; then \
+		printf 'ERROR: missing generated mise launcher: %s; run make gen\n' "$(SETUP_MISE)" >&2; \
+		exit 2; \
+	fi; \
+	project_root="$(PROJECT_ROOT)"; \
+	mise="$(SETUP_MISE)"; \
+	mise_storage_root="$(MISE_DATA_DIR)"; \
+	caller_home="$${HOME:-}"; \
+	caller_xdg_data_home="$${XDG_DATA_HOME:-}"; \
+	if [ -z "$$caller_xdg_data_home" ] && [ -n "$$caller_home" ]; then \
+		caller_xdg_data_home="$$caller_home/.local/share"; \
+	fi; \
+	caller_path="$$PATH"; \
+	mise_trusted_config_paths="$$project_root"; \
+	mise_trusted_config_paths="$$project_root"; \
+mise_lockfile_platforms="linux-x64,linux-x64-musl,linux-arm64,macos-x64,macos-arm64,windows-x64"; \
+caller_comspec="$${COMSPEC:-}"; \
+caller_pathext="$${PATHEXT:-}"; \
+caller_systemroot="$${SYSTEMROOT:-}"; \
+caller_windir="$${WINDIR:-}"; \
+caller_github_token="$${GITHUB_TOKEN:-}"; \
+caller_gh_token="$${GH_TOKEN:-}"; \
+caller_mise_github_token="$${MISE_GITHUB_TOKEN:-}"; \
+caller_mise_github_token="$${MISE_GITHUB_TOKEN:-}"; \
+caller_mise_http_timeout="$${MISE_HTTP_TIMEOUT:-}"; \
+caller_flext_mypy_profile_output="$${FLEXT_MYPY_PROFILE_OUTPUT:-}"; \
+caller_mise_version="$${MISE_VERSION:-}"; \
+mise_pin_file="$(MISE_VERSION_PIN)"; \
+	mise_pin=; \
+	if [ -f "$$mise_pin_file" ]; then \
+		mise_pin=$$(awk '!/^[[:space:]]*(#|$$)/ { lines++; release = $$0 } END { if (lines == 1) print release }' "$$mise_pin_file"); \
+		if ! printf '%s\n' "$$mise_pin" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
+			printf 'ERROR: %s records no resolved Mise release; only make upg writes it (delete a hand-edited pin first)\n' "$$mise_pin_file" >&2; \
+			exit 2; \
+		fi; \
+	elif [ "$(TOOL_BOOTSTRAP_RESOLVE)" != "1" ]; then \
+		printf 'ERROR: missing %s; make upg resolves and records the Mise release\n' "$$mise_pin_file" >&2; \
+		exit 2; \
+	fi; \
+	if [ "$(TOOL_BOOTSTRAP_RESOLVE)" != "1" ] && [ -n "$$caller_mise_version" ] && [ "$${caller_mise_version#v}" != "$$mise_pin" ]; then \
+		printf 'ERROR: MISE_VERSION=%s conflicts with %s=%s\n' "$$caller_mise_version" "$$mise_pin_file" "$$mise_pin" >&2; \
+		exit 2; \
+	fi; \
+	caller_mise_version="$$mise_pin"; \
+	if [ -z "$$mise_storage_root" ]; then \
+		if [ -n "$$caller_xdg_data_home" ]; then \
+			mise_storage_root="$$caller_xdg_data_home/mise"; \
+		elif [ -n "$$caller_home" ]; then \
+			mise_storage_root="$$caller_home/.local/share/mise"; \
+		else \
+			printf 'ERROR: MISE_DATA_DIR, XDG_DATA_HOME, or HOME must identify persistent Mise storage\n' >&2; \
+			exit 2; \
+		fi; \
+	fi; \
+	case "$$mise_storage_root" in \
+		/*) ;; \
+		*) printf 'ERROR: MISE_DATA_DIR must be absolute: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
+	esac; \
+	case "$$mise_storage_root/" in \
+		*'/../'*|*'/./'*|*'//'*) printf 'ERROR: MISE_DATA_DIR must be normalized: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
+	esac; \
+	if [ -L "$$mise_storage_root" ]; then \
+		printf 'ERROR: MISE_DATA_DIR must not be a symlink: %s\n' "$$mise_storage_root" >&2; \
+		exit 2; \
+	fi; \
+	umask 077; \
+	mkdir -p "$$mise_storage_root"; \
+	if [ -L "$$mise_storage_root" ]; then \
+		printf 'ERROR: MISE_DATA_DIR became a symlink: %s\n' "$$mise_storage_root" >&2; \
+		exit 2; \
+	fi; \
+	mise_storage_root=$$(cd "$$mise_storage_root" && pwd -P); \
+	case "$$mise_storage_root/" in \
+		/tmp/|/tmp/*) printf 'ERROR: persistent Mise storage must not live under /tmp: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
+	esac; \
+	project_root=$$(cd "$$project_root" && pwd -P); \
+	project_parent=$${project_root%/*}; \
+	if [ -z "$$project_parent" ]; then project_parent=/; fi; \
+	project_root=$$(cd "$$project_root" && pwd -P); \
+	project_parent=$${project_root%/*}; \
+	if [ -z "$$project_parent" ]; then project_parent=/; fi; \
+	case "$$mise_storage_root/" in \
+		"$$project_root/"*) printf 'ERROR: persistent Mise storage must be outside the checkout: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
+	esac; \
+	case "$$project_root/" in \
+		"$$mise_storage_root/"*) printf 'ERROR: persistent Mise storage must not contain the checkout: %s\n' "$$mise_storage_root" >&2; exit 2 ;; \
+	esac; \
+	for persistent_path in "$$mise_storage_root" "$$mise_storage_root/cache" "$$mise_storage_root/state" "$$mise_storage_root/installs" "$$mise_storage_root/shims" "$$mise_storage_root/uv-cache" "$$mise_storage_root/bootstrap"; do \
+		if [ -L "$$persistent_path" ]; then \
+			printf 'ERROR: persistent Mise path must not be a symlink: %s\n' "$$persistent_path" >&2; exit 2; \
+		fi; \
+		mkdir -p "$$persistent_path"; \
+		if [ -L "$$persistent_path" ]; then \
+			printf 'ERROR: persistent Mise path became a symlink: %s\n' "$$persistent_path" >&2; exit 2; \
+		fi; \
+		persistent_physical=$$(cd "$$persistent_path" && pwd -P); \
+		case "$$persistent_physical" in \
+			"$$mise_storage_root"|"$$mise_storage_root"/*) ;; \
+			*) printf 'ERROR: persistent Mise path escaped storage: %s\n' "$$persistent_physical" >&2; exit 2 ;; \
+		esac; \
+	done; \
+	scratch=$$(mktemp -d "$$project_parent/.$${project_root##*/}.mise-bootstrap.XXXXXX"); \
+	if [ -z "$$scratch" ] || [ ! -d "$$scratch" ]; then \
+		printf 'ERROR: mise bootstrap scratch creation failed (template: %s/.%s.mise-bootstrap.XXXXXX)\n' "$$project_parent" "$${project_root##*/}" >&2; exit 2; \
+	fi; \
+	readonly scratch; \
+	lock_stage=; \
+	trap 'bootstrap_status=$$?; trap - EXIT; \
+		lock_cleanup_status=0; scratch_cleanup_status=0; diagnostic_status=0; scratch_present=0; \
+		if [ -d "$$scratch" ]; then scratch_present=1; fi; \
+		if printf "mise scratch: cleanup path=%s present=%s entering_status=%s\n" "$$scratch" "$$scratch_present" "$$bootstrap_status" >&2; then :; \
+		else diagnostic_status=$$?; fi; \
+		if [ -n "$$lock_stage" ] && [ -d "$$lock_stage" ] && [ ! -f "$$lock_stage/transaction.json" ]; then \
+			if find "$$lock_stage" -depth -delete; then :; else \
+				lock_cleanup_status=$$?; \
+				if printf "ERROR: Mise lock stage cleanup failed: %s exit=%s\n" "$$lock_stage" "$$lock_cleanup_status" >&2; then :; \
+				else diagnostic_status=$$?; fi; \
+			fi; \
+		fi; \
+		if find "$$scratch" -depth -delete; then :; else \
+			scratch_cleanup_status=$$?; \
+			if printf "ERROR: Mise scratch cleanup failed: %s exit=%s\n" "$$scratch" "$$scratch_cleanup_status" >&2; then :; \
+			else diagnostic_status=$$?; fi; \
+		fi; \
+		if [ "$$bootstrap_status" -eq 0 ]; then \
+			if [ "$$lock_cleanup_status" -ne 0 ]; then bootstrap_status=$$lock_cleanup_status; \
+			elif [ "$$scratch_cleanup_status" -ne 0 ]; then bootstrap_status=$$scratch_cleanup_status; \
+			else bootstrap_status=$$diagnostic_status; fi; \
+		fi; \
+		if printf "mise scratch: cleaned path=%s lock_cleanup_status=%s scratch_cleanup_status=%s exit=%s\n" "$$scratch" "$$lock_cleanup_status" "$$scratch_cleanup_status" "$$bootstrap_status" >&2; then :; \
+		else diagnostic_status=$$?; if [ "$$bootstrap_status" -eq 0 ]; then bootstrap_status=$$diagnostic_status; fi; fi; \
+		exit "$$bootstrap_status"' EXIT; \
+	printf 'mise scratch: allocated path=%s\n' "$$scratch" >&2; \
+	mkdir -p "$$scratch/home" "$$scratch/home" "$$scratch/appdata" "$$scratch/appdata" "$$scratch/xdg-config" "$$scratch/xdg-data" "$$scratch/xdg-cache" "$$scratch/xdg-state" "$$scratch/config" "$$scratch/tmp" "$$scratch/." "$$scratch/system-config" "$$scratch/system-data" "$$scratch/system-installs" "$$scratch/system-shims" "$$scratch/tmp" "$$scratch/tmp" "$$scratch/tmp"; \
+: > "$$scratch/global-config.toml"; chmod 600 "$$scratch/global-config.toml"; \
+: > "$$scratch/system-config/config.toml"; chmod 600 "$$scratch/system-config/config.toml"; \
+: > "$$scratch/gitconfig"; chmod 600 "$$scratch/gitconfig"; \
+: > "$$scratch/netrc"; chmod 600 "$$scratch/netrc"; \
+mise_exec() { \
+		mise_config_mode="$$1"; shift; \
+		case "$$mise_config_mode" in \
+			no-config) mise_config_argument='MISE_NO_CONFIG=1' ;; \
+			project) mise_config_argument= ;; \
+			*) printf 'ERROR: invalid Mise config mode: %s\n' "$$mise_config_mode" >&2; return 2 ;; \
+		esac; \
+		mise_runtime_path=; \
+		if [ -n "$$caller_mise_version" ]; then \
+			mise_runtime_path="$$mise_storage_root/bootstrap/mise-$${caller_mise_version#v}"; \
+			if [ "$(OS)" = "Windows_NT" ]; then mise_runtime_path="$$mise_runtime_path.exe"; fi; \
+		fi; \
+		env -i \
+'GIT_CONFIG_NOSYSTEM=1' \
+'GIT_TERMINAL_PROMPT=0' \
+'LANG=C' \
+'LC_ALL=C' \
+'MISE_SAFE=1' \
+'MISE_PARANOID=true' \
+'MISE_NO_ENV=1' \
+'MISE_NO_HOOKS=1' \
+'MISE_AUTO_ENV=false' \
+'MISE_AUTO_INSTALL=false' \
+'MISE_EXEC_AUTO_INSTALL=false' \
+'MISE_TASK_RUN_AUTO_INSTALL=false' \
+'MISE_AUTO_UPDATE=false' \
+'MISE_HTTP_RETRIES=0' \
+'MISE_NETRC=false' \
+'MISE_NOT_FOUND_AUTO_INSTALL=false' \
+'MISE_NOT_FOUND_SYSTEM_FALLBACK=false' \
+'MISE_OVERRIDE_CONFIG_FILENAMES=.mise.toml' \
+'MISE_OVERRIDE_TOOL_VERSIONS_FILENAMES=none' \
+'MISE_GITHUB_GH_CLI_TOKENS=false' \
+'MISE_GITHUB_USE_GIT_CREDENTIALS=false' \
+'MISE_GITHUB_OAUTH_CLIENT_ID=' \
+'MISE_GITHUB_OAUTH_EXPORT_ENV=' \
+'MISE_GITHUB_OAUTH_OPEN_BROWSER=false' \
+'MISE_LOCKFILE=true' \
+'MISE_LOCKED=true' \
+'MISE_MINIMUM_RELEASE_AGE=7d' \
+'MISE_NPM_PACKAGE_MANAGER=bun' \
+'MISE_MINIMUM_RELEASE_AGE=7d' \
+'MISE_NPM_PACKAGE_MANAGER=bun' \
+$${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
+			$${mise_lock_drift:+"MISE_LOCKFILE=false"} \
+			$${mise_lock_drift:+"MISE_LOCKED=false"} \
+"HOME=$$scratch/home" \
+"USERPROFILE=$$scratch/home" \
+"APPDATA=$$scratch/appdata" \
+"LOCALAPPDATA=$$scratch/appdata" \
+"XDG_CONFIG_HOME=$$scratch/xdg-config" \
+"XDG_DATA_HOME=$$scratch/xdg-data" \
+"XDG_CACHE_HOME=$$scratch/xdg-cache" \
+"XDG_STATE_HOME=$$scratch/xdg-state" \
+"NETRC=$$scratch/netrc" \
+"GIT_CONFIG_GLOBAL=$$scratch/gitconfig" \
+"MISE_NETRC_FILE=$$scratch/netrc" \
+"MISE_GLOBAL_CONFIG_FILE=$$scratch/global-config.toml" \
+"MISE_CONFIG_DIR=$$scratch/config" \
+"MISE_TMP_DIR=$$scratch/tmp" \
+"MISE_GLOBAL_CONFIG_ROOT=$$scratch/." \
+"MISE_SYSTEM_CONFIG_DIR=$$scratch/system-config" \
+"MISE_SYSTEM_CONFIG_FILE=$$scratch/system-config/config.toml" \
+"MISE_SYSTEM_DATA_DIR=$$scratch/system-data" \
+"MISE_SYSTEM_INSTALLS_DIR=$$scratch/system-installs" \
+"MISE_SYSTEM_SHIMS_DIR=$$scratch/system-shims" \
+"TMPDIR=$$scratch/tmp" \
+"TMP=$$scratch/tmp" \
+"TEMP=$$scratch/tmp" \
+"MISE_DATA_DIR=$$mise_storage_root" \
+"MISE_CACHE_DIR=$$mise_storage_root/cache" \
+"MISE_STATE_DIR=$$mise_storage_root/state" \
+"MISE_INSTALLS_DIR=$$mise_storage_root/installs" \
+"MISE_SHIMS_DIR=$$mise_storage_root/shims" \
+"UV_CACHE_DIR=$$mise_storage_root/uv-cache" \
+"GIT_CEILING_DIRECTORIES=$$project_parent" \
+			"MISE_CEILING_PATHS=$$project_parent" \
+			"MISE_TRUSTED_CONFIG_PATHS=$$mise_trusted_config_paths" \
+			"MISE_TRUSTED_CONFIG_PATHS=$$mise_trusted_config_paths" \
+$${caller_path:+"PATH=$$caller_path"} \
+$${caller_comspec:+"COMSPEC=$$caller_comspec"} \
+$${caller_pathext:+"PATHEXT=$$caller_pathext"} \
+$${caller_systemroot:+"SYSTEMROOT=$$caller_systemroot"} \
+$${caller_windir:+"WINDIR=$$caller_windir"} \
+$${caller_github_token:+"GITHUB_TOKEN=$$caller_github_token"} \
+$${caller_gh_token:+"GH_TOKEN=$$caller_gh_token"} \
+$${caller_mise_github_token:+"MISE_GITHUB_TOKEN=$$caller_mise_github_token"} \
+$${caller_mise_github_token:+"MISE_GITHUB_TOKEN=$$caller_mise_github_token"} \
 $${caller_mise_http_timeout:+"MISE_HTTP_TIMEOUT=$$caller_mise_http_timeout"} \
 $${caller_flext_mypy_profile_output:+"FLEXT_MYPY_PROFILE_OUTPUT=$$caller_flext_mypy_profile_output"} \
 $${caller_mise_version:+"MISE_VERSION=$$caller_mise_version"} \
@@ -854,6 +904,7 @@ mise_has_blocking_warning() { \
 	mise_receipt() { \
 		mise_receipt_log="$$scratch/$$1"; shift; \
 		mise_checked_stdout "$$mise_receipt_log.stdout" "$$mise_receipt_log.stderr" mise_offline no-config "$$1" --version; \
+		mise_checked_stdout "$$mise_receipt_log.stdout" "$$mise_receipt_log.stderr" mise_offline no-config "$$1" --version; \
 		receipt_output=$$(cat "$$mise_receipt_log.stdout"); \
 		receipt_release=$$(printf '%s\n' "$$receipt_output" | grep -E '^(mise )?[0-9]+\.[0-9]+\.[0-9]+$$' | tail -1 | sed 's/^mise //'); \
 		if [ -z "$$receipt_release" ]; then \
@@ -872,8 +923,14 @@ mise_has_blocking_warning() { \
 	runtime_release="$$receipt_release"; \
 	if [ "$(TOOL_BOOTSTRAP_RESOLVE)" = "1" ]; then \
 		mise_checked_stdout "$$scratch/resolve.stdout" "$$scratch/resolve.stderr" mise_exec no-config env MISE_CACHE_DIR="$$scratch/resolve-cache" MISE_FETCH_REMOTE_VERSIONS_CACHE=0s MISE_MINIMUM_RELEASE_AGE=0s "$$pinned_mise" latest github:jdx/mise@2026.9.16; \
+		mise_checked_stdout "$$scratch/resolve.stdout" "$$scratch/resolve.stderr" mise_exec no-config env MISE_CACHE_DIR="$$scratch/resolve-cache" MISE_FETCH_REMOTE_VERSIONS_CACHE=0s MISE_MINIMUM_RELEASE_AGE=0s "$$pinned_mise" latest github:jdx/mise@2026.9.16; \
 		resolved_release=$$(cat "$$scratch/resolve.stdout"); \
 		if ! printf '%s\n' "$$resolved_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
+			MISE_MINIMUM_RELEASE_AGE=0s mise ls-remote github:jdx/mise@2026.9.16 >"$$scratch/lsremote.stdout" 2>"$$scratch/lsremote.stderr" || true; \
+			resolved_release=$$(grep -E '^[0-9]+(\.[0-9]+){2}$$' "$$scratch/lsremote.stdout" | tail -1); \
+		fi; \
+		if ! printf '%s\n' "$$resolved_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
+			printf 'ERROR: mise latest github:jdx/mise@2026.9.16 returned an invalid release: %s\n' "$$resolved_release" >&2; exit 2; \
 			MISE_MINIMUM_RELEASE_AGE=0s mise ls-remote github:jdx/mise@2026.9.16 >"$$scratch/lsremote.stdout" 2>"$$scratch/lsremote.stderr" || true; \
 			resolved_release=$$(grep -E '^[0-9]+(\.[0-9]+){2}$$' "$$scratch/lsremote.stdout" | tail -1); \
 		fi; \
@@ -977,6 +1034,7 @@ mise_receipt launcher-version "$$lock_stage/artifacts/bin/mise"; \
 		printf 'ERROR: ast-grep emitted diagnostics after installation\n' >&2; exit 2; \
 	fi; \
 	mise_checked "$$scratch/uv-version.log" mise_offline project "$$pinned_mise" -C "$$project_root" exec -- uv --version; \
+	mise_checked "$$scratch/uv-version.log" mise_offline project "$$pinned_mise" -C "$$project_root" exec -- uv --version; \
 	uv_output=$$(cat "$$scratch/uv-version.log"); \
 	case "$$uv_output" in \
 		'uv '*) uv_actual=$${uv_output#uv }; uv_actual=$${uv_actual%% *} ;; \
@@ -991,14 +1049,19 @@ mise_receipt launcher-version "$$lock_stage/artifacts/bin/mise"; \
 	fi; \
 	printf 'uv setup selector=%s receipt=%s\n' "$$uv_selector" "$$uv_actual"; \
 	mise_checked "$$scratch/direnv-path.log" mise_offline project "$$pinned_mise" -C "$$project_root" which direnv; \
+	mise_checked "$$scratch/direnv-path.log" mise_offline project "$$pinned_mise" -C "$$project_root" which direnv; \
 	direnv_executable=$$(cat "$$scratch/direnv-path.log"); \
 	if [ ! -x "$$direnv_executable" ]; then \
 		printf 'ERROR: Mise resolved a non-executable direnv path: %s\n' "$$direnv_executable" >&2; exit 2; \
 	fi; \
 	mise_checked "$$scratch/python-path.log" mise_offline project "$$pinned_mise" -C "$$project_root" which python; \
+	mise_checked "$$scratch/python-path.log" mise_offline project "$$pinned_mise" -C "$$project_root" which python; \
 	python_executable=$$(cat "$$scratch/python-path.log"); \
 	# CI receives only the shim farm: a project bin/ on PATH would bind every \
 	# shim to that repository launcher (mise resolves shims through PATH). \
+	# A restored tool cache keeps the shims bound to the Mise release that built \
+	# them, and Mise never replaces a shim bound to another binary, so CI rebuilds \
+	# the farm from the pinned release before publishing it. \
 	# A restored tool cache keeps the shims bound to the Mise release that built \
 	# them, and Mise never replaces a shim bound to another binary, so CI rebuilds \
 	# the farm from the pinned release before publishing it. \
@@ -1007,12 +1070,19 @@ shim_farm="$$mise_storage_root/shims"; \
 		rm -rf "$$shim_farm"; \
 		mise_checked "$$scratch/reshim.log" mise_offline project "$$pinned_mise" -C "$$project_root" reshim; \
 		printf '%s\n' "$$shim_farm" >> "$$GITHUB_PATH"; \
+shim_farm="$$mise_storage_root/shims"; \
+		rm -rf "$$shim_farm"; \
+		mise_checked "$$scratch/reshim.log" mise_offline project "$$pinned_mise" -C "$$project_root" reshim; \
+		printf '%s\n' "$$shim_farm" >> "$$GITHUB_PATH"; \
 fi; \
 	printf 'setup: entering lifecycle (submodules, environment, hooks) make=%s\n' "$(SELF_MAKE_EXECUTABLE)"; \
 	scratch_present=0; if [ -d "$$scratch" ]; then scratch_present=1; fi; \
 	printf 'mise scratch: before lifecycle path=%s present=%s\n' "$$scratch" "$$scratch_present" >&2; \
+	scratch_present=0; if [ -d "$$scratch" ]; then scratch_present=1; fi; \
+	printf 'mise scratch: before lifecycle path=%s present=%s\n' "$$scratch" "$$scratch_present" >&2; \
 	mise_runtime_path="$$mise_storage_root/bootstrap/mise-$${runtime_release}"; \
 	if [ "$(OS)" = "Windows_NT" ]; then mise_runtime_path="$$mise_runtime_path.exe"; fi; \
+	if env \
 	if env \
 "MISE_DATA_DIR=$$mise_storage_root" \
 "MISE_CACHE_DIR=$$mise_storage_root/cache" \
@@ -1025,11 +1095,19 @@ fi; \
 		"MISE_TRUSTED_CONFIG_PATHS=$$project_root" \
 		"MISE_VERSION=$$runtime_release" \
 		"MISE_INSTALL_PATH=$$mise_runtime_path" \
+		$${mise_lock_drift:+"SETUP_MISE_LOCK_DRIFT=1"} \
 		$(PROJECT_TOOL_EXEC) env \
+		$${locked_manifest:+"UPG_LOCKED_MISE_MANIFEST=$$locked_manifest"} \
 		$${locked_manifest:+"UPG_LOCKED_MISE_MANIFEST=$$locked_manifest"} \
 		"SETUP_DIRENV=$$direnv_executable" \
 		"SETUP_PYTHON=$$python_executable" \
 		"SETUP_DIRENV_XDG_DATA_HOME=$$caller_xdg_data_home" \
+		"CI=$(CI)" $(SELF_MAKE) $(TOOL_BOOTSTRAP_LIFECYCLE); then lifecycle_status=0; \
+	else lifecycle_status=$$?; fi; \
+	scratch_present=0; if [ -d "$$scratch" ]; then scratch_present=1; fi; \
+	if printf 'mise scratch: after lifecycle path=%s present=%s status=%s\n' "$$scratch" "$$scratch_present" "$$lifecycle_status" >&2; then :; \
+	else lifecycle_diagnostic_status=$$?; if [ "$$lifecycle_status" -eq 0 ]; then lifecycle_status=$$lifecycle_diagnostic_status; fi; fi; \
+	exit "$$lifecycle_status"
 		"CI=$(CI)" $(SELF_MAKE) $(TOOL_BOOTSTRAP_LIFECYCLE); then lifecycle_status=0; \
 	else lifecycle_status=$$?; fi; \
 	scratch_present=0; if [ -d "$$scratch" ]; then scratch_present=1; fi; \
@@ -1191,6 +1269,13 @@ endef
 
 .PHONY: $(PUBLIC_VERBS) $(addprefix _builtin-,$(PUBLIC_VERBS))
 .PHONY: _builtin_gen_init _builtin_gen_all
+
+# OPTIONS=Y (or HELP=Y) displays a built-in verb's contract without effects:
+# no prerequisite, hook or handler of that verb runs. A script verb keeps its
+# entry, and the promoted dispatcher renders its contract per WHAT.
+VERB_CONTRACT := $(filter 1 TRUE Y YES true y yes True Yes,$(OPTIONS) $(HELP))
+ifeq ($(VERB_CONTRACT),)
+$(filter-out help clean upg,$(BUILTIN_VERBS)): _builtin_require_mise_pin
 
 # OPTIONS=Y (or HELP=Y) displays a built-in verb's contract without effects:
 # no prerequisite, hook or handler of that verb runs. A script verb keeps its
@@ -1616,6 +1701,16 @@ _builtin-pre-commit:
 # changes (for example the fleet cooldown) still reach every consumer; when
 # that manifest is byte-identical to the one the first half locked, the lock
 # already satisfies it and the relock installs from it without resolving again.
+# must not require an existing environment, and as the only resolver it must
+# not require a readable committed mise.lock either. A lock written by a newer
+# Mise than the pinned release ("unsupported lockfile version 3") or one that
+# no longer covers the manifest would otherwise stop the very verb that
+# rewrites it. Its first half therefore resolves the toolchain afresh, in a
+# private stage that never reads the committed lock. `_upg_relock` then bumps
+# that lock against the .mise.toml `gen` just rendered, so toolchain policy
+# changes (for example the fleet cooldown) still reach every consumer; when
+# that manifest is byte-identical to the one the first half locked, the lock
+# already satisfies it and the relock installs from it without resolving again.
 upg: TOOL_BOOTSTRAP_LIFECYCLE := _upg_lifecycle
 upg: TOOL_BOOTSTRAP_RESOLVE := 1
 upg: TOOL_BOOTSTRAP_LOCK := 1
@@ -1837,6 +1932,14 @@ _builtin-help:
 
 	@printf '  %-16s %s\n' 'profile-test-report' 'Render the parent pytest profile and the aggregated child profiles from that run.';
 
+	@printf '  %-16s %s\n' 'test-file' 'Run one declared test file through the budgeted and slow phases with the same persistent testmon cache (FILE=<repository-relative path>).';
+
+	@printf '  %-16s %s\n' 'file-gate' 'Run the fast per-file gates (ruff check, ruff format --check, pyrefly, pyright, ast-grep scan, typos) on FILE=<repository-relative path>; empty FILE fails loud.';
+
+	@printf '  %-16s %s\n' 'profile-test' 'Profile the canonical pytest entry and its collection children on the same persistent testmon database, without the outer bounded-gate wrapper.';
+
+	@printf '  %-16s %s\n' 'profile-test-report' 'Render the parent pytest profile and the aggregated child profiles from that run.';
+
 	@printf '  %-16s %s\n' 'fmt' 'Apply ruff format --preview and every declared formatter gate. Ruff is the rule; change code, never ruff.';
 
 	@printf '  %-16s %s\n' 'fix' 'Apply the safe fixes of ruff check --fix --preview plus every other configured safe correction; never deletes information. Ruff is the rule; change code, never ruff.';
@@ -1895,6 +1998,8 @@ _builtin-help:
 
 	@printf '  %-16s %s\n' 'sonarcloud-issues' 'Read unresolved new-code SonarCloud issues on the published integration branch (requires SONAR_TOKEN).';
 
+	@printf '  %-16s %s\n' 'sonarcloud-issues' 'Read unresolved new-code SonarCloud issues on the published integration branch (requires SONAR_TOKEN).';
+
 
 # A project owns the sources declared by its manifest. The generated setup
 # reconciler validates every initialized checkout before mutation, initializes
@@ -1906,6 +2011,10 @@ _builtin-help:
 # Source: template (submodule_setup_recipe.j2)
 # Computed: workspace uses MANAGED_GITLINKS from config; standalone discovers
 #           submodules with flext-managed=true from .gitmodules at runtime.
+# Rule: setup PROVISIONS an absent or proven unfinished initial clone and
+#       VERIFIES an established checkout. An initial clone has no physical index,
+#       no worktree content, and only its clone reflog entry. Established work
+#       is never destroyed: git checkout, git reset,
 # Rule: setup PROVISIONS an absent or proven unfinished initial clone and
 #       VERIFIES an established checkout. An initial clone has no physical index,
 #       no worktree content, and only its clone reflog entry. Established work
@@ -1922,6 +2031,12 @@ _builtin-help:
 # Why: runners expose umask 002 and `submodule update --init`
 # materializes tracked files as 0664; canonical Mise artifact gates demand
 # exact modes, so provisioning normalizes the umask before checkout.
+# An absent gitlink is cloned at depth 1, the same flag private submodule
+# init uses. Setup's contract is the recorded commit, and a full history
+# cannot finish inside submodule_timeout_seconds when the object database
+# is large.
+# Derive the physical index from its Git directory: --git-path resolves
+# a final symlink and cannot prove that the index entry itself is absent.
 # An absent gitlink is cloned at depth 1, the same flag private submodule
 # init uses. Setup's contract is the recorded commit, and a full history
 # cannot finish inside submodule_timeout_seconds when the object database
@@ -1961,6 +2076,10 @@ _builtin_setup_submodules:
 	fi; \
 	managed=$$(printf '%s' "$$managed" | tr ' ' '\n' | sort -u | tr '\n' ' '); \
 	if [ -z "$$managed" ]; then exit 0; fi; \
+	if [ "$${GIT_INDEX_FILE+x}" = x ]; then \
+		printf 'ERROR: submodule setup cannot authenticate a relocated Git index\n' >&2; \
+		exit 2; \
+	fi; \
 	if [ "$${GIT_INDEX_FILE+x}" = x ]; then \
 		printf 'ERROR: submodule setup cannot authenticate a relocated Git index\n' >&2; \
 		exit 2; \
@@ -2018,8 +2137,64 @@ _builtin_setup_submodules:
 		fi; \
 		printf 'setup: resuming unfinished initial clone: %s\n' "$$path"; \
 		absent="$$absent $$path"; \
+		child="$$root/$$path"; \
+		if [ ! -e "$$child/.git" ]; then \
+			absent="$$absent $$path"; \
+			continue; \
+		fi; \
+		owner=$$(git -C "$$child" rev-parse --show-superproject-working-tree); \
+		checkout_root=$$(git -C "$$child" rev-parse --show-toplevel); \
+		if [ "$$owner" != "$$root" ] || [ "$$checkout_root" != "$$child" ]; then \
+			printf 'ERROR: %s: checkout identity does not match the governed child\n' "$$path" >&2; \
+			exit 2; \
+		fi; \
+		git_dir=$$(git -C "$$child" rev-parse --absolute-git-dir); \
+		index="$$git_dir/index"; \
+		if [ -e "$$index" ] || [ -L "$$index" ]; then continue; fi; \
+		content=$$(git -C "$$child" ls-files --others --directory); \
+		reflog=$$(git -C "$$child" reflog show --format=%gs HEAD); \
+		initial=$$(git -C "$$child" reflog show --format=%gs -1 HEAD); \
+		if [ -n "$$content" ] || [ "$$reflog" != "$$initial" ]; then \
+			printf 'ERROR: %s: missing index with unproven initial-clone state; preserve and review\n' "$$path" >&2; \
+			exit 2; \
+		fi; \
+		case "$$initial" in \
+			'clone: from '*) ;; \
+			*) printf 'ERROR: %s: missing index without initial clone receipt\n' "$$path" >&2; exit 2 ;; \
+		esac; \
+		local_refs=$$(git -C "$$child" for-each-ref --format='%(refname)' refs/heads refs/stash); \
+		if active_ref=$$(git -C "$$child" symbolic-ref -q HEAD); then \
+			:; \
+		else \
+			ref_status=$$?; \
+			[ "$$ref_status" -eq 1 ] || exit "$$ref_status"; \
+		fi; \
+		if [ "$$local_refs" != "$$active_ref" ]; then \
+			printf 'ERROR: %s: missing index with local branch or stash work; preserve and review\n' "$$path" >&2; \
+			exit 2; \
+		fi; \
+		entry=$$(git -C "$$root" ls-files --stage -- "$$path"); \
+		set -- $$entry; \
+		if [ "$$#" -ne 4 ] || [ "$$1" != 160000 ] || [ "$$3" != 0 ] || [ "$$4" != "$$path" ]; then \
+			printf 'ERROR: governed path is not a gitlink: %s\n' "$$path" >&2; \
+			exit 2; \
+		fi; \
+		head=$$(git -C "$$child" rev-parse HEAD); \
+		if [ "$$head" = "$$2" ]; then \
+			printf 'setup: materializing unfinished initial clone at recorded pin: %s\n' "$$path"; \
+			GIT_TERMINAL_PROMPT=0 timeout --signal=TERM --kill-after=5s "120s" \
+				git -C "$$child" -c submodule.recurse=false checkout --detach --no-overwrite-ignore "$$head"; \
+			continue; \
+		fi; \
+		printf 'setup: resuming unfinished initial clone: %s\n' "$$path"; \
+		absent="$$absent $$path"; \
 	done; \
 	if [ -n "$$absent" ]; then \
+		credential_helper='!f() { if [ "$$1" = get ]; then printf "username=x-access-token\npassword=%s\n" "$$GITHUB_TOKEN"; fi; }; f'; \
+		GIT_TERMINAL_PROMPT=0 timeout --signal=TERM --kill-after=5s "120s" \
+			git -C "$$root" -c credential.helper= \
+			-c "credential.https://$${GH_HOST:-github.com}.helper=$$credential_helper" \
+			submodule update --init --checkout --depth 1 --jobs "$${FLEXT_SUBMODULE_JOBS:-8}" -- $$absent; \
 		credential_helper='!f() { if [ "$$1" = get ]; then printf "username=x-access-token\npassword=%s\n" "$$GITHUB_TOKEN"; fi; }; f'; \
 		GIT_TERMINAL_PROMPT=0 timeout --signal=TERM --kill-after=5s "120s" \
 			git -C "$$root" -c credential.helper= \
@@ -2133,6 +2308,29 @@ _builtin_recover_mise:
 		if [ ! -x "$$recovery_python" ]; then printf 'ERROR: Mise transaction Python is unavailable: %s\n' "$$recovery_python" >&2; exit 2; fi; \
 		"$$recovery_python" "$$project_root/bin/mise-lock-transaction.py" recover "$$project_root" "$$prior"; \
 	done
+# A provisioned local setup needs no GitHub credential. Mise and Git receive
+# only the explicit process credential above; an operation that actually needs
+# network access reports its own failure without a preflight or fallback.
+_bootstrap_setup_tools: _builtin_recover_mise $(if $(filter upg,$(MAKECMDGOALS)),,_builtin_require_mise_pin)
+
+.PHONY: _builtin_recover_mise
+_builtin_recover_mise:
+	@set -eu; \
+	project_root=$$(cd "$(RUNTIME_ROOT)" && pwd -P); \
+	project_parent=$${project_root%/*}; \
+	if [ -z "$$project_parent" ]; then project_parent=/; fi; \
+	for prior in "$$project_parent/.$${project_root##*/}.mise-lock-stage."*; do \
+		if [ ! -d "$$prior" ]; then continue; fi; \
+		if [ ! -f "$$prior/transaction.json" ]; then \
+			printf 'INFO: removing the dead Mise stage (crashed before its lock commit point; nothing was published): %s\n' "$$prior" >&2; \
+			find "$$prior" -depth -delete; \
+			continue; \
+		fi; \
+		if [ ! -f "$$prior/python-path" ]; then printf 'ERROR: Mise transaction lacks its Python receipt: %s\n' "$$prior" >&2; exit 2; fi; \
+		IFS= read -r recovery_python < "$$prior/python-path"; \
+		if [ ! -x "$$recovery_python" ]; then printf 'ERROR: Mise transaction Python is unavailable: %s\n' "$$recovery_python" >&2; exit 2; fi; \
+		"$$recovery_python" "$$project_root/bin/mise-lock-transaction.py" recover "$$project_root" "$$prior"; \
+	done
 
 .PHONY: _builtin_require_mise_pin
 _builtin_require_mise_pin: _builtin_recover_mise
@@ -2173,6 +2371,10 @@ endif
 # Source: computed (MAKE_PROFILE routing)
 # Setup PROVISIONS tooling only — mise, venv, dependencies.
 # It never generates, conforms, or mutates project code; `make gen` is the
+# single public conformance/generation surface.
+# Setup installs from the committed locks and never writes them; when a lock
+# drifts from its manifest it warns and installs without touching it, because
+# only `make upg` rewrites locks. The venv is created when
 # single public conformance/generation surface.
 # Setup installs from the committed locks and never writes them; when a lock
 # drifts from its manifest it warns and installs without touching it, because
@@ -2236,8 +2438,11 @@ _upg_lifecycle: _builtin_setup_submodules
 # above. It locks mise.lock from the rendered .mise.toml (never from the
 # manifest the generator was provisioned with) unless that manifest is the one
 # the first half already locked, installs exactly that lock,
+# manifest the generator was provisioned with) unless that manifest is the one
+# the first half already locked, installs exactly that lock,
 # re-resolves uv.lock against the raised floors and reprovisions frozen from
 # both: the committed locks must match the committed manifests, or `setup`
+# (the CI path) warns of drift on every run. The Mise release is not resolved
 # (the CI path) warns of drift on every run. The Mise release is not resolved
 # again; the first half already pinned it.
 .PHONY: _upg_relock
@@ -2423,6 +2628,11 @@ _builtin_sonarcloud_sync_all: _builtin_require_environment
 _builtin_sonarcloud_issues_all: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) maintenance sonarcloud-issues --repository-root "$(PROJECT_ROOT)"
 
+# Read the complete unresolved new-code issue set on the published integration
+# branch. This diagnostic never writes SonarCloud settings or issue state.
+_builtin_sonarcloud_issues_all: _builtin_require_environment
+	@$(PROJECT_FLEXT_INFRA) maintenance sonarcloud-issues --repository-root "$(PROJECT_ROOT)"
+
 
 _builtin_run_default: _builtin_require_environment
 	@$(UV_RUN) $(PROJECT_NAME) $(ARGS)
@@ -2503,8 +2713,21 @@ scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
 TMPDIR="$$scratch_tmp"; TMP="$$scratch_tmp"; TEMP="$$scratch_tmp"; \
 export TMPDIR TMP TEMP; \
 	TESTMON_DATAFILE="$$database" $(PROJECT_TOOL_EXEC) "$(RUNTIME_PYTHON)" -m flext_infra._pytest_entry profile \
+project_root="$(PROJECT_ROOT)"; \
+project_parent="$${project_root%/*}"; \
+if [ -z "$$project_parent" ]; then project_parent=/; fi; \
+scratch="$$(mktemp -d "$$project_parent/.$${project_root##*/}.pytest-scratch.XXXXXX")"; \
+trap 'find "$$scratch" -depth -delete' EXIT; \
+mkdir -p "$$scratch/tmp"; \
+scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
+TMPDIR="$$scratch_tmp"; TMP="$$scratch_tmp"; TEMP="$$scratch_tmp"; \
+export TMPDIR TMP TEMP; \
+	TESTMON_DATAFILE="$$database" $(PROJECT_TOOL_EXEC) "$(RUNTIME_PYTHON)" -m flext_infra._pytest_entry profile \
 		"$(PROFILE_REPORTS_DIR)/pytest.pstats"
 
+_builtin-profile-test-report: _builtin_require_environment
+	@$(PROJECT_TOOL_EXEC) "$(RUNTIME_PYTHON)" -m flext_infra._cprofile_entry \
+		"$(PROFILE_REPORTS_DIR)/pytest.pstats" "$(PROFILE_REPORTS_DIR)/pytest.pstats.json"
 _builtin-profile-test-report: _builtin_require_environment
 	@$(PROJECT_TOOL_EXEC) "$(RUNTIME_PYTHON)" -m flext_infra._cprofile_entry \
 		"$(PROFILE_REPORTS_DIR)/pytest.pstats" "$(PROFILE_REPORTS_DIR)/pytest.pstats.json"
@@ -2638,6 +2861,8 @@ _builtin-test: _builtin_test_all
 _builtin-test-full: _builtin_test_full_all
 _builtin-test-file: _builtin_test_file_all
 _builtin-file-gate: _builtin_file_gate_all
+_builtin-test-file: _builtin_test_file_all
+_builtin-file-gate: _builtin_file_gate_all
 _builtin-fmt: _builtin_fmt_all
 _builtin-fix: _builtin_fix_all
 _builtin-fix-namespace: _builtin_fix_namespace
@@ -2683,4 +2908,5 @@ _builtin-smells:
 _builtin-duplication:
 	@$(PROJECT_FLEXT_INFRA) check run --repository-root "$(PROJECT_ROOT)" --gates "duplication"
 _builtin-sonarcloud-sync: _builtin_sonarcloud_sync_all
+_builtin-sonarcloud-issues: _builtin_sonarcloud_issues_all
 _builtin-sonarcloud-issues: _builtin_sonarcloud_issues_all
