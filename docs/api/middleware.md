@@ -23,14 +23,17 @@ without relying on any non-existent middleware API.
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class LoggingApi(FlextApi):
     """Facade that logs every outgoing request and response metadata."""
 
     def get(
-        self, url, headers=None, request_kwargs=None
+        self,
+        url: str,
+        headers: t.StrMapping | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         self.logger.info("request", url=url, method="GET")
         result = super().get(url, headers=headers, request_kwargs=request_kwargs)
@@ -45,14 +48,22 @@ class LoggingApi(FlextApi):
 # In-memory override so the example runs without network access.
 class FakeLoggingApi(LoggingApi):
     def get(
-        self, url, headers=None, request_kwargs=None
+        self,
+        url: str,
+        headers: t.StrMapping | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
-                body={"endpoint": url, "method": "GET"},
+                body={
+                    "endpoint": url,
+                    "method": "GET",
+                    "headers": headers or {},
+                    "request_kwargs": request_kwargs or {},
+                },
                 headers={"Content-Type": "application/json"},
-            )
+            ),
         )
 
 
