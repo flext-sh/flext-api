@@ -547,6 +547,8 @@ mise_exec() { \
 $${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
 			$${mise_lock_drift:+"MISE_LOCKFILE=false"} \
 			$${mise_lock_drift:+"MISE_LOCKED=false"} \
+			$${mise_lock_drift:+"MISE_LOCKFILE=false"} \
+			$${mise_lock_drift:+"MISE_LOCKED=false"} \
 "HOME=$$scratch/home" \
 "USERPROFILE=$$scratch/home" \
 "APPDATA=$$scratch/appdata" \
@@ -825,6 +827,8 @@ mise_exec() { \
 $${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
 			$${mise_lock_drift:+"MISE_LOCKFILE=false"} \
 			$${mise_lock_drift:+"MISE_LOCKED=false"} \
+			$${mise_lock_drift:+"MISE_LOCKFILE=false"} \
+			$${mise_lock_drift:+"MISE_LOCKED=false"} \
 "HOME=$$scratch/home" \
 "USERPROFILE=$$scratch/home" \
 "APPDATA=$$scratch/appdata" \
@@ -927,6 +931,7 @@ mise_has_blocking_warning() { \
 		resolved_release=$$(cat "$$scratch/resolve.stdout"); \
 		if ! printf '%s\n' "$$resolved_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
 			MISE_MINIMUM_RELEASE_AGE=0s mise ls-remote github:jdx/mise@2026.9.16 >"$$scratch/lsremote.stdout" 2>"$$scratch/lsremote.stderr" || true; \
+			MISE_MINIMUM_RELEASE_AGE=0s mise ls-remote github:jdx/mise@2026.9.16 >"$$scratch/lsremote.stdout" 2>"$$scratch/lsremote.stderr" || true; \
 			resolved_release=$$(grep -E '^[0-9]+(\.[0-9]+){2}$$' "$$scratch/lsremote.stdout" | tail -1); \
 		fi; \
 		if ! printf '%s\n' "$$resolved_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
@@ -965,6 +970,7 @@ mise_has_blocking_warning() { \
 	fi; \
 	locked_manifest=; \
 	if [ "$$bootstrap_lock" = "1" ]; then \
+		mise_lock_drift=; \
 		# Stage on the destination filesystem: the bumped lock is resolved and \
 		# installed from a private stage, and published by one rename only after \
 		# both succeed. A failed or killed run leaves mise.lock untouched; no \
@@ -987,6 +993,21 @@ mise_has_blocking_warning() { \
 		else \
 			cat "$$scratch/lock.log" >&2; \
 			exit 2; \
+		fi; \
+		# A broken upstream release fails the staged install. The generated \
+		# converge script holds every failing tool at its newest installable release \
+		# inside the stage (loud INFO per hold; the committed manifest never \
+		# changes, so the next upg retries the newest release), then the \
+		# install is retried against the held stage before publication. \
+		if mise_exec project "$$pinned_mise" -C "$$lock_stage" install --yes >"$$scratch/install.log" 2>&1; then :; \
+		else install_status=$$?; cat "$$scratch/install.log" >&2; \
+			printf 'upg relock: staged install failed (exit %s); holding failing tools at their newest installable releases\n' "$$install_status" >&2; \
+			converge_python=$$(command -v python3 || true); \
+			if [ -z "$$converge_python" ]; then \
+				printf 'ERROR: converge needs a host python3 (stdlib only); provision one and retry\n' >&2; exit 2; \
+			fi; \
+			mise_checked "$$scratch/converge.log" "$$converge_python" "$$project_root/bin/mise-lock-converge.py" "$$mise_storage_root" "$$lock_stage" "$$runtime_release"; \
+			mise_checked "$$scratch/install-retry.log" mise_exec project "$$pinned_mise" -C "$$lock_stage" install --yes; \
 		fi; \
 		# A broken upstream release fails the staged install. The generated \
 		# converge script holds every failing tool at its newest installable release \
@@ -1095,6 +1116,7 @@ fi; \
 		"MISE_TRUSTED_CONFIG_PATHS=$$project_root" \
 		"MISE_VERSION=$$runtime_release" \
 		"MISE_INSTALL_PATH=$$mise_runtime_path" \
+		$${mise_lock_drift:+"SETUP_MISE_LOCK_DRIFT=1"} \
 		$${mise_lock_drift:+"SETUP_MISE_LOCK_DRIFT=1"} \
 		$(PROJECT_TOOL_EXEC) env \
 		$${locked_manifest:+"UPG_LOCKED_MISE_MANIFEST=$$locked_manifest"} \
@@ -2548,6 +2570,15 @@ mkdir -p "$$scratch/tmp"; \
 scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
 TMPDIR="$$scratch_tmp"; TMP="$$scratch_tmp"; TEMP="$$scratch_tmp"; \
 export TMPDIR TMP TEMP; \
+project_root="$(PROJECT_ROOT)"; \
+project_parent="$${project_root%/*}"; \
+if [ -z "$$project_parent" ]; then project_parent=/; fi; \
+scratch="$$(mktemp -d "$$project_parent/.$${project_root##*/}.pytest-scratch.XXXXXX")"; \
+trap 'find "$$scratch" -depth -delete' EXIT; \
+mkdir -p "$$scratch/tmp"; \
+scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
+TMPDIR="$$scratch_tmp"; TMP="$$scratch_tmp"; TEMP="$$scratch_tmp"; \
+export TMPDIR TMP TEMP; \
 TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(PROJECT_TOOL_EXEC) $(UV_RUN) python -m flext_infra._pytest_entry full; \
 TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(PROJECT_TOOL_EXEC) $(UV_RUN) python -m flext_infra._pytest_entry full-slow
 
@@ -2694,6 +2725,8 @@ profile-gen-report: _builtin_require_environment
 # child runs under a stdlib-only launcher, so pytest imports before any plugin
 # package. The runner binds every child profile to the exact run;
 # reports never combine a parent profile with the mutable latest.txt pointer.
+# Public names come from make.verbs; these targets are the implementations.
+_builtin-profile-test: _builtin_require_environment
 # Public names come from make.verbs; these targets are the implementations.
 _builtin-profile-test: _builtin_require_environment
 	@mkdir -p "$(PROFILE_REPORTS_DIR)"

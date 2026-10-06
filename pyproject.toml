@@ -170,6 +170,7 @@ include = ["/src/flext_api/**"]
 mypy_path = ["src"]
 plugins = ["pydantic.mypy"]
 disable_error_code = ["prop-decorator", "call-arg", "attr-defined"]
+disable_error_code = ["prop-decorator", "call-arg", "attr-defined"]
 python_version = "3.13"
 allow_redefinition = true
 check_untyped_defs = true
@@ -190,6 +191,10 @@ follow_imports = "normal"
 [[tool.mypy.overrides]]
 module = ["rope.*"]
 follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+module = ["flext_api.base"]
+disable_error_code = ["misc", "no-redef", "assignment"]
 
 [[tool.mypy.overrides]]
 module = ["flext_api.base"]
@@ -330,6 +335,7 @@ include = ["src", "tests"]
 extraPaths = ["src", "."]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
+reportCallIssue = "none"
 reportCallIssue = "none"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
