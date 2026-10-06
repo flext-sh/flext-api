@@ -136,7 +136,8 @@ from flext_api import FlextApi, FlextApiSettings, m, p
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
 post_result: p.Result[m.Api.HttpResponse] = api.post(
-    "/users", data={"name": "Alice", "email": "alice@example.com"}
+    "/users",
+    data={"name": "Alice", "email": "alice@example.com"},
 )
 
 put_result = api.put("/users/123", data={"name": "Updated Name"})
@@ -170,7 +171,7 @@ settings = FlextApiSettings(
 
 # Equivalent nested constructor
 settings_nested = FlextApiSettings(
-    Api={"base_url": "https://api.example.com", "timeout": 30.0, "max_retries": 3}
+    Api={"base_url": "https://api.example.com", "timeout": 30.0, "max_retries": 3},
 )
 
 # Access the resolved namespace values.
