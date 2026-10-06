@@ -63,7 +63,7 @@ class FakeLoggingApi(LoggingApi):
                     "request_kwargs": request_kwargs or {},
                 },
                 headers={"Content-Type": "application/json"},
-            )
+            ),
         )
 
 
