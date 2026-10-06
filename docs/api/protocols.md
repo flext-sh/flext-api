@@ -66,10 +66,10 @@ class FakeHttpClient(FlextApiClient):
                     status_code=200,
                     headers={"Content-Type": "application/json"},
                     body={"users": [{"id": "1", "name": "Alice"}]},
-                )
+                ),
             )
         return r[m.Api.HttpResponse].ok(
-            m.Api.create_response(status_code=404, body={"error": "not found"})
+            m.Api.create_response(status_code=404, body={"error": "not found"}),
         )
 
 
@@ -286,7 +286,7 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
 
     def __init__(self) -> None:
         super().__init__(
-            name="http", version="1.0.0", description="HTTP/REST protocol plugin"
+            name="http", version="1.0.0", description="HTTP/REST protocol plugin",
         )
 
     def supported_protocols(self) -> t.StrSequence:
@@ -296,9 +296,11 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
         return protocol in self.supported_protocols()
 
     def send_request(
-        self, request: t.JsonMapping, **kwargs: t.Scalar
+        self, request: t.JsonMapping, **kwargs: t.Scalar,
     ) -> p.Result[t.JsonMapping]:
-        return r[t.JsonMapping].ok({"status": 200, "request": request})
+        return r[t.JsonMapping].ok(
+            {"status": 200, "request": request, "kwargs": kwargs},
+        )
 
 
 class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
@@ -315,17 +317,17 @@ class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
         return "2020-12"
 
     def load_schema(self, schema_source: str) -> p.Result[t.JsonValue]:
-        return r[t.JsonValue].ok({})
+        return r[t.JsonValue].ok({"source": schema_source})
 
     def validate_request(
-        self, request: t.JsonMapping, schema: t.JsonMapping
+        self, request: t.JsonMapping, schema: t.JsonMapping,
     ) -> p.Result[bool]:
-        return r[bool].ok(value=True)
+        return r[bool].ok(value=all(key in request for key in schema))
 
     def validate_response(
-        self, response: t.JsonMapping, schema: t.JsonMapping
+        self, response: t.JsonMapping, schema: t.JsonMapping,
     ) -> p.Result[bool]:
-        return r[bool].ok(value=True)
+        return r[bool].ok(value=all(key in response for key in schema))
 
 
 manager = FlextApiProtocolPluginManager.Manager()
