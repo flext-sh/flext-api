@@ -32,7 +32,10 @@ class MiseLockConverge:
         ("LC_ALL", "C"),
         ("MISE_SAFE", "1"),
         ("MISE_PARANOID", "true"),
+<<<<<<< HEAD
         ("MISE_QUIET", "1"),
+=======
+>>>>>>> 0.12.0-dev
         ("MISE_NO_ENV", "1"),
         ("MISE_NO_HOOKS", "1"),
         ("MISE_AUTO_ENV", "false"),
@@ -55,6 +58,10 @@ class MiseLockConverge:
         ("MISE_LOCKED", "true"),
         ("MISE_LOCKFILE_PLATFORMS", "linux-x64,linux-x64-musl,linux-arm64,macos-x64,macos-arm64,windows-x64"),
         ("MISE_MINIMUM_RELEASE_AGE", "7d"),
+<<<<<<< HEAD
+=======
+        ("MISE_NPM_PACKAGE_MANAGER", "bun"),
+>>>>>>> 0.12.0-dev
     )
     TRANSIENT_ENVIRONMENT = (
         ("HOME", "home"),

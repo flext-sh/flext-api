@@ -7,16 +7,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Annotated, ClassVar
+from collections.abc import MutableMapping, MutableSequence
+from typing import Annotated, ClassVar
 
 from flext_web import m, u
 
 from flext_api.constants import c
-
-if TYPE_CHECKING:
-    from collections.abc import MutableMapping, MutableSequence
-
-    from flext_api.typings import t
+from flext_api.typings import t
 
 
 class FlextApiModelsWebhook:

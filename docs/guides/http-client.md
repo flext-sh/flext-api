@@ -82,7 +82,7 @@ Use `request_kwargs` for query parameters and request options that belong to
 
 ## Error Handling
 
-Every call returns `p.Result[m.Api.HttpResponse]`.
+Every call returns `p.Result[p.Api.HttpResponse]`.
 
 ```python
 from __future__ import annotations
