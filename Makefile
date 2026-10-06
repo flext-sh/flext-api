@@ -2,7 +2,7 @@
 # @flext-owner: flext-infra/config/codegen.yaml + flext-infra/src/flext_infra/templates/project/base/Makefile.j2
 # @flext-adjust: edit the owner configuration or template; never this projection
 # @flext-regenerate: make gen
-# flext-infra — selector-free generated project interface.
+# flext-api — selector-free generated project interface.
 # Managed by flext-infra codegen conform for new and existing repositories.
 # === SECTION: header (managed) ===
 # Source: template (base/Makefile.j2)
@@ -89,7 +89,7 @@ unexport GITHUB_API_TOKEN
 
 # === SECTION: project identity (managed) ===
 # Source: config:dist / config:make_profile / config:repository_root_rel / config:uv_link_mode
-PROJECT_NAME := flext-infra
+PROJECT_NAME := flext-api
 MAKE_PROFILE := standalone
 REPOSITORY_ROOT_REL := .
 # === SECTION: workspace subprojects (managed) ===
@@ -107,7 +107,7 @@ UV_LINK_MODE := copy
 # unconsumed variable is ignored.
 PYTEST_DIAG_ARGS := -rA --durations=0 --tb=long --showlocals
 PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=0.001 --tb=short
-PYTEST_PROCESS_TIMEOUT_SECONDS := 1204
+PYTEST_PROCESS_TIMEOUT_SECONDS := 124
 # The pytest process inherits a hard wall-clock boundary, so a hung
 # run is terminated even if the runner itself stalls.
 override PYTEST_BOUNDED = timeout --signal=TERM --kill-after=5s "$(PYTEST_PROCESS_TIMEOUT_SECONDS)s"
@@ -121,7 +121,7 @@ override FLEXT_PYTEST_TESTMON_DATABASE = $(if $(strip $(PYTEST_CACHE_HOME)),$(PY
 # Profiles sit beside the other reports of this checkout (.reports is ignored).
 PROFILE_REPORTS_DIR = $(PROJECT_ROOT)/$(dir $(PYTEST_REPORTS_DIR))profiles
 override PYTEST_CASE_TIMEOUT_SECONDS := 10
-override PYTEST_RUN_TIMEOUT_SECONDS := 1200
+override PYTEST_RUN_TIMEOUT_SECONDS := 120
 override PYTEST_TERMINATION_GRACE_SECONDS := 2
 override PYTEST_TIMEOUT_EXIT_CODE := 124
 override PYTEST_ENFORCEMENT_PLUGIN := flext_tests_enforcement
@@ -422,7 +422,6 @@ mise_pin_file="$(MISE_VERSION_PIN)"; \
 	if [ -z "$$scratch" ] || [ ! -d "$$scratch" ]; then \
 		printf 'ERROR: mise bootstrap scratch creation failed (template: %s/.%s.mise-bootstrap.XXXXXX)\n' "$$project_parent" "$${project_root##*/}" >&2; exit 2; \
 	fi; \
-	readonly scratch; \
 	lock_stage=; \
 	trap 'bootstrap_status=$$?; trap - EXIT; \
 		lock_cleanup_status=0; scratch_cleanup_status=0; diagnostic_status=0; scratch_present=0; \
@@ -494,7 +493,7 @@ mise_exec() { \
 'MISE_GITHUB_OAUTH_OPEN_BROWSER=false' \
 'MISE_LOCKFILE=true' \
 'MISE_LOCKED=true' \
-'MISE_MINIMUM_RELEASE_AGE=7d' \
+'MISE_MINIMUM_RELEASE_AGE=10d' \
 'MISE_NPM_PACKAGE_MANAGER=bun' \
 $${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
 "HOME=$$scratch/home" \
@@ -684,7 +683,6 @@ mise_pin_file="$(MISE_VERSION_PIN)"; \
 	if [ -z "$$scratch" ] || [ ! -d "$$scratch" ]; then \
 		printf 'ERROR: mise bootstrap scratch creation failed (template: %s/.%s.mise-bootstrap.XXXXXX)\n' "$$project_parent" "$${project_root##*/}" >&2; exit 2; \
 	fi; \
-	readonly scratch; \
 	lock_stage=; \
 	trap 'bootstrap_status=$$?; trap - EXIT; \
 		lock_cleanup_status=0; scratch_cleanup_status=0; diagnostic_status=0; scratch_present=0; \
@@ -756,7 +754,7 @@ mise_exec() { \
 'MISE_GITHUB_OAUTH_OPEN_BROWSER=false' \
 'MISE_LOCKFILE=true' \
 'MISE_LOCKED=true' \
-'MISE_MINIMUM_RELEASE_AGE=7d' \
+'MISE_MINIMUM_RELEASE_AGE=10d' \
 'MISE_NPM_PACKAGE_MANAGER=bun' \
 $${mise_lockfile_platforms:+"MISE_LOCKFILE_PLATFORMS=$$mise_lockfile_platforms"} \
 "HOME=$$scratch/home" \
@@ -811,10 +809,29 @@ $${mise_config_argument:+"$$mise_config_argument"} \
 		mise_exec "$$mise_offline_mode" env 'MISE_OFFLINE=true' "$$@"; \
 	}; \
 mise_has_blocking_warning() { \
-		grep -F 'mise WARN' "$$1" | grep -Fv 'not replacing unmanaged file in shims directory' | grep -q .; \
+		case "$$1" in \
+			*converge.log|*pin-lock.log) \
+				grep -F 'mise WARN' "$$1" \
+					| grep -Fv 'not replacing unmanaged file in shims directory' \
+					| grep -Fv 'lock-time provenance verification failed' \
+					| grep -Fv 'hidden by minimum_release_age' \
+					| grep -Fiv 'failed to resolve tool version list for' \
+					| grep -Fiv 'is not in the lockfile' \
+					| grep -Ev 'failed to resolve [^:]+ for [^:]+: No such file or directory .*version .*, and [0-9]+ more platform' \
+					| grep -q .; \
+				;; \
+			*) \
+				grep -F 'mise WARN' "$$1" \
+					| grep -Fv 'not replacing unmanaged file in shims directory' \
+					| grep -Fv 'lock-time provenance verification failed' \
+					| grep -Ev 'failed to resolve [^:]+ for [^:]+: No such file or directory .*version .*, and [0-9]+ more platform' \
+					| grep -q .; \
+				;; \
+		esac; \
 	}; \
 	mise_checked() { \
 		mise_log="$$1"; shift; \
+		case "$$mise_log" in ""|*/*) ;; *) mise_log="$${TMPDIR:-/tmp}/$$mise_log" ;; esac; \
 		printf 'setup probe: begin stage=%s log=%s\n' "$${mise_log##*/}" "$$mise_log" >&2; \
 		if "$$@" >"$$mise_log" 2>&1; then :; \
 		else mise_status=$$?; cat "$$mise_log"; printf 'setup probe: failed stage=%s exit=%s\n' "$${mise_log##*/}" "$$mise_status" >&2; return "$$mise_status"; fi; \
@@ -826,6 +843,8 @@ mise_has_blocking_warning() { \
 	}; \
 	mise_checked_stdout() { \
 		mise_stdout_log="$$1"; mise_stderr_log="$$2"; shift 2; \
+		case "$$mise_stdout_log" in ""|*/*) ;; *) mise_stdout_log="$${TMPDIR:-/tmp}/$$mise_stdout_log" ;; esac; \
+		case "$$mise_stderr_log" in ""|*/*) ;; *) mise_stderr_log="$${TMPDIR:-/tmp}/$$mise_stderr_log" ;; esac; \
 		if "$$@" >"$$mise_stdout_log" 2>"$$mise_stderr_log"; then :; \
 		else mise_status=$$?; cat "$$mise_stderr_log" >&2; cat "$$mise_stdout_log"; return "$$mise_status"; fi; \
 		cat "$$mise_stderr_log" >&2; cat "$$mise_stdout_log"; \
@@ -834,7 +853,13 @@ mise_has_blocking_warning() { \
 		fi; \
 	}; \
 	mise_receipt() { \
-		mise_receipt_log="$$scratch/$$1"; shift; \
+		probe_log_dir="$$scratch"; \
+		case "$$probe_log_dir" in ""|"/") \
+			probe_log_dir=$$(mktemp -d "$${TMPDIR:-/tmp}/flext-setup-probe.XXXXXX"); \
+			trap 'rm -rf "$$probe_log_dir"' EXIT; \
+		 ;; \
+		esac; \
+		mise_receipt_log="$$probe_log_dir/$$1"; shift; \
 		mise_checked_stdout "$$mise_receipt_log.stdout" "$$mise_receipt_log.stderr" mise_offline no-config "$$1" --version; \
 		receipt_output=$$(cat "$$mise_receipt_log.stdout"); \
 		receipt_release=$$(printf '%s\n' "$$receipt_output" | grep -E '^(mise )?[0-9]+\.[0-9]+\.[0-9]+$$' | tail -1 | sed 's/^mise //'); \
@@ -842,21 +867,24 @@ mise_has_blocking_warning() { \
 			receipt_release=$${receipt_output%% *}; \
 		fi; \
 		if ! printf '%s\n' "$$receipt_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
-			printf 'ERROR: Mise receipt returned invalid version: %s\n' "$$receipt_output" >&2; return 2; \
+			printf 'ERROR: Mise receipt returned invalid version: %s\n' "$$receipt_output" >&2; \
+			printf 'ERROR: Mise receipt stderr: ' >&2; cat "$$mise_receipt_log.stderr" >&2 || true; \
+			printf 'ERROR: Mise receipt executable: %s; scratch: %s\n' "$$1" "$$scratch" >&2; \
+			return 2; \
 		fi; \
 	}; \
 	pinned_mise="$$mise"; \
 	mise_receipt runtime-version "$$pinned_mise"; \
 	runtime_release="$$receipt_release"; \
 	if [ "$(TOOL_BOOTSTRAP_RESOLVE)" = "1" ]; then \
-		mise_checked_stdout "$$scratch/resolve.stdout" "$$scratch/resolve.stderr" mise_exec no-config env MISE_CACHE_DIR="$$scratch/resolve-cache" MISE_FETCH_REMOTE_VERSIONS_CACHE=0s MISE_MINIMUM_RELEASE_AGE=0s "$$pinned_mise" latest github:jdx/mise@2026.9.16; \
+		mise_checked_stdout "$$scratch/resolve.stdout" "$$scratch/resolve.stderr" mise_exec no-config env MISE_CACHE_DIR="$$scratch/resolve-cache" MISE_FETCH_REMOTE_VERSIONS_CACHE=0s MISE_MINIMUM_RELEASE_AGE=0s "$$pinned_mise" latest github:jdx/mise@2026.10.3; \
 		resolved_release=$$(cat "$$scratch/resolve.stdout"); \
 		if ! printf '%s\n' "$$resolved_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
-			MISE_MINIMUM_RELEASE_AGE=0s mise ls-remote github:jdx/mise@2026.9.16 >"$$scratch/lsremote.stdout" 2>"$$scratch/lsremote.stderr" || true; \
+			MISE_MINIMUM_RELEASE_AGE=0s mise ls-remote github:jdx/mise@2026.10.3 >"$$scratch/lsremote.stdout" 2>"$$scratch/lsremote.stderr" || true; \
 			resolved_release=$$(grep -E '^[0-9]+(\.[0-9]+){2}$$' "$$scratch/lsremote.stdout" | tail -1); \
 		fi; \
 		if ! printf '%s\n' "$$resolved_release" | grep -Eq '^[0-9]+(\.[0-9]+){2}$$'; then \
-			printf 'ERROR: mise latest github:jdx/mise@2026.9.16 returned an invalid release: %s\n' "$$resolved_release" >&2; exit 2; \
+			printf 'ERROR: mise latest github:jdx/mise@2026.10.3 returned an invalid release: %s\n' "$$resolved_release" >&2; exit 2; \
 		fi; \
 		caller_mise_version="$$resolved_release"; \
 		mise_receipt resolved-version "$$pinned_mise"; \
@@ -870,6 +898,12 @@ mise_has_blocking_warning() { \
 	fi; \
 	caller_mise_version="$$runtime_release"; \
 	printf 'mise setup receipt=%s storage=%s\n' "$$runtime_release" "$$mise_storage_root"; \
+	project_parent=$${project_root%/*}; \
+	if [ -z "$$project_parent" ]; then project_parent=/; fi; \
+	scratch=$$(mktemp -d "$$project_parent/.$${project_root##*/}.mise-bootstrap.XXXXXX"); \
+	if [ -z "$$scratch" ] || [ ! -d "$$scratch" ]; then \
+		printf 'ERROR: mise bootstrap scratch creation failed (template: %s/.%s.mise-bootstrap.XXXXXX)\n' "$$project_parent" "$${project_root##*/}" >&2; exit 2; \
+	fi; \
 	# Only ``upg`` locks, once per manifest it provisions from. Lock every \
 	# configured tool in one pass so removed selectors cannot survive beside \
 	# their replacement in mise.lock. The relock half of ``upg`` (lock without \
@@ -891,6 +925,7 @@ mise_has_blocking_warning() { \
 		# both succeed. A failed or killed run leaves mise.lock untouched; no \
 		# backup copy exists. \
 		lock_stage="$$(mktemp -d "$$project_parent/.$${project_root##*/}.mise-lock-stage.XXXXXX")"; \
+		printf '%s\n' "$$$$" > "$$lock_stage/owner.pid"; \
 		cp "$$project_root/.mise.toml" "$$lock_stage/.mise.toml"; \
 		cp "$$project_root/.mise.toml" "$$scratch/locked-manifest.toml"; \
 		# The resolver (TOOL_BOOTSTRAP_RESOLVE, the first half of upg) locks \
@@ -902,7 +937,8 @@ mise_has_blocking_warning() { \
 		fi; \
 		mise_trusted_config_paths="$$lock_stage"; \
 		if mise_checked "$$scratch/lock.log" mise_exec project "$$pinned_mise" -C "$$lock_stage" lock --bump; then \
-			:; \
+			python3 "$$project_root/bin/mise-lock-converge.py" pin "$$lock_stage" "$$project_root/mise.lock"; \
+			mise_checked "$$scratch/pin-lock.log" mise_exec project "$$pinned_mise" -C "$$lock_stage" lock; \
 		elif grep -q "refusing to replace locked version" "$$scratch/lock.log"; then \
 			printf 'INFO: kept the current mise.lock: the newest release was refused for missing platform assets; retry the bump when the release regains full platform coverage\n' >&2; \
 		else \
@@ -914,7 +950,7 @@ mise_has_blocking_warning() { \
 		# inside the stage (loud INFO per hold; the committed manifest never \
 		# changes, so the next upg retries the newest release), then the \
 		# install is retried against the held stage before publication. \
-		if mise_exec project "$$pinned_mise" -C "$$lock_stage" install --yes >"$$scratch/install.log" 2>&1; then :; \
+		if mise_exec project 'MISE_LOCKED=false' "$$pinned_mise" -C "$$lock_stage" install --yes >"$$scratch/install.log" 2>&1; then :; \
 		else install_status=$$?; cat "$$scratch/install.log" >&2; \
 			printf 'upg relock: staged install failed (exit %s); holding failing tools at their newest installable releases\n' "$$install_status" >&2; \
 			converge_python=$$(command -v python3 || true); \
@@ -922,7 +958,7 @@ mise_has_blocking_warning() { \
 				printf 'ERROR: converge needs a host python3 (stdlib only); provision one and retry\n' >&2; exit 2; \
 			fi; \
 			mise_checked "$$scratch/converge.log" "$$converge_python" "$$project_root/bin/mise-lock-converge.py" "$$mise_storage_root" "$$lock_stage" "$$runtime_release"; \
-			mise_checked "$$scratch/install-retry.log" mise_exec project "$$pinned_mise" -C "$$lock_stage" install --yes; \
+			mise_checked "$$scratch/install-retry.log" mise_exec project 'MISE_LOCKED=false' "$$pinned_mise" -C "$$lock_stage" install --yes; \
 		fi; \
 		mise_checked "$$scratch/staged-python.log" mise_offline project "$$pinned_mise" -C "$$lock_stage" which python; \
 		staged_python=$$(cat "$$scratch/staged-python.log"); \
@@ -948,7 +984,7 @@ mise_receipt launcher-version "$$lock_stage/artifacts/bin/mise"; \
 	else \
 		# Setup consumes the declared lock policy in one install. An invalid \
 		# lock stops here with its original cause; only make upg repairs it. \
-		mise_checked "$$scratch/install.log" mise_exec project "$$pinned_mise" -C "$$project_root" install --yes; \
+		mise_checked "$$scratch/install.log" mise_exec project 'MISE_LOCKED=false' "$$pinned_mise" -C "$$project_root" install --yes; \
 	fi; \
 	mise_checked_stdout "$$scratch/ast-grep-version.stdout" "$$scratch/ast-grep-version.stderr" mise_offline project "$$pinned_mise" -C "$$project_root" exec -- ast-grep --version; \
 	if [ -s "$$scratch/ast-grep-version.stderr" ]; then \
@@ -1008,6 +1044,7 @@ fi; \
 		"SETUP_DIRENV=$$direnv_executable" \
 		"SETUP_PYTHON=$$python_executable" \
 		"SETUP_DIRENV_XDG_DATA_HOME=$$caller_xdg_data_home" \
+		"HOME=$$caller_home" \
 		"CI=$(CI)" $(SELF_MAKE) $(TOOL_BOOTSTRAP_LIFECYCLE); then lifecycle_status=0; \
 	else lifecycle_status=$$?; fi; \
 	scratch_present=0; if [ -d "$$scratch" ]; then scratch_present=1; fi; \
@@ -1768,7 +1805,7 @@ _setup_activated:
 	esac
 
 _builtin-help:
-	@printf '%s\n' 'flext-infra [standalone]' '';
+	@printf '%s\n' 'flext-api [standalone]' '';
 
 	@printf '  %-16s %s\n' 'help' 'Show the complete selector-free public interface.';
 
@@ -2072,6 +2109,13 @@ _builtin_recover_mise:
 	for prior in "$$project_parent/.$${project_root##*/}.mise-lock-stage."*; do \
 		if [ ! -d "$$prior" ]; then continue; fi; \
 		if [ ! -f "$$prior/transaction.json" ]; then \
+			if [ -f "$$prior/owner.pid" ]; then \
+				IFS= read -r stage_owner < "$$prior/owner.pid"; \
+				if [ -n "$$stage_owner" ] && kill -0 "$$stage_owner" 2>/dev/null; then \
+					printf 'INFO: keeping the live Mise stage (owner pid %s is running): %s\n' "$$stage_owner" "$$prior" >&2; \
+					continue; \
+				fi; \
+			fi; \
 			printf 'INFO: removing the dead Mise stage (crashed before its lock commit point; nothing was published): %s\n' "$$prior" >&2; \
 			find "$$prior" -depth -delete; \
 			continue; \
@@ -2223,15 +2267,15 @@ _builtin_build_artifacts:
 # An absent CI token runs every active default gate.
 _builtin_check_all: _builtin_require_environment
 	@set -eu; \
-		gates="lint,security,markdown,markdown-format,duplication,pyrefly,mypy,pyright,loc-cap,runtime-census,fresh-import,index-declarations,codemod,layout,direnv"; \
+		gates="lint,security,markdown,markdown-format,markdown-code,duplication,pyrefly,mypy,pyright,loc-cap,runtime-census,fresh-import,index-declarations,codemod,layout,direnv"; \
 		if [ "$(strip $(CI))" = "Y" ]; then \
-			gates="lint,security,markdown,markdown-format,duplication,loc-cap,runtime-census,fresh-import,index-declarations,layout,direnv"; \
-			printf 'INFO: CI=Y runs check gates: lint security markdown markdown-format duplication loc-cap runtime-census fresh-import index-declarations layout direnv\n'; \
+			gates="lint,security,markdown,markdown-format,markdown-code,duplication,loc-cap,runtime-census,fresh-import,index-declarations,layout,direnv"; \
+			printf 'INFO: CI=Y runs check gates: lint security markdown markdown-format markdown-code duplication loc-cap runtime-census fresh-import index-declarations layout direnv\n'; \
 		elif [ "$(strip $(CI))" = "N" ]; then \
 			gates="pyrefly,mypy,pyright,codemod"; \
 			printf 'INFO: CI=N runs check gates: pyrefly mypy pyright codemod\n'; \
 		else \
-			printf 'INFO: default context runs check gates: lint security markdown markdown-format duplication pyrefly mypy pyright loc-cap runtime-census fresh-import index-declarations codemod layout direnv\n'; \
+			printf 'INFO: default context runs check gates: lint security markdown markdown-format markdown-code duplication pyrefly mypy pyright loc-cap runtime-census fresh-import index-declarations codemod layout direnv\n'; \
 		fi; \
 		if [ -z "$$gates" ]; then \
 			printf 'ERROR: no active check gates remain in the selected context\n' >&2; \
@@ -2392,7 +2436,7 @@ profile-gen: _builtin_require_environment
 	@$(PROJECT_TOOL_EXEC) "$(RUNTIME_PYTHON)" -c \
 		'import cProfile, sys; from flext_infra.cli import main; profile = cProfile.Profile(); status = profile.runcall(main, sys.argv[2:]); profile.dump_stats(sys.argv[1]); raise SystemExit(status)' \
 		"$(PROFILE_REPORTS_DIR)/lazy-init.pstats" codegen lazy-init \
-		--repository-root "$(PROJECT_ROOT)" --module flext_infra --dry-run
+		--repository-root "$(PROJECT_ROOT)" --module flext_api --dry-run
 
 .PHONY: profile-gen-report
 profile-gen-report: _builtin_require_environment
