@@ -18,14 +18,14 @@ This page documents the storage/cache story for `flext-api`.
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class FileUploadApi(FlextApi):
     """Example facade that POSTs a file payload as the request body."""
 
     def upload_document(
-        self, filename: str, content: bytes
+        self, filename: str, content: bytes,
     ) -> p.Result[m.Api.HttpResponse]:
         return self.post(
             "/documents",
@@ -37,19 +37,29 @@ class FileUploadApi(FlextApi):
 # In-memory override so the example runs without network access.
 class FakeFileUploadApi(FileUploadApi):
     def post(
-        self, url, data=None, headers=None, request_kwargs=None
+        self,
+        url: str,
+        data: t.Api.RequestBody | None = None,
+        headers: t.StrMapping | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=201,
-                body={"id": 1, "filename": data["filename"]},
+                body={
+                    "id": 1,
+                    "endpoint": url,
+                    "filename": data["filename"],
+                    "headers": headers or {},
+                    "request_kwargs": request_kwargs or {},
+                },
                 headers={"Content-Type": "application/json"},
-            )
+            ),
         )
 
 
 api = FakeFileUploadApi(
-    runtime_settings=FlextApiSettings(base_url="https://example.com")
+    runtime_settings=FlextApiSettings(base_url="https://example.com"),
 )
 result = api.upload_document("report.txt", b"Hello, FLEXT!")
 assert result.success

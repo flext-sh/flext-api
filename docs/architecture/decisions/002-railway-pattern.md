@@ -82,14 +82,27 @@ def get_user(user_id: int) -> dict:
 ```python
 from __future__ import annotations
 
+from flext_core import t
+
 
 class Result:
     """Minimal custom result type (not used in FLEXT-API)."""
 
-    def __init__(self, success: bool, value=None, error=None):
+    def __init__(
+        self,
+        *,
+        success: bool,
+        value: t.JsonValue = None,
+        error: str | None = None,
+    ) -> None:
         self.success = success
         self.value = value
         self.error = error
+
+    @property
+    def outcome(self) -> str:
+        """Describe the outcome for logging."""
+        return "success" if self.success else f"failure: {self.error}"
 ```
 
 ### Option 3: Hybrid Approach
@@ -104,7 +117,7 @@ class Result:
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class UserApi(FlextApi):
@@ -117,29 +130,37 @@ class UserApi(FlextApi):
         )
 
     def _validate_ok(
-        self, response: m.Api.HttpResponse
+        self, response: m.Api.HttpResponse,
     ) -> p.Result[m.Api.HttpResponse]:
         if response.success:
             return r[m.Api.HttpResponse].ok(response)
         return r[m.Api.HttpResponse].fail(
-            f"HTTP {response.status_code}: request failed"
+            f"HTTP {response.status_code}: request failed",
         )
 
 
 class FakeUserApi(UserApi):
     def get(
-        self, url, headers=None, request_kwargs=None
+        self,
+        url: str,
+        headers: t.StrMapping | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/users/123"):
             return r[m.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
-                    body={"id": 123, "name": "Alice"},
+                    body={
+                        "id": 123,
+                        "name": "Alice",
+                        "headers": headers or {},
+                        "request_kwargs": request_kwargs or {},
+                    },
                     headers={"Content-Type": "application/json"},
-                )
+                ),
             )
         return r[m.Api.HttpResponse].ok(
-            m.Api.create_response(status_code=404, body={"error": "not found"})
+            m.Api.create_response(status_code=404, body={"error": "not found"}),
         )
 
 
@@ -185,32 +206,40 @@ else:
 ```python
 from __future__ import annotations
 
-from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class FakeUserApi(FlextApi):
     def get(
-        self, url, headers=None, request_kwargs=None
+        self,
+        url: str,
+        headers: t.StrMapping | None = None,
+        request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/users/123"):
             return r[m.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
-                    body={"id": 123, "name": "John"},
+                    body={
+                        "id": 123,
+                        "name": "John",
+                        "headers": headers or {},
+                        "request_kwargs": request_kwargs or {},
+                    },
                     headers={"Content-Type": "application/json"},
-                )
+                ),
             )
         return r[m.Api.HttpResponse].fail("HTTP 404")
 
 
-def test_get_user_success():
+def test_get_user_success() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/123")
     assert result.success
     assert result.unwrap().body["name"] == "John"
 
 
-def test_get_user_not_found():
+def test_get_user_not_found() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/999")
     assert result.failure

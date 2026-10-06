@@ -65,7 +65,7 @@ class FakeApi(FlextApi):
                     headers={"Content-Type": "application/json"},
                     body={"error": "not found"},
                     request_id="unit-1",
-                )
+                ),
             )
         else:
             body = {"ok": True}
@@ -75,7 +75,7 @@ class FakeApi(FlextApi):
                 headers={"Content-Type": "application/json"},
                 body=body,
                 request_id="unit-1",
-            )
+            ),
         )
 
 
@@ -161,7 +161,7 @@ class WorkflowApi(FlextApi):
                     headers={"Content-Type": "application/json"},
                     body=orders[order_id],
                     request_id="int-1",
-                )
+                ),
             )
         if request.url.endswith("/orders") and str(request.method) == "GET":
             return r[m.Api.HttpResponse].ok(
@@ -170,7 +170,7 @@ class WorkflowApi(FlextApi):
                     headers={"Content-Type": "application/json"},
                     body=list(orders.values()),
                     request_id="int-1",
-                )
+                ),
             )
         return r[m.Api.HttpResponse].ok(
             m.Api.HttpResponse(
@@ -178,7 +178,7 @@ class WorkflowApi(FlextApi):
                 headers={"Content-Type": "application/json"},
                 body={"ok": True},
                 request_id="int-1",
-            )
+            ),
         )
 
 
@@ -229,20 +229,20 @@ from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 
 
 def make_settings(
-    base_url: str = "https://api.example.com", timeout: float = 5.0
+    base_url: str = "https://api.example.com", timeout: float = 5.0,
 ) -> FlextApiSettings:
     return FlextApiSettings(base_url=base_url, timeout=timeout)
 
 
 def make_api(settings: FlextApiSettings | None = None) -> FlextApi:
     return FlextApi(
-        runtime_settings=settings if settings is not None else make_settings()
+        runtime_settings=settings if settings is not None else make_settings(),
     )
 
 
 def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
     return FlextApiClient(
-        runtime_settings=settings if settings is not None else make_settings()
+        runtime_settings=settings if settings is not None else make_settings(),
     )
 
 
@@ -276,7 +276,7 @@ class FakeApi(FlextApi):
                 headers={"Content-Type": "application/json"},
                 body={"id": 1, "name": "Test User"},
                 request_id="mock-1",
-            )
+            ),
         )
 
 
