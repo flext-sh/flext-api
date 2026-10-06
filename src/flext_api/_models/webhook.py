@@ -6,13 +6,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flext_api._typings.types import t
+
 import time
 from collections.abc import MutableMapping, MutableSequence
 from typing import Annotated, ClassVar
 
 from flext_web import m, u
 
-from flext_api._typings.types import t
 from flext_api.constants import c
 
 

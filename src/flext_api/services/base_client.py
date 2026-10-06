@@ -8,7 +8,12 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import p, r, s, t, u
+from flext_web import r
+
+from flext_api._typings.types import t
+from flext_api.protocols import p
+from flext_api.services import s
+from flext_api.utilities import u
 
 
 class FlextApiClientBase(s[bool]):

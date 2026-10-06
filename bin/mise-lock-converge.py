@@ -384,6 +384,47 @@ class MiseLockConverge:
             shutil.rmtree(scratch, ignore_errors=True)
 
     @classmethod
+    def _merge_committed_entries(
+        cls,
+        committed_lock: Path,
+        lock_path: Path,
+        lock: str,
+        present: set[str],
+        resolved: dict[str, str],
+    ) -> str:
+        """Merge committed blocks for tools the fresh pass could not verify.
+
+        A tool whose fresh provenance verification failed gets no stage-lock
+        entries, which would make its verified committed entries
+        unresolvable; the committed blocks merge forward before pinning.
+
+        Returns:
+            The updated staged lock text with the merged committed entries.
+
+        """
+        committed = committed_lock.read_text(encoding="utf-8")
+        for name, body in re.findall(
+            r"(\[\[tools\.(\S+?)\]\]\n.*?)(?=\n\[\[|\Z)",
+            committed,
+            re.DOTALL,
+        ):
+            entry_name = name
+            if entry_name in present:
+                continue
+            lock = lock.rstrip("\n") + "\n\n" + name.rstrip("\n") + "\n"
+            lock_path.write_text(lock, encoding="utf-8")
+            present.add(entry_name)
+            found = re.search(r'^version = "([^"]+)"', body, re.MULTILINE)
+            if found:
+                resolved[entry_name.removeprefix("core:")] = found.group(1)
+            print(
+                f"INFO: merged committed {entry_name} entries the fresh "
+                "pass could not verify",
+                file=sys.stderr,
+            )
+        return lock
+
+    @classmethod
     def pin_stage_manifest(
         cls,
         stage: Path,
@@ -417,25 +458,13 @@ class MiseLockConverge:
             if found:
                 resolved[name.removeprefix("core:")] = found.group(1)
         if committed_lock is not None and committed_lock.is_file():
-            committed = committed_lock.read_text(encoding="utf-8")
-            for name, body in re.findall(
-                r"(\[\[tools\.(\S+?)\]\]\n.*?)(?=\n\[\[|\Z)",
-                committed,
-                re.DOTALL,
-            ):
-                entry_name = name
-                if entry_name not in present:
-                    lock = lock.rstrip("\n") + "\n\n" + name.rstrip("\n") + "\n"
-                    lock_path.write_text(lock, encoding="utf-8")
-                    present.add(entry_name)
-                    found = re.search(r'^version = "([^"]+)"', body, re.MULTILINE)
-                    if found:
-                        resolved[entry_name.removeprefix("core:")] = found.group(1)
-                    print(
-                        f"INFO: merged committed {entry_name} entries the fresh "
-                        "pass could not verify",
-                        file=sys.stderr,
-                    )
+            lock = cls._merge_committed_entries(
+                committed_lock,
+                lock_path,
+                lock,
+                present,
+                resolved,
+            )
         manifest_path = cls.staged_manifest(stage)
         lines = manifest_path.read_text(encoding="utf-8").splitlines(
             keepends=True,
