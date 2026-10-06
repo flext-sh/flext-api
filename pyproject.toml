@@ -170,7 +170,6 @@ include = ["/src/flext_api/**"]
 mypy_path = ["src"]
 plugins = ["pydantic.mypy"]
 disable_error_code = ["prop-decorator", "call-arg", "attr-defined"]
-disable_error_code = ["prop-decorator", "call-arg", "attr-defined"]
 python_version = "3.13"
 allow_redefinition = true
 check_untyped_defs = true
@@ -336,7 +335,6 @@ extraPaths = ["src", "."]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportCallIssue = "none"
-reportCallIssue = "none"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
 reportInconsistentConstructor = "error"
@@ -416,13 +414,8 @@ indent-style = "space"
 line-ending = "lf"
 quote-style = "double"
 skip-magic-trailing-comma = false
-
+ 
 [tool.ruff.lint]
-extend-safe-fixes = [
-  "camelcase-imported-as-lowercase",
-  "relative-imports",
-  "typing-only-first-party-import",
-]
 extend-safe-fixes = [
   "camelcase-imported-as-lowercase",
   "relative-imports",
@@ -470,27 +463,6 @@ runtime-evaluated-base-classes = [
   "flext_web.m.Value",
   "pydantic.BaseModel",
 ]
-
-[tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-  "flext_api.FlextApiServiceBase",
-  "flext_api.FlextApiSettings",
-  "flext_api.m.BaseModel",
-  "flext_api.s",
-  "flext_api.services.base_client.FlextApiClientBase",
-  "flext_cli.services.cli.FlextCliCli",
-  "flext_core.FlextConfig",
-  "flext_core.FlextSettings",
-  "flext_core.s",
-  "flext_tests.FlextTestsServiceBase",
-  "flext_tests.FlextTestsSettings",
-  "flext_web.m.FlexibleInternalModel",
-  "flext_web.m.Value",
-  "pydantic.BaseModel",
-]
-
-[tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.argparse]
 msg = "Use cli.register_result_command + Pydantic model from flext_cli."
