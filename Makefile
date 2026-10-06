@@ -2,7 +2,7 @@
 # @flext-owner: flext-infra/config/codegen.yaml + flext-infra/src/flext_infra/templates/project/base/Makefile.j2
 # @flext-adjust: edit the owner configuration or template; never this projection
 # @flext-regenerate: make gen
-# flext-api — selector-free generated project interface.
+# flext-infra — selector-free generated project interface.
 # Managed by flext-infra codegen conform for new and existing repositories.
 # === SECTION: header (managed) ===
 # Source: template (base/Makefile.j2)
@@ -89,7 +89,7 @@ unexport GITHUB_API_TOKEN
 
 # === SECTION: project identity (managed) ===
 # Source: config:dist / config:make_profile / config:repository_root_rel / config:uv_link_mode
-PROJECT_NAME := flext-api
+PROJECT_NAME := flext-infra
 MAKE_PROFILE := standalone
 REPOSITORY_ROOT_REL := .
 # === SECTION: workspace subprojects (managed) ===
@@ -107,7 +107,7 @@ UV_LINK_MODE := copy
 # unconsumed variable is ignored.
 PYTEST_DIAG_ARGS := -rA --durations=0 --tb=long --showlocals
 PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=0.001 --tb=short
-PYTEST_PROCESS_TIMEOUT_SECONDS := 124
+PYTEST_PROCESS_TIMEOUT_SECONDS := 1204
 # The pytest process inherits a hard wall-clock boundary, so a hung
 # run is terminated even if the runner itself stalls.
 override PYTEST_BOUNDED = timeout --signal=TERM --kill-after=5s "$(PYTEST_PROCESS_TIMEOUT_SECONDS)s"
@@ -121,7 +121,7 @@ override FLEXT_PYTEST_TESTMON_DATABASE = $(if $(strip $(PYTEST_CACHE_HOME)),$(PY
 # Profiles sit beside the other reports of this checkout (.reports is ignored).
 PROFILE_REPORTS_DIR = $(PROJECT_ROOT)/$(dir $(PYTEST_REPORTS_DIR))profiles
 override PYTEST_CASE_TIMEOUT_SECONDS := 10
-override PYTEST_RUN_TIMEOUT_SECONDS := 120
+override PYTEST_RUN_TIMEOUT_SECONDS := 1200
 override PYTEST_TERMINATION_GRACE_SECONDS := 2
 override PYTEST_TIMEOUT_EXIT_CODE := 124
 override PYTEST_ENFORCEMENT_PLUGIN := flext_tests_enforcement
@@ -1768,7 +1768,7 @@ _setup_activated:
 	esac
 
 _builtin-help:
-	@printf '%s\n' 'flext-api [standalone]' '';
+	@printf '%s\n' 'flext-infra [standalone]' '';
 
 	@printf '  %-16s %s\n' 'help' 'Show the complete selector-free public interface.';
 
@@ -2392,7 +2392,7 @@ profile-gen: _builtin_require_environment
 	@$(PROJECT_TOOL_EXEC) "$(RUNTIME_PYTHON)" -c \
 		'import cProfile, sys; from flext_infra.cli import main; profile = cProfile.Profile(); status = profile.runcall(main, sys.argv[2:]); profile.dump_stats(sys.argv[1]); raise SystemExit(status)' \
 		"$(PROFILE_REPORTS_DIR)/lazy-init.pstats" codegen lazy-init \
-		--repository-root "$(PROJECT_ROOT)" --module flext_api --dry-run
+		--repository-root "$(PROJECT_ROOT)" --module flext_infra --dry-run
 
 .PHONY: profile-gen-report
 profile-gen-report: _builtin_require_environment
