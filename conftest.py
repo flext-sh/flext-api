@@ -1,6 +1,9 @@
-# Copyright (c) 2026 FLEXT. All rights reserved.
 # Copyright 2026 FLEXT
-"""Pytest bootstrap for flext-api local package resolution."""
+"""Pytest bootstrap for flext-api local package resolution.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
