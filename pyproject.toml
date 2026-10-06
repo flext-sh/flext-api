@@ -169,7 +169,7 @@ include = ["/src/flext_api/**"]
 [tool.mypy]
 mypy_path = ["src"]
 plugins = ["pydantic.mypy"]
-disable_error_code = ["prop-decorator", "call-arg", "attr-defined"]
+disable_error_code = ["prop-decorator", "call-arg"]
 python_version = "3.13"
 allow_redefinition = true
 check_untyped_defs = true
@@ -190,10 +190,6 @@ follow_imports = "normal"
 [[tool.mypy.overrides]]
 module = ["rope.*"]
 follow_untyped_imports = true
-
-[[tool.mypy.overrides]]
-module = ["flext_api.base"]
-disable_error_code = ["misc", "no-redef", "assignment"]
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
@@ -330,7 +326,6 @@ include = ["src", "tests"]
 extraPaths = ["src", "."]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
-reportCallIssue = "none"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
 reportInconsistentConstructor = "error"
@@ -411,12 +406,15 @@ quote-style = "double"
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint]
-extend-safe-fixes = ["camelcase-imported-as-lowercase", "relative-imports"]
+extend-safe-fixes = [
+  "camelcase-imported-as-lowercase",
+  "relative-imports",
+  "typing-only-first-party-import",
+]
 ignore = [
   "camelcase-imported-as-lowercase",
   "implicit-namespace-package",
   "missing-required-import",
-  "runtime-import-in-type-checking-block",
   "typing-only-first-party-import",
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
@@ -444,9 +442,11 @@ runtime-evaluated-base-classes = [
   "flext_api.m.BaseModel",
   "flext_api.s",
   "flext_api.services.base_client.FlextApiClientBase",
+  "flext_cli.services.cli.FlextCliCli",
   "flext_core.FlextConfig",
+  "flext_core.FlextService",
   "flext_core.FlextSettings",
-  "flext_core.s",
+  "flext_tests.FlextTestsServiceBase",
   "flext_tests.FlextTestsSettings",
   "flext_web.m.FlexibleInternalModel",
   "flext_web.m.Value",
@@ -478,7 +478,12 @@ known-first-party = ["flext_api", "flext_core"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"**/__init__.py" = ["non-empty-init-module", "unused-import"]
+"**/__init__.py" = [
+  "non-empty-init-module",
+  "runtime-import-in-type-checking-block",
+  "typing-only-first-party-import",
+  "unused-import",
+]
 "**/tests/python/**" = [
   "raise-vanilla-args",
   "start-process-with-partial-path",
@@ -539,7 +544,11 @@ split-on-trailing-comma = false
   "verbose-raise",
   "write-whole-file",
 ]
-"scripts/**/*.py" = ["commented-out-code", "line-too-long"]
+"scripts/**/*.py" = [
+  "commented-out-code",
+  "line-too-long",
+  "typing-only-first-party-import",
+]
 "tests/**/*.py" = ["assert"]
 
 [tool.ruff.lint.pydocstyle]
