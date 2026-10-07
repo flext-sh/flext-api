@@ -130,7 +130,8 @@ class UserApi(FlextApi):
         )
 
     def _validate_ok(
-        self, response: m.Api.HttpResponse,
+        self,
+        response: m.Api.HttpResponse,
     ) -> p.Result[m.Api.HttpResponse]:
         if response.success:
             return r[m.Api.HttpResponse].ok(response)

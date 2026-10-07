@@ -229,7 +229,8 @@ from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 
 
 def make_settings(
-    base_url: str = "https://api.example.com", timeout: float = 5.0,
+    base_url: str = "https://api.example.com",
+    timeout: float = 5.0,
 ) -> FlextApiSettings:
     return FlextApiSettings(base_url=base_url, timeout=timeout)
 
