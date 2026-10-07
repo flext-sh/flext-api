@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_api._models._api_namespace import ApiNamespace
     from flext_api._models.base import FlextApiModelsBase
     from flext_api._models.request import FlextApiModelsRequest
     from flext_api._models.response import FlextApiModelsResponse
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
 
 
 __all__: tuple[str, ...] = (
+    "ApiNamespace",
     "FlextApiModelsBase",
     "FlextApiModelsRequest",
     "FlextApiModelsResponse",
@@ -32,6 +34,7 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
+        "ApiNamespace": "._api_namespace",
         "FlextApiModelsBase": ".base",
         "FlextApiModelsRequest": ".request",
         "FlextApiModelsResponse": ".response",

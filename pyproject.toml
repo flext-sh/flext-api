@@ -29,6 +29,7 @@ dependencies = [
   "msgpack>=1.2.3",
   "packaging>=26.3",
   "pydantic>=2.13.5,<3",
+  "pydantic>=2.13.5,<3",
   "pydantic-settings>=2.15.0",
   "pyyaml>=6.0.3",
   "structlog>=26.1.0",
@@ -364,6 +365,7 @@ filterwarnings = [
   "error",
   "module::flext_core._constants.enforcement.FlextMroViolation",
   "once::pytest.PytestAssertRewriteWarning",
+  "once::pytest.PytestAssertRewriteWarning",
 ]
 markers = [
   "smoke: public-interface smoke tests",
@@ -381,6 +383,7 @@ markers = [
   "resilience: resilience tests",
   "discovery: catalog and stream discovery tests",
   "singer: Singer protocol contract tests",
+  "requires_engine: native check engine required by this test",
   "requires_engine: native check engine required by this test",
 ]
 minversion = "8.0"
@@ -425,6 +428,7 @@ ignore = [
   "implicit-namespace-package",
   "missing-required-import",
   "runtime-import-in-type-checking-block",
+  "runtime-import-in-type-checking-block",
   "typing-only-first-party-import",
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
@@ -452,6 +456,7 @@ runtime-evaluated-base-classes = [
   "flext_api.m.BaseModel",
   "flext_api.s",
   "flext_api.services.base_client.FlextApiClientBase",
+  "flext_cli.m.BaseModel",
   "flext_cli.services.cli.FlextCliCli",
   "flext_core.FlextConfig",
   "flext_core.FlextService",
@@ -494,83 +499,11 @@ split-on-trailing-comma = false
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
-"**/docx.py" = ["import-outside-top-level"]
-"**/file_test_helpers.py" = ["line-too-long"]
-"**/flextcliutilitiesfiletesthelpersmixin_part_03.py" = ["line-too-long"]
-"**/framework.py" = ["banned-api", "import-outside-top-level"]
-"**/pptx.py" = ["import-outside-top-level"]
-"**/test_public_contracts_cov.py" = ["line-too-long"]
-"**/tests/**" = [
-  "boolean-positional-value-in-call",
-  "compare-to-empty-string",
-  "import-private-name",
-  "magic-value-comparison",
-  "mutable-class-default",
-  "no-self-use",
-  "private-member-access",
-  "pytest-fixture-autouse",
-  "too-many-public-methods",
-]
 "**/tests/python/**" = [
   "raise-vanilla-args",
   "start-process-with-partial-path",
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
-]
-"**/xlsx.py" = ["import-outside-top-level"]
-"scripts/**" = [
-  "any-type",
-  "avoidable-escaped-quote",
-  "banned-api",
-  "blank-line-after-function",
-  "boolean-default-value-positional-argument",
-  "boolean-type-hint-positional-argument",
-  "builtin-open",
-  "commented-out-code",
-  "error-instead-of-exception",
-  "f-string-in-exception",
-  "if-exp-instead-of-or-operator",
-  "import-private-name",
-  "invalid-module-name",
-  "literal-membership",
-  "logging-string-concat",
-  "magic-value-comparison",
-  "manual-list-comprehension",
-  "manual-list-copy",
-  "missing-blank-line-after-summary",
-  "missing-maxsplit-arg",
-  "multi-line-summary-first-line",
-  "multiple-starts-ends-with",
-  "non-lowercase-variable-in-function",
-  "noqa-comments",
-  "os-path-abspath",
-  "os-path-dirname",
-  "os-path-exists",
-  "os-path-join",
-  "path-constructor-current-directory",
-  "print",
-  "raise-vanilla-args",
-  "raw-string-in-exception",
-  "read-whole-file",
-  "relative-imports",
-  "repeated-append",
-  "runtime-cast-value",
-  "shebang-not-executable",
-  "start-process-with-partial-path",
-  "subprocess-without-shell-equals-true",
-  "suspicious-subprocess-import",
-  "undocumented-public-class",
-  "undocumented-public-function",
-  "undocumented-public-init",
-  "undocumented-public-method",
-  "unnecessary-multiline-docstring",
-  "unsorted-dunder-all",
-  "unspecified-encoding",
-  "unused-function-argument",
-  "unused-noqa",
-  "used-dummy-variable",
-  "verbose-raise",
-  "write-whole-file",
 ]
 "scripts/**/*.py" = [
   "commented-out-code",

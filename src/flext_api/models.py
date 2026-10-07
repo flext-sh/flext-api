@@ -12,6 +12,7 @@ from flext_web import FlextWebModels
 
 if TYPE_CHECKING:
     from flext_api import t
+from flext_api._models import ApiNamespace
 from flext_api._models.base import FlextApiModelsBase
 from flext_api._models.request import FlextApiModelsRequest
 from flext_api._models.response import FlextApiModelsResponse
@@ -34,4 +35,4 @@ class FlextApiModels(FlextWebModels):
 
 m = FlextApiModels
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiModels", "m"]
+__all__: t.MutableSequenceOf[str] = ["ApiNamespace", "FlextApiModels", "m"]

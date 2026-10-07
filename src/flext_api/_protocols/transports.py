@@ -14,13 +14,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Protocol, override, runtime_checkable
 
 import httpx
+from flext_web import r
 
-from flext_api import c, r, t
+from flext_api import t
 from flext_api._protocols import (
     FlextApiProtocolsBase,
     FlextApiTransportsConfigMixin,
     FlextApiTransportsRequestMixin,
 )
+from flext_api.constants import c
 
 if TYPE_CHECKING:
     from flext_web import p

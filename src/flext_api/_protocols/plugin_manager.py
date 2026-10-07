@@ -9,9 +9,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING
 
-from flext_web import u
+from flext_web import r, u
 
-from flext_api import r
 from flext_api._protocols import FlextApiProtocolPluginTypes
 
 if TYPE_CHECKING:

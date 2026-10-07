@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_web import m
+from flext_web import m, r
 
-from flext_api import c, p, r, t
+from flext_api._typings.types import t
+from flext_api.constants import c
+from flext_api.protocols import p
 
 
 class FlextApiUtilitiesRequestUtils:
