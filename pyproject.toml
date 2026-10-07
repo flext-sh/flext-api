@@ -23,8 +23,8 @@ dependencies = [
   "annotated-types>=0.8.0",
   "beartype>=0.22.9",
   "dependency-injector>=4.49.1",
-  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-  "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.12.0-dev",
+  "flext-core",
+  "flext-web",
   "httpx>=0.28.1",
   "msgpack>=1.2.3",
   "packaging>=26.3",
@@ -58,15 +58,13 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 Homepage = "https://github.com/flext-sh/flext"
 
 [dependency-groups]
-codegen = [
-  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
-]
+codegen = ["flext-infra"]
 dev = [
   "actionlint-py>=1.7.12.24",
   "bandit>=1.9.4",
   "deptry",
   "editables>=0.6",
-  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
+  "flext-tests",
   "hypothesis",
   "mkdocs",
   "mkdocs-autorefs",
@@ -493,21 +491,6 @@ split-on-trailing-comma = false
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["line-too-long", "non-empty-init-module", "unused-import"]
 "**/_config.py" = ["invalid-function-name"]
-"**/bin/**" = [
-  "docstring-missing-exception",
-  "docstring-missing-returns",
-  "import-outside-top-level",
-  "line-too-long",
-  "magic-value-comparison",
-  "missing-copyright-notice",
-  "print",
-  "start-process-with-partial-path",
-  "subprocess-without-shell-equals-true",
-  "suspicious-subprocess-import",
-  "type-check-without-type-error",
-  "undocumented-public-method",
-  "unused-class-method-argument",
-]
 "**/docx.py" = ["import-outside-top-level"]
 "**/file_test_helpers.py" = ["line-too-long"]
 "**/flextcliutilitiesfiletesthelpersmixin_part_03.py" = ["line-too-long"]
@@ -617,3 +600,15 @@ whitelines = 1
 link-mode = "copy"
 constraint-dependencies = ["mypy<2.4.0"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
+
+[tool.uv.sources.flext-core]
+workspace = true
+
+[tool.uv.sources.flext-infra]
+workspace = true
+
+[tool.uv.sources.flext-tests]
+workspace = true
+
+[tool.uv.sources.flext-web]
+workspace = true
