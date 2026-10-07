@@ -12,8 +12,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import httpx
+from flext_web import r
 
-from flext_api import c, m, r, t
+from flext_api import t
+from flext_api.constants import c
+from flext_api.models import m
 
 if TYPE_CHECKING:
     from flext_web import p

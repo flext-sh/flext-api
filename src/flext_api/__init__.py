@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.cli import FlextApiCli, main
     from flext_api.constants import FlextApiConstants, c
-    from flext_api.models import FlextApiModels, m
+    from flext_api.models import ApiNamespace, FlextApiModels, m
     from flext_api.protocols import (
         FlextApiProtocols,
         FlextApiProtocolsTransports,
@@ -53,6 +53,7 @@ if TYPE_CHECKING:
 
 
 __all__: tuple[str, ...] = (
+    "ApiNamespace",
     "FlextApi",
     "FlextApiAsyncClient",
     "FlextApiCli",
@@ -104,6 +105,7 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
+        "ApiNamespace": ".models",
         "FlextApi": ".api",
         "FlextApiAsyncClient": ".services.async_client",
         "FlextApiCli": ".cli",

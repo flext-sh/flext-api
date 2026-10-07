@@ -3,6 +3,7 @@
 # @flext-adjust: edit the owner configuration or template; never this projection
 # @flext-regenerate: make gen
 # flext-api — selector-free generated project interface.
+# flext-api — selector-free generated project interface.
 # Managed by flext-infra codegen conform for new and existing repositories.
 # === SECTION: header (managed) ===
 # Source: template (base/Makefile.j2)
@@ -90,6 +91,7 @@ unexport GITHUB_API_TOKEN
 # === SECTION: project identity (managed) ===
 # Source: config:dist / config:make_profile / config:repository_root_rel / config:uv_link_mode
 PROJECT_NAME := flext-api
+PROJECT_NAME := flext-api
 MAKE_PROFILE := standalone
 REPOSITORY_ROOT_REL := .
 # === SECTION: workspace subprojects (managed) ===
@@ -107,6 +109,7 @@ UV_LINK_MODE := copy
 PYTEST_DIAG_ARGS := -rA --durations=0 --tb=long --showlocals
 PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=0.001 --tb=short
 PYTEST_PROCESS_TIMEOUT_SECONDS := 124
+PYTEST_PROCESS_TIMEOUT_SECONDS := 124
 # The pytest process inherits a hard wall-clock boundary, so a hung
 # run is terminated even if the runner itself stalls.
 override PYTEST_BOUNDED = timeout --signal=TERM --kill-after=5s "$(PYTEST_PROCESS_TIMEOUT_SECONDS)s"
@@ -120,6 +123,7 @@ override FLEXT_PYTEST_TESTMON_DATABASE = $(if $(strip $(PYTEST_CACHE_HOME)),$(PY
 # Profiles sit beside the other reports of this checkout (.reports is ignored).
 PROFILE_REPORTS_DIR = $(PROJECT_ROOT)/$(dir $(PYTEST_REPORTS_DIR))profiles
 override PYTEST_CASE_TIMEOUT_SECONDS := 10
+override PYTEST_RUN_TIMEOUT_SECONDS := 120
 override PYTEST_RUN_TIMEOUT_SECONDS := 120
 override PYTEST_TERMINATION_GRACE_SECONDS := 2
 override PYTEST_TIMEOUT_EXIT_CODE := 124
@@ -226,6 +230,7 @@ endif
 
 endif
 endif
+DOCS_ACTIONS := generate fix fmt build validate audit
 DOCS_ACTIONS := generate fix fmt build validate audit
  # End SECTION: verb dispatch
 
@@ -393,6 +398,7 @@ _bootstrap_setup_tools: _builtin_require_workspace
 # Execute the interpreter provisioned by setup without discovering a project
 # workspace or creating a dependency-resolution file during a runtime command.
 override UV_RUN := env -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u PROJECT_ROOT PYTHONPATH="$(PROJECT_ROOT)/src" $(UV) run --directory "$(PROJECT_ROOT)" --no-project --python "$(RUNTIME_PYTHON)"
+override UV_RUN := env -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u PROJECT_ROOT PYTHONPATH="$(PROJECT_ROOT)/src" $(UV) run --directory "$(PROJECT_ROOT)" --no-project --python "$(RUNTIME_PYTHON)"
 # The checked-out flext-infra lane owns every lifecycle verb: a workspace
 # runs the generator it carries (the submodule src), so a broken published
 # dependency tip can never block the local recovery cycle. A checkout without
@@ -439,6 +445,12 @@ endef
 
 
 
+# uv owns the lock. `make upg` is the only verb that advances versions
+# (`uv lock --upgrade --refresh`); `make setup` restores the DECLARED state:
+# a uv.lock that is missing, stale, or corrupt is removed and re-locked from
+# the manifests (run with the lock disabled), exactly as uv prescribes. The
+# committed lock is the journal: an interrupted write is recovered by the
+# same path (uv lock --check fails, uv lock re-derives).
 # uv owns the lock. `make upg` is the only verb that advances versions
 # (`uv lock --upgrade --refresh`); `make setup` restores the DECLARED state:
 # a uv.lock that is missing, stale, or corrupt is removed and re-locked from
@@ -1046,6 +1058,7 @@ _setup_activated:
 
 _builtin-help:
 	@printf '%s\n' 'flext-api [standalone]' '';
+	@printf '%s\n' 'flext-api [standalone]' '';
 
 	@printf '  %-16s %s\n' 'help' 'Show the complete selector-free public interface.';
 
@@ -1376,6 +1389,10 @@ endif
 # removed and re-locked from the manifests (never a version advance — that
 # belongs to `make upg` alone); uv then owns the venv: `uv sync --python`
 # creates or replaces it against the declared interpreter.
+# Setup restores the declared state: a uv.lock missing, stale, or corrupt is
+# removed and re-locked from the manifests (never a version advance — that
+# belongs to `make upg` alone); uv then owns the venv: `uv sync --python`
+# creates or replaces it against the declared interpreter.
 # Governed gitlinks are provisioned in every context, GitHub Actions included:
 # the workspace projections (Makefile, pyproject, .gitignore, dependabot, docs)
 # derive from the member checkouts, so a member-less CI checkout would render a
@@ -1383,6 +1400,7 @@ endif
 # members are read as libraries; no verb gates them from here.
 _builtin_setup_environment: $(if $(filter Y,$(CI)),,_builtin_setup_submodules)
 	@$(SETUP_ENVIRONMENT_RECIPE)
+ifeq ($(MAKE_PROFILE),workspace)
 ifeq ($(MAKE_PROFILE),workspace)
 	@$(UV) pip check --python "$(RUNTIME_VENV)"
 endif
@@ -1459,13 +1477,17 @@ _builtin_build_artifacts:
 _builtin_check_all: _builtin_require_environment
 	@set -eu; \
 		gates="lint,security,markdown,markdown-format,markdown-code,duplication,pyrefly,mypy,pyright,loc-cap,runtime-census,fresh-import,index-declarations,codemod,layout,direnv"; \
+		gates="lint,security,markdown,markdown-format,markdown-code,duplication,pyrefly,mypy,pyright,loc-cap,runtime-census,fresh-import,index-declarations,codemod,layout,direnv"; \
 		if [ "$(strip $(CI))" = "Y" ]; then \
+			gates="lint,security,markdown,markdown-format,markdown-code,duplication,loc-cap,runtime-census,fresh-import,index-declarations,layout,direnv"; \
+			printf 'INFO: CI=Y runs check gates: lint security markdown markdown-format markdown-code duplication loc-cap runtime-census fresh-import index-declarations layout direnv\n'; \
 			gates="lint,security,markdown,markdown-format,markdown-code,duplication,loc-cap,runtime-census,fresh-import,index-declarations,layout,direnv"; \
 			printf 'INFO: CI=Y runs check gates: lint security markdown markdown-format markdown-code duplication loc-cap runtime-census fresh-import index-declarations layout direnv\n'; \
 		elif [ "$(strip $(CI))" = "N" ]; then \
 			gates="pyrefly,mypy,pyright,codemod"; \
 			printf 'INFO: CI=N runs check gates: pyrefly mypy pyright codemod\n'; \
 		else \
+			printf 'INFO: default context runs check gates: lint security markdown markdown-format markdown-code duplication pyrefly mypy pyright loc-cap runtime-census fresh-import index-declarations codemod layout direnv\n'; \
 			printf 'INFO: default context runs check gates: lint security markdown markdown-format markdown-code duplication pyrefly mypy pyright loc-cap runtime-census fresh-import index-declarations codemod layout direnv\n'; \
 		fi; \
 		if [ -z "$$gates" ]; then \
@@ -1628,6 +1650,7 @@ profile-gen: _builtin_require_environment
 		'import cProfile, sys; from flext_infra.cli import main; profile = cProfile.Profile(); status = profile.runcall(main, sys.argv[2:]); profile.dump_stats(sys.argv[1]); raise SystemExit(status)' \
 		"$(PROFILE_REPORTS_DIR)/lazy-init.pstats" codegen lazy-init \
 		--repository-root "$(PROJECT_ROOT)" --module flext_api --dry-run
+		--repository-root "$(PROJECT_ROOT)" --module flext_api --dry-run
 
 .PHONY: profile-gen-report
 profile-gen-report: _builtin_require_environment
@@ -1756,6 +1779,7 @@ _builtin-bootstrap-candidate: _builtin_require_environment
 # The current directory defines scope; callers never address tools directly.
 _builtin_mod_apply: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor mod --repository-root "$(PROJECT_ROOT)" --apply
+	@$(PROJECT_FLEXT_INFRA) refactor mod --repository-root "$(PROJECT_ROOT)" --apply
 
 _builtin_mod_text: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor mod-text --apply
@@ -1775,8 +1799,14 @@ _builtin_mod_snapshots: _builtin_require_environment
 # aggregates per project and one project's findings never stop the sweep. A
 # member profile enforces only itself.
 
+# The workspace profile sweeps every namespace-enabled project of the topology
+# (the root repository and each declared member) in one process: the report
+# aggregates per project and one project's findings never stop the sweep. A
+# member profile enforces only itself.
+
 _builtin_fix_namespace: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor namespace-enforce --repository-root "$(PROJECT_ROOT)" --projects . --apply
+
 
 
 _builtin_fix_accessors: _builtin_require_environment

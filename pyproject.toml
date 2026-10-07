@@ -29,6 +29,7 @@ dependencies = [
   "msgpack>=1.2.3",
   "packaging>=26.3",
   "pydantic>=2.13.5,<3",
+  "pydantic>=2.13.5,<3",
   "pydantic-settings>=2.15.0",
   "pyyaml>=6.0.3",
   "structlog>=26.1.0",
@@ -325,6 +326,7 @@ extraPaths = ["src", "."]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportCallIssue = "error"
+reportCallIssue = "error"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
 reportInconsistentConstructor = "error"
@@ -364,6 +366,7 @@ filterwarnings = [
   "error",
   "module::flext_core._constants.enforcement.FlextMroViolation",
   "once::pytest.PytestAssertRewriteWarning",
+  "once::pytest.PytestAssertRewriteWarning",
 ]
 markers = [
   "smoke: public-interface smoke tests",
@@ -382,6 +385,7 @@ markers = [
   "discovery: catalog and stream discovery tests",
   "singer: Singer protocol contract tests",
   "requires_engine: native check engine required by this test",
+  "requires_engine: native check engine required by this test",
 ]
 minversion = "8.0"
 python_classes = ["Test*"]
@@ -389,6 +393,15 @@ python_files = ["*_test.py", "*_tests.py", "test_*.py"]
 testpaths = ["tests"]
 
 [tool.ruff]
+extend-exclude = [
+  "**/.archive/**",
+  "**/protos/**",
+  "**/.agents/aihub-hooks/**",
+  "**/.claude/aihub-hooks/**",
+  "**/.codex/aihub-hooks/**",
+  "**/.cursor/aihub-hooks/**",
+  "**/.gemini/aihub-hooks/**",
+]
 extend-exclude = [
   "**/.archive/**",
   "**/protos/**",
@@ -425,6 +438,7 @@ ignore = [
   "implicit-namespace-package",
   "missing-required-import",
   "runtime-import-in-type-checking-block",
+  "runtime-import-in-type-checking-block",
   "typing-only-first-party-import",
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
@@ -452,6 +466,7 @@ runtime-evaluated-base-classes = [
   "flext_api.m.BaseModel",
   "flext_api.s",
   "flext_api.services.base_client.FlextApiClientBase",
+  "flext_cli.m.BaseModel",
   "flext_cli.services.cli.FlextCliCli",
   "flext_core.FlextConfig",
   "flext_core.FlextService",
@@ -517,6 +532,7 @@ split-on-trailing-comma = false
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
+"**/xlsx.py" = ["import-outside-top-level"]
 "**/xlsx.py" = ["import-outside-top-level"]
 "scripts/**" = [
   "any-type",

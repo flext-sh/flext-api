@@ -12,7 +12,11 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_api import c, m, p, r, s, t, u
+from flext_web import r
+
+from flext_api import p, s, t, u
+from flext_api.constants import c
+from flext_api.models import m
 from flext_api.services.client import FlextApiClient
 
 
