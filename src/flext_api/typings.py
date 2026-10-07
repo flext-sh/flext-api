@@ -13,12 +13,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_web import FlextWebTypes
+from flext_web import FlextWebTypes, m, p, u
 
-from flext_api import c, m, p, u
 from flext_api._typings.base import FlextApiTypingsBase
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_api._typings.transport import FlextApiTypingsTransport
+from flext_api.constants import FlextApiConstants as c
 
 
 class FlextApiTypes(FlextWebTypes):
