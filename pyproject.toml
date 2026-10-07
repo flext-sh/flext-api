@@ -326,7 +326,6 @@ extraPaths = ["src", "."]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportCallIssue = "error"
-reportCallIssue = "error"
 reportConstantRedefinition = "error"
 reportIncompatibleMethodOverride = "error"
 reportInconsistentConstructor = "error"
@@ -393,15 +392,6 @@ python_files = ["*_test.py", "*_tests.py", "test_*.py"]
 testpaths = ["tests"]
 
 [tool.ruff]
-extend-exclude = [
-  "**/.archive/**",
-  "**/protos/**",
-  "**/.agents/aihub-hooks/**",
-  "**/.claude/aihub-hooks/**",
-  "**/.codex/aihub-hooks/**",
-  "**/.cursor/aihub-hooks/**",
-  "**/.gemini/aihub-hooks/**",
-]
 extend-exclude = [
   "**/.archive/**",
   "**/protos/**",
@@ -509,84 +499,11 @@ split-on-trailing-comma = false
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
-"**/docx.py" = ["import-outside-top-level"]
-"**/file_test_helpers.py" = ["line-too-long"]
-"**/flextcliutilitiesfiletesthelpersmixin_part_03.py" = ["line-too-long"]
-"**/framework.py" = ["banned-api", "import-outside-top-level"]
-"**/pptx.py" = ["import-outside-top-level"]
-"**/test_public_contracts_cov.py" = ["line-too-long"]
-"**/tests/**" = [
-  "boolean-positional-value-in-call",
-  "compare-to-empty-string",
-  "import-private-name",
-  "magic-value-comparison",
-  "mutable-class-default",
-  "no-self-use",
-  "private-member-access",
-  "pytest-fixture-autouse",
-  "too-many-public-methods",
-]
 "**/tests/python/**" = [
   "raise-vanilla-args",
   "start-process-with-partial-path",
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
-]
-"**/xlsx.py" = ["import-outside-top-level"]
-"**/xlsx.py" = ["import-outside-top-level"]
-"scripts/**" = [
-  "any-type",
-  "avoidable-escaped-quote",
-  "banned-api",
-  "blank-line-after-function",
-  "boolean-default-value-positional-argument",
-  "boolean-type-hint-positional-argument",
-  "builtin-open",
-  "commented-out-code",
-  "error-instead-of-exception",
-  "f-string-in-exception",
-  "if-exp-instead-of-or-operator",
-  "import-private-name",
-  "invalid-module-name",
-  "literal-membership",
-  "logging-string-concat",
-  "magic-value-comparison",
-  "manual-list-comprehension",
-  "manual-list-copy",
-  "missing-blank-line-after-summary",
-  "missing-maxsplit-arg",
-  "multi-line-summary-first-line",
-  "multiple-starts-ends-with",
-  "non-lowercase-variable-in-function",
-  "noqa-comments",
-  "os-path-abspath",
-  "os-path-dirname",
-  "os-path-exists",
-  "os-path-join",
-  "path-constructor-current-directory",
-  "print",
-  "raise-vanilla-args",
-  "raw-string-in-exception",
-  "read-whole-file",
-  "relative-imports",
-  "repeated-append",
-  "runtime-cast-value",
-  "shebang-not-executable",
-  "start-process-with-partial-path",
-  "subprocess-without-shell-equals-true",
-  "suspicious-subprocess-import",
-  "undocumented-public-class",
-  "undocumented-public-function",
-  "undocumented-public-init",
-  "undocumented-public-method",
-  "unnecessary-multiline-docstring",
-  "unsorted-dunder-all",
-  "unspecified-encoding",
-  "unused-function-argument",
-  "unused-noqa",
-  "used-dummy-variable",
-  "verbose-raise",
-  "write-whole-file",
 ]
 "scripts/**/*.py" = [
   "commented-out-code",
