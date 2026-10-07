@@ -22,9 +22,12 @@ from flext_api._typings.transport import FlextApiTypingsTransport
 
 # Owner-direct imports: routing these through the package root re-enters
 # the lazy root getattr mid-module (this file defines the root's ``t``), and
-# the owners' own submodule chains re-import ``t`` back from here.
+# the owners' own submodule chains re-import ``t`` back from here. The
+# adapter helpers come from the foundation ``u`` — importing the project
+# utilities here would close a reverse cycle (utilities chains re-import
+# ``t``).
 from flext_api.constants import c
-from flext_api.utilities import u
+from flext_core import u
 
 if TYPE_CHECKING:
     from flext_api import m, p

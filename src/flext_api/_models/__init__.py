@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from flext_api._models.response import FlextApiModelsResponse
     from flext_api._models.storage import FlextApiModelsStorage
     from flext_api._models.webhook import FlextApiModelsWebhook
-    from flext_api._typings.types import t
 
 
 __all__: tuple[str, ...] = (
@@ -35,12 +34,12 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
+        "ApiNamespace": "._api_namespace",
         "FlextApiModelsBase": ".base",
         "FlextApiModelsRequest": ".request",
         "FlextApiModelsResponse": ".response",
         "FlextApiModelsStorage": ".storage",
         "FlextApiModelsWebhook": ".webhook",
-        "ApiNamespace": "._api_namespace",
     }),
     public_exports=__all__,
 )

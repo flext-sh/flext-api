@@ -10,10 +10,7 @@ from typing import override
 
 from flext_web import r
 
-from flext_api._typings.types import t
-from flext_api.protocols import p
-from flext_api.services import s
-from flext_api.utilities import u
+from flext_api import p, s, t, u
 
 
 class FlextApiClientBase(s[bool]):
