@@ -600,19 +600,14 @@ preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
 
+[tool.uv.sources]
+flext-core = { workspace = true }
+flext-infra = { workspace = true }
+flext-tests = { workspace = true }
+flext-web = { workspace = true }
+
 [tool.uv]
 link-mode = "copy"
 constraint-dependencies = ["mypy<2.4.0"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 
-[tool.uv.sources.flext-core]
-workspace = true
-
-[tool.uv.sources.flext-infra]
-workspace = true
-
-[tool.uv.sources.flext-tests]
-workspace = true
-
-[tool.uv.sources.flext-web]
-workspace = true

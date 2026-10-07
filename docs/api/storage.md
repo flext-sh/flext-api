@@ -25,7 +25,9 @@ class FileUploadApi(FlextApi):
     """Example facade that POSTs a file payload as the request body."""
 
     def upload_document(
-        self, filename: str, content: bytes,
+        self,
+        filename: str,
+        content: bytes,
     ) -> p.Result[m.Api.HttpResponse]:
         return self.post(
             "/documents",
