@@ -6,18 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from flext_api._typings.types import t
-
 import time
 from collections.abc import MutableMapping, MutableSequence
 from typing import Annotated, ClassVar
 
 from flext_web import m, u
 
-from flext_api.constants import c
+from flext_api import c, t
 
 
 class FlextApiModelsWebhook:
@@ -128,15 +123,21 @@ class FlextApiModelsWebhook:
             description="Registered webhook handlers by event type",
         )
         event_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = u.Field(
-            default_factory=list,
+            default_factory=list["FlextApiModelsWebhook.WebhookEvent"],
             description="Main event queue",
         )
         retry_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = u.Field(
-            default_factory=list,
+            default_factory=list["FlextApiModelsWebhook.WebhookEvent"],
             description="Retry event queue",
         )
         deliveries: MutableMapping[str, FlextApiModelsWebhook.WebhookDelivery] = (
-            u.Field(default_factory=dict, description="Delivery records by event id")
+            u.Field(
+                default_factory=dict[
+                    str,
+                    "FlextApiModelsWebhook.WebhookDelivery",
+                ],
+                description="Delivery records by event id",
+            )
         )
 
         @property

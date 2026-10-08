@@ -9,14 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import httpx
-from flext_web import r
 
-from flext_api._typings.types import t
-from flext_api.constants import c
-from flext_api.models import m
-from flext_api.protocols import p
-from flext_api.services._services import FlextApiClientCodecMixin
-from flext_api.utilities import u
+from flext_api import c, m, p, r, t, u
+from flext_api.services import FlextApiClientCodecMixin
 
 if TYPE_CHECKING:
     from flext_api import FlextApiSettings
@@ -37,8 +32,8 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         Returns:
             The resulting ``p.Result[str]``.
         """
-        # NOTE (multi-agent): mro-t9s9 — request defaults belong to this
-        # client's injected runtime settings, never the global singleton.
+        # Request defaults belong to this client's injected runtime settings,
+        # never the global singleton (mro-t9s9).
         api_settings = self.settings.Api
         path_stripped = path.strip()
         if not path_stripped:

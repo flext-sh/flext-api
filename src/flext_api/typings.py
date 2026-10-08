@@ -16,22 +16,15 @@ from typing import TYPE_CHECKING
 
 from flext_web import FlextWebTypes, m, p, u
 
-from flext_api._typings.base import FlextApiTypingsBase
-from flext_api._typings.serialization import FlextApiTypingsSerialization
-from flext_api._typings.transport import FlextApiTypingsTransport
-from flext_api.constants import FlextApiConstants as c
-
-# Owner-direct imports: routing these through the package root re-enters
-# the lazy root getattr mid-module (this file defines the root's ``t``), and
-# the owners' own submodule chains re-import ``t`` back from here. The
-# adapter helpers come from the foundation ``u`` — importing the project
-# utilities here would close a reverse cycle (utilities chains re-import
-# ``t``).
-from flext_api.constants import c
-from flext_core import u
+from flext_api import c
+from flext_api._typings import (
+    FlextApiTypingsBase,
+    FlextApiTypingsSerialization,
+    FlextApiTypingsTransport,
+)
 
 if TYPE_CHECKING:
-    from flext_api import m, p
+    from flext_api import m
 
 
 class FlextApiTypes(FlextWebTypes):
@@ -45,9 +38,14 @@ class FlextApiTypes(FlextWebTypes):
         """API types namespace for cross-project access."""
 
         type WebHeaders = FlextWebTypes.ScalarOrStrSequenceMapping
-        type WebParams = FlextWebTypes.MappingKV[str, str | FlextWebTypes.StrSequence]
+        type WebParams = FlextWebTypes.MappingKV[
+            str,
+            str | FlextWebTypes.StrSequence,
+        ]
         type RequestBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes
-        type ResponseBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
+        type ResponseBody = (
+            FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
+        )
         type HttpResponseDict = FlextWebTypes.MappingKV[
             str,
             FlextWebTypes.JsonValue

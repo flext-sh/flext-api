@@ -6,16 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from flext_api._typings.types import t
-
 import time
 from collections.abc import MutableMapping
 from typing import Annotated, ClassVar
 
 from flext_web import m, u
+
+from flext_api import t
 
 
 class FlextApiModelsStorage:
@@ -89,7 +86,7 @@ class FlextApiModelsStorage:
             validate_assignment=True,
         )
         entries: MutableMapping[str, FlextApiModelsStorage.StorageMetadata] = u.Field(
-            default_factory=dict,
+            default_factory=dict[str, "FlextApiModelsStorage.StorageMetadata"],
             description="Storage entries by key",
         )
         operations_count: int = u.Field(

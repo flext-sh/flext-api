@@ -10,8 +10,7 @@ from typing import TYPE_CHECKING
 
 from flext_web import u
 
-from flext_api import m
-from flext_api._typings.types import t
+from flext_api import m, t
 
 if TYPE_CHECKING:
     from enum import StrEnum

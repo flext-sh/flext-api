@@ -10,14 +10,17 @@ from typing import TYPE_CHECKING
 
 from flext_web import FlextWebModels
 
+from flext_api._models import (
+    FlextApiModelsApiNamespace,
+    FlextApiModelsBase,
+    FlextApiModelsRequest,
+    FlextApiModelsResponse,
+    FlextApiModelsStorage,
+    FlextApiModelsWebhook,
+)
+
 if TYPE_CHECKING:
     from flext_api import t
-from flext_api._models import ApiNamespace
-from flext_api._models.base import FlextApiModelsBase
-from flext_api._models.request import FlextApiModelsRequest
-from flext_api._models.response import FlextApiModelsResponse
-from flext_api._models.storage import FlextApiModelsStorage
-from flext_api._models.webhook import FlextApiModelsWebhook
 
 
 class FlextApiModels(FlextWebModels):
@@ -35,4 +38,8 @@ class FlextApiModels(FlextWebModels):
 
 m = FlextApiModels
 
-__all__: t.MutableSequenceOf[str] = ["ApiNamespace", "FlextApiModels", "m"]
+__all__: t.MutableSequenceOf[str] = [
+    "FlextApiModels",
+    "FlextApiModelsApiNamespace",
+    "m",
+]

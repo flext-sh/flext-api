@@ -48,9 +48,6 @@ class FlextApiProtocols(FlextWebProtocols):
 
 p = FlextApiProtocols
 
-# Module-level explicit class-object re-exports: consumers can construct and
-# isinstance-narrow these names with both static and runtime class semantics.
-
 __all__: list[str] = [
     "FlextApiProtocols",
     "FlextApiProtocolsTransports",

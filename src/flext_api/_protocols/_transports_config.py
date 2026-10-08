@@ -11,11 +11,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_api.constants import c
+from flext_api import c
 
 if TYPE_CHECKING:
-    from flext_api import m
-    from flext_api._typings.types import t
+    from flext_api import m, t
 
 
 class FlextApiTransportsConfigMixin:
