@@ -87,7 +87,7 @@ class FlextApiModelsStorage:
             validate_assignment=True,
         )
         entries: MutableMapping[str, FlextApiModelsStorage.StorageMetadata] = u.Field(
-            default_factory=dict,
+            default_factory=dict[str, "FlextApiModelsStorage.StorageMetadata"],
             description="Storage entries by key",
         )
         operations_count: int = u.Field(
