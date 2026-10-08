@@ -43,9 +43,7 @@ class FlextApiTypes(FlextWebTypes):
             str | FlextWebTypes.StrSequence,
         ]
         type RequestBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes
-        type ResponseBody = (
-            FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
-        )
+        type ResponseBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
         type HttpResponseDict = FlextWebTypes.MappingKV[
             str,
             FlextWebTypes.JsonValue
