@@ -286,7 +286,9 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
 
     def __init__(self) -> None:
         super().__init__(
-            name="http", version="1.0.0", description="HTTP/REST protocol plugin",
+            name="http",
+            version="1.0.0",
+            description="HTTP/REST protocol plugin",
         )
 
     def supported_protocols(self) -> t.StrSequence:
@@ -296,7 +298,9 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
         return protocol in self.supported_protocols()
 
     def send_request(
-        self, request: t.JsonMapping, **kwargs: t.Scalar,
+        self,
+        request: t.JsonMapping,
+        **kwargs: t.Scalar,
     ) -> p.Result[t.JsonMapping]:
         return r[t.JsonMapping].ok(
             {"status": 200, "request": request, "kwargs": kwargs},
@@ -320,12 +324,16 @@ class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
         return r[t.JsonValue].ok({"source": schema_source})
 
     def validate_request(
-        self, request: t.JsonMapping, schema: t.JsonMapping,
+        self,
+        request: t.JsonMapping,
+        schema: t.JsonMapping,
     ) -> p.Result[bool]:
         return r[bool].ok(value=all(key in request for key in schema))
 
     def validate_response(
-        self, response: t.JsonMapping, schema: t.JsonMapping,
+        self,
+        response: t.JsonMapping,
+        schema: t.JsonMapping,
     ) -> p.Result[bool]:
         return r[bool].ok(value=all(key in response for key in schema))
 
