@@ -9,8 +9,8 @@ from __future__ import annotations
 import httpx
 from flext_web import r
 
-from flext_api.services._services.base_request import FlextApiClientBaseRequestMixin
-from flext_core import c, m, p, t
+from flext_api import c, m, p, t
+from flext_api.services._services import FlextApiClientBaseRequestMixin
 
 
 class FlextApiClientRequestMixin(FlextApiClientBaseRequestMixin):

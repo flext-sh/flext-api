@@ -9,9 +9,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import msgpack
-from flext_web import r
 
-from flext_core import c, p, t
+from flext_api import c, p, r, t
 
 
 class FlextApiUtilitiesSerializers:

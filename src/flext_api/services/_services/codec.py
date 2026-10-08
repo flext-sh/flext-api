@@ -7,9 +7,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
-from flext_web import r
 
-from flext_core import c, p, t, u
+from flext_api import c, p, r, t, u
 
 
 class FlextApiClientCodecMixin:
