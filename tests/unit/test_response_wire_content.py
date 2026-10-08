@@ -14,9 +14,7 @@ from typing import cast
 
 from flext_tests import tm
 
-from flext_api import FlextApiClient, FlextApiSettings, m
-
-_ApiSettings = FlextApiSettings.ApiSettings
+from flext_api import FlextApiClient, m, settings
 
 
 class TestsFlextApiResponseWireContent:
@@ -49,7 +47,7 @@ class TestsFlextApiResponseWireContent:
         payload = b'{"answer":"ok"}'
         with self._server(payload) as base_url:
             client = FlextApiClient(
-                runtime_settings=FlextApiSettings(Api=_ApiSettings(base_url=base_url)),
+                runtime_settings=settings.clone(Api={"base_url": base_url}),
             )
             result = client.request(m.Api.HttpRequest(url=base_url, method="GET"))
 

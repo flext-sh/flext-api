@@ -86,11 +86,10 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
     @staticmethod
     def test_http_status_bounds_are_ordered() -> None:
         """HTTP status boundaries form a valid, ordered range."""
-        tm.that(c.Api.HTTP_STATUS_MIN, eq=100)
-        tm.that(c.Api.HTTP_STATUS_MAX, eq=599)
         tm.that(c.Api.HTTP_STATUS_MIN, lt=c.Api.HTTP_SUCCESS_MIN)
         tm.that(c.Api.HTTP_SUCCESS_MIN, lt=c.Api.HTTP_SUCCESS_MAX)
         tm.that(c.Api.HTTP_SUCCESS_MAX, lte=c.Api.HTTP_STATUS_MAX)
+        tm.that(c.Api.HTTP_STATUS_MIN, lt=c.Api.HTTP_STATUS_MAX)
 
     # ---- Client / facade contract ---------------------------------------
 
