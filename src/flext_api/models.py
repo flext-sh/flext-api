@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from flext_web import FlextWebModels
 
 from flext_api._models import (
-    ApiNamespace,
+    FlextApiModelsApiNamespace,
     FlextApiModelsBase,
     FlextApiModelsRequest,
     FlextApiModelsResponse,
@@ -38,4 +38,8 @@ class FlextApiModels(FlextWebModels):
 
 m = FlextApiModels
 
-__all__: t.MutableSequenceOf[str] = ["ApiNamespace", "FlextApiModels", "m"]
+__all__: t.MutableSequenceOf[str] = [
+    "FlextApiModels",
+    "FlextApiModelsApiNamespace",
+    "m",
+]

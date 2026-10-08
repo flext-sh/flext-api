@@ -120,6 +120,9 @@ override FLEXT_PYTEST_TESTMON_DATABASE = $(if $(strip $(PYTEST_CACHE_HOME)),$(PY
 # Storage law: the pytest scratch root sits under the user home, keyed by the
 # absolute checkout path, never under /tmp and never inside a versioned tree.
 override FLEXT_PYTEST_SCRATCH_ROOT = $(if $(strip $(HOME)),$(HOME)/tmp/.flext-runtime$(PROJECT_ROOT)/scratch)
+# Storage law: the pytest scratch root sits under the user home, keyed by the
+# absolute checkout path, never under /tmp and never inside a versioned tree.
+override FLEXT_PYTEST_SCRATCH_ROOT = $(if $(strip $(HOME)),$(HOME)/tmp/.flext-runtime$(PROJECT_ROOT)/scratch)
 # Profiles sit beside the other reports of this checkout (.reports is ignored).
 PROFILE_REPORTS_DIR = $(PROJECT_ROOT)/$(dir $(PYTEST_REPORTS_DIR))profiles
 override PYTEST_CASE_TIMEOUT_SECONDS := 10
@@ -321,9 +324,19 @@ export FLEXT_INFRA_PYTHON UV_PROJECT UV_PROJECT_ENVIRONMENT VIRTUAL_ENV PATH RUN
 # One bootstrap serves `setup` (frozen install) and `upg` (resolve + install);
 # the public verb selects its lifecycle and resolution through target-specific
 # variables.
+# One bootstrap serves `setup` (frozen install) and `upg` (resolve + install);
+# the public verb selects its lifecycle and resolution through target-specific
+# variables.
 TOOL_BOOTSTRAP_LIFECYCLE := _setup_lifecycle
 TOOL_BOOTSTRAP_RESOLVE :=
+TOOL_BOOTSTRAP_RESOLVE :=
 .PHONY: _bootstrap_setup_tools
+
+_bootstrap_setup_tools:
+	# The lifecycle invokes recursive make through mise, so preserve jobserver FDs.
+	+@set -eu; \
+	if ! command -v mise >/dev/null 2>&1; then \
+		printf 'ERROR: mise is not installed; install it (https://mise.run) and retry\n' >&2; \
 
 _bootstrap_setup_tools:
 	# The lifecycle invokes recursive make through mise, so preserve jobserver FDs.
@@ -374,7 +387,16 @@ SETUP_ENVIRONMENT_RECIPE = set -eu; \
 	if ! uv_lock_report=$$($(UV) lock --check --project "$(UV_PROJECT)" 2>&1); then \
 		printf 'WARNING[setup] uv.lock does not match the manifests of %s:\n%s\n  Right way: only `make upg` writes uv.lock; setup installs the committed lock as-is (--frozen) and never relocks.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$$uv_lock_report" "$(PROJECT_ROOT)" >&2; \
 		uv_lock_mode=--frozen; \
+	if [ ! -f "$(UV_PROJECT)/uv.lock" ]; then \
+		printf 'ERROR[setup] uv.lock is missing: %s/uv.lock\n  Right way: only `make upg` writes uv.lock; setup installs the committed lock and never creates one.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$(PROJECT_ROOT)" >&2; \
+		exit 2; \
 	fi; \
+	uv_lock_mode=--locked; \
+	if ! uv_lock_report=$$($(UV) lock --check --project "$(UV_PROJECT)" 2>&1); then \
+		printf 'WARNING[setup] uv.lock does not match the manifests of %s:\n%s\n  Right way: only `make upg` writes uv.lock; setup installs the committed lock as-is (--frozen) and never relocks.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$$uv_lock_report" "$(PROJECT_ROOT)" >&2; \
+		uv_lock_mode=--frozen; \
+	fi; \
+	$$credential_env $(UV) sync --project "$(UV_PROJECT)" --python "3.13" $(UV_SYNC_FLAGS) $$uv_lock_mode --link-mode "$(UV_LINK_MODE)"; \
 	$$credential_env $(UV) sync --project "$(UV_PROJECT)" --python "3.13" $(UV_SYNC_FLAGS) $$uv_lock_mode --link-mode "$(UV_LINK_MODE)"; \
 	if [ "$(strip $(CI))" != "Y" ]; then \
 		direnv allow "$(PROJECT_ROOT)"; \
@@ -427,6 +449,10 @@ override PROJECT_FLEXT_INFRA := $(PROJECT_INFRA_RUN) -m flext_infra
 # the committed lock and never deletes, creates, or relocks it: a matching lock
 # syncs `--locked`; a drifted lock is reported (cause, right way, how) and
 # synced `--frozen`; a missing lock fails naming `make upg`.
+# Lock law (operator 2026-10-03): only `make upg` writes uv.lock. Setup installs
+# the committed lock and never deletes, creates, or relocks it: a matching lock
+# syncs `--locked`; a drifted lock is reported (cause, right way, how) and
+# synced `--frozen`; a missing lock fails naming `make upg`.
 UV_SYNC_FLAGS := --all-extras --all-groups --all-packages
 ifeq ($(strip $(CI)),Y)
 override UV_SYNC_FLAGS := --all-extras --all-groups --all-packages --no-editable
@@ -456,6 +482,8 @@ endef
 
 
 
+# `make upg` is the only verb that writes uv.lock (`uv lock --upgrade
+# --refresh`, then `uv lock --check`). Setup never writes it (lock law above).
 # `make upg` is the only verb that writes uv.lock (`uv lock --upgrade
 # --refresh`, then `uv lock --check`). Setup never writes it (lock law above).
 
@@ -882,6 +910,7 @@ _builtin-pre-commit:
 # an attached member relocks its own mise.lock exactly like the runtime root.
 upg: TOOL_BOOTSTRAP_LIFECYCLE := _upg_lifecycle
 upg: TOOL_BOOTSTRAP_RESOLVE := 1
+upg: TOOL_BOOTSTRAP_RESOLVE := 1
 upg: _bootstrap_setup_tools
 else
 
@@ -927,6 +956,7 @@ test-file:
 
 file-gate:
 	@printf '  %-16s %s\n' 'file-gate' 'Run configured canonical read-only gates on one literal FILE=<repository-relative path>; invalid selection and missing gate owners fail loud.'
+	@printf '  %-16s %s\n' 'file-gate' 'Run configured canonical read-only gates on one literal FILE=<repository-relative path>; invalid selection and missing gate owners fail loud.'
 	@printf '%s\n' 'OPTIONS=Y displays this contract without effects; run make file-gate to execute it.'
 
 profile-test:
@@ -962,6 +992,7 @@ status:
 	@printf '%s\n' 'OPTIONS=Y displays this contract without effects; run make status to execute it.'
 
 verify-clean:
+	@printf '  %-16s %s\n' 'verify-clean' 'Verify managed artifacts and generated documentation against their sources, then reject staged, unstaged, untracked changes and stash entries through the public Git service.'
 	@printf '  %-16s %s\n' 'verify-clean' 'Verify managed artifacts and generated documentation against their sources, then reject staged, unstaged, untracked changes and stash entries through the public Git service.'
 	@printf '%s\n' 'OPTIONS=Y displays this contract without effects; run make verify-clean to execute it.'
 
@@ -1082,6 +1113,7 @@ _builtin-help:
 	@printf '  %-16s %s\n' 'test-file' 'Run one declared test file through the budgeted and slow phases with the same persistent testmon cache (FILE=<repository-relative path>).';
 
 	@printf '  %-16s %s\n' 'file-gate' 'Run configured canonical read-only gates on one literal FILE=<repository-relative path>; invalid selection and missing gate owners fail loud.';
+	@printf '  %-16s %s\n' 'file-gate' 'Run configured canonical read-only gates on one literal FILE=<repository-relative path>; invalid selection and missing gate owners fail loud.';
 
 	@printf '  %-16s %s\n' 'profile-test' 'Profile the canonical pytest entry and its collection children on the same persistent testmon database, without the outer bounded-gate wrapper.';
 
@@ -1099,6 +1131,7 @@ _builtin-help:
 
 	@printf '  %-16s %s\n' 'status' 'Report the resolved runtime and repository state.';
 
+	@printf '  %-16s %s\n' 'verify-clean' 'Verify managed artifacts and generated documentation against their sources, then reject staged, unstaged, untracked changes and stash entries through the public Git service.';
 	@printf '  %-16s %s\n' 'verify-clean' 'Verify managed artifacts and generated documentation against their sources, then reject staged, unstaged, untracked changes and stash entries through the public Git service.';
 
 	@printf '  %-16s %s\n' 'docs' 'Generate, fix, format, and check documentation.';
@@ -1369,7 +1402,14 @@ _builtin_require_mise:
 		printf 'ERROR: mise.lock pins no github:jdx/mise release; run make upg\n' "$(RUNTIME_ROOT)" >&2; \
 		exit 2; \
 	fi; \
+	mise_pin="$$( awk 'index($$0, "[[tools.\"github:jdx/mise\"]]") == 1 { inside = 1; next } inside && substr($$0, 1, 1) == "[" { exit } inside && $$1 == "version" { gsub(/[",]/, "", $$3); print $$3; exit }' "$(RUNTIME_ROOT)/mise.lock" )"; \
+	if [ -z "$$mise_pin" ]; then \
+		printf 'ERROR: mise.lock pins no github:jdx/mise release; run make upg\n' "$(RUNTIME_ROOT)" >&2; \
+		exit 2; \
+	fi; \
 	mise_actual="$$(mise --version 2>/dev/null | cut -d ' ' -f1)"; \
+	if [ "$$mise_actual" != "$$mise_pin" ]; then \
+		printf 'ERROR: mise %s differs from the mise.lock pin %s; run make setup\n' "$$mise_actual" "$$mise_pin" >&2; \
 	if [ "$$mise_actual" != "$$mise_pin" ]; then \
 		printf 'ERROR: mise %s differs from the mise.lock pin %s; run make setup\n' "$$mise_actual" "$$mise_pin" >&2; \
 		exit 2; \
@@ -1394,6 +1434,9 @@ endif
 # Setup installs the committed uv.lock and never writes it (lock law: only
 # `make upg` writes locks); uv owns the venv: `uv sync --python` creates or
 # replaces it against the declared interpreter.
+# Setup installs the committed uv.lock and never writes it (lock law: only
+# `make upg` writes locks); uv owns the venv: `uv sync --python` creates or
+# replaces it against the declared interpreter.
 # Governed gitlinks are provisioned in every context, GitHub Actions included:
 # the workspace projections (Makefile, pyproject, .gitignore, dependabot, docs)
 # derive from the member checkouts, so a member-less CI checkout would render a
@@ -1412,6 +1455,9 @@ endif
 # carries the generator itself), provisions the environment frozen from it,
 # and conforms dependency floors. The floors land in the codegen SSOT, so
 # `gen` projects them into every pyproject and renders the managed tool
+# manifests (.mise.toml) of the upgraded generator. Resolve that regenerated
+# manifest before the second frozen install proves the committed mise.lock
+# satisfies it (mise has no `lock --check`: the locked install IS the
 # manifests (.mise.toml) of the upgraded generator. Resolve that regenerated
 # manifest before the second frozen install proves the committed mise.lock
 # satisfies it (mise has no `lock --check`: the locked install IS the
@@ -1434,6 +1480,7 @@ _upg_lifecycle: _builtin_setup_submodules
 	@$(PROJECT_FLEXT_INFRA) deps modernize --repository-root "$(PROJECT_ROOT)" \
 		--apply --rewrite-constraints --projects .
 	@$(SELF_MAKE) gen
+	@mise -C "$(PROJECT_ROOT)" lock --bump
 	@mise -C "$(PROJECT_ROOT)" lock --bump
 	@set -eu; \
 	if [ -d .mise/locks ]; then \
@@ -1480,7 +1527,11 @@ _builtin_check_all: _builtin_require_environment
 		if [ "$(strip $(CI))" = "Y" ]; then \
 			gates="lint,security,markdown,markdown-format,markdown-code,duplication,loc-cap,runtime-census,fresh-import,index-declarations,layout"; \
 			printf 'INFO: CI=Y runs check gates: lint security markdown markdown-format markdown-code duplication loc-cap runtime-census fresh-import index-declarations layout\n'; \
+			gates="lint,security,markdown,markdown-format,markdown-code,duplication,loc-cap,runtime-census,fresh-import,index-declarations,layout"; \
+			printf 'INFO: CI=Y runs check gates: lint security markdown markdown-format markdown-code duplication loc-cap runtime-census fresh-import index-declarations layout\n'; \
 		elif [ "$(strip $(CI))" = "N" ]; then \
+			gates="pyrefly,mypy,pyright,codemod,direnv"; \
+			printf 'INFO: CI=N runs check gates: pyrefly mypy pyright codemod direnv\n'; \
 			gates="pyrefly,mypy,pyright,codemod,direnv"; \
 			printf 'INFO: CI=N runs check gates: pyrefly mypy pyright codemod direnv\n'; \
 		else \
@@ -1503,6 +1554,10 @@ scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
 case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
 mkdir -p "$$scratch_root"; \
 scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
+scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
+case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
+mkdir -p "$$scratch_root"; \
+scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
 trap 'find "$$scratch" -depth -delete' EXIT; \
 mkdir -p "$$scratch/tmp"; \
 scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
@@ -1521,6 +1576,10 @@ scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
 case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
 mkdir -p "$$scratch_root"; \
 scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
+scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
+case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
+mkdir -p "$$scratch_root"; \
+scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
 trap 'find "$$scratch" -depth -delete' EXIT; \
 mkdir -p "$$scratch/tmp"; \
 scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
@@ -1534,6 +1593,7 @@ _builtin_test_file_all: _builtin_require_environment
 case "$(FILE)" in /*|*..*) printf 'ERROR: FILE must stay a repository-relative path: %s\n' "$(FILE)" >&2; exit 2 ;; esac; \
 if [ ! -f "$(PROJECT_ROOT)/$(FILE)" ]; then printf 'ERROR: FILE is not an existing repository file: %s\n' "$(FILE)" >&2; exit 2; fi; \
 export FLEXT_PYTEST_TARGET_FILE="$(FILE)"; \
+export FLEXT_PYTEST_TARGET_FILE="$(FILE)"; \
 set -eu; \
 database="$(FLEXT_PYTEST_TESTMON_DATABASE)"; \
 case "$$database" in /*) ;; *) printf 'ERROR: persistent testmon database requires XDG_CACHE_HOME or HOME\n' >&2; exit 2 ;; esac; \
@@ -1544,11 +1604,23 @@ scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
 case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
 mkdir -p "$$scratch_root"; \
 scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
+scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
+case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
+mkdir -p "$$scratch_root"; \
+scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
 trap 'find "$$scratch" -depth -delete' EXIT; \
 mkdir -p "$$scratch/tmp"; \
 scratch_tmp="$$(cd "$$scratch/tmp" && pwd -P)"; \
 TMPDIR="$$scratch_tmp"; TMP="$$scratch_tmp"; TEMP="$$scratch_tmp"; \
 export TMPDIR TMP TEMP; \
+file_executed=0; \
+if TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(UV_RUN) python -m flext_infra._pytest_entry file; then file_executed=1; else phase_status=$$?; case "$$phase_status" in 5) printf 'INFO: test-file file NOT EXECUTED: no requested tests in phase\n' ;; *) exit "$$phase_status" ;; esac; fi; \
+if TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(UV_RUN) python -m flext_infra._pytest_entry file-slow; then file_executed=1; else phase_status=$$?; case "$$phase_status" in 5) printf 'INFO: test-file file-slow NOT EXECUTED: no requested tests in phase\n' ;; *) exit "$$phase_status" ;; esac; fi; \
+if [ "$$file_executed" -eq 0 ]; then printf 'ERROR: test-file executed zero requested tests\n' >&2; exit 5; fi
+
+# Literal-file selection and verdicts belong to the existing canonical checker.
+# Export the raw Make value instead of interpolating operator input into shell code.
+export FLEXT_FILE_GATE_FILE := $(value FILE)
 file_executed=0; \
 if TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(UV_RUN) python -m flext_infra._pytest_entry file; then file_executed=1; else phase_status=$$?; case "$$phase_status" in 5) printf 'INFO: test-file file NOT EXECUTED: no requested tests in phase\n' ;; *) exit "$$phase_status" ;; esac; fi; \
 if TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(UV_RUN) python -m flext_infra._pytest_entry file-slow; then file_executed=1; else phase_status=$$?; case "$$phase_status" in 5) printf 'INFO: test-file file-slow NOT EXECUTED: no requested tests in phase\n' ;; *) exit "$$phase_status" ;; esac; fi; \
@@ -1653,6 +1725,10 @@ case "$$database" in /*) ;; *) printf 'ERROR: persistent testmon database requir
 case "$$database" in "$(PROJECT_ROOT)"/*) printf 'ERROR: persistent testmon database must be outside the checkout: %s\n' "$$database" >&2; exit 2 ;; esac; \
 case "$$database" in "$${TMPDIR:-/tmp}"/*|/tmp/*) printf 'ERROR: persistent testmon database must not live under the temporary directory: %s\n' "$$database" >&2; exit 2 ;; esac; \
 mkdir -p "$$(dirname "$$database")"; \
+scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
+case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
+mkdir -p "$$scratch_root"; \
+scratch="$$(mktemp -d "$$scratch_root/pytest.XXXXXX")"; \
 scratch_root="$(FLEXT_PYTEST_SCRATCH_ROOT)"; \
 case "$$scratch_root" in /*) ;; *) printf 'ERROR: pytest scratch root requires HOME: %s\n' "$$scratch_root" >&2; exit 2 ;; esac; \
 mkdir -p "$$scratch_root"; \
@@ -1801,11 +1877,13 @@ ifneq ($(CI),Y)
 endif
 	@$(UV) pip check --python "$(RUNTIME_VENV)"
 	@$(if $(filter Y,$(CI)),$(PROJECT_FLEXT_INFRA) workspace verify-environment --repository-root "$(PROJECT_ROOT)",:)
+	@$(if $(filter Y,$(CI)),:,$(PROJECT_FLEXT_INFRA) workspace verify-lanes --repo-root "$(PROJECT_ROOT)")
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope self --mode check
 _builtin-status: _builtin_status_diagnostics
 _builtin-verify-clean: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --mode check
 	@$(PROJECT_FLEXT_INFRA) docs audit --repository-root "$(PROJECT_ROOT)" --output-dir ".reports/docs" --projects .
+	@$(PROJECT_FLEXT_INFRA) workspace verify-clean --repo-root "$(PROJECT_ROOT)"
 	@$(PROJECT_FLEXT_INFRA) workspace verify-clean --repo-root "$(PROJECT_ROOT)"
 _builtin-docs: _builtin_docs_all
 _builtin-clean: _builtin_clean_generated
