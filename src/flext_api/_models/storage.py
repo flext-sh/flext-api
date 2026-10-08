@@ -6,16 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import time
+from collections.abc import MutableMapping
+from typing import TYPE_CHECKING, Annotated, ClassVar
+
+from flext_web import m, u
 
 if TYPE_CHECKING:
     from flext_core import t
-
-import time
-from collections.abc import MutableMapping
-from typing import Annotated, ClassVar
-
-from flext_web import m, u
 
 
 class FlextApiModelsStorage:
