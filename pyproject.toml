@@ -23,8 +23,8 @@ dependencies = [
   "annotated-types>=0.8.0",
   "beartype>=0.22.9",
   "dependency-injector>=4.49.1",
-  "flext-core",
-  "flext-web",
+  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
+  "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.12.0-dev",
   "httpx>=0.28.1",
   "msgpack>=1.2.3",
   "packaging>=26.3",
@@ -59,13 +59,13 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 Homepage = "https://github.com/flext-sh/flext"
 
 [dependency-groups]
-codegen = ["flext-infra"]
+codegen = ["flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev"]
 dev = [
   "actionlint-py>=1.7.12.24",
   "bandit>=1.9.4",
   "deptry",
   "editables>=0.6",
-  "flext-tests",
+  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
   "hypothesis",
   "mkdocs",
   "mkdocs-autorefs",
@@ -533,11 +533,6 @@ preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
 
-[tool.uv.sources]
-flext-core = { workspace = true }
-flext-infra = { workspace = true }
-flext-tests = { workspace = true }
-flext-web = { workspace = true }
 
 [tool.uv]
 link-mode = "copy"

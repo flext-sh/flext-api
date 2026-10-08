@@ -14,11 +14,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from flext_web import FlextWebTypes
+from flext_web import FlextWebTypes, m, p, u
 
 from flext_api._typings.base import FlextApiTypingsBase
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_api._typings.transport import FlextApiTypingsTransport
+from flext_api.constants import FlextApiConstants as c
 
 # Owner-direct imports: routing these through the package root re-enters
 # the lazy root getattr mid-module (this file defines the root's ``t``), and
