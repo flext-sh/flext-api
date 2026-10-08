@@ -25,11 +25,10 @@ class FlextApiModelsRequest:
         method: Annotated[
             c.Api.Method | str,
             u.Field(
-                default="GET",
                 description="HTTP method",
                 pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
             ),
-        ]
+        ] = "GET"
         url: Annotated[
             t.NonEmptyStr,
             u.Field(..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"),
@@ -48,15 +47,11 @@ class FlextApiModelsRequest:
         ] = None
         timeout: Annotated[
             t.PositiveTimeout,
-            u.Field(
-                default=float(c.Api.DEFAULT_TIMEOUT),
-                description="Request timeout in seconds",
-            ),
-        ]
+            u.Field(description="Request timeout in seconds"),
+        ] = float(c.Api.DEFAULT_TIMEOUT)
         sni_hostname: Annotated[
             str | None,
             u.Field(
-                default=None,
                 description=(
                     "TLS SNI / certificate hostname to verify when the URL "
                     "targets an explicit IP (httpx sni_hostname extension)."

@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from flext_api import m
 from flext_core import FlextSettings, t, u
@@ -35,67 +35,62 @@ class FlextApiSettings(FlextSettings):
         extra="ignore",
     )
 
-    class _Api(m.BaseModel):
-        """Namespaced API settings (HTTP client defaults)."""
+    class ApiSettings(m.BaseModel):
+        """Namespaced API settings (HTTP client defaults).
+
+        Defaults live on the assignment side (checker-visible optional
+        constructor parameters); mutable bags keep ``default_factory``.
+        """
 
         base_url: Annotated[
             str,
-            m.Field(
-                default="http://localhost:8000",
-                description="Base URL for relative requests",
-            ),
-        ]
+            m.Field(description="Base URL for relative requests"),
+        ] = "http://localhost:8000"
         timeout: Annotated[
             float,
-            m.Field(default=30.0, description="Default request timeout in seconds"),
-        ]
+            m.Field(description="Default request timeout in seconds"),
+        ] = 30.0
         max_retries: Annotated[
             int,
-            m.Field(default=3, description="Maximum retry attempts"),
-        ]
+            m.Field(description="Maximum retry attempts"),
+        ] = 3
         verify_ssl: Annotated[
             bool,
-            m.Field(default=True, description="Enable TLS certificate check"),
-        ]
-        default_headers: Annotated[
-            t.StrMapping,
-            m.Field(
-                default_factory=dict,
-                description="Default headers applied to all requests",
-            ),
-        ]
-        headers: Annotated[
-            t.StrMapping,
-            m.Field(default_factory=dict, description="Compatibility headers bag"),
-        ]
+            m.Field(description="Enable TLS certificate check"),
+        ] = True
+        default_headers: t.StrMapping = m.Field(
+            default_factory=dict[str, str],
+            description="Default headers applied to all requests",
+        )
+        headers: t.StrMapping = m.Field(
+            default_factory=dict[str, str],
+            description="Compatibility headers bag",
+        )
         log_requests: Annotated[
             bool,
-            m.Field(default=False, description="Log outbound requests"),
-        ]
+            m.Field(description="Log outbound requests"),
+        ] = False
         log_responses: Annotated[
             bool,
-            m.Field(default=False, description="Log inbound responses"),
-        ]
+            m.Field(description="Log inbound responses"),
+        ] = False
 
-    if TYPE_CHECKING:
-        Api: _Api
-    else:
-        Api: _Api = m.Field(
-            default_factory=_Api,
-            description="Namespaced API settings.",
-        )
+    Api: ApiSettings = m.Field(
+        default_factory=ApiSettings,
+        description="Namespaced API settings.",
+    )
 
     @u.model_validator(mode="before")
     @classmethod
     def _lift_flat_api_fields(cls, data: t.JsonValue) -> t.JsonValue:
-        """Fold top-level ``_Api`` field kwargs into the ``Api`` namespace.
+        """Fold top-level ``ApiSettings`` field kwargs into the ``Api`` namespace.
 
         Returns:
             The resulting ``t.JsonValue``.
         """
         if not isinstance(data, dict):
             return data
-        api_fields = cls._Api.model_fields
+        api_fields = cls.ApiSettings.model_fields
         flat = {key: data[key] for key in api_fields if key in data}
         if not flat:
             return data
