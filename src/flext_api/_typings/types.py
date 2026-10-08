@@ -16,10 +16,11 @@ from typing import TYPE_CHECKING
 
 from flext_web import FlextWebTypes
 
+from flext_api import c
 from flext_api._typings.base import FlextApiTypingsBase
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_api._typings.transport import FlextApiTypingsTransport
-from flext_core import c, p, u
+from flext_core import p, u
 
 if TYPE_CHECKING:
     from flext_api import m
