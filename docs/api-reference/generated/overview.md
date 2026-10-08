@@ -19,12 +19,12 @@
 - Project class: `domain`
 - Keywords: `enterprise`, `fastapi`, `flext`, `http`, `rest`, `typed`
 - Main facades: `FlextApi`, `FlextApiAsyncClient`, `FlextApiCli`, `FlextApiClient`,
-  `FlextApiClientBase`, `FlextApiConfig`, `FlextApiConstants`, `FlextApiModels` (+6
+  `FlextApiClientBase`, `FlextApiConfig`, `FlextApiConstants`, `FlextApiModels` (+7
   more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `ApiNamespace`, `FlextApi`, `FlextApiAsyncClient`,
-  `FlextApiCli`, `FlextApiClient`, `FlextApiClientBase`, `FlextApiConfig`,
-  `FlextApiConstants`, `FlextApiModels`, `FlextApiProtocols` (+15 more)
+- Public symbol exports: `FlextApi`, `FlextApiAsyncClient`, `FlextApiCli`,
+  `FlextApiClient`, `FlextApiClientBase`, `FlextApiConfig`, `FlextApiConstants`,
+  `FlextApiModels`, `FlextApiModelsApiNamespace`, `FlextApiProtocols` (+15 more)
 - Exported module shortcuts: `api`, `services`
 - Generated module pages: `8`
 

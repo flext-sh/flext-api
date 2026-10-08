@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from flext_web import FlextWebTypings, m, u
+from flext_web import FlextWebTypes, m, p, u
 
 from flext_api import c
 from flext_api._typings import (
@@ -24,11 +24,11 @@ from flext_api._typings import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import m, p
+    from flext_api import m
 
 
-class FlextApiTypes(FlextWebTypings):
-    """Unified API type definitions extending t via MRO."""
+class FlextApiTypes(FlextWebTypes):
+    """Unified API type definitions extending FlextWebTypes via MRO."""
 
     class Api(
         FlextApiTypingsBase,
@@ -37,30 +37,30 @@ class FlextApiTypes(FlextWebTypings):
     ):
         """API types namespace for cross-project access."""
 
-        type WebHeaders = FlextWebTypings.ScalarOrStrSequenceMapping
-        type WebParams = FlextWebTypings.MappingKV[
+        type WebHeaders = FlextWebTypes.ScalarOrStrSequenceMapping
+        type WebParams = FlextWebTypes.MappingKV[
             str,
-            str | FlextWebTypings.StrSequence,
+            str | FlextWebTypes.StrSequence,
         ]
-        type RequestBody = FlextWebTypings.JsonValue | FlextWebTypings.StrictBytes
+        type RequestBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes
         type ResponseBody = (
-            FlextWebTypings.JsonValue | FlextWebTypings.StrictBytes | None
+            FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
         )
-        type HttpResponseDict = FlextWebTypings.MappingKV[
+        type HttpResponseDict = FlextWebTypes.MappingKV[
             str,
-            FlextWebTypings.JsonValue
-            | FlextWebTypings.StrMapping
-            | FlextWebTypings.JsonMapping
-            | FlextWebTypings.StrictBytes
+            FlextWebTypes.JsonValue
+            | FlextWebTypes.StrMapping
+            | FlextWebTypes.JsonMapping
+            | FlextWebTypes.StrictBytes
             | None,
         ]
         "HTTP response as dictionary (status_code, headers, body, request_id)."
-        type RouteData = FlextWebTypings.MappingKV[
+        type RouteData = FlextWebTypes.MappingKV[
             str,
-            FlextWebTypings.JsonValue
-            | FlextWebTypings.ConfigurationMapping
-            | FlextWebTypings.JsonMapping
-            | FlextWebTypings.ResourceCallable
+            FlextWebTypes.JsonValue
+            | FlextWebTypes.ConfigurationMapping
+            | FlextWebTypes.JsonMapping
+            | FlextWebTypes.ResourceCallable
             | Callable[..., FlextApiTypes.Api.HttpResponseDict | str | None]
             | None,
         ]
@@ -68,48 +68,48 @@ class FlextApiTypes(FlextWebTypings):
         type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
         type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
         type WebhookHandler = Callable[
-            [FlextWebTypings.JsonMapping],
-            FlextWebTypings.JsonValue | p.Result[bool] | None,
+            [FlextWebTypes.JsonMapping],
+            FlextWebTypes.JsonValue | p.Result[bool] | None,
         ]
-        type RequestKwargs = FlextWebTypings.MappingKV[
+        type RequestKwargs = FlextWebTypes.MappingKV[
             str,
-            FlextWebTypings.StrMapping
-            | FlextWebTypings.JsonMapping
-            | FlextWebTypings.ScalarOrStrSequenceMapping
+            FlextWebTypes.StrMapping
+            | FlextWebTypes.JsonMapping
+            | FlextWebTypes.ScalarOrStrSequenceMapping
             | float
             | None,
         ]
-        type CacheDict = FlextWebTypings.MappingKV[str, FlextWebTypings.Primitives]
-        API_JSON_VALUE_ADAPTER: m.TypeAdapter[FlextWebTypings.JsonValue] = (
-            FlextWebTypings.json_value_adapter()
+        type CacheDict = FlextWebTypes.MappingKV[str, FlextWebTypes.Primitives]
+        API_JSON_VALUE_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonValue] = (
+            FlextWebTypes.json_value_adapter()
         )
-        BINARY_CONTENT_ADAPTER: m.TypeAdapter[FlextWebTypings.StrictBytes] = (
-            FlextWebTypings.binary_content_adapter()
+        BINARY_CONTENT_ADAPTER: m.TypeAdapter[FlextWebTypes.StrictBytes] = (
+            FlextWebTypes.binary_content_adapter()
         )
-        STR_MAPPING_ADAPTER: m.TypeAdapter[FlextWebTypings.StrMapping] = (
-            FlextWebTypings.str_mapping_adapter()
+        STR_MAPPING_ADAPTER: m.TypeAdapter[FlextWebTypes.StrMapping] = (
+            FlextWebTypes.str_mapping_adapter()
         )
-        HOSTNAME_ADAPTER: m.TypeAdapter[FlextWebTypings.HostnameStr] = (
-            FlextWebTypings.hostname_str_adapter()
+        HOSTNAME_ADAPTER: m.TypeAdapter[FlextWebTypes.HostnameStr] = (
+            FlextWebTypes.hostname_str_adapter()
         )
-        PORT_NUMBER_ADAPTER: m.TypeAdapter[FlextWebTypings.PortNumber] = (
-            FlextWebTypings.port_number_adapter()
+        PORT_NUMBER_ADAPTER: m.TypeAdapter[FlextWebTypes.PortNumber] = (
+            FlextWebTypes.port_number_adapter()
         )
-        STRING_ADAPTER: m.TypeAdapter[FlextWebTypings.StrictStr] = (
-            FlextWebTypings.str_adapter()
+        STRING_ADAPTER: m.TypeAdapter[FlextWebTypes.StrictStr] = (
+            FlextWebTypes.str_adapter()
         )
-        STORAGE_ENTRY_ADAPTER: m.TypeAdapter[FlextWebTypings.JsonMapping] = (
-            FlextWebTypings.json_mapping_adapter()
+        STORAGE_ENTRY_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonMapping] = (
+            FlextWebTypes.json_mapping_adapter()
         )
         REQUEST_BODY_ADAPTER: m.TypeAdapter[RequestBody] = u.type_adapter(RequestBody)
         RESPONSE_BODY_ADAPTER: m.TypeAdapter[ResponseBody] = u.type_adapter(
             ResponseBody,
         )
-        DICT_BODY_ADAPTER: m.TypeAdapter[FlextWebTypings.JsonMapping] = (
-            FlextWebTypings.json_mapping_adapter()
+        DICT_BODY_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonMapping] = (
+            FlextWebTypes.json_mapping_adapter()
         )
-        JSON_HEADERS_ADAPTER: m.TypeAdapter[FlextWebTypings.JsonMapping] = (
-            FlextWebTypings.json_mapping_adapter()
+        JSON_HEADERS_ADAPTER: m.TypeAdapter[FlextWebTypes.JsonMapping] = (
+            FlextWebTypes.json_mapping_adapter()
         )
 
 
