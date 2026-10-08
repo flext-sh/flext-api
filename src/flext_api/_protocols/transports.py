@@ -16,13 +16,12 @@ from typing import TYPE_CHECKING, ClassVar, Protocol, override, runtime_checkabl
 import httpx
 from flext_web import r
 
-from flext_api import t
+from flext_api import c, t
 from flext_api._protocols import (
     FlextApiProtocolsBase,
     FlextApiTransportsConfigMixin,
     FlextApiTransportsRequestMixin,
 )
-from flext_core import c
 
 if TYPE_CHECKING:
     from flext_web import p

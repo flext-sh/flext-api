@@ -14,8 +14,7 @@ from typing import TYPE_CHECKING
 import httpx
 from flext_web import r
 
-from flext_api import t
-from flext_core import c, m
+from flext_api import c, m, t
 
 if TYPE_CHECKING:
     from flext_web import p

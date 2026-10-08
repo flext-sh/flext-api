@@ -15,7 +15,8 @@ from flext_api.services import FlextApiClientCodecMixin
 class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
     """Shared request execution helpers for sync and async clients."""
 
-    def _build_url(self, path: str) -> p.Result[str]:
+    @staticmethod
+    def _build_url(path: str) -> p.Result[str]:
         """Build full URL from base_url and path.
 
         Returns:
