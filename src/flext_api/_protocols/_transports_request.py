@@ -15,8 +15,7 @@ import httpx
 from flext_web import r
 
 from flext_api import t
-from flext_api.constants import c
-from flext_api.models import m
+from flext_core import c, m
 
 if TYPE_CHECKING:
     from flext_web import p

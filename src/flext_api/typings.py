@@ -14,12 +14,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from flext_web import FlextWebTypes, m, p, u
+from flext_web import FlextWebTypes, m, p
 
 from flext_api._typings.base import FlextApiTypingsBase
 from flext_api._typings.serialization import FlextApiTypingsSerialization
 from flext_api._typings.transport import FlextApiTypingsTransport
-from flext_api.constants import FlextApiConstants as c
 
 # Owner-direct imports: routing these through the package root re-enters
 # the lazy root getattr mid-module (this file defines the root's ``t``), and
@@ -27,8 +26,7 @@ from flext_api.constants import FlextApiConstants as c
 # adapter helpers come from the foundation ``u`` — importing the project
 # utilities here would close a reverse cycle (utilities chains re-import
 # ``t``).
-from flext_api.constants import c
-from flext_core import u
+from flext_core import c, u
 
 if TYPE_CHECKING:
     from flext_api import m, p

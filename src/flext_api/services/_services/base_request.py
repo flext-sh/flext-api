@@ -11,12 +11,8 @@ from typing import TYPE_CHECKING
 import httpx
 from flext_web import r
 
-from flext_api._typings.types import t
-from flext_api.constants import c
-from flext_api.models import m
-from flext_api.protocols import p
 from flext_api.services._services import FlextApiClientCodecMixin
-from flext_api.utilities import u
+from flext_core import c, m, p, t, u
 
 if TYPE_CHECKING:
     from flext_api import FlextApiSettings

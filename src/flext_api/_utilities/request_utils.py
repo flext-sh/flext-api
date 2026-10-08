@@ -10,9 +10,7 @@ from collections.abc import Mapping
 
 from flext_web import m, r
 
-from flext_api._typings.types import t
-from flext_api.constants import c
-from flext_api.protocols import p
+from flext_core import c, p, t
 
 
 class FlextApiUtilitiesRequestUtils:

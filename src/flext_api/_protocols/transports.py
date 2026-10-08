@@ -22,7 +22,7 @@ from flext_api._protocols import (
     FlextApiTransportsConfigMixin,
     FlextApiTransportsRequestMixin,
 )
-from flext_api.constants import c
+from flext_core import c
 
 if TYPE_CHECKING:
     from flext_web import p

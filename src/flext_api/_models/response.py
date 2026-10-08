@@ -9,14 +9,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from flext_api._typings.types import t
+    from flext_core import t
 
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
 from flext_web import m, u
 
-from flext_api.constants import c
+from flext_core import c
 
 
 class FlextApiModelsResponse:

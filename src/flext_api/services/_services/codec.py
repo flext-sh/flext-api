@@ -9,10 +9,7 @@ from __future__ import annotations
 import httpx
 from flext_web import r
 
-from flext_api._typings.types import t
-from flext_api.constants import c
-from flext_api.protocols import p
-from flext_api.utilities import u
+from flext_core import c, p, t, u
 
 
 class FlextApiClientCodecMixin:
