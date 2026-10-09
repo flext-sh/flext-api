@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 from flext_web import FlextWebUtilities
 
 from flext_api._utilities import (
-    FlextApiUtilitiesApiPydantic,
     FlextApiUtilitiesBase,
     FlextApiUtilitiesRequestUtils,
     FlextApiUtilitiesSerializers,
@@ -27,7 +26,6 @@ class FlextApiUtilities(FlextWebUtilities):
 
     class Api(
         FlextApiUtilitiesBase,
-        FlextApiUtilitiesApiPydantic,
         FlextApiUtilitiesRequestUtils,
         FlextApiUtilitiesSerializers,
         FlextApiUtilitiesTransport,

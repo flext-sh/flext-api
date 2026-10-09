@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api._utilities.api_pydantic import FlextApiUtilitiesApiPydantic
     from flext_api._utilities.base import FlextApiUtilitiesBase
     from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
     from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
@@ -21,7 +20,6 @@ if TYPE_CHECKING:
 
 
 __all__: tuple[str, ...] = (
-    "FlextApiUtilitiesApiPydantic",
     "FlextApiUtilitiesBase",
     "FlextApiUtilitiesRequestUtils",
     "FlextApiUtilitiesSerializers",
@@ -32,7 +30,6 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextApiUtilitiesApiPydantic": ".api_pydantic",
         "FlextApiUtilitiesBase": ".base",
         "FlextApiUtilitiesRequestUtils": ".request_utils",
         "FlextApiUtilitiesSerializers": ".serializers",

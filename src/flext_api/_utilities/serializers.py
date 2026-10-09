@@ -28,10 +28,7 @@ class FlextApiUtilitiesSerializers:
 
         """
         normalized = t.Api.API_JSON_VALUE_ADAPTER.validate_python(obj)
-        packed = t.Api.BINARY_CONTENT_ADAPTER.validate_python(msgpack.packb(normalized))
-        if isinstance(packed, bytes):
-            return packed
-        return bytes(packed)
+        return t.Api.BINARY_CONTENT_ADAPTER.validate_python(msgpack.packb(normalized))
 
     @staticmethod
     def unpackb(data: bytes) -> p.Result[t.JsonValue]:
