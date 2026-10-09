@@ -9,12 +9,26 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-# Generated type facade; declarations belong to flext_api._typings.base.
-from flext_api._typings.base import FlextApiTypes as _FlextApiTypes
+from __future__ import annotations
+
+from flext_web import FlextWebTypes
+
+from flext_api._typings import (
+    FlextApiTypingsBase,
+    FlextApiTypingsSerialization,
+    FlextApiTypingsTransport,
+)
 
 
-class FlextApiTypes(_FlextApiTypes):
-    """Public type facade inheriting its complete canonical owner."""
+class FlextApiTypes(FlextWebTypes):
+    """Unified API type definitions extending FlextWebTypes via MRO."""
+
+    class Api(
+        FlextApiTypingsBase,
+        FlextApiTypingsSerialization,
+        FlextApiTypingsTransport,
+    ):
+        """API types namespace for cross-project access."""
 
 
 t = FlextApiTypes
