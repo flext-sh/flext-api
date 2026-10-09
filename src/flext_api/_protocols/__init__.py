@@ -13,8 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api._protocols._transports_config import FlextApiTransportsConfigMixin
-    from flext_api._protocols._transports_request import FlextApiTransportsRequestMixin
     from flext_api._protocols.base import FlextApiProtocolsBase
     from flext_api._protocols.base_grpc import FlextApiProtocolsGrpc
     from flext_api._protocols.base_http import FlextApiProtocolsHttpClient
@@ -42,8 +40,6 @@ __all__: tuple[str, ...] = (
     "FlextApiProtocolsStorage",
     "FlextApiProtocolsTransport",
     "FlextApiProtocolsTransports",
-    "FlextApiTransportsConfigMixin",
-    "FlextApiTransportsRequestMixin",
 )
 
 install_lazy_exports(
@@ -62,8 +58,6 @@ install_lazy_exports(
         "FlextApiProtocolsStorage": ".base_storage",
         "FlextApiProtocolsTransport": ".base_transport",
         "FlextApiProtocolsTransports": ".transports",
-        "FlextApiTransportsConfigMixin": "._transports_config",
-        "FlextApiTransportsRequestMixin": "._transports_request",
     }),
     public_exports=__all__,
 )
