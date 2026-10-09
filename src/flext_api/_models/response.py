@@ -46,8 +46,8 @@ class FlextApiModelsResponse:
         ] = b""
         request_id: Annotated[
             str,
-            u.Field(default="", description="Associated request ID for tracking"),
-        ]
+            u.Field(description="Associated request ID for tracking"),
+        ] = ""
 
         @u.field_validator("body", mode="before")
         @classmethod

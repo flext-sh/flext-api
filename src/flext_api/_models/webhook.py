@@ -119,7 +119,7 @@ class FlextApiModelsWebhook:
             arbitrary_types_allowed=True,
         )
         handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = u.Field(
-            default_factory=dict,
+            default_factory=dict[str, MutableSequence[t.Api.WebhookHandler]],
             description="Registered webhook handlers by event type",
         )
         event_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = u.Field(

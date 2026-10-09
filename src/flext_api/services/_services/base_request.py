@@ -24,7 +24,8 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         # Narrowed view of the core service settings property; never a
         # pydantic field, so the runtime `settings` property of the service
         # base stays the single binding point and no shadowing warning fires.
-        settings: FlextApiSettings
+        @property
+        def settings(self) -> FlextApiSettings: ...
 
     def _build_url(self, path: str) -> p.Result[str]:
         """Build full URL from base_url and path.
