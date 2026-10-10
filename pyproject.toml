@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "annotated-types>=0.8.0",
-  "beartype>=0.22.9",
+  "beartype>=0.23.0",
   "dependency-injector>=4.49.1",
   "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
   "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.12.0-dev",
@@ -79,6 +79,7 @@ dev = [
   "mkdocs-section-index>=0.3.12",
   "mkdocstrings>=1.0.6",
   "mkdocstrings-python>=2.0.8",
+  "msgpack-types",
   "mypy>=2.3.1",
   "platformdirs>=4.12.0",
   "pymdown-extensions",
@@ -102,6 +103,7 @@ dev = [
   "types-defusedxml>=0.7.0.20260504",
   "types-docker>=7.2.0.20260827",
   "types-flask>=1.1.6",
+  "types-grpcio",
   "types-jsonschema>=4.26.0.20260518",
   "types-ldap3>=2.9.13.20260827",
   "types-openpyxl>=3.1.5.20260827",
@@ -131,9 +133,6 @@ exclude_also = [
   "if _t.TYPE_CHECKING:",
   "if TYPE_CHECKING:",
   "if typing.TYPE_CHECKING:",
-  "if _t.TYPE_CHECKING:",
-  "if TYPE_CHECKING:",
-  "if typing.TYPE_CHECKING:",
 ]
 precision = 2
 show_missing = true
@@ -142,9 +141,6 @@ skip_covered = false
 [tool.coverage.run]
 source = ["src"]
 omit = [
-  "*/dependency_injector/providers.pyx",
-  "*/protocols.py",
-  "*/_protocols/*",
   "*/dependency_injector/providers.pyx",
   "*/protocols.py",
   "*/_protocols/*",
@@ -364,10 +360,6 @@ addopts = [
   "--strict-markers",
   "--markdown-docs",
   "--durations=10",
-  "--benchmark-disable",
-  "--strict-markers",
-  "--markdown-docs",
-  "--durations=10",
   "--timeout=10",
 ]
 flext_slow_timeout_seconds = "30"
@@ -378,22 +370,6 @@ filterwarnings = [
   "once::pytest.PytestAssertRewriteWarning",
 ]
 markers = [
-  "smoke: public-interface smoke tests",
-  "unit: unit tests",
-  "integration: integration tests",
-  "functional: functional behavior tests",
-  "performance: performance and benchmark tests",
-  "slow: slow-running tests",
-  "docker: tests requiring Docker",
-  "oracle: tests requiring the shared Oracle database",
-  "remote: tests requiring remote/external network services",
-  "e2e: end-to-end integration tests",
-  "edge_cases: edge case tests",
-  "stress: stress tests",
-  "resilience: resilience tests",
-  "discovery: catalog and stream discovery tests",
-  "singer: Singer protocol contract tests",
-  "requires_engine: native check engine required by this test",
   "smoke: public-interface smoke tests",
   "unit: unit tests",
   "integration: integration tests",
@@ -445,10 +421,7 @@ skip-magic-trailing-comma = false
 [tool.ruff.lint]
 extend-safe-fixes = [
   "camelcase-imported-as-lowercase",
-  "camelcase-imported-as-lowercase",
   "relative-imports",
-  "relative-imports",
-  "typing-only-first-party-import",
   "typing-only-first-party-import",
 ]
 ignore = [
@@ -461,25 +434,16 @@ ignore = [
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
 ]
-select = ["ALL", "ALL"]
+select = ["ALL"]
 unfixable = [
   "duplicate-value",
-  "duplicate-value",
-  "multi-value-repeated-key-literal",
   "multi-value-repeated-key-literal",
   "multi-value-repeated-key-variable",
-  "multi-value-repeated-key-variable",
-  "outdated-version-block",
   "outdated-version-block",
   "p-print",
-  "p-print",
-  "print",
   "print",
   "pytest-duplicate-parametrize-test-cases",
-  "pytest-duplicate-parametrize-test-cases",
   "redefined-while-unused",
-  "redefined-while-unused",
-  "unused-variable",
   "unused-variable",
 ]
 
@@ -561,6 +525,7 @@ split-on-trailing-comma = false
 "**/test_public_contracts_cov.py" = ["line-too-long"]
 "**/tests/**" = [
   "boolean-positional-value-in-call",
+  "boolean-type-hint-positional-argument",
   "compare-to-empty-string",
   "import-private-name",
   "magic-value-comparison",
@@ -570,59 +535,7 @@ split-on-trailing-comma = false
   "pytest-fixture-autouse",
   "too-many-public-methods",
 ]
-"**/tests/python/**" = ["raise-vanilla-args"]
 "**/xlsx.py" = ["import-outside-top-level"]
-"scripts/**" = [
-  "any-type",
-  "avoidable-escaped-quote",
-  "banned-api",
-  "blank-line-after-function",
-  "boolean-default-value-positional-argument",
-  "boolean-type-hint-positional-argument",
-  "builtin-open",
-  "commented-out-code",
-  "error-instead-of-exception",
-  "f-string-in-exception",
-  "if-exp-instead-of-or-operator",
-  "import-private-name",
-  "invalid-module-name",
-  "literal-membership",
-  "logging-string-concat",
-  "magic-value-comparison",
-  "manual-list-comprehension",
-  "manual-list-copy",
-  "missing-blank-line-after-summary",
-  "missing-maxsplit-arg",
-  "multi-line-summary-first-line",
-  "multiple-starts-ends-with",
-  "non-lowercase-variable-in-function",
-  "noqa-comments",
-  "os-path-abspath",
-  "os-path-dirname",
-  "os-path-exists",
-  "os-path-join",
-  "path-constructor-current-directory",
-  "print",
-  "raise-vanilla-args",
-  "raw-string-in-exception",
-  "read-whole-file",
-  "relative-imports",
-  "repeated-append",
-  "runtime-cast-value",
-  "shebang-not-executable",
-  "undocumented-public-class",
-  "undocumented-public-function",
-  "undocumented-public-init",
-  "undocumented-public-method",
-  "unnecessary-multiline-docstring",
-  "unsorted-dunder-all",
-  "unspecified-encoding",
-  "unused-function-argument",
-  "unused-noqa",
-  "used-dummy-variable",
-  "verbose-raise",
-  "write-whole-file",
-]
 "scripts/**/*.py" = [
   "commented-out-code",
   "line-too-long",
@@ -636,11 +549,27 @@ split-on-trailing-comma = false
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
+"src/flext_tests/_utilities/environment.py" = [
+  "start-process-with-partial-path",
+  "subprocess-without-shell-equals-true",
+  "suspicious-subprocess-import",
+]
 "tests/**/*.py" = ["assert"]
 "tests/test_snapshot_drill.py" = ["import-private-name"]
+"tests/unit/test_capability_collection.py" = [
+  "line-too-long",
+  "missing-copyright-notice",
+  "start-process-with-partial-path",
+  "subprocess-without-shell-equals-true",
+  "suspicious-subprocess-import",
+  "undocumented-public-method",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = ["__base__", "__bases__"]
 
 [tool.tomlsort]
 all = true

@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.13.*"
 resolution-markers = [
     "sys_platform == 'linux'",
@@ -500,6 +500,7 @@ dev = [
     { name = "mkdocs-section-index" },
     { name = "mkdocstrings" },
     { name = "mkdocstrings-python" },
+    { name = "msgpack-types" },
     { name = "mypy" },
     { name = "platformdirs" },
     { name = "pymdown-extensions" },
@@ -523,6 +524,7 @@ dev = [
     { name = "types-defusedxml" },
     { name = "types-docker" },
     { name = "types-flask" },
+    { name = "types-grpcio" },
     { name = "types-jsonschema" },
     { name = "types-ldap3" },
     { name = "types-openpyxl" },
@@ -580,6 +582,7 @@ dev = [
     { name = "mkdocs-section-index", specifier = ">=0.3.12" },
     { name = "mkdocstrings", specifier = ">=1.0.6" },
     { name = "mkdocstrings-python", specifier = ">=2.0.8" },
+    { name = "msgpack-types" },
     { name = "mypy", specifier = ">=2.3.1" },
     { name = "platformdirs", specifier = ">=4.12.0" },
     { name = "pymdown-extensions" },
@@ -603,6 +606,7 @@ dev = [
     { name = "types-defusedxml", specifier = ">=0.7.0.20260504" },
     { name = "types-docker", specifier = ">=7.2.0.20260827" },
     { name = "types-flask", specifier = ">=1.1.6" },
+    { name = "types-grpcio" },
     { name = "types-jsonschema", specifier = ">=4.26.0.20260518" },
     { name = "types-ldap3", specifier = ">=2.9.13.20260827" },
     { name = "types-openpyxl", specifier = ">=3.1.5.20260827" },
@@ -626,7 +630,7 @@ dev = [
 [[package]]
 name = "flext-cli"
 version = "0.12.1"
-source = { git = "https://github.com/flext-sh/flext-cli.git?rev=0.12.0-dev#9e1cd85e95e5946366ce2ee9db2016791d433f18" }
+source = { git = "https://github.com/flext-sh/flext-cli.git?rev=0.12.0-dev#194772d4b7bab984a7ff83e5173e0196c568f3ac" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
@@ -653,7 +657,7 @@ dependencies = [
 [[package]]
 name = "flext-core"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-core.git?rev=0.12.0-dev#5d2d15f9c6127b2b7f7b1b85bb8e9feb8f144510" }
+source = { git = "https://github.com/flext-sh/flext-core.git?rev=0.12.0-dev#8261d179a486a839ff5cb869ab5977865c66886e" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
@@ -669,7 +673,7 @@ dependencies = [
 [[package]]
 name = "flext-infra"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#9040e85c8fdfcf67152ab6d3ee181c0621652856" }
+source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#e8091fe41f36c9ef2ee33b93dd478df5e5881aa4" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
@@ -696,7 +700,7 @@ dependencies = [
 [[package]]
 name = "flext-tests"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-tests.git?rev=0.12.0-dev#600948e17f16e16dcd802a73335123440e6ecfb2" }
+source = { git = "https://github.com/flext-sh/flext-tests.git?rev=0.12.0-dev#2cea4efd3fec38e3d78f00ab50ed304a50490132" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
@@ -728,7 +732,7 @@ dependencies = [
 [[package]]
 name = "flext-web"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-web.git?rev=0.12.0-dev#69182e981222c7d91203426d5852510f916992bd" }
+source = { git = "https://github.com/flext-sh/flext-web.git?rev=0.12.0-dev#7060f6777715f4239312fbdbf82ef0ffeecbab34" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
@@ -1325,6 +1329,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/49/23/adface88db909bed321c85dd673655152d4a514c67e1f0800eb51c777d07/msgpack-1.2.3-cp313-cp313-musllinux_1_2_riscv64.whl", hash = "sha256:cd5a9f9f86a52c24713679aa2631956835f3842512964ff93f736ff76f1f530d", size = 416998, upload-time = "2026-09-29T02:32:28.606Z" },
     { url = "https://files.pythonhosted.org/packages/36/00/5bb3a239ccfc3763c4d0fa49b13b1b7010b00182c499ab3c1fecfe6294bc/msgpack-1.2.3-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:f9ddd28d3e9bbc602a9dced1591882c7fb9ab776eef8837da2c326fde19e2853", size = 463288, upload-time = "2026-09-29T02:32:30.375Z" },
     { url = "https://files.pythonhosted.org/packages/29/8c/456df77f00d701df9d6980ffb80291bce6e4e2e112e25a4dfae216f0715a/msgpack-1.2.3-cp313-cp313-pyemscripten_2025_0_wasm32.whl", hash = "sha256:62cc1a4ef0e553bac32c8342e1f04834aca7de276b92744eb7307db77759b890", size = 53347, upload-time = "2026-09-29T02:32:31.867Z" },
+]
+
+[[package]]
+name = "msgpack-types"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "msgpack" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7e/9c/be18c810a806aef89937a7691a4bbc8be05fd81ab70869b4bd3b92ae71c6/msgpack_types-0.8.0.tar.gz", hash = "sha256:19e2c65865b6e9f0ec5d269256ac318d0f58dd17ac3c57bae5bf3130240d3f0b", size = 6406, upload-time = "2026-06-29T22:18:37.348Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b3/a9/eeb1a422a4fbb170ea62365f0d2447b48aa7c2d94ce2222352f496a59cfd/msgpack_types-0.8.0-py3-none-any.whl", hash = "sha256:b1e428940addcb8a5362ecbb4565b51507e1826c82aaecd62a4f1f7b0f18468c", size = 8229, upload-time = "2026-06-29T22:18:36.473Z" },
 ]
 
 [[package]]
@@ -2176,6 +2193,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/79/65/728a104973133a45fba50f3d1e1ee832287666ac74cfd47004cea8402ea3/types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf", size = 9829, upload-time = "2021-11-26T06:21:31.199Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/6c/a98a0c29c39d8a6283ac704f3d36f0d570d8dee931e9d46d6cc60d436bec/types_Flask-1.1.6-py3-none-any.whl", hash = "sha256:6ab8a9a5e258b76539d652f6341408867298550b19b81f0e41e916825fc39087", size = 13733, upload-time = "2021-11-26T06:21:30.365Z" },
+]
+
+[[package]]
+name = "types-grpcio"
+version = "1.84.0.20260928"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/29/db/c27d359c03c8d77917599d046d436424d74b08fb7e657c26d593912adb12/types_grpcio-1.84.0.20260928.tar.gz", hash = "sha256:eacb229deeb94e23a37c7ed0dd739dd2098ee63c7e432cc88340109ae3ad2fc1", size = 15892, upload-time = "2026-09-28T07:50:44.444Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/f2/0a9f21ae6db691facba76d7443ebb26c016e28ce2fa094642ca4a899e15b/types_grpcio-1.84.0.20260928-py3-none-any.whl", hash = "sha256:f0b54cbed12cf8fb0d8e6e7e699562da06515ca5a88014a209bf75780d6d1145", size = 15965, upload-time = "2026-09-28T07:50:43.62Z" },
 ]
 
 [[package]]
