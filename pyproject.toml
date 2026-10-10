@@ -79,6 +79,7 @@ dev = [
   "mkdocs-section-index>=0.3.12",
   "mkdocstrings>=1.0.6",
   "mkdocstrings-python>=2.0.8",
+  "msgpack-types",
   "mypy>=2.3.1",
   "platformdirs>=4.12.0",
   "pymdown-extensions",
@@ -102,6 +103,7 @@ dev = [
   "types-defusedxml>=0.7.0.20260504",
   "types-docker>=7.2.0.20260827",
   "types-flask>=1.1.6",
+  "types-grpcio",
   "types-jsonschema>=4.26.0.20260518",
   "types-ldap3>=2.9.13.20260827",
   "types-openpyxl>=3.1.5.20260827",
@@ -131,9 +133,6 @@ exclude_also = [
   "if _t.TYPE_CHECKING:",
   "if TYPE_CHECKING:",
   "if typing.TYPE_CHECKING:",
-  "if _t.TYPE_CHECKING:",
-  "if TYPE_CHECKING:",
-  "if typing.TYPE_CHECKING:",
 ]
 precision = 2
 show_missing = true
@@ -142,9 +141,6 @@ skip_covered = false
 [tool.coverage.run]
 source = ["src"]
 omit = [
-  "*/dependency_injector/providers.pyx",
-  "*/protocols.py",
-  "*/_protocols/*",
   "*/dependency_injector/providers.pyx",
   "*/protocols.py",
   "*/_protocols/*",
@@ -364,10 +360,6 @@ addopts = [
   "--strict-markers",
   "--markdown-docs",
   "--durations=10",
-  "--benchmark-disable",
-  "--strict-markers",
-  "--markdown-docs",
-  "--durations=10",
   "--timeout=10",
 ]
 flext_slow_timeout_seconds = "30"
@@ -378,22 +370,6 @@ filterwarnings = [
   "once::pytest.PytestAssertRewriteWarning",
 ]
 markers = [
-  "smoke: public-interface smoke tests",
-  "unit: unit tests",
-  "integration: integration tests",
-  "functional: functional behavior tests",
-  "performance: performance and benchmark tests",
-  "slow: slow-running tests",
-  "docker: tests requiring Docker",
-  "oracle: tests requiring the shared Oracle database",
-  "remote: tests requiring remote/external network services",
-  "e2e: end-to-end integration tests",
-  "edge_cases: edge case tests",
-  "stress: stress tests",
-  "resilience: resilience tests",
-  "discovery: catalog and stream discovery tests",
-  "singer: Singer protocol contract tests",
-  "requires_engine: native check engine required by this test",
   "smoke: public-interface smoke tests",
   "unit: unit tests",
   "integration: integration tests",
@@ -445,10 +421,7 @@ skip-magic-trailing-comma = false
 [tool.ruff.lint]
 extend-safe-fixes = [
   "camelcase-imported-as-lowercase",
-  "camelcase-imported-as-lowercase",
   "relative-imports",
-  "relative-imports",
-  "typing-only-first-party-import",
   "typing-only-first-party-import",
 ]
 ignore = [
@@ -461,25 +434,16 @@ ignore = [
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
 ]
-select = ["ALL", "ALL"]
+select = ["ALL"]
 unfixable = [
   "duplicate-value",
-  "duplicate-value",
-  "multi-value-repeated-key-literal",
   "multi-value-repeated-key-literal",
   "multi-value-repeated-key-variable",
-  "multi-value-repeated-key-variable",
-  "outdated-version-block",
   "outdated-version-block",
   "p-print",
-  "p-print",
-  "print",
   "print",
   "pytest-duplicate-parametrize-test-cases",
-  "pytest-duplicate-parametrize-test-cases",
   "redefined-while-unused",
-  "redefined-while-unused",
-  "unused-variable",
   "unused-variable",
 ]
 
