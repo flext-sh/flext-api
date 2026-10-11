@@ -12,9 +12,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from typing import cast
 
-from flext_tests import tm
-
 from flext_api import FlextApiClient, m, settings
+from tests import tm
 
 
 class TestsFlextApiResponseWireContent:
