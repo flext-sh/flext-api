@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Final
 from flext_web import FlextWebConstants, t
 from httpx import HTTPError as _HttpxError
 
-from flext_api._constants.api_enums import FlextApiConstantsEnums
+from flext_api._constants import FlextApiConstantsEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

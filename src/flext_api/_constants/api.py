@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api._constants.api_values import FlextApiConstantsValues
+from flext_api._constants import FlextApiConstantsValues
 
 
 class FlextApiConstantsApi(FlextApiConstantsValues):

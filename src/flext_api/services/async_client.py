@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from flext_api import FlextApiClientBase
 from flext_api.services._services import FlextApiClientAsyncRequestMixin
-from flext_api.services.base_client import FlextApiClientBase
 
 if TYPE_CHECKING:
     from flext_api import t

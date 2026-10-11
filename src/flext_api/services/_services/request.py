@@ -7,9 +7,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
-from flext_web import r
 
-from flext_api import c, m, p, t
+from flext_api import c, m, p, r, t
 from flext_api.services._services import FlextApiClientBaseRequestMixin
 
 
