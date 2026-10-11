@@ -65,19 +65,19 @@ class FlextApiTypingsBase:
         TypeAdapter(FlextWebTypes.StrictBytes)
     )
     STR_MAPPING_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrMapping] = (
-        FlextWebTypes.str_mapping_adapter()
+        TypeAdapter(FlextWebTypes.StrMapping)
     )
     HOSTNAME_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.HostnameStr] = (
-        FlextWebTypes.hostname_str_adapter()
+        TypeAdapter(FlextWebTypes.HostnameStr)
     )
     PORT_NUMBER_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.PortNumber] = (
-        FlextWebTypes.port_number_adapter()
+        TypeAdapter(FlextWebTypes.PortNumber)
     )
     STRING_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrictStr] = (
-        FlextWebTypes.str_adapter()
+        TypeAdapter(FlextWebTypes.StrictStr)
     )
     STORAGE_ENTRY_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.JsonMapping] = (
-        FlextWebTypes.json_mapping_adapter()
+        TypeAdapter(FlextWebTypes.JsonMapping)
     )
     REQUEST_BODY_ADAPTER: FlextWebTypes.ValueAdapter[RequestBody] = u.type_adapter(
         RequestBody,
@@ -86,10 +86,10 @@ class FlextApiTypingsBase:
         ResponseBody,
     )
     DICT_BODY_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.JsonMapping] = (
-        FlextWebTypes.json_mapping_adapter()
+        TypeAdapter(FlextWebTypes.JsonMapping)
     )
     JSON_HEADERS_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.JsonMapping] = (
-        FlextWebTypes.json_mapping_adapter()
+        TypeAdapter(FlextWebTypes.JsonMapping)
     )
 
 
