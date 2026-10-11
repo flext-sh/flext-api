@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_tests import td, tf, tk, tm
+
     from flext_api import c, d, e, h, m, p, r, t, u, x
     from tests import unit
     from tests.base import TestsFlextApiServiceBase, s
@@ -41,6 +43,10 @@ __all__: tuple[str, ...] = (
     "r",
     "s",
     "t",
+    "td",
+    "tf",
+    "tk",
+    "tm",
     "u",
     "unit",
     "x",
@@ -66,6 +72,10 @@ install_lazy_exports(
         "r": "flext_api",
         "s": ".base",
         "t": "flext_api",
+        "td": "flext_tests",
+        "tf": "flext_tests",
+        "tk": "flext_tests",
+        "tm": "flext_tests",
         "u": "flext_api",
         "unit": ".unit",
         "x": "flext_api",
