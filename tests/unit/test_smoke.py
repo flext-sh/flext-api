@@ -12,9 +12,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiClient, c, settings
+from tests import tm
 from tests.unit.model_contract import TestsFlextApiModelContract
 
 
