@@ -67,7 +67,7 @@ class FlextApiModelsResponse:
         # Why: bare form (no return_type kwarg) resolves to the positional
         # overload pyrefly's stub actually carries; each property's own
         # `-> bool` annotation already tells pydantic the schema type.
-        @u.computed_field
+        @m.computed_field
         @property
         def client_error(self) -> bool:
             """Whether the response is a 4xx client error."""
