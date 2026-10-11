@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from flext_web import FlextWebTypes, p, u
+from pydantic import TypeAdapter
 
 from flext_api import c
 
@@ -58,10 +59,10 @@ class FlextApiTypingsBase:
     ]
     type CacheDict = FlextWebTypes.MappingKV[str, FlextWebTypes.Primitives]
     API_JSON_VALUE_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.JsonValue] = (
-        FlextWebTypes.json_value_adapter()
+        TypeAdapter(FlextWebTypes.JsonValue)
     )
     BINARY_CONTENT_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrictBytes] = (
-        FlextWebTypes.binary_content_adapter()
+        TypeAdapter(FlextWebTypes.StrictBytes)
     )
     STR_MAPPING_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrMapping] = (
         FlextWebTypes.str_mapping_adapter()
