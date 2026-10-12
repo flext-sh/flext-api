@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from flext_tests import td, tf, tk, tm
 
     from flext_api import c, d, e, h, m, p, r, t, u, x
-    from tests import unit
     from tests.base import TestsFlextApiServiceBase, s
     from tests.constants import TestsFlextApiConstants
     from tests.models import TestsFlextApiModels
@@ -48,7 +47,6 @@ __all__: tuple[str, ...] = (
     "tk",
     "tm",
     "u",
-    "unit",
     "x",
 )
 
