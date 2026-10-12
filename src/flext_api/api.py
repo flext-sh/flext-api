@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_api import FlextApiClient, c, m, p, r, s, t, u
+from flext_api import c, m, p, r, s, t, u
+from flext_api.services import FlextApiClient
 
 
 class FlextApi(s[bool]):

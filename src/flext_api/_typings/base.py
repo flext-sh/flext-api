@@ -10,8 +10,6 @@ from collections.abc import Callable
 
 from flext_web import FlextWebTypes, p, u
 
-from flext_api import c
-
 
 class FlextApiTypingsBase:
     """Core API type aliases composed into ``t.Api`` by the typings facade."""
@@ -42,8 +40,6 @@ class FlextApiTypingsBase:
         | None,
     ]
     "Route registration data structure."
-    type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
-    type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
     type WebhookHandler = Callable[
         [FlextWebTypes.JsonMapping],
         FlextWebTypes.JsonValue | p.Result[bool] | None,

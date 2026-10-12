@@ -16,9 +16,8 @@ from flext_api import (
     HttpxRequestError,
     HttpxResponse,
     HttpxTimeoutException,
-    p,
 )
-from tests import tm
+from tests import p, tm
 
 
 class TestsFlextApiHttpxContracts:

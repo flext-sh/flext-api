@@ -6,25 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api._protocols import (
-    FlextApiProtocolsGrpc,
-    FlextApiProtocolsHttpClient,
-    FlextApiProtocolsResources,
-    FlextApiProtocolsSerializer,
-    FlextApiProtocolsStorage,
-    FlextApiProtocolsTransport,
-)
 
-
-class FlextApiProtocolsBase(
-    FlextApiProtocolsHttpClient,
-    FlextApiProtocolsStorage,
-    FlextApiProtocolsSerializer,
-    FlextApiProtocolsResources,
-    FlextApiProtocolsTransport,
-    FlextApiProtocolsGrpc,
-):
-    """FLEXT API transport protocol namespace."""
+class FlextApiProtocolsBase:
+    """Leaf base for the FLEXT API protocol family."""
 
 
 __all__: list[str] = ["FlextApiProtocolsBase"]

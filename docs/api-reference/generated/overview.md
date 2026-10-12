@@ -18,13 +18,14 @@
   Servers, Topic :: Software Development :: Libraries :: Python Modules, Typing :: Typed
 - Project class: `domain`
 - Keywords: `enterprise`, `fastapi`, `flext`, `http`, `rest`, `typed`
-- Main facades: `FlextApi`, `FlextApiAsyncClient`, `FlextApiCli`, `FlextApiClient`,
-  `FlextApiClientBase`, `FlextApiConfig`, `FlextApiConstants`, `FlextApiModels` (+7
-  more)
+- Main facades: `FlextApi`, `FlextApiCli`, `FlextApiConfig`, `FlextApiConstants`,
+  `FlextApiModels`, `FlextApiModelsApiNamespace`, `FlextApiProtocols`,
+  `FlextApiProtocolsTransports` (+5 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextApi`, `FlextApiAsyncClient`, `FlextApiCli`,
-  `FlextApiClient`, `FlextApiClientBase`, `FlextApiConfig`, `FlextApiConstants`,
-  `FlextApiModels`, `FlextApiModelsApiNamespace`, `FlextApiProtocols` (+15 more)
+- Public symbol exports: `FlextApi`, `FlextApiCli`, `FlextApiConfig`,
+  `FlextApiConstants`, `FlextApiModels`, `FlextApiModelsApiNamespace`,
+  `FlextApiProtocols`, `FlextApiProtocolsTransports`, `FlextApiServiceBase`,
+  `FlextApiSettings` (+13 more)
 - Exported module shortcuts: `api`, `services`
 - Generated module pages: `8`
 

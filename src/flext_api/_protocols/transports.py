@@ -14,8 +14,24 @@ from typing import ClassVar, Protocol, runtime_checkable
 
 import httpx
 
+from flext_api._protocols import (
+    FlextApiProtocolsGrpc,
+    FlextApiProtocolsHttpClient,
+    FlextApiProtocolsResources,
+    FlextApiProtocolsSerializer,
+    FlextApiProtocolsStorage,
+    FlextApiProtocolsTransport,
+)
 
-class FlextApiProtocolsTransports:
+
+class FlextApiProtocolsTransports(
+    FlextApiProtocolsHttpClient,
+    FlextApiProtocolsStorage,
+    FlextApiProtocolsSerializer,
+    FlextApiProtocolsResources,
+    FlextApiProtocolsTransport,
+    FlextApiProtocolsGrpc,
+):
     """FLEXT API transport protocol namespace."""
 
     @runtime_checkable

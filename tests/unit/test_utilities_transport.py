@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import c, t, u
-from tests import tm
+from tests import c, t, tm, u
 
 
 class TestsFlextApiUtilitiesTransport:

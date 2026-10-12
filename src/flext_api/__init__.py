@@ -10,22 +10,30 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_api.__version__ import (
-    __author__,
-    __author_email__,
-    __description__,
-    __license__,
-    __title__,
-    __url__,
-    __version__,
-    __version_info__,
-)
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
 
-    from flext_api import services
+    from flext_api import (
+        _constants,
+        _models,
+        _protocols,
+        _typings,
+        _utilities,
+        services,
+    )
+    from flext_api.__version__ import (
+        FlextApiVersion,
+        __author__,
+        __author_email__,
+        __description__,
+        __license__,
+        __title__,
+        __url__,
+        __version__,
+        __version_info__,
+    )
     from flext_api._config import FlextApiConfig, config
     from flext_api._settings import FlextApiSettings, settings
     from flext_api.api import FlextApi, api
@@ -45,19 +53,13 @@ if TYPE_CHECKING:
         HttpxTimeoutException,
         p,
     )
-    from flext_api.services.async_client import FlextApiAsyncClient
-    from flext_api.services.base_client import FlextApiClientBase
-    from flext_api.services.client import FlextApiClient
     from flext_api.typings import FlextApiTypes, t
     from flext_api.utilities import FlextApiUtilities, u
 
 
 __all__: tuple[str, ...] = (
     "FlextApi",
-    "FlextApiAsyncClient",
     "FlextApiCli",
-    "FlextApiClient",
-    "FlextApiClientBase",
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiModels",
@@ -68,6 +70,7 @@ __all__: tuple[str, ...] = (
     "FlextApiSettings",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "FlextApiVersion",
     "HttpxAsyncClient",
     "HttpxClient",
     "HttpxHTTPError",
@@ -83,6 +86,11 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
+    "_constants",
+    "_models",
+    "_protocols",
+    "_typings",
+    "_utilities",
     "api",
     "c",
     "config",
@@ -106,10 +114,7 @@ install_lazy_exports(
     globals(),
     MappingProxyType({
         "FlextApi": ".api",
-        "FlextApiAsyncClient": ".services.async_client",
         "FlextApiCli": ".cli",
-        "FlextApiClient": ".services.client",
-        "FlextApiClientBase": ".services.base_client",
         "FlextApiConfig": "._config",
         "FlextApiConstants": ".constants",
         "FlextApiModels": ".models",
@@ -120,6 +125,7 @@ install_lazy_exports(
         "FlextApiSettings": "._settings",
         "FlextApiTypes": ".typings",
         "FlextApiUtilities": ".utilities",
+        "FlextApiVersion": ".__version__",
         "HttpxAsyncClient": ".protocols",
         "HttpxClient": ".protocols",
         "HttpxHTTPError": ".protocols",
@@ -127,6 +133,19 @@ install_lazy_exports(
         "HttpxRequestError": ".protocols",
         "HttpxResponse": ".protocols",
         "HttpxTimeoutException": ".protocols",
+        "__author__": ".__version__",
+        "__author_email__": ".__version__",
+        "__description__": ".__version__",
+        "__license__": ".__version__",
+        "__title__": ".__version__",
+        "__url__": ".__version__",
+        "__version__": ".__version__",
+        "__version_info__": ".__version__",
+        "_constants": "._constants",
+        "_models": "._models",
+        "_protocols": "._protocols",
+        "_typings": "._typings",
+        "_utilities": "._utilities",
         "api": ".api",
         "c": ".constants",
         "config": "._config",

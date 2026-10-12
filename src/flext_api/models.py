@@ -32,6 +32,7 @@ class FlextApiModels(FlextWebModels):
         FlextApiModelsResponse,
         FlextApiModelsStorage,
         FlextApiModelsWebhook,
+        FlextApiModelsApiNamespace,
     ):
         """API domain models namespace."""
 

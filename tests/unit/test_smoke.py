@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import FlextApi, FlextApiClient, c, settings
-from tests import tm
+from flext_api import FlextApi, settings
+from flext_api.services import FlextApiClient
+from tests import c, tm
 from tests.unit.model_contract import TestsFlextApiModelContract
 
 
