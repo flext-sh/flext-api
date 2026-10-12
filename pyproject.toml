@@ -452,7 +452,7 @@ notice-rgx = "Copyright \\(c\\) \\d{4} \\S[^\\n]*\\. All rights reserved\\."
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
   "flext_api.FlextApiServiceBase",
-  "flext_api._models.FlextApiModelsApiNamespace",
+  "flext_api._models.config.FlextApiModelsApiNamespace",
   "flext_api._settings.FlextApiSettings",
   "flext_api.s",
   "flext_api.services.FlextApiClientBase",

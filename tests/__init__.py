@@ -75,7 +75,6 @@ install_lazy_exports(
         "tk": "flext_tests",
         "tm": "flext_tests",
         "u": "flext_api",
-        "unit": ".unit",
         "x": "flext_api",
     }),
     public_exports=__all__,

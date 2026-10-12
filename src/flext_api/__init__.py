@@ -10,6 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
+from flext_api.__version__ import __version__
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
@@ -31,7 +32,6 @@ if TYPE_CHECKING:
         __license__,
         __title__,
         __url__,
-        __version__,
         __version_info__,
     )
     from flext_api._config import FlextApiConfig, config
@@ -139,7 +139,6 @@ install_lazy_exports(
         "__license__": ".__version__",
         "__title__": ".__version__",
         "__url__": ".__version__",
-        "__version__": ".__version__",
         "__version_info__": ".__version__",
         "_constants": "._constants",
         "_models": "._models",
