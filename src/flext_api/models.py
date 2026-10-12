@@ -26,11 +26,11 @@ class FlextApiModels(FlextWebModels):
 
     class Api(
         FlextApiModelsBase,
+        FlextApiModelsApiNamespace,
         FlextApiModelsRequest,
         FlextApiModelsResponse,
         FlextApiModelsStorage,
         FlextApiModelsWebhook,
-        FlextApiModelsApiNamespace,
     ):
         """API domain models namespace."""
 
