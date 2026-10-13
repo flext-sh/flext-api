@@ -19,7 +19,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from flext_api import m
+from flext_web import m
+
 from flext_core import FlextSettings, t, u
 
 

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import httpx
 
+from flext_api import c
+
 
 class FlextApiTypingsTransport:
     """Transport typing namespace shard for ``t.Api``.
@@ -18,6 +20,8 @@ class FlextApiTypingsTransport:
     type HttpxClient = httpx.Client
     type HttpxAsyncClient = httpx.AsyncClient
     type HttpxResponse = httpx.Response
+    type WebhookDeliveryStatus = c.Api.WebhookDeliveryStatus | str
+    type WebhookAlgorithm = c.Api.WebhookAlgorithm | str
 
 
 __all__: list[str] = ["FlextApiTypingsTransport"]

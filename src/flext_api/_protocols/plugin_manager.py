@@ -7,18 +7,16 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
+from collections.abc import MutableMapping
 from typing import TYPE_CHECKING
 
 from flext_web import r, u
 
+from flext_api import t
 from flext_api._protocols import FlextApiProtocolPluginTypes
 
 if TYPE_CHECKING:
-    from collections.abc import MutableMapping
-
     from flext_web import p
-
-    from flext_api import t
 
 
 class FlextApiProtocolPluginManager:

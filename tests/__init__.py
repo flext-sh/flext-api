@@ -10,11 +10,12 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import install_lazy_exports
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_tests import td, tf, tk, tm
+
     from flext_api import c, d, e, h, m, p, r, t, u, x
-    from tests import unit
     from tests.base import TestsFlextApiServiceBase, s
     from tests.constants import TestsFlextApiConstants
     from tests.models import TestsFlextApiModels
@@ -41,8 +42,11 @@ __all__: tuple[str, ...] = (
     "r",
     "s",
     "t",
+    "td",
+    "tf",
+    "tk",
+    "tm",
     "u",
-    "unit",
     "x",
 )
 
@@ -66,8 +70,11 @@ install_lazy_exports(
         "r": "flext_api",
         "s": ".base",
         "t": "flext_api",
+        "td": "flext_tests",
+        "tf": "flext_tests",
+        "tk": "flext_tests",
+        "tm": "flext_tests",
         "u": "flext_api",
-        "unit": ".unit",
         "x": "flext_api",
     }),
     public_exports=__all__,

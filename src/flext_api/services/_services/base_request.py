@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import httpx
 
 from flext_api import c, m, p, r, t, u
-from flext_api.services import FlextApiClientCodecMixin
+from flext_api.services._services import FlextApiClientCodecMixin
 
 if TYPE_CHECKING:
     from flext_api import FlextApiSettings

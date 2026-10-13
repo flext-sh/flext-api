@@ -10,11 +10,11 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import install_lazy_exports
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api._models._api_namespace import FlextApiModelsApiNamespace
     from flext_api._models.base import FlextApiModelsBase
+    from flext_api._models.config import FlextApiModelsApiNamespace
     from flext_api._models.request import FlextApiModelsRequest
     from flext_api._models.response import FlextApiModelsResponse
     from flext_api._models.storage import FlextApiModelsStorage
@@ -34,7 +34,7 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextApiModelsApiNamespace": "._api_namespace",
+        "FlextApiModelsApiNamespace": ".config",
         "FlextApiModelsBase": ".base",
         "FlextApiModelsRequest": ".request",
         "FlextApiModelsResponse": ".response",

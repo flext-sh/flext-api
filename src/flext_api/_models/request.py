@@ -77,7 +77,7 @@ class FlextApiModelsRequest:
         # Why: bare form (no return_type kwarg) resolves to the positional
         # overload pyrefly's stub actually carries; the property's own `-> str`
         # annotation already tells pydantic the computed field's schema type.
-        @u.computed_field
+        @m.computed_field
         @property
         def content_type(self) -> str:
             """Content type resolved from headers."""

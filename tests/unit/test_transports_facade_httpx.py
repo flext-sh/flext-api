@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
-from flext_tests import tm
 
 from flext_api import (
     HttpxAsyncClient,
@@ -17,8 +16,8 @@ from flext_api import (
     HttpxRequestError,
     HttpxResponse,
     HttpxTimeoutException,
-    p,
 )
+from tests import p, tm
 
 
 class TestsFlextApiHttpxContracts:

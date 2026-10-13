@@ -21,14 +21,14 @@ classifiers = [
 ]
 dependencies = [
   "annotated-types>=0.8.0",
-  "beartype>=0.23.0",
+  "beartype>=0.23.1",
   "dependency-injector>=4.49.1",
   "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
   "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.12.0-dev",
   "httpx>=0.28.1",
   "msgpack>=1.2.3",
   "packaging>=26.3",
-  "pydantic>=2.14.0,<3",
+  "pydantic>=2.14.1,<3",
   "pydantic-settings>=2.15.0",
   "pyyaml>=6.0.3",
   "structlog>=26.1.0",
@@ -102,7 +102,6 @@ dev = [
   "types-click>=7.1.8",
   "types-defusedxml>=0.7.0.20260504",
   "types-docker>=7.2.0.20260827",
-  "types-flask>=1.1.6",
   "types-grpcio",
   "types-jsonschema>=4.26.0.20260518",
   "types-ldap3>=2.9.13.20260827",
@@ -360,6 +359,7 @@ addopts = [
   "--strict-markers",
   "--markdown-docs",
   "--durations=10",
+  "--flext-enforce-strict",
   "--timeout=10",
 ]
 flext_slow_timeout_seconds = "30"
@@ -433,6 +433,7 @@ ignore = [
   "typing-only-first-party-import",
   "typing-only-standard-library-import",
   "typing-only-third-party-import",
+  "unsorted-imports",
 ]
 select = ["ALL"]
 unfixable = [
@@ -454,9 +455,9 @@ notice-rgx = "Copyright \\(c\\) \\d{4} \\S[^\\n]*\\. All rights reserved\\."
 runtime-evaluated-base-classes = [
   "flext_api.FlextApiServiceBase",
   "flext_api.FlextApiSettings",
-  "flext_api.m.BaseModel",
+  "flext_api._models.config.FlextApiModelsApiNamespace",
   "flext_api.s",
-  "flext_api.services.base_client.FlextApiClientBase",
+  "flext_api.services.FlextApiClientBase",
   "flext_cli.m.BaseModel",
   "flext_cli.services.cli.FlextCliCli",
   "flext_core.FlextConfig",
@@ -464,6 +465,7 @@ runtime-evaluated-base-classes = [
   "flext_core.FlextSettings",
   "flext_tests.FlextTestsServiceBase",
   "flext_tests.FlextTestsSettings",
+  "flext_web.m.BaseModel",
   "flext_web.m.FlexibleInternalModel",
   "flext_web.m.Value",
   "pydantic.BaseModel",
@@ -590,6 +592,7 @@ section_whitelines = 1
 whitelines = 1
 
 [tool.uv]
-link-mode = "copy"
 constraint-dependencies = ["mypy<2.4.0"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
+link-mode = "copy"
+override-dependencies = ["flext-api"]
