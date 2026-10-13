@@ -7,14 +7,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
-from flext_web import r, u
+from flext_web import p, r, u
 
-if TYPE_CHECKING:
-    from flext_web import p
-
-    from flext_api import t
+from flext_api import t
 
 
 class FlextApiProtocolPluginTypes:
