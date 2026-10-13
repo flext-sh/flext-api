@@ -311,7 +311,7 @@ class ResponseCache:
             )
             self.cache[key] = cached
 
-    def make_cache_key(self, method: str, url: str, headers: dict[str, str]) -> str:
+    def make_cache_key(self, method: str, url: str, headers: t.StrDict) -> str:
         """Generate cache key from request."""
         key_data = f"{method}:{url}:{sorted(headers.items())}"
         return hashlib.sha256(key_data.encode()).hexdigest()

@@ -60,11 +60,11 @@ class FlextApiSettings(FlextSettings):
             m.Field(description="Enable TLS certificate check"),
         ] = True
         default_headers: t.StrMapping = m.Field(
-            default_factory=dict[str, str],
+            default_factory=t.StrDict,
             description="Default headers applied to all requests",
         )
         headers: t.StrMapping = m.Field(
-            default_factory=dict[str, str],
+            default_factory=t.StrDict,
             description="Compatibility headers bag",
         )
         log_requests: Annotated[
