@@ -19,10 +19,13 @@ class FlextApiUtilitiesRequestUtils:
 
         @staticmethod
         def coerce_positive_timeout(timeout_value: float | str) -> p.Result[float]:
-            """Coerce timeout to a positive float.
+            """Coerce a timeout value to a positive float.
+
+            Args:
+                timeout_value: Timeout as number or numeric string.
 
             Returns:
-                The resulting ``p.Result[float]``.
+                Positive timeout or error result.
             """
             try:
                 timeout_float = float(timeout_value)
@@ -37,10 +40,14 @@ class FlextApiUtilitiesRequestUtils:
             data: t.Api.RequestBody | None,
             kwargs: t.Api.RequestKwargs | None,
         ) -> p.Result[t.Api.RequestBody]:
-            """Extract body from data or kwargs.
+            """Extract the request body from explicit data or request kwargs.
+
+            Args:
+                data: Explicit request body, or ``None``.
+                kwargs: Request kwargs possibly holding ``data`` or ``json``.
 
             Returns:
-                The resulting ``p.Result[t.Api.RequestBody]``.
+                Normalized request body or error result.
             """
             if data is not None:
                 return r[t.Api.RequestBody].ok(data)
@@ -59,10 +66,14 @@ class FlextApiUtilitiesRequestUtils:
             headers: t.StrMapping | None,
             kwargs: t.Api.RequestKwargs | None,
         ) -> p.Result[t.StrMapping]:
-            """Merge headers from headers dict and kwargs.
+            """Merge explicit headers with headers carried in request kwargs.
+
+            Args:
+                headers: Explicit header mapping, or ``None``.
+                kwargs: Request kwargs possibly holding a ``headers`` mapping.
 
             Returns:
-                The resulting ``p.Result[t.StrMapping]``.
+                Merged header mapping or error result.
             """
             merged: t.MutableStrMapping = {}
             if headers:
@@ -80,10 +91,13 @@ class FlextApiUtilitiesRequestUtils:
         def to_json_value(
             value: t.JsonValue | t.StrMapping | t.ScalarMapping | t.Api.WebHeaders,
         ) -> t.JsonValue:
-            """Validate arbitrary value as JsonValue.
+            """Validate an arbitrary value as a JSON value.
+
+            Args:
+                value: Value to validate.
 
             Returns:
-                The resulting ``t.JsonValue``.
+                Validated JSON value.
             """
             if value is None:
                 return None
@@ -95,10 +109,14 @@ class FlextApiUtilitiesRequestUtils:
             timeout: float | str | None,
             kwargs: t.Api.RequestKwargs | None,
         ) -> p.Result[float]:
-            """Validate and extract timeout from timeout value or kwargs.
+            """Validate and extract the timeout from a value or request kwargs.
+
+            Args:
+                timeout: Explicit timeout value, or ``None``.
+                kwargs: Request kwargs possibly holding a ``timeout`` entry.
 
             Returns:
-                The resulting ``p.Result[float]``.
+                Positive timeout or error result.
             """
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             if timeout is not None:
@@ -116,8 +134,11 @@ class FlextApiUtilitiesRequestUtils:
         ) -> p.Result[t.Api.WebParams]:
             """Extract and normalize query parameters from request kwargs.
 
+            Args:
+                request_kwargs: Request kwargs possibly holding a ``params`` mapping.
+
             Returns:
-                The resulting ``p.Result[t.Api.WebParams]``.
+                Normalized query parameters or error result.
             """
             query_params: t.Api.WebParams = {}
             if request_kwargs is None or "params" not in request_kwargs:
@@ -150,8 +171,15 @@ class FlextApiUtilitiesRequestUtils:
         ) -> p.Result[m.ConfigMap]:
             """Build one normalized request payload for HttpRequest validation.
 
+            Args:
+                method: HTTP method name.
+                url: Request URL.
+                data: Explicit request body, or ``None``.
+                headers: Explicit header mapping, or ``None``.
+                request_kwargs: Request kwargs merged into the payload.
+
             Returns:
-                The resulting ``p.Result[m.ConfigMap]``.
+                Normalized request payload or error result.
             """
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)
