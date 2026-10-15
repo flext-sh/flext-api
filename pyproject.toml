@@ -58,9 +58,6 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 Homepage = "https://github.com/flext-sh/flext"
 
 [dependency-groups]
-codegen = [
-  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
-]
 dev = [
   "actionlint-py>=1.7.12.24",
   "bandit>=1.9.4",
@@ -122,6 +119,9 @@ dev = [
   "vulture>=2.16",
   "yamlfix>=1.19.1",
 ]
+codegen = [
+  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
+]
 
 [tool.codespell]
 check-filenames = true
@@ -146,8 +146,8 @@ omit = [
 ]
 
 [tool.deptry]
-known_first_party = ["flext_api", "flext_core"]
-pep621_dev_dependency_groups = ["dev"]
+known_first_party = ["flext_api"]
+optional_dependencies_dev_groups = ["dev"]
 
 [tool.flext.docs]
 package_name = "flext_api"
@@ -164,8 +164,14 @@ include = ["/src/flext_api/**"]
 [tool.hatch.build.targets.wheel.sources]
 "src/flext_api" = "flext_api"
 
+[tool.hatch.build.targets.wheel.force-include]
+"pyproject.toml" = "flext_api/pyproject.toml"
+
 [tool.hatch.build.targets.sdist]
 include = ["/src/flext_api/**"]
+
+[tool.hatch.build.targets.sdist.force-include]
+"pyproject.toml" = "pyproject.toml"
 
 [tool.mypy]
 mypy_path = ["src"]
@@ -423,6 +429,7 @@ extend-safe-fixes = [
   "relative-imports",
   "typing-only-first-party-import",
 ]
+extend-select = ["missing-blank-line-after-last-section"]
 ignore = [
   "camelcase-imported-as-lowercase",
   "implicit-namespace-package",
@@ -435,15 +442,11 @@ ignore = [
 ]
 select = ["ALL"]
 unfixable = [
-  "duplicate-value",
   "multi-value-repeated-key-literal",
   "multi-value-repeated-key-variable",
-  "outdated-version-block",
   "p-print",
   "print",
   "pytest-duplicate-parametrize-test-cases",
-  "redefined-while-unused",
-  "unused-variable",
 ]
 
 [tool.ruff.lint.flake8-copyright]
@@ -490,7 +493,7 @@ msg = "Use cli.create_app_with_common_params / cli.register_command from flext_c
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
-known-first-party = ["flext_api", "flext_core"]
+known-first-party = ["flext_api"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
