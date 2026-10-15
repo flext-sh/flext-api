@@ -40,6 +40,7 @@ class FlextApiProtocolPluginManager:
 
             Returns:
                 The resulting ``p.Result[FlextApiProtocolPluginTypes.Plugin]``.
+
             """
             if plugin_name not in self._loaded_plugins:
                 return r[FlextApiProtocolPluginTypes.Plugin].fail(
@@ -57,6 +58,7 @@ class FlextApiProtocolPluginManager:
 
             Returns:
                 The resulting ``t.SequenceOf[FlextApiProtocolPluginTypes.Plugin]``.
+
             """
             return [
                 plugin
@@ -69,6 +71,7 @@ class FlextApiProtocolPluginManager:
 
             Returns:
                 The resulting ``t.StrSequence``.
+
             """
             return list(self._loaded_plugins.keys())
 
@@ -80,6 +83,7 @@ class FlextApiProtocolPluginManager:
 
             Returns:
                 The resulting ``p.Result[bool]``.
+
             """
             if plugin.name in self._loaded_plugins:
                 return r[bool].fail(f"Plugin '{plugin.name}' already loaded")
@@ -97,6 +101,7 @@ class FlextApiProtocolPluginManager:
 
             Returns:
                 The resulting ``p.Result[bool]``.
+
             """
             failed_plugins: t.StrSequence = [
                 plugin_name
@@ -114,6 +119,7 @@ class FlextApiProtocolPluginManager:
 
             Returns:
                 The resulting ``p.Result[bool]``.
+
             """
             if plugin_name not in self._loaded_plugins:
                 return r[bool].fail(f"Plugin '{plugin_name}' not loaded")

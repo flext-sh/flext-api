@@ -16,10 +16,14 @@ class FlextApiClientRequestMixin(FlextApiClientBaseRequestMixin):
     """Request execution helpers for FlextApiClient."""
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        """Execute HTTP request from model using monadic patterns.
+        """Execute an HTTP request from the request model using monadic patterns.
+
+        Args:
+            request: Prepared HTTP request model.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         prep = self._prepare_request(request)
         if prep.failure:

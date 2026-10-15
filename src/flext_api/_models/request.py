@@ -62,10 +62,14 @@ class FlextApiModelsRequest:
         @u.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.RequestBody:
-            """Normalize request body.
+            """Normalize the request body before validation.
+
+            Args:
+                v: Raw body value supplied to the model.
 
             Returns:
-                The resulting ``t.Api.RequestBody``.
+                Normalized request body.
+
             """
             if v is None:
                 return {}
@@ -80,7 +84,7 @@ class FlextApiModelsRequest:
         @m.computed_field
         @property
         def content_type(self) -> str:
-            """Content type resolved from headers."""
+            """Content type resolved from the request headers."""
             if c.Api.HEADER_CONTENT_TYPE in self.headers:
                 header_value: str = self.headers[c.Api.HEADER_CONTENT_TYPE]
                 return header_value

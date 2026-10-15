@@ -32,6 +32,7 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
 
         Returns:
             The resulting ``p.Result[str]``.
+
         """
         # Request defaults belong to this client's injected runtime settings,
         # never the global singleton (mro-t9s9).
@@ -55,6 +56,7 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
 
         Returns:
             The resulting ``p.Result[tuple[str, t.StrMapping, bytes, t.StrMapping]]``.
+
         """
         url_result = self._build_url(request.url)
         if url_result.failure:
@@ -90,6 +92,7 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
 
         Returns:
             The resulting ``p.Result[m.Api.HttpResponse]``.
+
         """
         return self._deserialize_body(response).flat_map(
             lambda body: u.try_(
@@ -113,6 +116,7 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
 
         Returns:
             The resulting ``p.Result[m.Api.HttpResponse]``.
+
         """
         return r[m.Api.HttpResponse].fail_op(op, exc)
 

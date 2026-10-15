@@ -20,6 +20,7 @@ class FlextApiClientCodecMixin:
 
         Returns:
             The resulting ``p.Result[t.Api.ResponseBody]``.
+
         """
         content_type = response.headers.get("content-type", "").lower()
         if any(
@@ -50,6 +51,7 @@ class FlextApiClientCodecMixin:
 
         Returns:
             The resulting ``p.Result[t.Api.ResponseBody]``.
+
         """
         return r[t.Api.ResponseBody].ok(response.content)
 
@@ -59,6 +61,7 @@ class FlextApiClientCodecMixin:
 
         Returns:
             The resulting ``p.Result[t.Api.ResponseBody]``.
+
         """
         json_result = u.Cli.json_loads(response.content)
         if json_result.failure:
@@ -89,6 +92,7 @@ class FlextApiClientCodecMixin:
 
         Returns:
             The resulting ``p.Result[t.Api.ResponseBody]``.
+
         """
         return r[t.Api.ResponseBody].ok(response.text)
 
@@ -98,6 +102,7 @@ class FlextApiClientCodecMixin:
 
         Returns:
             The resulting ``p.Result[bytes]``.
+
         """
         result: p.Result[bytes]
         if body is None or (isinstance(body, dict) and not body):

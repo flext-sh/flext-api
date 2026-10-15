@@ -23,6 +23,7 @@ def main(args: t.StrSequence | None = None) -> int:
 
     Returns:
         The resulting ``int``.
+
     """
     _ = args
     return 0

@@ -16,10 +16,14 @@ class FlextApiClientAsyncRequestMixin(FlextApiClientBaseRequestMixin):
     """Async request execution helpers for FlextApiAsyncClient."""
 
     async def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        """Execute async HTTP request from model using monadic patterns.
+        """Execute an async HTTP request from the request model.
+
+        Args:
+            request: Prepared HTTP request model.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         prep = self._prepare_request(request)
         if prep.failure:

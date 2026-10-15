@@ -52,10 +52,14 @@ class FlextApiModelsResponse:
         @u.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.ResponseBody:
-            """Normalize response body.
+            """Normalize the response body before validation.
+
+            Args:
+                v: Raw body value supplied to the model.
 
             Returns:
-                The resulting ``t.Api.ResponseBody``.
+                Normalized response body, or ``None`` when absent.
+
             """
             if v is None:
                 return None
@@ -122,10 +126,18 @@ class FlextApiModelsResponse:
         request_id: str | None = None,
         content: bytes = b"",
     ) -> HttpResponse:
-        """Create HttpResponse from parameters.
+        """Build an ``HttpResponse`` from raw parameters.
+
+        Args:
+            status_code: HTTP status code.
+            body: Optional response body; defaults to an empty body.
+            headers: Optional response headers; defaults to no headers.
+            request_id: Optional tracking ID; defaults to an empty ID.
+            content: Exact wire bytes; defaults to empty bytes.
 
         Returns:
-            The resulting ``HttpResponse``.
+            Populated HTTP response value object.
+
         """
         return cls.HttpResponse(
             status_code=status_code,
