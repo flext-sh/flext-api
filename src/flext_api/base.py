@@ -11,8 +11,9 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_api import FlextApiSettings, m, p, t
 from flext_core import FlextService
+
+from flext_api import FlextApiSettings, m, p, t
 
 
 class FlextApiServiceBase[TDomainResult](
@@ -43,6 +44,7 @@ class FlextApiServiceBase[TDomainResult](
 
         Raises:
             TypeError: If ``not isinstance(current, FlextApiSettings)``.
+
         """
         current = super().settings
         if not isinstance(current, FlextApiSettings):

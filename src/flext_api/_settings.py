@@ -19,9 +19,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from flext_web import m
-
 from flext_core import FlextSettings, t, u
+from flext_web import m
 
 
 class FlextApiSettings(FlextSettings):
@@ -88,6 +87,7 @@ class FlextApiSettings(FlextSettings):
 
         Returns:
             The resulting ``t.JsonValue``.
+
         """
         if not isinstance(data, dict):
             return data

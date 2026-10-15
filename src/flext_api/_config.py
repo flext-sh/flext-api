@@ -12,10 +12,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
+from flext_core import FlextConfig, FlextSettings
 from flext_web import m
 
 from flext_api._models.config import FlextApiModelsApiNamespace
-from flext_core import FlextConfig, FlextSettings
 
 
 class FlextApiConfig(FlextSettings, FlextConfig):

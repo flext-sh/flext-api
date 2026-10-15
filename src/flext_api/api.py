@@ -52,6 +52,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.DELETE,
@@ -69,6 +70,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Successful ``True`` result.
+
         """
         if kwargs:
             self.logger.info("Execute called with kwargs: %s", kwargs)
@@ -89,6 +91,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.GET,
@@ -114,6 +117,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.PATCH,
@@ -140,6 +144,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.POST,
@@ -166,6 +171,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.PUT,
@@ -183,6 +189,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         return self.client.request(request)
 
@@ -205,6 +212,7 @@ class FlextApi(s[bool]):
 
         Returns:
             Response payload or error result.
+
         """
         chain: p.Result[m.Api.HttpResponse] = (
             u.Api.RequestUtils

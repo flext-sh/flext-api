@@ -69,6 +69,7 @@ class FlextApiModelsRequest:
 
             Returns:
                 Normalized request body.
+
             """
             if v is None:
                 return {}

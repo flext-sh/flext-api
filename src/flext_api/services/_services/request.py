@@ -23,6 +23,7 @@ class FlextApiClientRequestMixin(FlextApiClientBaseRequestMixin):
 
         Returns:
             Response payload or error result.
+
         """
         prep = self._prepare_request(request)
         if prep.failure:

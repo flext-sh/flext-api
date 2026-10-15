@@ -26,6 +26,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Positive timeout or error result.
+
             """
             try:
                 timeout_float = float(timeout_value)
@@ -48,6 +49,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Normalized request body or error result.
+
             """
             if data is not None:
                 return r[t.Api.RequestBody].ok(data)
@@ -74,6 +76,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Merged header mapping or error result.
+
             """
             merged: t.MutableStrMapping = {}
             if headers:
@@ -98,6 +101,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Validated JSON value.
+
             """
             if value is None:
                 return None
@@ -117,6 +121,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Positive timeout or error result.
+
             """
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             if timeout is not None:
@@ -139,6 +144,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Normalized query parameters or error result.
+
             """
             query_params: t.Api.WebParams = {}
             if request_kwargs is None or "params" not in request_kwargs:
@@ -180,6 +186,7 @@ class FlextApiUtilitiesRequestUtils:
 
             Returns:
                 Normalized request payload or error result.
+
             """
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)

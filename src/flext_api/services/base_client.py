@@ -30,6 +30,7 @@ class FlextApiClientBase(s[bool]):
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         if kwargs:
             u.fetch_logger(__name__).info(

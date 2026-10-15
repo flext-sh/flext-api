@@ -59,6 +59,7 @@ class FlextApiModelsResponse:
 
             Returns:
                 Normalized response body, or ``None`` when absent.
+
             """
             if v is None:
                 return None
@@ -136,6 +137,7 @@ class FlextApiModelsResponse:
 
         Returns:
             Populated HTTP response value object.
+
         """
         return cls.HttpResponse(
             status_code=status_code,
