@@ -17,7 +17,6 @@ from flext_api import (
     HttpxResponse,
     HttpxTimeoutException,
 )
-from tests import tm
 from tests import p, tm
 
 
