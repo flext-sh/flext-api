@@ -41,6 +41,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``p.Result[bool]``.
+
             """
             return r[bool].ok(value=True)
 
@@ -50,6 +51,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``p.Result[bool]``.
+
             """
             return r[bool].ok(value=True)
 
@@ -65,6 +67,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``t.StrSequence``.
+
             """
             return []
 
@@ -91,6 +94,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``str``.
+
             """
             return "unknown"
 
@@ -105,6 +109,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``bool``.
+
             """
             return False
 
@@ -145,6 +150,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``t.JsonMapping``.
+
             """
             return {}
 
@@ -173,6 +179,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``bool``.
+
             """
             return False
 
@@ -194,6 +201,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``str``.
+
             """
             return "Unknown"
 
@@ -205,6 +213,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``p.Result[t.JsonMapping]``.
+
             """
             _ = credentials
             return r[t.JsonMapping].fail("Refresh not supported by this plugin")
@@ -215,6 +224,7 @@ class FlextApiProtocolPluginTypes:
 
             Returns:
                 The resulting ``bool``.
+
             """
             return False
 

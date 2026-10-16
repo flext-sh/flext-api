@@ -43,10 +43,16 @@ class FlextApi(s[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """HTTP DELETE - delegates to generic method.
+        """Perform an HTTP DELETE request through the generic client path.
+
+        Args:
+            url: Request URL.
+            headers: Optional additional headers.
+            request_kwargs: Optional transport kwargs merged into the request.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.DELETE,
@@ -57,10 +63,14 @@ class FlextApi(s[bool]):
 
     @override
     def execute(self, **kwargs: t.Scalar) -> p.Result[bool]:
-        """Execute s interface.
+        """Execute the service lifecycle parity hook.
+
+        Args:
+            **kwargs: Optional execution context; logged when present.
 
         Returns:
-            The resulting ``p.Result[bool]``.
+            Successful ``True`` result.
+
         """
         if kwargs:
             self.logger.info("Execute called with kwargs: %s", kwargs)
@@ -72,10 +82,16 @@ class FlextApi(s[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """HTTP GET - delegates to generic method.
+        """Perform an HTTP GET request through the generic client path.
+
+        Args:
+            url: Request URL.
+            headers: Optional additional headers.
+            request_kwargs: Optional transport kwargs merged into the request.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.GET,
@@ -91,10 +107,17 @@ class FlextApi(s[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """HTTP PATCH - delegates to generic method.
+        """Perform an HTTP PATCH request through the generic client path.
+
+        Args:
+            url: Request URL.
+            data: Optional request body.
+            headers: Optional additional headers.
+            request_kwargs: Optional transport kwargs merged into the request.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.PATCH,
@@ -111,10 +134,17 @@ class FlextApi(s[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """HTTP POST - delegates to generic method.
+        """Perform an HTTP POST request through the generic client path.
+
+        Args:
+            url: Request URL.
+            data: Optional request body.
+            headers: Optional additional headers.
+            request_kwargs: Optional transport kwargs merged into the request.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.POST,
@@ -131,10 +161,17 @@ class FlextApi(s[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """HTTP PUT - delegates to generic method.
+        """Perform an HTTP PUT request through the generic client path.
+
+        Args:
+            url: Request URL.
+            data: Optional request body.
+            headers: Optional additional headers.
+            request_kwargs: Optional transport kwargs merged into the request.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            Response payload or error result.
+
         """
         return self._http_method(
             method=c.Api.Method.PUT,
@@ -145,13 +182,13 @@ class FlextApi(s[bool]):
         )
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        """Execute HTTP request - pure delegation to client.
+        """Execute an HTTP request, delegating purely to the client.
 
         Args:
-        request: HttpRequest model.
+            request: Prepared HTTP request model.
 
         Returns:
-        r[HttpResponse]: Response or error.
+            Response payload or error result.
 
         """
         return self.client.request(request)
@@ -164,17 +201,17 @@ class FlextApi(s[bool]):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        """Execute a generic HTTP method using monadic patterns - no fallbacks.
+        """Execute a generic HTTP method using monadic patterns, without fallbacks.
 
         Args:
-        method: HTTP method (GET, POST, etc.).
-        url: Request URL.
-        data: Optional body.
-        headers: Optional headers.
-        request_kwargs: Additional parameters aligned with FlextApiModels.HttpRequest.
+            method: HTTP method (GET, POST, etc.).
+            url: Request URL.
+            data: Optional request body.
+            headers: Optional additional headers.
+            request_kwargs: Optional transport kwargs merged into the request.
 
         Returns:
-        r[HttpResponse]: Response or error.
+            Response payload or error result.
 
         """
         chain: p.Result[m.Api.HttpResponse] = (

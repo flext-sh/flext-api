@@ -26,6 +26,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
 
         Returns:
             The resulting ``p.Result[m.Api.HttpRequest]``.
+
         """
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
             str(settings.Api.timeout),
@@ -63,6 +64,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
 
         Returns:
             The resulting ``p.Result[m.Api.HttpResponse]``.
+
         """
         response_payload: t.JsonMapping = {
             "status_code": c.Api.HTTP_SUCCESS_MIN,
@@ -84,6 +86,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
 
         Returns:
             The resulting ``p.Result[t.JsonMapping]``.
+
         """
         self._emit("FLEXT API - Basic Usage")
         self._emit("=======================")
@@ -153,6 +156,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
 
         Returns:
             The resulting ``m.Api.StorageState``.
+
         """
         entry_value: t.JsonValue = t.Api.API_JSON_VALUE_ADAPTER.validate_python(
             response.body or {},
