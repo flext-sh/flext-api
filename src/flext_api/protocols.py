@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """Generic protocol definitions for HTTP operations.
 
 All protocol interfaces are centralized here following FLEXT standards.
