@@ -80,7 +80,6 @@ class FlextApiClientCodecMixin:
             KeyError,
             httpx.HTTPError,
             ConnectionError,
-            c.ValidationError,
         ) as exc:
             return r[t.Api.ResponseBody].fail_op("JSON deserialization", exc)
         else:
