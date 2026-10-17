@@ -7,10 +7,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from http import HTTPMethod
 from types import MappingProxyType
 from typing import Final
 
-from flext_web import FlextWebConstants, t
+from flext_core import c
+from flext_web import t
 from httpx import HTTPError as _HttpxError
 
 from flext_api._constants import FlextApiConstantsEnums
@@ -26,32 +28,34 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
         ValueError,
         _HttpxError,
     )
-    METHOD_LITERALS_HEAD_LOWER: Final[str] = "head"
-    SAFE_METHODS: Final[frozenset[str]] = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
-    TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({
-        "completed",
-        "failed",
-        "error",
-    })
+    SAFE_METHODS: Final[frozenset[str]] = frozenset(
+        member.value
+        for member in (
+            HTTPMethod.GET,
+            HTTPMethod.HEAD,
+            HTTPMethod.OPTIONS,
+            HTTPMethod.TRACE,
+        )
+    )
+    TERMINAL_STATUSES: Final[frozenset[str]] = frozenset(
+        member.value
+        for member in (
+            FlextApiConstantsEnums.Status.COMPLETED,
+            FlextApiConstantsEnums.Status.FAILED,
+            FlextApiConstantsEnums.Status.ERROR,
+        )
+    )
     VALID_STATUSES: Final[frozenset[str]] = frozenset(
         member.value for member in FlextApiConstantsEnums.Status.__members__.values()
     )
-    DEFAULT_TIMEOUT: Final[float] = float(FlextWebConstants.DEFAULT_TIMEOUT_SECONDS)
+    DEFAULT_TIMEOUT: Final[int] = c.DEFAULT_TIMEOUT_SECONDS
     MAX_HOSTNAME_LENGTH: Final[int] = 253
     MAX_URL_LENGTH: Final[int] = 2048
-    MIN_PORT: Final[int] = 1
-    MAX_PORT: Final[int] = 65535
-    VALID_HTTP_METHODS: Final[frozenset[str]] = frozenset({
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "HEAD",
-        "OPTIONS",
-        "CONNECT",
-        "TRACE",
-    })
+    MIN_PORT: Final[int] = c.MIN_PORT
+    MAX_PORT: Final[int] = c.MAX_PORT
+    VALID_HTTP_METHODS: Final[frozenset[str]] = frozenset(
+        member.value for member in HTTPMethod
+    )
     HTTP_SUCCESS_MIN: Final[int] = 200
     HTTP_SUCCESS_MAX: Final[int] = 300
     HTTP_REDIRECT_MIN: Final[int] = 300
