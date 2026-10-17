@@ -22,10 +22,7 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     """API scalar constants mixed into ``c.Api``."""
 
     EXC_HTTPX: Final[t.VariadicTuple[type[Exception]]] = (
-        ConnectionError,
-        KeyError,
-        TypeError,
-        ValueError,
+        *c.EXC_HTTP_PROCESSING,
         _HttpxError,
     )
     SAFE_METHODS: Final[frozenset[str]] = frozenset(
