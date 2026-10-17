@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FlextApi utilities facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -10,10 +11,12 @@ from typing import TYPE_CHECKING
 
 from flext_web import FlextWebUtilities
 
-from flext_api._utilities.base import FlextApiUtilitiesBase
-from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
-from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
-from flext_api._utilities.transport import FlextApiUtilitiesTransport
+from flext_api._utilities import (
+    FlextApiUtilitiesBase,
+    FlextApiUtilitiesRequestUtils,
+    FlextApiUtilitiesSerializers,
+    FlextApiUtilitiesTransport,
+)
 
 if TYPE_CHECKING:
     from flext_api import t

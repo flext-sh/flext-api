@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FLEXT API model facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -10,12 +11,14 @@ from typing import TYPE_CHECKING
 
 from flext_web import FlextWebModels
 
-from flext_api._models.base import FlextApiModelsBase
-from flext_api._models.config import FlextApiModelsApiNamespace
-from flext_api._models.request import FlextApiModelsRequest
-from flext_api._models.response import FlextApiModelsResponse
-from flext_api._models.storage import FlextApiModelsStorage
-from flext_api._models.webhook import FlextApiModelsWebhook
+from flext_api._models import (
+    FlextApiModelsApiNamespace,
+    FlextApiModelsBase,
+    FlextApiModelsRequest,
+    FlextApiModelsResponse,
+    FlextApiModelsStorage,
+    FlextApiModelsWebhook,
+)
 
 if TYPE_CHECKING:
     from flext_api import t
