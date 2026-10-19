@@ -10,7 +10,7 @@ import time
 from collections.abc import MutableMapping
 from typing import Annotated, ClassVar
 
-from flext_web import m, u
+from flext_web import m
 
 from flext_api import t
 
@@ -24,23 +24,23 @@ class FlextApiModelsStorage:
         """Canonical storage settings."""
 
         namespace: str = m.Field(
-            "flext_api",
+            default="flext_api",
             description="Logical namespace for this storage instance",
             validate_default=True,
         )
         backend: str = m.Field(
-            "memory",
+            default="memory",
             description="Storage backend identifier",
             validate_default=True,
         )
         max_size: int | None = m.Field(
-            None,
+            default=None,
             description="Maximum number of entries kept in memory",
             gt=0,
             validate_default=True,
         )
         default_ttl: int | None = m.Field(
-            None,
+            default=None,
             description="Default entry TTL in seconds",
             gt=0,
             validate_default=True,
@@ -66,10 +66,9 @@ class FlextApiModelsStorage:
         created_at: Annotated[
             float,
             m.Field(
-                default_factory=time.time,
                 description="Monotonic creation timestamp",
             ),
-        ]
+        ] = m.Field(default_factory=time.time)
 
         @property
         def expired(self) -> bool:
