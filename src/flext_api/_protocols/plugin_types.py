@@ -215,7 +215,8 @@ class FlextApiProtocolPluginTypes:
                 The resulting ``p.Result[t.JsonMapping]``.
 
             """
-            _ = credentials
+            if not credentials:
+                return r[t.JsonMapping].fail("Refresh requires credentials")
             return r[t.JsonMapping].fail("Refresh not supported by this plugin")
 
         @staticmethod

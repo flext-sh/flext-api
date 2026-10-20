@@ -9,7 +9,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
-from flext_web import m, u
+from flext_web import m
 
 from flext_api import c, t
 
@@ -49,7 +49,7 @@ class FlextApiModelsResponse:
             m.Field(description="Associated request ID for tracking"),
         ] = ""
 
-        @u.field_validator("body", mode="before")
+        @m.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.ResponseBody:
             """Normalize the response body before validation.
