@@ -243,7 +243,7 @@ def test_get_user_success() -> None:
 def test_get_user_not_found() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/999")
-    assert result.failure
+    tm.fail(result)
     assert "404" in result.error
 
 

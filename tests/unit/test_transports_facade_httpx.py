@@ -26,17 +26,17 @@ class TestsFlextApiHttpxContracts:
     @staticmethod
     def test_client_primitives_are_the_owner_types() -> None:
         """Client factories and response type are the httpx owner types."""
-        tm.that(HttpxClient is httpx.Client, eq=True)
-        tm.that(HttpxAsyncClient is httpx.AsyncClient, eq=True)
-        tm.that(HttpxResponse is httpx.Response, eq=True)
+        tm.ok(HttpxClient is httpx.Client)
+        tm.ok(HttpxAsyncClient is httpx.AsyncClient)
+        tm.ok(HttpxResponse is httpx.Response)
 
     @staticmethod
     def test_exception_primitives_are_the_owner_types() -> None:
         """Exception types match the httpx owner for consumer except clauses."""
-        tm.that(HttpxHTTPError is httpx.HTTPError, eq=True)
-        tm.that(HttpxHTTPStatusError is httpx.HTTPStatusError, eq=True)
-        tm.that(HttpxRequestError is httpx.RequestError, eq=True)
-        tm.that(HttpxTimeoutException is httpx.TimeoutException, eq=True)
+        tm.ok(HttpxHTTPError is httpx.HTTPError)
+        tm.ok(HttpxHTTPStatusError is httpx.HTTPStatusError)
+        tm.ok(HttpxRequestError is httpx.RequestError)
+        tm.ok(HttpxTimeoutException is httpx.TimeoutException)
 
     @staticmethod
     def test_conflict_status_is_derived_from_the_owner() -> None:
@@ -50,7 +50,7 @@ class TestsFlextApiHttpxContracts:
         """A real client constructs and closes through the owner type."""
         client = HttpxClient(timeout=2.0)
         try:
-            tm.that(client.is_closed, eq=False)
+            tm.fail(client.is_closed)
         finally:
             client.close()
-        tm.that(client.is_closed, eq=True)
+        tm.ok(client.is_closed)

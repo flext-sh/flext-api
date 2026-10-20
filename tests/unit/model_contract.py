@@ -149,7 +149,7 @@ class TestsFlextApiModelContract:
         built = m.Api.create_response(status_code=200, body={"a": 1})
         tm.that(built.status_code, eq=200)
         tm.that(built.body, eq={"a": 1})
-        tm.that(built.success, eq=True)
+        tm.ok(built.success)
 
     # ---- Serializer contract --------------------------------------------
 
@@ -168,5 +168,5 @@ class TestsFlextApiModelContract:
     def test_packb_unpackb_is_lossless_roundtrip(original: t.JsonMapping) -> None:
         """Packing then unpacking reproduces the original payload."""
         result = u.Api.unpackb(u.Api.packb(original))
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)
