@@ -69,8 +69,8 @@ class FakeLoggingApi(LoggingApi):
 
 api = FakeLoggingApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.get("/users")
-assert result.success
-assert result.unwrap().status_code == 200
+tm.ok(result.success)
+tm.that(result.unwrap().status_code, eq=200)
 ```
 
 ## What Is Not Implemented

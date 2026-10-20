@@ -197,8 +197,8 @@ class MyApiConfig(FlextApiSettings):
 
 
 config = MyApiConfig(base_url="https://api.example.com", custom_setting="custom")
-assert config.custom_setting == "custom"
-assert config.Api.base_url == "https://api.example.com"
+tm.that(config.custom_setting, eq="custom")
+tm.that(config.Api.base_url, eq="https://api.example.com")
 ```
 
 ## HTTP Models
@@ -221,7 +221,7 @@ request = m.Api.HttpRequest(
 
 json_data = request.model_dump_json(exclude={"content_type"})
 deserialized = m.Api.HttpRequest.model_validate_json(json_data)
-assert deserialized.method == "POST"
+tm.that(deserialized.method, eq="POST")
 
 response = m.Api.create_response(
     status_code=201,
@@ -229,7 +229,7 @@ response = m.Api.create_response(
     body={"id": 1, "name": "Alice"},
 )
 assert response.success
-assert response.status_code == 201
+tm.that(response.status_code, eq=201)
 ```
 
 ## HTTP Utilities

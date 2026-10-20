@@ -167,8 +167,8 @@ class FakeUserApi(UserApi):
 
 api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.fetch_user(123)
-assert result.success
-assert result.unwrap().body["name"] == "Alice"
+tm.ok(result.success)
+tm.that(result.unwrap().body["name"], eq="Alice")
 ```
 
 ### Usage in Application Code
@@ -236,8 +236,8 @@ class FakeUserApi(FlextApi):
 def test_get_user_success() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/123")
-    assert result.success
-    assert result.unwrap().body["name"] == "John"
+    tm.ok(result.success)
+    tm.that(result.unwrap().body["name"], eq="John")
 
 
 def test_get_user_not_found() -> None:

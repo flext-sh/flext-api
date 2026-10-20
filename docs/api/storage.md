@@ -64,10 +64,10 @@ api = FakeFileUploadApi(
     runtime_settings=FlextApiSettings(base_url="https://example.com"),
 )
 result = api.upload_document("report.txt", b"Hello, FLEXT!")
-assert result.success
+tm.ok(result.success)
 body = result.unwrap().body
-assert body["filename"] == "report.txt"
-assert body["id"] == 1
+tm.that(body["filename"], eq="report.txt")
+tm.that(body["id"], eq=1)
 ```
 
 ## What Is Not Implemented

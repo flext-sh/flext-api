@@ -84,7 +84,7 @@ assert "json-schema" in manager.list_loaded_plugins()
 
 resolve_result = manager.resolve_plugin("json-schema")
 assert resolve_result.success
-assert resolve_result.unwrap().version == "1.0.0"
+tm.that(resolve_result.unwrap().version, eq="1.0.0")
 
 assert manager.unload_plugin("json-schema").success
 ```
@@ -126,8 +126,8 @@ class FakeHttpApi(HttpOnlyApi):
 
 api = FakeHttpApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.health_check()
-assert result.success
-assert result.unwrap().body["status"] == "healthy"
+tm.ok(result.success)
+tm.that(result.unwrap().body["status"], eq="healthy")
 ```
 
 ## What Is Not Implemented

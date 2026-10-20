@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import MutableMapping
+from datetime import UTC, datetime
 from typing import Annotated, ClassVar
 
 from flext_web import m
@@ -104,7 +105,9 @@ class FlextApiModelsStorage:
             validate_default=True,
         )
         created_at: str = m.Field(
-            default_factory=u.generate_iso_timestamp,
+            default_factory=lambda: (
+                datetime.now(UTC).replace(microsecond=0).isoformat()
+            ),
             description="Creation timestamp for this storage instance",
         )
 
