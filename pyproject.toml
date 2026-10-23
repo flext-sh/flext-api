@@ -260,7 +260,6 @@ project-excludes = [
   "**/site-packages/**",
   "**/site/**",
   "**/target/**",
-  "**/typings/**",
   "**/venv/**",
 ]
 project-includes = ["examples/**/*.py*", "src/**/*.py*", "tests/**/*.py*"]
@@ -416,6 +415,7 @@ reportIncompatibleMethodOverride = "error"
 reportInconsistentConstructor = "error"
 reportMissingImports = "error"
 reportMissingModuleSource = "error"
+reportMissingTypeStubs = "none"
 reportPrivateUsage = "error"
 reportUnnecessaryCast = "error"
 reportUnnecessaryComparison = "error"
@@ -595,6 +595,28 @@ msg = "Use cli.render_table from flext_cli."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.typer]
 msg = "Use cli.create_app_with_common_params / cli.register_command from flext_cli."
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+  "flext_api.FlextApiServiceBase",
+  "flext_api.FlextApiSettings",
+  "flext_api._models.FlextApiModelsApiNamespace",
+  "flext_api.s",
+  "flext_api.services.FlextApiClientBase",
+  "flext_cli.m.BaseModel",
+  "flext_cli.services.cli.FlextCliCli",
+  "flext_core.FlextConfig",
+  "flext_core.FlextService",
+  "flext_core.FlextSettings",
+  "flext_tests.FlextTestsServiceBase",
+  "flext_tests.FlextTestsSettings",
+  "flext_web.FlextWebModels",
+  "flext_web.m.BaseModel",
+  "flext_web.m.FlexibleInternalModel",
+  "flext_web.m.Value",
+  "pydantic.BaseModel",
+  "tests.m",
+]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
