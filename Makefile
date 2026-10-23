@@ -306,10 +306,15 @@ git_root="$$(git -C "$${project_root}" rev-parse --show-toplevel)"; \
 git_root="$$(cd "$${git_root}" && pwd -P)"; \
 case "$${project_root}/" in ("$${git_root}/"*) ;; (*) printf 'ERROR: physical Git root does not contain this project: %s\n' "$${git_root}" >&2; exit 2 ;; esac; \
 if [ "$${GITHUB_ACTIONS:-}" = "true" ]; then printf '%s\n' "$${project_root}"; exit 0; fi; \
-superproject="$$(git -C "$${project_root}" rev-parse --show-superproject-working-tree)"; \
-if [ -n "$${superproject}" ] && [ -f "$${superproject}/pyproject.toml" ]; then \
-	cd "$${superproject}" && pwd -P; \
-	exit 0; \
+attached="$$(git -C "$${git_root}" rev-parse --show-superproject-working-tree)"; \
+if [ -n "$${attached}" ] && [ -f "$${attached}/pyproject.toml" ]; then \
+	attached="$$(cd "$${attached}" && pwd -P)"; \
+	member_keys="$$(git -C "$${attached}" config --file .gitmodules --name-only --get-regexp '^submodule\..*\.path$$')"; \
+	for member_key in $${member_keys}; do \
+		member_path="$$(git -C "$${attached}" config --file .gitmodules --get "$${member_key}")"; \
+		if [ "$${attached}/$${member_path}" -ef "$${git_root}" ]; then printf '%s\n' "$${attached}"; exit 0; fi; \
+	done; \
+	printf 'ERROR: attached runtime has no original member declaration: %s\n' "$${git_root}" >&2; exit 2; \
 fi; \
 reader_root=; \
 parent="$$(dirname "$${project_root}")"; \
@@ -432,11 +437,21 @@ case "$(strip $(MAKECMDGOALS))" in (setup|upg) \
 	export MISE_SHIMS_DIR="$${mise_bootstrap_root}/$${mise_receipt}/shims"; \
 	}; \
 		mise_qualify; \
-		"$${mise_bootstrap_bin}" -C "$${reader_root}" install --locked --yes "uv"; \
 	} >&2; \
 	reader_mise="$${mise_bootstrap_bin}"; \
 ;; esac; \
 uv_requested="$$("$${reader_mise}" -C "$${reader_root}" tool "uv" --requested)"; \
+case "$(strip $(MAKECMDGOALS))" in (setup|upg) \
+	uv_active="$$("$${reader_mise}" -C "$${reader_root}" tool "uv" --active)"; \
+	uv_installed="$$("$${reader_mise}" -C "$${reader_root}" tool "uv" --installed)"; \
+	uv_present=; \
+	for uv_version in $${uv_installed}; do \
+		if [ "$${uv_version}" = "$${uv_active}" ]; then uv_present=Y; fi; \
+	done; \
+	if [ -z "$${uv_present}" ]; then \
+		"$${reader_mise}" -C "$${reader_root}" install --locked --yes "uv" >&2; \
+	fi; \
+;; esac; \
 uv_binary="$$("$${reader_mise}" -C "$${reader_root}" which "uv" --tool "uv@$${uv_requested}")"; \
 if [ ! -x "$${uv_binary}" ]; then printf 'ERROR: native workspace reader is not provisioned; run make setup\n' >&2; exit 2; fi; \
 owner="$$("$${uv_binary}" workspace dir --project "$${project_root}")"; \
@@ -819,6 +834,9 @@ _bootstrap_setup_tools:
 	"$${mise_bootstrap_bin}" -C "$(PROJECT_ROOT)" exec -- env "PATH=$$(dirname "$${mise_bootstrap_bin}"):$${MISE_SHIMS_DIR}:$${PATH}" "CI=$(CI)" $(SELF_MAKE) $(TOOL_BOOTSTRAP_LIFECYCLE); \
 	bootstrap_stage=complete; bootstrap_completed=true
 _bootstrap_setup_tools: _builtin_require_workspace
+ifneq ($(EDITABLE_SUPPLIER_ACTIVE),)
+_bootstrap_setup_tools: _builtin_require_editable_supplier
+endif
 
 # UV, not Git attachment or runtime environment selection, owns lock discovery.
 .PHONY: _builtin_require_upg_lock_owner
@@ -843,12 +861,16 @@ _builtin_require_upg_lock_owner:
 # and extra. The topology-derived tool.uv.sources selects each member's live
 # editable path in the committed lock; CI's --no-editable keeps frozen builds.
 # Attached projects inherit this root's lock and never install over its graph.
-EDITABLE_RESOLUTION_RECIPE = set -eu; \
+EDITABLE_SUPPLIER_PREFLIGHT = set -eu; \
 	supplier="$(FLEXT_INFRA_EDITABLE_SUPPLIER_ROOT)"; \
 	case "$$supplier" in (/*) ;; (*) printf 'ERROR: editable supplier root must be an absolute path\n' >&2; exit 2 ;; esac; \
 	if [ ! -d "$$supplier" ]; then printf 'ERROR: editable supplier root is not a directory: %s\n' "$$supplier" >&2; exit 2; fi; \
 	supplier_resolution="$$supplier/.flext/uv/local"; \
-	if [ ! -f "$$supplier_resolution/uv.lock" ]; then printf 'ERROR: selected supplier has no native bootstrap lock: %s\n' "$$supplier_resolution" >&2; exit 2; fi; \
+	if [ ! -f "$$supplier_resolution/uv.lock" ]; then printf 'ERROR: selected supplier has no native bootstrap lock: %s\n' "$$supplier_resolution" >&2; exit 2; fi
+.PHONY: _builtin_require_editable_supplier
+_builtin_require_editable_supplier:
+	@$(EDITABLE_SUPPLIER_PREFLIGHT)
+EDITABLE_RESOLUTION_RECIPE = $(EDITABLE_SUPPLIER_PREFLIGHT); \
 	desired_python="$$(mise -C "$(RUNTIME_ROOT)" which python)"; \
 	bootstrap_infra() { env -u PYTHONPATH -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u UV_PROJECT_ENVIRONMENT $(UV) run --isolated --frozen --all-groups --project "$$supplier_resolution" --python "$$desired_python" -m flext_infra "$$@"; }; \
 	bootstrap_infra codegen generate --root "$(PROJECT_ROOT)" --what pyproject --scope self
@@ -2050,19 +2072,19 @@ _builtin_clean_generated:
 # commit; `build` writes the artifact receipt; `publish` uploads exactly what
 # the receipt attests (INDEX=Y adds the package index).
 _builtin_release_plan: _builtin_require_environment
-	@$(PROJECT_FLEXT_INFRA) release run --phase plan $(if $(strip $(PR_TITLE)),--pr-title "$(PR_TITLE)")
+	@$(PROJECT_FLEXT_INFRA) release run --repository-root "$(PROJECT_ROOT)" --phase plan $(if $(strip $(PR_TITLE)),--pr-title "$(PR_TITLE)")
 
 _builtin_release_version: _builtin_require_environment
-	@$(PROJECT_FLEXT_INFRA) release run --phase version --apply
+	@$(PROJECT_FLEXT_INFRA) release run --repository-root "$(PROJECT_ROOT)" --phase version --apply
 
 _builtin_release_tag: _builtin_require_environment
-	@$(PROJECT_FLEXT_INFRA) release run --phase tag --apply
+	@$(PROJECT_FLEXT_INFRA) release run --repository-root "$(PROJECT_ROOT)" --phase tag --apply
 
 _builtin_release_build: _builtin_require_environment
-	@$(PROJECT_FLEXT_INFRA) release run --phase build --apply
+	@$(PROJECT_FLEXT_INFRA) release run --repository-root "$(PROJECT_ROOT)" --phase build --apply
 
 _builtin_release_publish: _builtin_require_environment
-	@$(PROJECT_FLEXT_INFRA) release run --phase publish --apply $(if $(filter Y,$(INDEX)),--index)
+	@$(PROJECT_FLEXT_INFRA) release run --repository-root "$(PROJECT_ROOT)" --phase publish --apply $(if $(filter Y,$(INDEX)),--index)
 
 # Generation uses the shared planner and transaction publisher for the declared
 # projections. It never repairs authored declarations or resolves dependencies.
