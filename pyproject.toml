@@ -133,12 +133,14 @@ package_name = "flext_api"
 scan_dirs = ["src"]
 
 [tool.hatch.build.targets.wheel]
+exclude = ["/src/flext_api/config"]
 only-include = ["src/flext_api"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/flext_api" = "flext_api"
 
 [tool.hatch.build.targets.wheel.force-include]
+"src/flext_api/config" = "flext_api/config"
 "pyproject.toml" = "flext_api/pyproject.toml"
 
 [tool.hatch.build.targets.sdist]
