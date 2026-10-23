@@ -73,7 +73,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
                 "url": request.url,
                 "headers": dict(request.headers),
             },
-            "request_id": "example-request",
+            c.ContextKey.REQUEST_ID: "example-request",
         }
         response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
             m.Api.HttpResponse.model_validate(response_payload),

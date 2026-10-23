@@ -303,7 +303,7 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
         **kwargs: t.Scalar,
     ) -> p.Result[t.JsonMapping]:
         return r[t.JsonMapping].ok(
-            {"status": 200, "request": request, "kwargs": kwargs},
+            {"status": 200, c.ContextScope.REQUEST: request, "kwargs": kwargs},
         )
 
 

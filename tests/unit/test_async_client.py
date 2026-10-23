@@ -17,7 +17,7 @@ import pytest
 
 from flext_api import settings
 from flext_api.services import FlextApiAsyncClient
-from tests import tm
+from tests import c, tm
 from tests.unit.model_contract import TestsFlextApiModelContract
 
 
@@ -62,7 +62,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
         client = FlextApiAsyncClient(runtime_settings=settings)
 
         # Verify the client has the expected async interface
-        tm.ok(hasattr(client, "request"))
+        tm.ok(hasattr(client, c.ContextScope.REQUEST))
         tm.ok(callable(client.request))
 
         # execute() should still work synchronously for lifecycle
@@ -84,7 +84,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
         tm.ok(callable(client.execute))
 
         # Async-specific method
-        tm.ok(hasattr(client, "request"))
+        tm.ok(hasattr(client, c.ContextScope.REQUEST))
         tm.ok(callable(client.request))
 
         # Verify request is async

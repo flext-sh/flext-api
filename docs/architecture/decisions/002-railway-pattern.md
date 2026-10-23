@@ -186,7 +186,7 @@ class FakeProfileApi(FlextApi):
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
-                body={"user_id": 123, "bio": "FLEXT enthusiast"},
+                body={c.ContextKey.USER_ID: 123, "bio": "FLEXT enthusiast"},
                 headers={"Content-Type": "application/json"},
             )
         )
