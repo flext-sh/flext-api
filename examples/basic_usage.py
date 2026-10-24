@@ -166,11 +166,11 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         # NOTE (multi-agent): avoid shadowing the module-level ``settings``
         # singleton (ADR-005 namespaced settings); use a distinct local name.
         storage_settings = m.Api.StorageSettings(namespace=namespace, default_ttl=ttl)
-        entry = m.Api.StorageMetadata.model_validate({
-            "value": entry_value,
-            "timestamp": u.generate_iso_timestamp(),
-            "ttl": storage_settings.default_ttl,
-        })
+        entry = m.Api.StorageMetadata(
+            value=entry_value,
+            timestamp=u.generate_iso_timestamp(),
+            ttl=storage_settings.default_ttl,
+        )
         state = m.Api.StorageState(
             entries={"latest-response": entry},
             operations_count=2,

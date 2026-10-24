@@ -30,16 +30,6 @@ class FlextApiTypingsBase:
         | None,
     ]
     "HTTP response as dictionary (status_code, headers, body, request_id)."
-    type RouteData = FlextWebTypes.MappingKV[
-        str,
-        FlextWebTypes.JsonValue
-        | FlextWebTypes.ConfigurationMapping
-        | FlextWebTypes.JsonMapping
-        | FlextWebTypes.ResourceCallable
-        | Callable[..., HttpResponseDict | str | None]
-        | None,
-    ]
-    "Route registration data structure."
     type WebhookHandler = Callable[
         [FlextWebTypes.JsonMapping],
         FlextWebTypes.JsonValue | p.Result[bool] | None,
