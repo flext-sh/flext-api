@@ -181,6 +181,7 @@ optional_dependencies_dev_groups = []
 allow_redefinition = true
 check_untyped_defs = true
 disable_error_code = ["call-arg", "prop-decorator"]
+exclude = "(?s:(?:.+/)?[^/]*\\.bak)\\Z|(?s:(?:.+/)?[^/]*\\.egg\\-info/.*)\\Z|(?s:(?:.+/)?[^/]*\\.orig)\\Z|(?s:(?:.+/)?[^/]*\\.rej)\\Z|(?s:(?:.+/)?[^/]*\\.swp)\\Z|(?s:(?:.+/)?\\.agents\\-sync\\-home/.*)\\Z|(?s:(?:.+/)?\\.agents/.*)\\Z|(?s:(?:.+/)?\\.archive/.*)\\Z|(?s:(?:.+/)?\\.beads/.*)\\Z|(?s:(?:.+/)?\\.benchmarks/.*)\\Z|(?s:(?:.+/)?\\.bkp/.*)\\Z|(?s:(?:.+/)?\\.cache/.*)\\Z|(?s:(?:.+/)?\\.claude/.*)\\Z|(?s:(?:.+/)?\\.codex/.*)\\Z|(?s:(?:.+/)?\\.cursor/.*)\\Z|(?s:(?:.+/)?\\.gemini/.*)\\Z|(?s:(?:.+/)?\\.git/.*)\\Z|(?s:(?:.+/)?\\.hypothesis/.*)\\Z|(?s:(?:.+/)?\\.kilo/.*)\\Z|(?s:(?:.+/)?\\.mypy_cache/.*)\\Z|(?s:(?:.+/)?\\.omo/.*)\\Z|(?s:(?:.+/)?\\.opencode/.*)\\Z|(?s:(?:.+/)?\\.pylance_cache/.*)\\Z|(?s:(?:.+/)?\\.pyrefly_cache/.*)\\Z|(?s:(?:.+/)?\\.pytest_cache/.*)\\Z|(?s:(?:.+/)?\\.reports/.*)\\Z|(?s:(?:.+/)?\\.ruff_cache/.*)\\Z|(?s:(?:.+/)?\\.serena/.*)\\Z|(?s:(?:.+/)?\\.snapshots/.*)\\Z|(?s:(?:.+/)?\\.test\\-tmp/.*)\\Z|(?s:(?:.+/)?\\.tmp/.*)\\Z|(?s:(?:.+/)?\\.tox/.*)\\Z|(?s:(?:.+/)?\\.venv\\.[^/]*/.*)\\Z|(?s:(?:.+/)?\\.venv/.*)\\Z|(?s:(?:.+/)?\\.vscode/.*)\\Z|(?s:(?:.+/)?\\.worktrees/.*)\\Z|(?s:(?:.+/)?__pycache__/.*)\\Z|(?s:(?:.+/)?__pyrefly_virtual__/.*)\\Z|(?s:(?:.+/)?_tmp_[^/]*/.*)\\Z|(?s:(?:.+/)?build/.*)\\Z|(?s:(?:.+/)?dist\\-packages/.*)\\Z|(?s:(?:.+/)?dist/.*)\\Z|(?s:(?:.+/)?htmlcov/.*)\\Z|(?s:(?:.+/)?incoming/.*)\\Z|(?s:(?:.+/)?legado/.*)\\Z|(?s:(?:.+/)?node_modules/.*)\\Z|(?s:(?:.+/)?protos/.*)\\Z|(?s:(?:.+/)?reports/.*)\\Z|(?s:(?:.+/)?site\\-packages/.*)\\Z|(?s:(?:.+/)?site/.*)\\Z|(?s:(?:.+/)?target/.*)\\Z|(?s:(?:.+/)?tests/fixtures/[^/]+/.*)\\Z|(?s:(?:.+/)?venv/.*)\\Z"
 explicit_package_bases = true
 extra_checks = true
 follow_imports = "normal"
@@ -459,6 +460,7 @@ filterwarnings = [
   "module::flext_core._constants.enforcement.FlextMroViolation",
   "once::pytest.PytestAssertRewriteWarning",
 ]
+flext_fixture_trees_root = "tests/fixtures"
 flext_make_ci_value = "Y"
 flext_make_ci_variable = "CI"
 flext_slow_timeout_seconds = "30"
@@ -481,7 +483,6 @@ markers = [
   "requires_engine: native check engine required by this test",
 ]
 minversion = "8.0"
-pytester_example_dir = "tests/fixtures"
 python_classes = ["Test*"]
 python_files = ["*_test.py", "*_tests.py", "test_*.py"]
 testpaths = ["tests"]
@@ -603,26 +604,6 @@ msg = "Use cli.render_table from flext_cli."
 [tool.ruff.lint.flake8-tidy-imports.banned-api.typer]
 msg = "Use cli.create_app_with_common_params / cli.register_command from flext_cli."
 
-[tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-  "flext_api.FlextApiServiceBase",
-  "flext_api.FlextApiSettings",
-  "flext_api._models.FlextApiModelsApiNamespace",
-  "flext_api.s",
-  "flext_api.services.FlextApiClientBase",
-  "flext_cli.m.BaseModel",
-  "flext_cli.services.cli.FlextCliCli",
-  "flext_core.FlextConfig",
-  "flext_core.FlextService",
-  "flext_core.FlextSettings",
-  "flext_tests.FlextTestsServiceBase",
-  "flext_tests.FlextTestsSettings",
-  "flext_web.m.BaseModel",
-  "flext_web.m.FlexibleInternalModel",
-  "flext_web.m.Value",
-  "pydantic.BaseModel",
-]
-
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
@@ -654,6 +635,14 @@ section_whitelines = 1
 whitelines = 1
 
 [tool.uv]
+constraint-dependencies = [
+  "pillow>=13.0.0",
+  "certifi>=2026.10.19",
+  "setuptools>=84.1.0",
+  "virtualenv>=21.14.13",
+  "filelock>=4.2.1",
+  "uv>=0.13.4",
+]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 link-mode = "copy"
 override-dependencies = [
