@@ -42,14 +42,14 @@ per call.
 - Use the **typed HTTP methods / facade** — never bypass the shared client chain.
 - Request/response payloads are Pydantic-2 models (`model_dump(mode="json")` only at the
   wire edge).
-- Config/settings canonical pattern: ADR-012.
+- Config/settings canonical pattern: ADR-005 (SSOT) and ADR-024 (DI config contract).
 - Codemod governance (ast-grep + make mod): ADR-014.
 
 ## Commands
 
 ```bash
 make check
-make test
+make tests
 ```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->
