@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests import t, tm, u
+from tests import c, t, tm, u
 
 
 class TestsFlextApiSerializers:
