@@ -26,7 +26,7 @@ class FlextApi(s[bool]):
     """
 
     model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
-    _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
+    _client: FlextApiClient | None = m.PrivateAttr(default_factory=lambda: None)
 
     @property
     def client(self) -> FlextApiClient:

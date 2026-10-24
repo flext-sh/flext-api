@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FLEXT API Types - Unified domain-specific type definitions with Clean Architecture.
 
 Single class namespace with NO aliases, NO weak types.

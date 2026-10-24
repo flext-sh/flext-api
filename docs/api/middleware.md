@@ -35,7 +35,7 @@ class LoggingApi(FlextApi):
         headers: t.StrMapping | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
-        self.logger.info("request", url=url, method="GET")
+        self.logger.info(c.ContextScope.REQUEST, url=url, method="GET")
         result = super().get(url, headers=headers, request_kwargs=request_kwargs)
         if result.success:
             response = result.unwrap()
@@ -69,8 +69,8 @@ class FakeLoggingApi(LoggingApi):
 
 api = FakeLoggingApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.get("/users")
-assert result.success
-assert result.unwrap().status_code == 200
+tm.ok(result.success)
+tm.that(result.unwrap().status_code, eq=200)
 ```
 
 ## What Is Not Implemented

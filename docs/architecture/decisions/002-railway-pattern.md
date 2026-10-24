@@ -167,8 +167,8 @@ class FakeUserApi(UserApi):
 
 api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.fetch_user(123)
-assert result.success
-assert result.unwrap().body["name"] == "Alice"
+tm.ok(result.success)
+tm.that(result.unwrap().body["name"], eq="Alice")
 ```
 
 ### Usage in Application Code
@@ -186,7 +186,7 @@ class FakeProfileApi(FlextApi):
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
-                body={"user_id": 123, "bio": "FLEXT enthusiast"},
+                body={c.ContextKey.USER_ID: 123, "bio": "FLEXT enthusiast"},
                 headers={"Content-Type": "application/json"},
             )
         )
@@ -236,14 +236,14 @@ class FakeUserApi(FlextApi):
 def test_get_user_success() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/123")
-    assert result.success
-    assert result.unwrap().body["name"] == "John"
+    tm.ok(result.success)
+    tm.that(result.unwrap().body["name"], eq="John")
 
 
 def test_get_user_not_found() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/999")
-    assert result.failure
+    tm.fail(result)
     assert "404" in result.error
 
 

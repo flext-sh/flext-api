@@ -9,7 +9,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
-from flext_web import m, u
+from flext_web import m
 
 from flext_api import c, t
 
@@ -24,7 +24,7 @@ class FlextApiModelsResponse:
 
         status_code: Annotated[
             t.HttpStatusCode,
-            u.Field(
+            m.Field(
                 ...,
                 description=(
                     f"HTTP status code ({c.Api.HTTP_STATUS_MIN}-"
@@ -34,22 +34,22 @@ class FlextApiModelsResponse:
         ]
         headers: Annotated[
             t.StrMapping,
-            u.Field(description="HTTP response headers"),
-        ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
+            m.Field(description="HTTP response headers"),
+        ] = m.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
             t.Api.ResponseBody | None,
-            u.Field(description="Response body"),
+            m.Field(description="Response body"),
         ] = None
         content: Annotated[
             bytes,
-            u.Field(description="Exact response body bytes received on the wire"),
+            m.Field(description="Exact response body bytes received on the wire"),
         ] = b""
         request_id: Annotated[
             str,
-            u.Field(description="Associated request ID for tracking"),
+            m.Field(description="Associated request ID for tracking"),
         ] = ""
 
-        @u.field_validator("body", mode="before")
+        @m.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.ResponseBody:
             """Normalize the response body before validation.

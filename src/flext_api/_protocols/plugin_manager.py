@@ -133,7 +133,7 @@ class FlextApiProtocolPluginManager:
 
         def _log_shutdown_warning(self, error: str, plugin_name: str) -> None:
             """Log shutdown warnings while preserving tap_error's None contract."""
-            _ = self.logger.warning(
+            self.logger.warning(
                 "Plugin shutdown warning: %s",
                 error,
                 plugin=plugin_name,

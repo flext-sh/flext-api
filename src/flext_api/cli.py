@@ -18,14 +18,13 @@ class FlextApiCli(FlextCliCli):
     """Flext-api CLI facade — extends flext-cli CLI."""
 
 
-def main(args: t.StrSequence | None = None) -> int:
+def main() -> int:
     """Console-script entry point — commands are not implemented yet.
 
     Returns:
         The resulting ``int``.
 
     """
-    _ = args
     return 0
 
 

@@ -17,7 +17,7 @@ class FlextApiUtilitiesSerializers:
     """Serialization utilities for API operations."""
 
     @staticmethod
-    def packb(obj: t.JsonPayload) -> bytes:
+    def packb(obj: t.JsonPayload | t.JsonMapping) -> bytes:
         """Type-safe wrapper for msgpack.packb().
 
         Args:

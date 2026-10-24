@@ -9,7 +9,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
-from flext_web import m, u
+from flext_web import m
 
 from flext_api import c, t
 
@@ -24,34 +24,34 @@ class FlextApiModelsRequest:
 
         method: Annotated[
             c.Api.Method | str,
-            u.Field(
+            m.Field(
                 description="HTTP method",
                 pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
             ),
         ] = "GET"
         url: Annotated[
             t.NonEmptyStr,
-            u.Field(..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"),
+            m.Field(..., max_length=c.Api.MAX_URL_LENGTH, description="Request URL"),
         ]
         headers: Annotated[
             t.StrMapping,
-            u.Field(description="HTTP request headers"),
-        ] = u.Field(default_factory=lambda: MappingProxyType[str, str]({}))
+            m.Field(description="HTTP request headers"),
+        ] = m.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
             t.Api.RequestBody | None,
-            u.Field(description="Request body"),
+            m.Field(description="Request body"),
         ] = None
         query_params: Annotated[
             t.Api.WebParams | None,
-            u.Field(description="Query parameters"),
+            m.Field(description="Query parameters"),
         ] = None
         timeout: Annotated[
             t.PositiveTimeout,
-            u.Field(description="Request timeout in seconds"),
+            m.Field(description="Request timeout in seconds"),
         ] = float(c.Api.DEFAULT_TIMEOUT)
         sni_hostname: Annotated[
             str | None,
-            u.Field(
+            m.Field(
                 description=(
                     "TLS SNI / certificate hostname to verify when the URL "
                     "targets an explicit IP (httpx sni_hostname extension)."
@@ -59,7 +59,7 @@ class FlextApiModelsRequest:
             ),
         ] = None
 
-        @u.field_validator("body", mode="before")
+        @m.field_validator("body", mode="before")
         @classmethod
         def normalize_body(cls, v: t.JsonValue) -> t.Api.RequestBody:
             """Normalize the request body before validation.

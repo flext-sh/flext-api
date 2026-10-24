@@ -109,8 +109,8 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         """A configured client executes its lifecycle successfully."""
         client = FlextApiClient(runtime_settings=settings)
         result = client.execute()
-        tm.that(result.success, eq=True)
-        tm.that(result.value, eq=True)
+        tm.ok(result.success)
+        tm.ok(result.value)
 
     @staticmethod
     def test_facade_execute_reports_success_and_retains_settings() -> None:
@@ -120,8 +120,8 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         )
         api = FlextApi(runtime_settings=configured)
         result = api.execute()
-        tm.that(result.success, eq=True)
-        tm.that(result.value, eq=True)
+        tm.ok(result.success)
+        tm.ok(result.value)
         tm.that(api.settings.Api.base_url, eq=configured.Api.base_url)
         tm.that(api.settings.Api.timeout, eq=pytest.approx(configured.Api.timeout))
 
@@ -130,4 +130,4 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         """A facade built without settings still exposes a usable base_url."""
         api = FlextApi()
         tm.that(api.settings.Api.base_url, is_=str)
-        tm.that(api.execute().success, eq=True)
+        tm.ok(api.execute().success)

@@ -51,6 +51,6 @@ class TestsFlextApiResponseWireContent:
             )
             result = client.request(m.Api.HttpRequest(url=base_url, method="GET"))
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value.content, eq=payload)
         tm.that(result.value.body, eq={"answer": "ok"})
