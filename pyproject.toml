@@ -61,6 +61,7 @@ Homepage = "https://github.com/flext-sh/flext"
 
 [dependency-groups]
 dev = [
+  "types-networkx",
   "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
   "mkdocstrings-python>=2.0.9",
   "actionlint-py>=1.7.12.24",
@@ -133,15 +134,13 @@ package_name = "flext_api"
 scan_dirs = ["src"]
 
 [tool.hatch.build.targets.wheel]
-exclude = ["/src/flext_api/config"]
 only-include = ["src/flext_api"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/flext_api" = "flext_api"
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/flext_api/config" = "flext_api/config"
-"pyproject.toml" = "flext_api/pyproject.toml"
+[tool.hatch.build.targets.wheel.extra-metadata]
+"pyproject.toml" = "pyproject.toml"
 
 [tool.hatch.build.targets.sdist]
 only-include = ["src/flext_api"]
@@ -262,6 +261,7 @@ project-excludes = [
   "**/site-packages/**",
   "**/site/**",
   "**/target/**",
+  "**/tests/fixtures/*/**",
   "**/venv/**",
 ]
 project-includes = ["examples/**/*.py*", "src/**/*.py*", "tests/**/*.py*"]
@@ -405,6 +405,7 @@ exclude = [
   "**/site-packages/**",
   "**/site/**",
   "**/target/**",
+  "**/tests/fixtures/*/**",
   "**/venv/**",
 ]
 extraPaths = ["src", "."]
@@ -458,6 +459,8 @@ filterwarnings = [
   "module::flext_core._constants.enforcement.FlextMroViolation",
   "once::pytest.PytestAssertRewriteWarning",
 ]
+flext_make_ci_value = "Y"
+flext_make_ci_variable = "CI"
 flext_slow_timeout_seconds = "30"
 markers = [
   "smoke: public-interface smoke tests",
@@ -478,6 +481,7 @@ markers = [
   "requires_engine: native check engine required by this test",
 ]
 minversion = "8.0"
+pytester_example_dir = "tests/fixtures"
 python_classes = ["Test*"]
 python_files = ["*_test.py", "*_tests.py", "test_*.py"]
 testpaths = ["tests"]
@@ -535,6 +539,7 @@ extend-exclude = [
   "**/site-packages/**",
   "**/site/**",
   "**/target/**",
+  "**/tests/fixtures/*/**",
   "**/venv/**",
 ]
 fix = false
@@ -598,6 +603,26 @@ msg = "Use cli.render_table from flext_cli."
 [tool.ruff.lint.flake8-tidy-imports.banned-api.typer]
 msg = "Use cli.create_app_with_common_params / cli.register_command from flext_cli."
 
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+  "flext_api.FlextApiServiceBase",
+  "flext_api.FlextApiSettings",
+  "flext_api._models.FlextApiModelsApiNamespace",
+  "flext_api.s",
+  "flext_api.services.FlextApiClientBase",
+  "flext_cli.m.BaseModel",
+  "flext_cli.services.cli.FlextCliCli",
+  "flext_core.FlextConfig",
+  "flext_core.FlextService",
+  "flext_core.FlextSettings",
+  "flext_tests.FlextTestsServiceBase",
+  "flext_tests.FlextTestsSettings",
+  "flext_web.m.BaseModel",
+  "flext_web.m.FlexibleInternalModel",
+  "flext_web.m.Value",
+  "pydantic.BaseModel",
+]
+
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
@@ -632,5 +657,5 @@ whitelines = 1
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 link-mode = "copy"
 override-dependencies = [
-  "rope @ git+https://github.com/marlon-costa-dc/rope.git@2bf3ad55a32cc117f5321e1467695eba540be97b",
+  "rope @ git+https://github.com/marlon-costa-dc/rope.git@ff1c992a100ae983baa79188a6a970c2858734de",
 ]
