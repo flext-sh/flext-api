@@ -79,7 +79,7 @@ class TestsFlextApiSerializers:
     @staticmethod
     def test_packb_unpackb_roundtrip() -> None:
         """packb() followed by unpackb() yields the original value."""
-        original: t.JsonValue = {"key": "value", "list": [1, 2, 3]}
+        original: t.JsonValue = {"key": "value", c.Action.LIST: [1, 2, 3]}
         packed = u.Api.packb(original)
         result = u.Api.unpackb(packed)
 

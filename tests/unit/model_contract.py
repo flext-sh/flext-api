@@ -162,7 +162,7 @@ class TestsFlextApiModelContract:
 
     @pytest.mark.parametrize(
         "original",
-        [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}],
+        [{"hello": "world", c.Aggregation.COUNT: 42}, {"nested": {"a": [1, 2, 3]}}, {}],
     )
     @staticmethod
     def test_packb_unpackb_is_lossless_roundtrip(original: t.JsonMapping) -> None:

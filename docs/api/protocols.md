@@ -65,7 +65,7 @@ class FakeHttpClient(FlextApiClient):
                 m.Api.create_response(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
-                    body={"users": [{"id": "1", "name": "Alice"}]},
+                    body={"users": [{"id": c.ParserBooleanToken.ONE, "name": "Alice"}]},
                 ),
             )
         return r[m.Api.HttpResponse].ok(
@@ -125,7 +125,11 @@ request = m.Api.HttpRequest(
 response = m.Api.create_response(
     status_code=201,
     headers={"Content-Type": "application/json"},
-    body={"id": "1", "name": "Alice", "email": "alice@example.com"},
+    body={
+        "id": c.ParserBooleanToken.ONE,
+        "name": "Alice",
+        "email": "alice@example.com",
+    },
 )
 
 # Access response data
