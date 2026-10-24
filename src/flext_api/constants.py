@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FlextApi constants facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -12,13 +13,21 @@ from flext_api._constants import (
     FlextApiConstantsApi,
     FlextApiConstantsBase,
     FlextApiConstantsConfig,
+    FlextApiConstantsEnums,
+    FlextApiConstantsValues,
 )
 
 
 class FlextApiConstants(FlextWebConstants):
     """FlextApi domain constants extending c via MRO."""
 
-    class Api(FlextApiConstantsBase, FlextApiConstantsConfig, FlextApiConstantsApi):
+    class Api(
+        FlextApiConstantsApi,
+        FlextApiConstantsValues,
+        FlextApiConstantsEnums,
+        FlextApiConstantsBase,
+        FlextApiConstantsConfig,
+    ):
         """API domain constants namespace."""
 
 

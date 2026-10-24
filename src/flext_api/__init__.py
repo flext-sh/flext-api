@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-from flext_api.__version__ import __version__
-
 if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
 
@@ -26,6 +24,7 @@ if TYPE_CHECKING:
         __license__,
         __title__,
         __url__,
+        __version__,
         __version_info__,
     )
     from flext_api._config import FlextApiConfig, config
@@ -148,3 +147,6 @@ install_lazy_exports(
     }),
     public_exports=__all__,
 )
+
+if not TYPE_CHECKING:
+    from flext_api.__version__ import __version__
