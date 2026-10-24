@@ -24,23 +24,23 @@ class FlextApiModelsStorage:
         """Canonical storage settings."""
 
         namespace: str = u.Field(
-            "flext_api",
+            default="flext_api",
             description="Logical namespace for this storage instance",
             validate_default=True,
         )
         backend: str = u.Field(
-            "memory",
+            default="memory",
             description="Storage backend identifier",
             validate_default=True,
         )
         max_size: int | None = u.Field(
-            None,
+            default=None,
             description="Maximum number of entries kept in memory",
             gt=0,
             validate_default=True,
         )
         default_ttl: int | None = u.Field(
-            None,
+            default=None,
             description="Default entry TTL in seconds",
             gt=0,
             validate_default=True,
@@ -66,10 +66,9 @@ class FlextApiModelsStorage:
         created_at: Annotated[
             float,
             u.Field(
-                default_factory=time.time,
                 description="Monotonic creation timestamp",
             ),
-        ]
+        ] = u.Field(default_factory=time.time)
 
         @property
         def expired(self) -> bool:
