@@ -27,7 +27,10 @@ class FlextApiConfig(FlextSettings, FlextConfig):
     construction machinery stays intact.
     """
 
-    Api: Annotated[FlextApiModelsConfig.ConfigNamespace, m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``.")] = FlextApiModelsConfig.ConfigNamespace()
+    Api: Annotated[
+        FlextApiModelsConfig.ConfigNamespace,
+        m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``."),
+    ] = FlextApiModelsConfig.ConfigNamespace()
 
 
 config: FlextApiConfig = FlextApiConfig.fetch_global()
