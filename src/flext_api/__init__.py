@@ -15,7 +15,6 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_web import d, e, h, r, x
 
-    from flext_api import services as services
     from flext_api.__version__ import (
         FlextApiVersion,
         __author__,
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.cli import FlextApiCli, main
     from flext_api.constants import FlextApiConstants, c
-    from flext_api.models import FlextApiModels, FlextApiModelsApiNamespace, m
+    from flext_api.models import FlextApiModels, FlextApiModelsConfig, m
     from flext_api.protocols import (
         FlextApiProtocols,
         FlextApiProtocolsTransports,
@@ -56,7 +55,7 @@ __all__: tuple[str, ...] = (
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiModels",
-    "FlextApiModelsApiNamespace",
+    "FlextApiModelsConfig",
     "FlextApiProtocols",
     "FlextApiProtocolsTransports",
     "FlextApiServiceBase",
@@ -90,7 +89,6 @@ __all__: tuple[str, ...] = (
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "u",
@@ -106,7 +104,7 @@ install_lazy_exports(
         "FlextApiConfig": "._config",
         "FlextApiConstants": ".constants",
         "FlextApiModels": ".models",
-        "FlextApiModelsApiNamespace": ".models",
+        "FlextApiModelsConfig": ".models",
         "FlextApiProtocols": ".protocols",
         "FlextApiProtocolsTransports": ".protocols",
         "FlextApiServiceBase": ".base",
@@ -139,7 +137,6 @@ install_lazy_exports(
         "p": ".protocols",
         "r": "flext_web",
         "s": ".base",
-        "services": ".services",
         "settings": "._settings",
         "t": ".typings",
         "u": ".utilities",

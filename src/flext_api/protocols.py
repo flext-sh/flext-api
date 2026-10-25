@@ -48,7 +48,6 @@ class FlextApiProtocols(FlextWebProtocols):
 
 
 p = FlextApiProtocols
-
 __all__: list[str] = [
     "FlextApiProtocols",
     "FlextApiProtocolsTransports",

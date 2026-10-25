@@ -9,10 +9,13 @@ from __future__ import annotations
 from flext_cli import m
 
 
-class FlextApiModelsApiNamespace(m.BaseModel):
-    """Open, frozen namespace exposing every ``config/*.yaml`` domain model-less."""
+class FlextApiModelsConfig:
+    """Config models for flext-api."""
 
-    model_config = m.ConfigDict(extra="allow", frozen=True)
+    class ConfigNamespace(m.BaseModel):
+        """Open, frozen namespace exposing every ``config/*.yaml`` domain."""
+
+        model_config = m.ConfigDict(extra="allow", frozen=True)
 
 
-__all__: list[str] = ["FlextApiModelsApiNamespace"]
+__all__: list[str] = ["FlextApiModelsConfig"]

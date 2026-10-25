@@ -26,7 +26,7 @@
   `FlextApiConstants`, `FlextApiModels`, `FlextApiModelsApiNamespace`,
   `FlextApiProtocols`, `FlextApiProtocolsTransports`, `FlextApiServiceBase`,
   `FlextApiSettings` (+13 more)
-- Exported module shortcuts: `api`, `services`
+- Exported module shortcuts: `api`
 - Generated module pages: `8`
 
 ## Next Pages

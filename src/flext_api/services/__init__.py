@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.services import _services as _services
     from flext_api.services._services import (
         FlextApiClientAsyncRequestMixin,
         FlextApiClientBaseRequestMixin,
@@ -33,7 +32,6 @@ __all__: tuple[str, ...] = (
     "FlextApiClientBaseRequestMixin",
     "FlextApiClientCodecMixin",
     "FlextApiClientRequestMixin",
-    "_services",
 )
 
 install_lazy_exports(
@@ -47,7 +45,6 @@ install_lazy_exports(
         "FlextApiClientBaseRequestMixin": "._services.base_request",
         "FlextApiClientCodecMixin": "._services.codec",
         "FlextApiClientRequestMixin": "._services.request",
-        "_services": "._services",
     }),
     public_exports=__all__,
 )

@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_web import FlextWebUtilities
 
 from flext_api._utilities import (
@@ -17,9 +15,6 @@ from flext_api._utilities import (
     FlextApiUtilitiesSerializers,
     FlextApiUtilitiesTransport,
 )
-
-if TYPE_CHECKING:
-    from flext_api import t
 
 
 class FlextApiUtilities(FlextWebUtilities):
@@ -35,5 +30,4 @@ class FlextApiUtilities(FlextWebUtilities):
 
 
 u = FlextApiUtilities
-
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]
+__all__: list[str] = ["FlextApiUtilities", "u"]

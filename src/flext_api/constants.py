@@ -32,5 +32,4 @@ class FlextApiConstants(FlextWebConstants):
 
 
 c = FlextApiConstants
-
 __all__: list[str] = ["FlextApiConstants", "c"]

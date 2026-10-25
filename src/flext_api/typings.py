@@ -33,5 +33,4 @@ class FlextApiTypes(FlextWebTypes):
 
 
 t = FlextApiTypes
-
 __all__: list[str] = ["FlextApiTypes", "t"]

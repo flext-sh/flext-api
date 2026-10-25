@@ -7,21 +7,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_web import FlextWebModels
 
 from flext_api._models import (
-    FlextApiModelsApiNamespace,
     FlextApiModelsBase,
+    FlextApiModelsConfig,
     FlextApiModelsRequest,
     FlextApiModelsResponse,
     FlextApiModelsStorage,
     FlextApiModelsWebhook,
 )
-
-if TYPE_CHECKING:
-    from flext_api import t
 
 
 class FlextApiModels(FlextWebModels):
@@ -29,19 +24,14 @@ class FlextApiModels(FlextWebModels):
 
     class Api(
         FlextApiModelsBase,
+        FlextApiModelsConfig,
         FlextApiModelsRequest,
         FlextApiModelsResponse,
         FlextApiModelsStorage,
         FlextApiModelsWebhook,
-        FlextApiModelsApiNamespace,
     ):
         """API domain models namespace."""
 
 
 m = FlextApiModels
-
-__all__: t.MutableSequenceOf[str] = [
-    "FlextApiModels",
-    "FlextApiModelsApiNamespace",
-    "m",
-]
+__all__: list[str] = ["FlextApiModels", "FlextApiModelsConfig", "m"]
