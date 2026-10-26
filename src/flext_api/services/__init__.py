@@ -13,12 +13,12 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.services._services import (
+    from flext_api.services._services.async_request import (
         FlextApiClientAsyncRequestMixin,
-        FlextApiClientBaseRequestMixin,
-        FlextApiClientCodecMixin,
-        FlextApiClientRequestMixin,
     )
+    from flext_api.services._services.base_request import FlextApiClientBaseRequestMixin
+    from flext_api.services._services.codec import FlextApiClientCodecMixin
+    from flext_api.services._services.request import FlextApiClientRequestMixin
     from flext_api.services.async_client import FlextApiAsyncClient
     from flext_api.services.base_client import FlextApiClientBase
     from flext_api.services.client import FlextApiClient
