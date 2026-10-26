@@ -11,7 +11,7 @@ rules:
   include: [ src/flext_api/typings.py ]
   distributions: [ flext-api ]
   find: '\bu\.TypeAdapter\['
-  replace: 'm.TypeAdapter['
+  replace: 'u.type_adapter['
 - id: api-type-adapter-construction
   description: Construct adapters through the public utilities facade.
   include: [ src/flext_api/typings.py ]
