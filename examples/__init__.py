@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from flext_api import (
         api,
         c,
+        cli,
         config,
         d,
         e,
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "api",
     "c",
+    "cli",
     "config",
     "d",
     "e",
@@ -58,6 +60,7 @@ install_lazy_exports(
     MappingProxyType({
         "api": "flext_api",
         "c": "flext_api",
+        "cli": "flext_api",
         "config": "flext_api",
         "d": "flext_api",
         "e": "flext_api",
