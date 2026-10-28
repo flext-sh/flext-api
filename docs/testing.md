@@ -51,6 +51,15 @@ backend so the tests run without network access.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
@@ -108,6 +117,15 @@ Model validation can also be tested in isolation.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import c, m
 
 
@@ -139,6 +157,15 @@ Integration tests exercise a sequence of API calls and transformations. Use a st
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
@@ -225,6 +252,15 @@ standalone scripts or in pytest-collected test files.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 
 
@@ -265,6 +301,15 @@ return deterministic responses and test the real `FlextApi` contract.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 

@@ -6,9 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
+
 import httpx
 
-from flext_api import m, p, r, t
+from flext_api import m, p, r
 from flext_api.services._services import FlextApiClientBaseRequest
 
 
@@ -41,4 +43,4 @@ class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
         return self._handle_response(response)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientAsyncRequest"]
+__all__: MutableSequence[str] = ["FlextApiClientAsyncRequest"]

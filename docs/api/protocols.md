@@ -53,6 +53,15 @@ Primary protocol implementation for REST APIs and HTTP-based communication.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
@@ -110,6 +119,15 @@ if result.success:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import c, m, r
 
@@ -208,6 +226,15 @@ This feature is not currently implemented in the public API.
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
@@ -276,6 +303,15 @@ if created:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import (
     FlextApiProtocolPluginManager,
     FlextApiTypesProtocolPlugin,
@@ -295,7 +331,7 @@ class HttpProtocolPlugin(FlextApiTypesProtocolPlugin.Protocol):
             description="HTTP/REST protocol plugin",
         )
 
-    def supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> Sequence[str]:
         return ["http", "https"]
 
     def supports_protocol(self, protocol: str) -> bool:

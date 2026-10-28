@@ -32,6 +32,15 @@ facade.
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApiClient, FlextApiSettings, c, m, p
 
 # Settings are the only constructor argument.
@@ -88,6 +97,15 @@ exposes convenience methods for each HTTP verb.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
@@ -115,6 +133,15 @@ All methods return `p.Result[m.Api.HttpResponse]`.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
@@ -130,6 +157,15 @@ result = api.get("/users", headers={"Accept": "application/json"})
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p
 
@@ -158,6 +194,15 @@ that namespace for convenience.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApiSettings
 
 # Flat constructor (preferred)
@@ -185,6 +230,15 @@ outside the `Api` namespace or declare an additional nested group.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from pydantic import Field
 
 from flext_api import FlextApiSettings
@@ -209,6 +263,15 @@ HTTP payloads are represented by immutable Pydantic value models under `m.Api`.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import c, m
 
@@ -241,6 +304,15 @@ before they are validated into `m.Api.HttpRequest`.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import c, u
 
@@ -275,6 +347,15 @@ print(timeout_result.unwrap())
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 
 from flext_web import p, r, u
 
@@ -62,11 +63,11 @@ class FlextApiTypesProtocolPlugin:
         """Abstract protocol plugin for API protocol implementations."""
 
         @staticmethod
-        def supported_protocols() -> t.StrSequence:
+        def supported_protocols() -> Sequence[str]:
             """Get list of supported protocols.
 
             Returns:
-                The resulting ``t.StrSequence``.
+                The resulting ``Sequence[str]``.
 
             """
             return []

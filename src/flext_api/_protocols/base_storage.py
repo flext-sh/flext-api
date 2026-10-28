@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ class FlextApiProtocolsStorage:
             """Retrieve value by key."""
             ...
 
-        def keys(self) -> p.Result[t.StrSequence]:
+        def keys(self) -> p.Result[Sequence[str]]:
             """Get all keys."""
             ...
 

@@ -211,12 +211,30 @@ flext_api/
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Test Fixtures and Mocks
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 # conftest.py - Shared test fixtures
@@ -248,6 +266,15 @@ async def async_client(test_config):
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class ConnectionPoolManager:
@@ -284,6 +311,15 @@ class ConnectionPoolManager:
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 class ResponseCache:
     """HTTP response caching with TTL."""
@@ -311,7 +347,7 @@ class ResponseCache:
             )
             self.cache[key] = cached
 
-    def make_cache_key(self, method: str, url: str, headers: t.StrDict) -> str:
+    def make_cache_key(self, method: str, url: str, headers: dict[str, str]) -> str:
         """Generate cache key from request."""
         key_data = f"{method}:{url}:{sorted(headers.items())}"
         return hashlib.sha256(key_data.encode()).hexdigest()
@@ -323,6 +359,15 @@ class ResponseCache:
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class AuthenticationManager:

@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, MutableSequence
 from types import MappingProxyType
 from typing import Annotated, ClassVar
 
@@ -33,7 +34,7 @@ class FlextApiModelsResponse:
             ),
         ]
         headers: Annotated[
-            t.StrMapping,
+            Mapping[str, str],
             m.Field(description="HTTP response headers"),
         ] = m.Field(default_factory=lambda: MappingProxyType[str, str]({}))
         body: Annotated[
@@ -122,7 +123,7 @@ class FlextApiModelsResponse:
         cls,
         status_code: int,
         body: t.Api.ResponseBody | None = None,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_id: str | None = None,
         content: bytes = b"",
     ) -> HttpResponse:
@@ -148,4 +149,4 @@ class FlextApiModelsResponse:
         )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiModelsResponse"]
+__all__: MutableSequence[str] = ["FlextApiModelsResponse"]

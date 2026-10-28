@@ -7,12 +7,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, Sequence
 from typing import TYPE_CHECKING
 
 from flext_web import r, u
 
-from flext_api import t
 from flext_api._protocols import FlextApiTypesProtocolPlugin
 
 if TYPE_CHECKING:
@@ -53,11 +52,11 @@ class FlextApiProtocolPluginManager:
         def resolve_plugins_by_type(
             self,
             plugin_type: type[FlextApiTypesProtocolPlugin.Plugin],
-        ) -> t.SequenceOf[FlextApiTypesProtocolPlugin.Plugin]:
+        ) -> Sequence[FlextApiTypesProtocolPlugin.Plugin]:
             """Get all loaded plugins of specific type.
 
             Returns:
-                The resulting ``t.SequenceOf[FlextApiTypesProtocolPlugin.Plugin]``.
+                The resulting ``Sequence[FlextApiTypesProtocolPlugin.Plugin]``.
 
             """
             return [
@@ -66,11 +65,11 @@ class FlextApiProtocolPluginManager:
                 if issubclass(plugin.__class__, plugin_type)
             ]
 
-        def list_loaded_plugins(self) -> t.StrSequence:
+        def list_loaded_plugins(self) -> Sequence[str]:
             """Get list of loaded plugin names.
 
             Returns:
-                The resulting ``t.StrSequence``.
+                The resulting ``Sequence[str]``.
 
             """
             return list(self._loaded_plugins.keys())
@@ -103,7 +102,7 @@ class FlextApiProtocolPluginManager:
                 The resulting ``p.Result[bool]``.
 
             """
-            failed_plugins: t.StrSequence = [
+            failed_plugins: Sequence[str] = [
                 plugin_name
                 for plugin_name in list(self._loaded_plugins.keys())
                 if self.unload_plugin(plugin_name).failure

@@ -23,6 +23,15 @@ without relying on any non-existent middleware API.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -32,7 +41,7 @@ class LoggingApi(FlextApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         self.logger.info(c.ContextScope.REQUEST, url=url, method="GET")
@@ -50,7 +59,7 @@ class FakeLoggingApi(LoggingApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(

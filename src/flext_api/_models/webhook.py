@@ -174,4 +174,4 @@ class FlextApiModelsWebhook:
             )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiModelsWebhook"]
+__all__: MutableSequence[str] = ["FlextApiModelsWebhook"]

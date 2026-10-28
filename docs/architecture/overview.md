@@ -95,6 +95,15 @@ concerns across multiple layers, designed for extensibility and maintainability.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 **Key Components:**
@@ -112,36 +121,90 @@ FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Request Processing Pipeline
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Storage Interface
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Cache Configuration
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Security Middleware
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Performance Monitoring
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Deployment Configuration
@@ -236,6 +299,15 @@ spec:
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 class CustomProtocol:
     """Custom protocol implementation."""
@@ -258,6 +330,15 @@ registry.register("custom", CustomProtocol())
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_api import p, r
 
 
@@ -308,6 +389,15 @@ app.add_middleware(CustomBusinessMiddleware())
 ````python notest
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 # Performance monitoring setup
 @app.on_event("startup")
@@ -342,6 +432,15 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 # Old API (deprecated in 0.9.x)

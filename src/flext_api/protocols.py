@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import p
+from flext_cli import p
 from httpx import (
     AsyncClient as HttpxAsyncClient,
     Client as HttpxClient,

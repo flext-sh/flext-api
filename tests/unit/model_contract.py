@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import pytest
 
 from tests import c, m, t, tm, u
@@ -44,7 +46,7 @@ class TestsFlextApiModelContract:
     )
     @staticmethod
     def test_http_request_content_type_derives_from_headers(
-        headers: t.StrMapping,
+        headers: Mapping[str, str],
         expected: str,
     ) -> None:
         """content_type computed field reflects headers, defaulting to JSON."""
@@ -156,7 +158,7 @@ class TestsFlextApiModelContract:
     @staticmethod
     def test_packb_returns_non_empty_bytes() -> None:
         """Packb serializes a mapping into non-empty bytes."""
-        payload: t.StrMapping = {"key": "value"}
+        payload: Mapping[str, str] = {"key": "value"}
         packed = u.Api.packb(payload)
         tm.that(packed, is_=bytes, length_gt=0)
 

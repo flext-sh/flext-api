@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, MutableSequence
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar
 
@@ -153,4 +153,4 @@ class FlextApiModelsStorage:
             return self.cache_hits / self.total_operations
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiModelsStorage"]
+__all__: MutableSequence[str] = ["FlextApiModelsStorage"]

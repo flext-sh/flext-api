@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableSequence
 
 from flext_api import c, m, p, r, t
 
@@ -65,9 +65,9 @@ class FlextApiUtilitiesRequestUtils:
 
         @staticmethod
         def merge_headers(
-            headers: t.StrMapping | None,
+            headers: Mapping[str, str] | None,
             kwargs: t.Api.RequestKwargs | None,
-        ) -> p.Result[t.StrMapping]:
+        ) -> p.Result[Mapping[str, str]]:
             """Merge explicit headers with headers carried in request kwargs.
 
             Args:
@@ -85,14 +85,17 @@ class FlextApiUtilitiesRequestUtils:
                 headers_value = kwargs["headers"]
                 if headers_value is not None:
                     if not isinstance(headers_value, Mapping):
-                        return r[t.StrMapping].fail("Headers must be a mapping")
+                        return r[Mapping[str, str]].fail("Headers must be a mapping")
                     validated = t.Api.STR_MAPPING_ADAPTER.validate_python(headers_value)
                     merged.update(validated)
-            return r[t.StrMapping].ok(merged)
+            return r[Mapping[str, str]].ok(merged)
 
         @staticmethod
         def to_json_value(
-            value: t.JsonValue | t.StrMapping | t.ScalarMapping | t.Api.WebHeaders,
+            value: t.JsonValue
+            | Mapping[str, str]
+            | Mapping[str, t.Scalar]
+            | t.Api.WebHeaders,
         ) -> t.JsonValue:
             """Validate an arbitrary value as a JSON value.
 
@@ -172,7 +175,7 @@ class FlextApiUtilitiesRequestUtils:
             method: str,
             url: str,
             data: t.Api.RequestBody | None = None,
-            headers: t.StrMapping | None = None,
+            headers: Mapping[str, str] | None = None,
             request_kwargs: t.Api.RequestKwargs | None = None,
         ) -> p.Result[m.ConfigMap]:
             """Build one normalized request payload for HttpRequest validation.
@@ -218,4 +221,4 @@ class FlextApiUtilitiesRequestUtils:
             )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesRequestUtils"]
+__all__: MutableSequence[str] = ["FlextApiUtilitiesRequestUtils"]

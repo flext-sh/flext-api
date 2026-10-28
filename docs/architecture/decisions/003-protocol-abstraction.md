@@ -55,6 +55,15 @@ a railway result-oriented lifecycle contract.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import ClassVar
 
 from flext_api import FlextApiProtocolPluginManager, FlextApiTypesProtocolPlugin, p, r
@@ -94,6 +103,15 @@ assert manager.unload_plugin("json-schema").success
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -106,7 +124,7 @@ class FakeHttpApi(HttpOnlyApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/health"):

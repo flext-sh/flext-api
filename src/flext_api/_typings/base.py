@@ -15,16 +15,16 @@ class FlextApiTypingsBase:
     """Core API type aliases composed into ``t.Api`` by the typings facade."""
 
     type WebHeaders = FlextWebTypes.ScalarOrStrSequenceMapping
-    type WebParams = FlextWebTypes.MappingKV[
+    type WebParams = FlextWebTypes.Mapping[
         str,
-        str | FlextWebTypes.StrSequence,
+        str | FlextWebTypes.Sequence[str],
     ]
     type RequestBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes
     type ResponseBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
-    type HttpResponseDict = FlextWebTypes.MappingKV[
+    type HttpResponseDict = FlextWebTypes.Mapping[
         str,
         FlextWebTypes.JsonValue
-        | FlextWebTypes.StrMapping
+        | FlextWebTypes.Mapping[str, str]
         | FlextWebTypes.JsonMapping
         | FlextWebTypes.StrictBytes
         | None,
@@ -34,22 +34,22 @@ class FlextApiTypingsBase:
         [FlextWebTypes.JsonMapping],
         FlextWebTypes.JsonValue | p.Result[bool] | None,
     ]
-    type RequestKwargs = FlextWebTypes.MappingKV[
+    type RequestKwargs = FlextWebTypes.Mapping[
         str,
-        FlextWebTypes.StrMapping
+        FlextWebTypes.Mapping[str, str]
         | FlextWebTypes.JsonMapping
         | FlextWebTypes.ScalarOrStrSequenceMapping
         | float
         | None,
     ]
-    type CacheDict = FlextWebTypes.MappingKV[str, FlextWebTypes.Primitives]
+    type CacheDict = FlextWebTypes.Mapping[str, FlextWebTypes.Primitives]
     API_JSON_VALUE_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.JsonValue] = (
         u.json_value_adapter()
     )
     BINARY_CONTENT_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrictBytes] = (
         u.binary_content_adapter()
     )
-    STR_MAPPING_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrMapping] = (
+    STR_MAPPING_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.Mapping[str, str]] = (
         u.str_mapping_adapter()
     )
     HOSTNAME_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.HostnameStr] = (

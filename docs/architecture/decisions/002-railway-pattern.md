@@ -67,6 +67,15 @@ Every public method returns `p.Result[T]`. Operations are composed using `flat_m
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 import httpx
 
 
@@ -81,6 +90,15 @@ def get_user(user_id: int) -> dict:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_core import t
 
@@ -117,6 +135,15 @@ class Result:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -144,7 +171,7 @@ class FakeUserApi(UserApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/users/123"):
@@ -175,6 +202,15 @@ tm.that(result.unwrap().body["name"], eq="Alice")
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
@@ -207,6 +243,15 @@ else:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -214,7 +259,7 @@ class FakeUserApi(FlextApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/users/123"):
@@ -270,6 +315,15 @@ test_get_user_not_found()
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import r
 

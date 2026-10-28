@@ -9,11 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_core import FlextService
 
-from flext_api import FlextApiSettings, m, t
+from flext_api import FlextApiSettings, m
 
 
 class FlextApiServiceBase[TDomainResult](
@@ -47,4 +48,4 @@ class FlextApiServiceBase[TDomainResult](
 
 s = FlextApiServiceBase
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiServiceBase", "s"]
+__all__: MutableSequence[str] = ["FlextApiServiceBase", "s"]

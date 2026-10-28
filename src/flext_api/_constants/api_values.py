@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableSequence
 from http import HTTPMethod
 from types import MappingProxyType
 from typing import Final
@@ -21,7 +21,7 @@ from flext_api._constants import FlextApiConstantsEnums
 class FlextApiConstantsValues(FlextApiConstantsEnums):
     """API scalar constants mixed into ``c.Api``."""
 
-    EXC_HTTPX: Final[tuple[type[Exception]], ...] = (
+    EXC_HTTPX: Final[tuple[type[Exception], ...]] = (
         *c.EXC_HTTP_PROCESSING,
         _HttpxError,
     )
@@ -78,4 +78,4 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
     })
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiConstantsValues"]
+__all__: MutableSequence[str] = ["FlextApiConstantsValues"]

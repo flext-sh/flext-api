@@ -19,6 +19,15 @@ This page documents the schema/model story for `flext-api`.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import c, m
 
 request = m.Api.HttpRequest(
