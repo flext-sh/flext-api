@@ -13,7 +13,7 @@ from flext_web import p, r, u
 from flext_api import t
 
 
-class FlextApiProtocolPluginTypes:
+class FlextApiTypesProtocolPlugin:
     """Plugin type shard for ``p.Api``."""
 
     class _FlextApiPluginBase:
@@ -235,4 +235,4 @@ class FlextApiProtocolPluginTypes:
             ...
 
 
-__all__: list[str] = ["FlextApiProtocolPluginTypes"]
+__all__: list[str] = ["FlextApiTypesProtocolPlugin"]

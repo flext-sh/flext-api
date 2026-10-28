@@ -13,29 +13,27 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api.services._services.async_request import (
-        FlextApiClientAsyncRequestMixin,
-    )
-    from flext_api.services._services.base_request import FlextApiClientBaseRequestMixin
-    from flext_api.services._services.codec import FlextApiClientCodecMixin
-    from flext_api.services._services.request import FlextApiClientRequestMixin
+    from flext_api.services._services.async_request import FlextApiClientAsyncRequest
+    from flext_api.services._services.base_request import FlextApiClientBaseRequest
+    from flext_api.services._services.codec import FlextApiClientCodec
+    from flext_api.services._services.request import FlextApiClientRequest
 
 
 __all__: tuple[str, ...] = (
-    "FlextApiClientAsyncRequestMixin",
-    "FlextApiClientBaseRequestMixin",
-    "FlextApiClientCodecMixin",
-    "FlextApiClientRequestMixin",
+    "FlextApiClientAsyncRequest",
+    "FlextApiClientBaseRequest",
+    "FlextApiClientCodec",
+    "FlextApiClientRequest",
 )
 
 install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextApiClientAsyncRequestMixin": ".async_request",
-        "FlextApiClientBaseRequestMixin": ".base_request",
-        "FlextApiClientCodecMixin": ".codec",
-        "FlextApiClientRequestMixin": ".request",
+        "FlextApiClientAsyncRequest": ".async_request",
+        "FlextApiClientBaseRequest": ".base_request",
+        "FlextApiClientCodec": ".codec",
+        "FlextApiClientRequest": ".request",
     }),
     public_exports=__all__,
 )

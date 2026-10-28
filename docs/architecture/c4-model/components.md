@@ -78,7 +78,7 @@ Container_Boundary(config_layer, "Configuration Layer") {
 Container_Boundary(flext_core, "FLEXT-Core Foundation") {
     Component(flext_result, "r[T]", "Python", "Railway-oriented error handling")
     Component(flext_container, "FlextContainer", "Python", "Dependency injection")
-    Component(flext_models, "FlextModels", "Python", "Domain modeling with Pydantic")
+    Component(Flextmodels_, "FlextModels", "Python", "Domain modeling with Pydantic")
     Component(flext_logger, "FlextLogger", "Python", "Structured logging with correlation")
 }
 
@@ -88,7 +88,7 @@ Rel(client_core, connection_pool, "Uses", "manages connections")
 Rel(client_core, retry_logic, "Uses", "handles retries")
 Rel(client_core, auth_handler, "Uses", "manages auth")
 
-Rel(request_builder, flext_models, "Uses", "request models")
+Rel(request_builder, Flextmodels_, "Uses", "request models")
 Rel(response_handler, flext_result, "Returns", "r")
 Rel(auth_handler, flext_container, "Uses", "credential storage")
 
@@ -111,7 +111,7 @@ Rel(storage_router, azure_backend, "Routes to", "Azure operations")
 Rel(storage_router, local_backend, "Routes to", "local operations")
 
 Rel(config_loader, config_validator, "Validates", "settings data")
-Rel(config_validator, flext_models, "Uses", "validation models")
+Rel(config_validator, Flextmodels_, "Uses", "validation models")
 Rel(config_loader, secret_manager, "Loads", "secure credentials")
 Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 

@@ -11,13 +11,13 @@ from typing import TYPE_CHECKING
 import httpx
 
 from flext_api import c, m, p, r, t, u
-from flext_api.services._services import FlextApiClientCodecMixin
+from flext_api.services._services import FlextApiClientCodec
 
 if TYPE_CHECKING:
     from flext_api import FlextApiSettings
 
 
-class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
+class FlextApiClientBaseRequest(FlextApiClientCodec):
     """Shared request execution helpers for sync and async clients."""
 
     if TYPE_CHECKING:
@@ -121,4 +121,4 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         return r[m.Api.HttpResponse].fail_op(op, exc)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientBaseRequestMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClientBaseRequest"]

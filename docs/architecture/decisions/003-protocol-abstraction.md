@@ -32,7 +32,7 @@ protocol support through a plugin-style boundary.
 
 `flext-api` exposes a single HTTP-focused facade (`FlextApi`) and a typed protocol layer
 (`p.Api`) for HTTP operations. Protocol plugins are managed by the exported
-`FlextApiProtocolPluginManager` and `FlextApiProtocolPluginTypes` shards, which provide
+`FlextApiProtocolPluginManager` and `FlextApiTypesProtocolPlugin` shards, which provide
 a railway result-oriented lifecycle contract.
 
 ## Consequences
@@ -57,10 +57,10 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_api import FlextApiProtocolPluginManager, FlextApiProtocolPluginTypes, p, r
+from flext_api import FlextApiProtocolPluginManager, FlextApiTypesProtocolPlugin, p, r
 
 
-class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Plugin):
+class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Plugin):
     """Example plugin implementing the lifecycle contract."""
 
     name = "json-schema"

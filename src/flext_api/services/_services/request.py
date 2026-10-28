@@ -9,10 +9,10 @@ from __future__ import annotations
 import httpx
 
 from flext_api import c, m, p, r, t
-from flext_api.services._services import FlextApiClientBaseRequestMixin
+from flext_api.services._services import FlextApiClientBaseRequest
 
 
-class FlextApiClientRequestMixin(FlextApiClientBaseRequestMixin):
+class FlextApiClientRequest(FlextApiClientBaseRequest):
     """Request execution helpers for FlextApiClient."""
 
     def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
@@ -46,4 +46,4 @@ class FlextApiClientRequestMixin(FlextApiClientBaseRequestMixin):
             client.close()
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientRequestMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextApiClientRequest"]

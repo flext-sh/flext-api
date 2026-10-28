@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from flext_web import r, u
 
 from flext_api import t
-from flext_api._protocols import FlextApiProtocolPluginTypes
+from flext_api._protocols import FlextApiTypesProtocolPlugin
 
 if TYPE_CHECKING:
     from flext_web import p
@@ -25,7 +25,7 @@ class FlextApiProtocolPluginManager:
     class Manager(ABC):
         """Plugin manager for discovery, loading, and lifecycle management."""
 
-        _loaded_plugins: MutableMapping[str, FlextApiProtocolPluginTypes.Plugin]
+        _loaded_plugins: MutableMapping[str, FlextApiTypesProtocolPlugin.Plugin]
 
         def __init__(self) -> None:
             """Initialize plugin manager."""
@@ -35,29 +35,29 @@ class FlextApiProtocolPluginManager:
         def resolve_plugin(
             self,
             plugin_name: str,
-        ) -> p.Result[FlextApiProtocolPluginTypes.Plugin]:
+        ) -> p.Result[FlextApiTypesProtocolPlugin.Plugin]:
             """Get loaded plugin by name.
 
             Returns:
-                The resulting ``p.Result[FlextApiProtocolPluginTypes.Plugin]``.
+                The resulting ``p.Result[FlextApiTypesProtocolPlugin.Plugin]``.
 
             """
             if plugin_name not in self._loaded_plugins:
-                return r[FlextApiProtocolPluginTypes.Plugin].fail(
+                return r[FlextApiTypesProtocolPlugin.Plugin].fail(
                     f"Plugin '{plugin_name}' not loaded",
                 )
-            return r[FlextApiProtocolPluginTypes.Plugin].ok(
+            return r[FlextApiTypesProtocolPlugin.Plugin].ok(
                 self._loaded_plugins[plugin_name],
             )
 
         def resolve_plugins_by_type(
             self,
-            plugin_type: type[FlextApiProtocolPluginTypes.Plugin],
-        ) -> t.SequenceOf[FlextApiProtocolPluginTypes.Plugin]:
+            plugin_type: type[FlextApiTypesProtocolPlugin.Plugin],
+        ) -> t.SequenceOf[FlextApiTypesProtocolPlugin.Plugin]:
             """Get all loaded plugins of specific type.
 
             Returns:
-                The resulting ``t.SequenceOf[FlextApiProtocolPluginTypes.Plugin]``.
+                The resulting ``t.SequenceOf[FlextApiTypesProtocolPlugin.Plugin]``.
 
             """
             return [
@@ -77,7 +77,7 @@ class FlextApiProtocolPluginManager:
 
         def load_plugin(
             self,
-            plugin: FlextApiProtocolPluginTypes.Plugin,
+            plugin: FlextApiTypesProtocolPlugin.Plugin,
         ) -> p.Result[bool]:
             """Load and initialize a plugin.
 

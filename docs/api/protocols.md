@@ -278,14 +278,14 @@ from __future__ import annotations
 
 from flext_api import (
     FlextApiProtocolPluginManager,
-    FlextApiProtocolPluginTypes,
+    FlextApiTypesProtocolPlugin,
     p,
     r,
     t,
 )
 
 
-class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
+class HttpProtocolPlugin(FlextApiTypesProtocolPlugin.Protocol):
     """Concrete HTTP protocol plugin."""
 
     def __init__(self) -> None:
@@ -311,7 +311,7 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
         )
 
 
-class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
+class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Schema):
     """Concrete JSON schema plugin."""
 
     def __init__(self) -> None:

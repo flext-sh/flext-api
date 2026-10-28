@@ -9,13 +9,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_api.services import FlextApiClientBase
-from flext_api.services._services import FlextApiClientAsyncRequestMixin
+from flext_api.services._services import FlextApiClientAsyncRequest
 
 if TYPE_CHECKING:
     from flext_api import t
 
 
-class FlextApiAsyncClient(FlextApiClientAsyncRequestMixin, FlextApiClientBase):
+class FlextApiAsyncClient(FlextApiClientAsyncRequest, FlextApiClientBase):
     """Generic async HTTP client using FLEXT patterns."""
 
 
