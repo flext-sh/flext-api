@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from flext_cli.services.cli import FlextCliCli
 
-from flext_api import t
-
 
 class FlextApiCli(FlextCliCli):
     """Flext-api CLI facade — extends flext-cli CLI."""
@@ -25,4 +23,4 @@ def main() -> int:
     return 0
 
 
-__all__: t.VariadicTuple[str] = ("FlextApiCli", "main")
+__all__: tuple[str, ...] = ("FlextApiCli", "main")
