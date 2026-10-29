@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from flext_api.api import FlextApi, api
     from flext_api.base import FlextApiServiceBase, s
     from flext_api.cli import FlextApiCli, main
+    from flext_api.config_namespace import FlextApiConfigNamespace
     from flext_api.constants import FlextApiConstants, c
     from flext_api.models import FlextApiModels, FlextApiModelsConfig, m
     from flext_api.protocols import (
@@ -53,6 +54,7 @@ __all__: tuple[str, ...] = (
     "FlextApi",
     "FlextApiCli",
     "FlextApiConfig",
+    "FlextApiConfigNamespace",
     "FlextApiConstants",
     "FlextApiModels",
     "FlextApiModelsConfig",
@@ -104,6 +106,7 @@ install_lazy_exports(
         "FlextApi": ".api",
         "FlextApiCli": ".cli",
         "FlextApiConfig": "._config",
+        "FlextApiConfigNamespace": ".config_namespace",
         "FlextApiConstants": ".constants",
         "FlextApiModels": ".models",
         "FlextApiModelsConfig": ".models",

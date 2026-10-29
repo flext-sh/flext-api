@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.config_namespace import FlextApiConfigNamespace
+from flext_api import FlextApiConfigNamespace
 
 
 class FlextApiModelsConfig(FlextApiConfigNamespace):

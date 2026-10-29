@@ -10,8 +10,9 @@ from abc import ABC
 from collections.abc import MutableMapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_web import r, u
+from flext_web import u
 
+from flext_api import r
 from flext_api._protocols import FlextApiTypesProtocolPlugin
 
 if TYPE_CHECKING:

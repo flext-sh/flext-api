@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import t
+from flext_web import t as flext_web_t
 
 from flext_api._typings import (
     FlextApiTypingsBase,
@@ -21,7 +21,7 @@ from flext_api._typings import (
 )
 
 
-class FlextApiTypes(t):
+class FlextApiTypes(flext_web_t):
     """Unified API type definitions extending FlextWebTypes via MRO."""
 
     class Api(

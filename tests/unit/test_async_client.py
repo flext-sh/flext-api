@@ -15,9 +15,8 @@ import inspect
 
 import pytest
 
-from flext_api import settings
 from flext_api.services import FlextApiAsyncClient
-from tests import c, tm
+from tests import c, settings, tm
 from tests.unit.model_contract import TestsFlextApiModelContract
 
 

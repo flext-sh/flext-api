@@ -47,7 +47,6 @@ install_lazy_exports(
     globals(),
     MappingProxyType({
         "FlextApiProtocolPluginManager": ".plugin_manager",
-        "FlextApiTypesProtocolPlugin": ".plugin_types",
         "FlextApiProtocolPlugins": ".plugins",
         "FlextApiProtocolsBase": ".base",
         "FlextApiProtocolsGrpc": ".base_grpc",
@@ -58,6 +57,7 @@ install_lazy_exports(
         "FlextApiProtocolsStorage": ".base_storage",
         "FlextApiProtocolsTransport": ".base_transport",
         "FlextApiProtocolsTransports": ".transports",
+        "FlextApiTypesProtocolPlugin": ".plugin_types",
     }),
     public_exports=__all__,
 )

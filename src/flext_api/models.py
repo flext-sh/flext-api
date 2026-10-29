@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import m
+from flext_web import m as flext_web_m
 
 from flext_api._models import (
     FlextApiModelsBase,
@@ -19,7 +19,7 @@ from flext_api._models import (
 )
 
 
-class FlextApiModels(m):
+class FlextApiModels(flext_web_m):
     """HTTP domain models for flext-api."""
 
     class Api(

@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_cli import p
+from flext_cli import p as flext_cli_p
 from httpx import (
     AsyncClient as HttpxAsyncClient,
     Client as HttpxClient,
@@ -30,7 +30,7 @@ from flext_api._protocols import (
 )
 
 
-class FlextApiProtocols(p):
+class FlextApiProtocols(flext_cli_p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api(
