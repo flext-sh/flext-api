@@ -91,6 +91,14 @@ src/flext_api/
 
 ### Key Architectural Patterns
 
+The configuration namespace schema is owned by the pure layer-zero
+`config_namespace.py` helper using the upstream Core model facade. `_config.py`
+consumes that declaration directly;
+the public model holder composes the same declaration by MRO. Its open/frozen
+Pydantic policy and existing `ConfigNamespace` access remain shared, without a
+dependency from config back into `_models`.
+Core owns the Pydantic foundation; this helper adds no direct SDK dependency.
+
 - **Clean Architecture** — Clear separation between public facades and private
   implementations
 - **Railway Pattern** — `p.Result` error handling through every HTTP path

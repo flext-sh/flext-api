@@ -6,16 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_cli import m
+from flext_api.config_namespace import FlextApiConfigNamespace
 
 
-class FlextApiModelsConfig:
+class FlextApiModelsConfig(FlextApiConfigNamespace):
     """Config models for flext-api."""
-
-    class ConfigNamespace(m.BaseModel):
-        """Open, frozen namespace exposing every ``config/*.yaml`` domain."""
-
-        model_config = m.ConfigDict(extra="allow", frozen=True)
 
 
 __all__: list[str] = ["FlextApiModelsConfig"]

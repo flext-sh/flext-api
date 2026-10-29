@@ -56,7 +56,7 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
         """Prepare URL, headers, body, and extensions for HTTP request.
 
         Returns:
-            The resulting ``p.Result[tuple[str, Mapping[str, str], bytes, Mapping[str, str]]]``.
+            The resulting ``p.Result`` of ``(url, headers, body, extensions)``.
 
         """
         url_result = self._build_url(request.url)
