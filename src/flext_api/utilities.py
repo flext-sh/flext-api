@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FlextApi utilities facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -6,31 +7,27 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flext_web import u as flext_web_u
 
-from flext_web import FlextWebUtilities
-
-from flext_api._utilities.base import FlextApiUtilitiesBase
-from flext_api._utilities.request_utils import FlextApiUtilitiesRequestUtils
-from flext_api._utilities.serializers import FlextApiUtilitiesSerializers
-from flext_api._utilities.transport import FlextApiUtilitiesTransport
-
-if TYPE_CHECKING:
-    from flext_api import t
+from flext_api._utilities import (
+    FlextApiUtilitiesBase,
+    FlextApiUtilitiesRequestUtils,
+    FlextApiUtilitiesSerializers,
+    FlextApiUtilitiesTransport,
+)
 
 
-class FlextApiUtilities(FlextWebUtilities):
+class FlextApiUtilities(flext_web_u):
     """FlextApi utilities extending FlextUtilities with API-specific helpers."""
 
     class Api(
+        FlextApiUtilitiesSerializers,
         FlextApiUtilitiesBase,
         FlextApiUtilitiesRequestUtils,
-        FlextApiUtilitiesSerializers,
         FlextApiUtilitiesTransport,
     ):
         """API-specific utility namespace."""
 
 
 u = FlextApiUtilities
-
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilities", "u"]
+__all__: list[str] = ["FlextApiUtilities", "u"]

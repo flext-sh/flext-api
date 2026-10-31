@@ -67,6 +67,15 @@ Every public method returns `p.Result[T]`. Operations are composed using `flat_m
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 import httpx
 
 
@@ -81,6 +90,15 @@ def get_user(user_id: int) -> dict:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_core import t
 
@@ -117,6 +135,15 @@ class Result:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -144,7 +171,7 @@ class FakeUserApi(UserApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/users/123"):
@@ -167,14 +194,23 @@ class FakeUserApi(UserApi):
 
 api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.fetch_user(123)
-assert result.success
-assert result.unwrap().body["name"] == "Alice"
+tm.ok(result.success)
+tm.that(result.unwrap().body["name"], eq="Alice")
 ```
 
 ### Usage in Application Code
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
@@ -186,7 +222,7 @@ class FakeProfileApi(FlextApi):
         return r[m.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
-                body={"user_id": 123, "bio": "FLEXT enthusiast"},
+                body={c.ContextKey.USER_ID: 123, "bio": "FLEXT enthusiast"},
                 headers={"Content-Type": "application/json"},
             )
         )
@@ -207,6 +243,15 @@ else:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -214,7 +259,7 @@ class FakeUserApi(FlextApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         if url.endswith("/users/123"):
@@ -236,14 +281,14 @@ class FakeUserApi(FlextApi):
 def test_get_user_success() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/123")
-    assert result.success
-    assert result.unwrap().body["name"] == "John"
+    tm.ok(result.success)
+    tm.that(result.unwrap().body["name"], eq="John")
 
 
 def test_get_user_not_found() -> None:
     api = FakeUserApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
     result = api.get("/users/999")
-    assert result.failure
+    tm.fail(result)
     assert "404" in result.error
 
 
@@ -270,6 +315,15 @@ test_get_user_not_found()
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import r
 

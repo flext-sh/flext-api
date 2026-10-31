@@ -19,6 +19,15 @@ This page documents the schema/model story for `flext-api`.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import c, m
 
 request = m.Api.HttpRequest(
@@ -30,7 +39,7 @@ request = m.Api.HttpRequest(
 
 json_data = request.model_dump_json(exclude={"content_type"})
 deserialized = m.Api.HttpRequest.model_validate_json(json_data)
-assert deserialized.method == "POST"
+tm.that(deserialized.method, eq="POST")
 
 response = m.Api.create_response(
     status_code=201,
@@ -38,7 +47,7 @@ response = m.Api.create_response(
     body={"id": 1, "name": "Alice"},
 )
 assert response.success
-assert response.status_code == 201
+tm.that(response.status_code, eq=201)
 ```
 
 ## What Is Not Implemented

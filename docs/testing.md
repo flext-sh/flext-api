@@ -51,6 +51,15 @@ backend so the tests run without network access.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
@@ -85,17 +94,17 @@ api = FakeApi(runtime_settings=settings)
 
 def test_get_users_returns_success() -> None:
     result = api.get("/users")
-    assert result.success
+    tm.ok(result.success)
     response = result.unwrap()
-    assert response.status_code == 200
+    tm.that(response.status_code, eq=200)
     assert isinstance(response.body, list)
 
 
 def test_not_found_is_classified() -> None:
     result = api.get("/users/404")
-    assert result.success
+    tm.ok(result.success)
     response = result.unwrap()
-    assert response.status_code == 404
+    tm.that(response.status_code, eq=404)
     assert response.client_error
 
 
@@ -108,13 +117,22 @@ Model validation can also be tested in isolation.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import c, m
 
 
 def test_request_model_requires_valid_url() -> None:
     request = m.Api.HttpRequest(method="GET", url="https://api.example.com/users")
-    assert request.method == c.Api.Method.GET
-    assert request.url == "https://api.example.com/users"
+    tm.that(request.method, eq=c.Api.Method.GET)
+    tm.that(request.url, eq="https://api.example.com/users")
 
 
 def test_response_model_classifies_errors() -> None:
@@ -139,6 +157,15 @@ Integration tests exercise a sequence of API calls and transformations. Use a st
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
@@ -190,16 +217,16 @@ def test_create_and_list_orders() -> None:
     create_result = api.post("/orders", data={"item": "book", "quantity": 2})
     assert create_result.success
     created = create_result.unwrap()
-    assert created.status_code == 201
+    tm.that(created.status_code, eq=201)
     body = created.body
     assert isinstance(body, dict)
-    assert body.get("item") == "book"
+    tm.that(body.get("item"), eq="book")
 
     list_result = api.get("/orders")
     assert list_result.success
     orders = list_result.unwrap().body
     assert isinstance(orders, list)
-    assert len(orders) == 1
+    tm.that(len(orders), eq=1)
 
 
 test_create_and_list_orders()
@@ -225,6 +252,15 @@ standalone scripts or in pytest-collected test files.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings
 
 
@@ -248,11 +284,11 @@ def make_client(settings: FlextApiSettings | None = None) -> FlextApiClient:
 
 
 settings = make_settings()
-assert settings.Api.base_url == "https://api.example.com"
-assert settings.Api.timeout == 5
+tm.that(settings.Api.base_url, eq="https://api.example.com")
+tm.that(settings.Api.timeout, eq=5)
 
 client = make_client(settings)
-assert client.base_url == "https://api.example.com"
+tm.that(client.base_url, eq="https://api.example.com")
 
 api = make_api(settings)
 assert isinstance(api, FlextApi)
@@ -265,6 +301,15 @@ return deterministic responses and test the real `FlextApi` contract.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
@@ -287,10 +332,10 @@ api = FakeApi(runtime_settings=settings)
 
 def test_with_fake_api() -> None:
     result = api.get("/users/1")
-    assert result.success
+    tm.ok(result.success)
     response = result.unwrap()
-    assert response.status_code == 200
-    assert response.body.get("name") == "Test User"
+    tm.that(response.status_code, eq=200)
+    tm.that(response.body.get("name"), eq="Test User")
 
 
 test_with_fake_api()

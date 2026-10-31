@@ -6,12 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from collections.abc import MutableSequence
+from typing import ClassVar
 
 import httpx
-
-if TYPE_CHECKING:
-    from flext_api import t
 
 
 class FlextApiUtilitiesTransport:
@@ -37,4 +35,4 @@ class FlextApiUtilitiesTransport:
     )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiUtilitiesTransport"]
+__all__: MutableSequence[str] = ["FlextApiUtilitiesTransport"]

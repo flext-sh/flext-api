@@ -6,12 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
+
 import httpx
 
 from flext_api import c, p, r, t, u
 
 
-class FlextApiClientCodecMixin:
+class FlextApiClientCodec:
     """Serialize requests and deserialize responses for FlextApiClient."""
 
     @staticmethod
@@ -26,17 +28,17 @@ class FlextApiClientCodecMixin:
         if any(
             token in content_type for token in ("application/octet-stream", "binary")
         ):
-            return FlextApiClientCodecMixin._deserialize_bytes(response)
+            return FlextApiClientCodec._deserialize_bytes(response)
         if any(
             token in content_type for token in ("application/json", "application/vnd")
         ):
-            return FlextApiClientCodecMixin._deserialize_json(response)
+            return FlextApiClientCodec._deserialize_json(response)
         if "text/" in content_type:
-            return FlextApiClientCodecMixin._deserialize_text(response)
+            return FlextApiClientCodec._deserialize_text(response)
         for strategy in (
-            FlextApiClientCodecMixin._deserialize_json,
-            FlextApiClientCodecMixin._deserialize_text,
-            FlextApiClientCodecMixin._deserialize_bytes,
+            FlextApiClientCodec._deserialize_json,
+            FlextApiClientCodec._deserialize_text,
+            FlextApiClientCodec._deserialize_bytes,
         ):
             result = strategy(response)
             if result.success:
@@ -123,4 +125,4 @@ class FlextApiClientCodecMixin:
         return result
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientCodecMixin"]
+__all__: MutableSequence[str] = ["FlextApiClientCodec"]

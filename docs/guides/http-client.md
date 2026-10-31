@@ -21,6 +21,15 @@ FLEXT-API exposes two HTTP entry points:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings
 
 settings = FlextApiSettings(base_url="https://api.example.com")
@@ -43,6 +52,15 @@ else:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m
 
@@ -67,6 +85,15 @@ Use the facade for typical application code:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi
 
 api = FlextApi()
@@ -86,6 +113,15 @@ Every call returns `p.Result[p.Api.HttpResponse]`.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi
 

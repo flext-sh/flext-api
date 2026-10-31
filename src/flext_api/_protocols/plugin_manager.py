@@ -7,13 +7,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_web import r, u
+from flext_web import u
 
-from flext_api import t
-from flext_api._protocols import FlextApiProtocolPluginTypes
+from flext_api import r
+from flext_api._protocols import FlextApiTypesProtocolPlugin
 
 if TYPE_CHECKING:
     from flext_web import p
@@ -25,7 +25,7 @@ class FlextApiProtocolPluginManager:
     class Manager(ABC):
         """Plugin manager for discovery, loading, and lifecycle management."""
 
-        _loaded_plugins: MutableMapping[str, FlextApiProtocolPluginTypes.Plugin]
+        _loaded_plugins: MutableMapping[str, FlextApiTypesProtocolPlugin.Plugin]
 
         def __init__(self) -> None:
             """Initialize plugin manager."""
@@ -35,29 +35,29 @@ class FlextApiProtocolPluginManager:
         def resolve_plugin(
             self,
             plugin_name: str,
-        ) -> p.Result[FlextApiProtocolPluginTypes.Plugin]:
+        ) -> p.Result[FlextApiTypesProtocolPlugin.Plugin]:
             """Get loaded plugin by name.
 
             Returns:
-                The resulting ``p.Result[FlextApiProtocolPluginTypes.Plugin]``.
+                The resulting ``p.Result[FlextApiTypesProtocolPlugin.Plugin]``.
 
             """
             if plugin_name not in self._loaded_plugins:
-                return r[FlextApiProtocolPluginTypes.Plugin].fail(
+                return r[FlextApiTypesProtocolPlugin.Plugin].fail(
                     f"Plugin '{plugin_name}' not loaded",
                 )
-            return r[FlextApiProtocolPluginTypes.Plugin].ok(
+            return r[FlextApiTypesProtocolPlugin.Plugin].ok(
                 self._loaded_plugins[plugin_name],
             )
 
         def resolve_plugins_by_type(
             self,
-            plugin_type: type[FlextApiProtocolPluginTypes.Plugin],
-        ) -> t.SequenceOf[FlextApiProtocolPluginTypes.Plugin]:
+            plugin_type: type[FlextApiTypesProtocolPlugin.Plugin],
+        ) -> Sequence[FlextApiTypesProtocolPlugin.Plugin]:
             """Get all loaded plugins of specific type.
 
             Returns:
-                The resulting ``t.SequenceOf[FlextApiProtocolPluginTypes.Plugin]``.
+                The resulting ``Sequence[FlextApiTypesProtocolPlugin.Plugin]``.
 
             """
             return [
@@ -66,18 +66,18 @@ class FlextApiProtocolPluginManager:
                 if issubclass(plugin.__class__, plugin_type)
             ]
 
-        def list_loaded_plugins(self) -> t.StrSequence:
+        def list_loaded_plugins(self) -> Sequence[str]:
             """Get list of loaded plugin names.
 
             Returns:
-                The resulting ``t.StrSequence``.
+                The resulting ``Sequence[str]``.
 
             """
             return list(self._loaded_plugins.keys())
 
         def load_plugin(
             self,
-            plugin: FlextApiProtocolPluginTypes.Plugin,
+            plugin: FlextApiTypesProtocolPlugin.Plugin,
         ) -> p.Result[bool]:
             """Load and initialize a plugin.
 
@@ -103,7 +103,7 @@ class FlextApiProtocolPluginManager:
                 The resulting ``p.Result[bool]``.
 
             """
-            failed_plugins: t.StrSequence = [
+            failed_plugins: Sequence[str] = [
                 plugin_name
                 for plugin_name in list(self._loaded_plugins.keys())
                 if self.unload_plugin(plugin_name).failure
@@ -133,7 +133,7 @@ class FlextApiProtocolPluginManager:
 
         def _log_shutdown_warning(self, error: str, plugin_name: str) -> None:
             """Log shutdown warnings while preserving tap_error's None contract."""
-            _ = self.logger.warning(
+            self.logger.warning(
                 "Plugin shutdown warning: %s",
                 error,
                 plugin=plugin_name,

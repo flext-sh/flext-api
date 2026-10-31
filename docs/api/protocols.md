@@ -53,6 +53,15 @@ Primary protocol implementation for REST APIs and HTTP-based communication.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
@@ -65,7 +74,7 @@ class FakeHttpClient(FlextApiClient):
                 m.Api.create_response(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
-                    body={"users": [{"id": "1", "name": "Alice"}]},
+                    body={"users": [{"id": c.ParserBooleanToken.ONE, "name": "Alice"}]},
                 ),
             )
         return r[m.Api.HttpResponse].ok(
@@ -111,6 +120,15 @@ if result.success:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import c, m, r
 
 # Create HTTP request
@@ -125,7 +143,11 @@ request = m.Api.HttpRequest(
 response = m.Api.create_response(
     status_code=201,
     headers={"Content-Type": "application/json"},
-    body={"id": "1", "name": "Alice", "email": "alice@example.com"},
+    body={
+        "id": c.ParserBooleanToken.ONE,
+        "name": "Alice",
+        "email": "alice@example.com",
+    },
 )
 
 # Access response data
@@ -204,6 +226,15 @@ This feature is not currently implemented in the public API.
 ```{.python .notest}
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
@@ -272,16 +303,25 @@ if created:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import (
     FlextApiProtocolPluginManager,
-    FlextApiProtocolPluginTypes,
+    FlextApiTypesProtocolPlugin,
     p,
     r,
     t,
 )
 
 
-class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
+class HttpProtocolPlugin(FlextApiTypesProtocolPlugin.Protocol):
     """Concrete HTTP protocol plugin."""
 
     def __init__(self) -> None:
@@ -291,7 +331,7 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
             description="HTTP/REST protocol plugin",
         )
 
-    def supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> Sequence[str]:
         return ["http", "https"]
 
     def supports_protocol(self, protocol: str) -> bool:
@@ -303,11 +343,11 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
         **kwargs: t.Scalar,
     ) -> p.Result[t.JsonMapping]:
         return r[t.JsonMapping].ok(
-            {"status": 200, "request": request, "kwargs": kwargs},
+            {"status": 200, c.ContextScope.REQUEST: request, "kwargs": kwargs},
         )
 
 
-class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
+class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Schema):
     """Concrete JSON schema plugin."""
 
     def __init__(self) -> None:

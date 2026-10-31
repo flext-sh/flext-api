@@ -9,33 +9,18 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_core import FlextService
 
-from flext_api import FlextApiSettings, m, p, t
+from flext_api import FlextApiSettings, m
 
 
 class FlextApiServiceBase[TDomainResult](
     FlextService[TDomainResult],
 ):
     """Base class for flext-api services with typed API settings access."""
-
-    def __init__(
-        self,
-        *,
-        settings_type: type | None = None,
-        runtime_settings: p.Settings | None = None,
-        settings_overrides: t.ScalarMapping | None = None,
-        initial_context: p.Context | None = None,
-    ) -> None:
-        """Bootstrap API services with one concrete runtime settings contract."""
-        super().__init__(
-            settings_type=settings_type or FlextApiSettings,
-            runtime_settings=runtime_settings,
-            settings_overrides=settings_overrides,
-            initial_context=initial_context,
-        )
 
     @property
     @override
@@ -63,4 +48,4 @@ class FlextApiServiceBase[TDomainResult](
 
 s = FlextApiServiceBase
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiServiceBase", "s"]
+__all__: MutableSequence[str] = ["FlextApiServiceBase", "s"]

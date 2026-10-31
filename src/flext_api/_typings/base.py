@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 
 from flext_web import FlextWebTypes, p, u
 
@@ -15,51 +15,41 @@ class FlextApiTypingsBase:
     """Core API type aliases composed into ``t.Api`` by the typings facade."""
 
     type WebHeaders = FlextWebTypes.ScalarOrStrSequenceMapping
-    type WebParams = FlextWebTypes.MappingKV[
+    type WebParams = Mapping[
         str,
-        str | FlextWebTypes.StrSequence,
+        str | Sequence[str],
     ]
     type RequestBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes
     type ResponseBody = FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
-    type HttpResponseDict = FlextWebTypes.MappingKV[
+    type HttpResponseDict = Mapping[
         str,
         FlextWebTypes.JsonValue
-        | FlextWebTypes.StrMapping
+        | Mapping[str, str]
         | FlextWebTypes.JsonMapping
         | FlextWebTypes.StrictBytes
         | None,
     ]
     "HTTP response as dictionary (status_code, headers, body, request_id)."
-    type RouteData = FlextWebTypes.MappingKV[
-        str,
-        FlextWebTypes.JsonValue
-        | FlextWebTypes.ConfigurationMapping
-        | FlextWebTypes.JsonMapping
-        | FlextWebTypes.ResourceCallable
-        | Callable[..., HttpResponseDict | str | None]
-        | None,
-    ]
-    "Route registration data structure."
     type WebhookHandler = Callable[
         [FlextWebTypes.JsonMapping],
         FlextWebTypes.JsonValue | p.Result[bool] | None,
     ]
-    type RequestKwargs = FlextWebTypes.MappingKV[
+    type RequestKwargs = Mapping[
         str,
-        FlextWebTypes.StrMapping
+        Mapping[str, str]
         | FlextWebTypes.JsonMapping
         | FlextWebTypes.ScalarOrStrSequenceMapping
         | float
         | None,
     ]
-    type CacheDict = FlextWebTypes.MappingKV[str, FlextWebTypes.Primitives]
+    type CacheDict = Mapping[str, FlextWebTypes.Primitives]
     API_JSON_VALUE_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.JsonValue] = (
         u.json_value_adapter()
     )
     BINARY_CONTENT_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrictBytes] = (
         u.binary_content_adapter()
     )
-    STR_MAPPING_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.StrMapping] = (
+    STR_MAPPING_ADAPTER: FlextWebTypes.ValueAdapter[Mapping[str, str]] = (
         u.str_mapping_adapter()
     )
     HOSTNAME_ADAPTER: FlextWebTypes.ValueAdapter[FlextWebTypes.HostnameStr] = (

@@ -10,7 +10,7 @@ import time
 from collections.abc import MutableMapping, MutableSequence
 from typing import Annotated, ClassVar
 
-from flext_web import m, u
+from flext_web import m
 
 from flext_api import c, t
 
@@ -25,11 +25,11 @@ class FlextApiModelsWebhook:
 
         secret: Annotated[
             str | None,
-            u.Field(None, description="Shared secret for signature verification"),
+            m.Field(None, description="Shared secret for signature verification"),
         ] = None
         signature_header: Annotated[
             str,
-            u.Field(
+            m.Field(
                 "X-Webhook-Signature",
                 description="Header name containing the webhook signature",
                 min_length=1,
@@ -37,23 +37,23 @@ class FlextApiModelsWebhook:
         ] = "X-Webhook-Signature"
         algorithm: Annotated[
             t.Api.WebhookAlgorithm,
-            u.Field("sha256", description="Supported HMAC signature algorithm"),
+            m.Field("sha256", description="Supported HMAC signature algorithm"),
         ] = c.Api.WebhookAlgorithm.SHA256
         max_retries: Annotated[
             int,
-            u.Field(3, description="Maximum retry attempts per event", ge=0),
+            m.Field(3, description="Maximum retry attempts per event", ge=0),
         ] = 3
         retry_delay: Annotated[
             float,
-            u.Field(1.0, description="Initial retry delay in seconds", gt=0),
+            m.Field(1.0, description="Initial retry delay in seconds", gt=0),
         ] = 1.0
         retry_backoff: Annotated[
             float,
-            u.Field(2.0, description="Retry backoff multiplier", gt=0),
+            m.Field(2.0, description="Retry backoff multiplier", gt=0),
         ] = 2.0
         queue_limit: Annotated[
             int,
-            u.Field(
+            m.Field(
                 1000,
                 description="Maximum number of events kept in the main queue",
                 gt=0,
@@ -61,7 +61,7 @@ class FlextApiModelsWebhook:
         ] = 1000
         retry_queue_limit: Annotated[
             int,
-            u.Field(
+            m.Field(
                 500,
                 description="Maximum number of events kept in the retry queue",
                 gt=0,
@@ -71,32 +71,32 @@ class FlextApiModelsWebhook:
     class WebhookEvent(m.Value):
         """Canonical webhook event envelope."""
 
-        id: str = u.Field(description="Unique event identifier", min_length=1)
-        type: str = u.Field(description="Canonical event type", min_length=1)
-        data: t.JsonMapping = u.Field(description="Normalized event payload")
-        timestamp: float = u.Field(
+        id: str = m.Field(description="Unique event identifier", min_length=1)
+        type: str = m.Field(description="Canonical event type", min_length=1)
+        data: t.JsonMapping = m.Field(description="Normalized event payload")
+        timestamp: float = m.Field(
             default_factory=time.time,
             description="Event creation timestamp",
         )
         attempts: Annotated[
             int,
-            u.Field(0, description="Number of processing attempts", ge=0),
+            m.Field(0, description="Number of processing attempts", ge=0),
         ] = 0
 
     class WebhookDelivery(m.Value):
         """Canonical delivery status for one webhook event."""
 
-        event_type: str = u.Field(description="Associated event type", min_length=1)
-        timestamp: float = u.Field(
+        event_type: str = m.Field(description="Associated event type", min_length=1)
+        timestamp: float = m.Field(
             default_factory=time.time,
             description="Delivery status timestamp",
         )
-        status: t.Api.WebhookDeliveryStatus = u.Field(
+        status: t.Api.WebhookDeliveryStatus = m.Field(
             description="Delivery terminal status",
         )
         attempts: Annotated[
             int | None,
-            u.Field(
+            m.Field(
                 default=None,
                 description="Attempts performed before reaching this status",
                 ge=0,
@@ -104,7 +104,7 @@ class FlextApiModelsWebhook:
         ] = None
         error: Annotated[
             str | None,
-            u.Field(
+            m.Field(
                 default=None,
                 description="Terminal failure message when delivery failed",
             ),
@@ -118,20 +118,20 @@ class FlextApiModelsWebhook:
             validate_assignment=True,
             arbitrary_types_allowed=True,
         )
-        handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = u.Field(
+        handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]] = m.Field(
             default_factory=dict[str, MutableSequence[t.Api.WebhookHandler]],
             description="Registered webhook handlers by event type",
         )
-        event_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = u.Field(
+        event_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = m.Field(
             default_factory=list["FlextApiModelsWebhook.WebhookEvent"],
             description="Main event queue",
         )
-        retry_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = u.Field(
+        retry_queue: MutableSequence[FlextApiModelsWebhook.WebhookEvent] = m.Field(
             default_factory=list["FlextApiModelsWebhook.WebhookEvent"],
             description="Retry event queue",
         )
         deliveries: MutableMapping[str, FlextApiModelsWebhook.WebhookDelivery] = (
-            u.Field(
+            m.Field(
                 default_factory=dict[
                     str,
                     "FlextApiModelsWebhook.WebhookDelivery",
@@ -174,4 +174,4 @@ class FlextApiModelsWebhook:
             )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiModelsWebhook"]
+__all__: MutableSequence[str] = ["FlextApiModelsWebhook"]

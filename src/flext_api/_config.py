@@ -1,8 +1,8 @@
 """FlextApiConfig — frozen config singleton for flext-api (ADR-005 §7).
 
-Model-less: business rules live in ``config/*.yaml`` under the ``Api:`` key and
-are exposed through the open ``config.Api`` namespace (``extra="allow"``), with
-no per-domain model. Access is ``config.Api.<domain>[<key>...]``.
+Business rules live in ``config/*.yaml`` under the ``Api:`` key and are exposed
+through the shared layer-zero namespace schema. Access is
+``config.Api.<domain>[<key>...]``.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,14 +12,13 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from flext_core import FlextConfig, FlextSettings
-from flext_web import m
+from flext_core import FlextConfig, FlextSettings, m
 
-from flext_api._models.config import FlextApiModelsApiNamespace
+from flext_api.config_namespace import FlextApiConfigNamespace
 
 
 class FlextApiConfig(FlextSettings, FlextConfig):
-    """Api config auto-loaded model-less from ``config/*.yaml``.
+    """Api config auto-loaded from YAML through its layer-zero schema.
 
     MRO carries ``FlextSettings`` FIRST (ENFORCE-042); unlike never-instantiated
     namespace holders, this class IS instantiated by ``fetch_global``, so the
@@ -28,9 +27,9 @@ class FlextApiConfig(FlextSettings, FlextConfig):
     """
 
     Api: Annotated[
-        FlextApiModelsApiNamespace,
+        FlextApiConfigNamespace.ConfigNamespace,
         m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Api``."),
-    ] = FlextApiModelsApiNamespace()
+    ] = FlextApiConfigNamespace.ConfigNamespace()
 
 
 config: FlextApiConfig = FlextApiConfig.fetch_global()

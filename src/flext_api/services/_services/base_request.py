@@ -6,18 +6,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING
 
 import httpx
 
 from flext_api import c, m, p, r, t, u
-from flext_api.services._services import FlextApiClientCodecMixin
+from flext_api.services._services import FlextApiClientCodec
 
 if TYPE_CHECKING:
     from flext_api import FlextApiSettings
 
 
-class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
+class FlextApiClientBaseRequest(FlextApiClientCodec):
     """Shared request execution helpers for sync and async clients."""
 
     if TYPE_CHECKING:
@@ -51,16 +52,18 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
     def _prepare_request(
         self,
         request: m.Api.HttpRequest,
-    ) -> p.Result[tuple[str, t.StrMapping, bytes, t.StrMapping]]:
+    ) -> p.Result[tuple[str, Mapping[str, str], bytes, Mapping[str, str]]]:
         """Prepare URL, headers, body, and extensions for HTTP request.
 
         Returns:
-            The resulting ``p.Result[tuple[str, t.StrMapping, bytes, t.StrMapping]]``.
+            The resulting ``p.Result`` of ``(url, headers, body, extensions)``.
 
         """
         url_result = self._build_url(request.url)
         if url_result.failure:
-            return r[tuple[str, t.StrMapping, bytes, t.StrMapping]].from_failure(
+            return r[
+                tuple[str, Mapping[str, str], bytes, Mapping[str, str]]
+            ].from_failure(
                 url_result,
             )
         request_body: t.Api.RequestBody = (
@@ -68,16 +71,21 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         )
         body_result = self._serialize_body(request_body)
         if body_result.failure:
-            return r[tuple[str, t.StrMapping, bytes, t.StrMapping]].from_failure(
+            return r[
+                tuple[str, Mapping[str, str], bytes, Mapping[str, str]]
+            ].from_failure(
                 body_result,
             )
-        headers: t.StrMapping = {**self.settings.Api.default_headers, **request.headers}
-        extensions: t.StrMapping = (
+        headers: Mapping[str, str] = {
+            **self.settings.Api.default_headers,
+            **request.headers,
+        }
+        extensions: Mapping[str, str] = (
             {c.Api.REQUEST_EXTENSION_SNI_HOSTNAME: request.sni_hostname}
             if request.sni_hostname
             else {}
         )
-        return r[tuple[str, t.StrMapping, bytes, t.StrMapping]].ok((
+        return r[tuple[str, Mapping[str, str], bytes, Mapping[str, str]]].ok((
             url_result.value,
             headers,
             body_result.value,
@@ -121,4 +129,4 @@ class FlextApiClientBaseRequestMixin(FlextApiClientCodecMixin):
         return r[m.Api.HttpResponse].fail_op(op, exc)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientBaseRequestMixin"]
+__all__: MutableSequence[str] = ["FlextApiClientBaseRequest"]

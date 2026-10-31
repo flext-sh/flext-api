@@ -9,8 +9,10 @@
 Curated operational guides live here. Keep API behavior in generated reference pages
 sourced from code and docstrings.
 
+- [Codemod rules](codemod-rules.md)
 - [Configuration](configuration.md)
 - [Development](development.md)
+- [Engine](engine.md)
 - [Getting started](getting-started.md)
 - [Http client](http-client.md)
 - [Implementation_status](implementation_status.md)
@@ -25,5 +27,6 @@ sourced from code and docstrings.
 - [Using flext cli](using-flext-cli.md)
 - [Using flext core](using-flext-core.md)
 - [Using flext tests](using-flext-tests.md)
+- [Using pydantic](using-pydantic.md)
 - [Back to project docs](../index.md)
 - [API Reference](../api-reference/README.md)

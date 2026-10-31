@@ -7,13 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 
-from flext_web import p, r, u
+from flext_web import p, u
 
-from flext_api import t
+from flext_api import r, t
 
 
-class FlextApiProtocolPluginTypes:
+class FlextApiTypesProtocolPlugin:
     """Plugin type shard for ``p.Api``."""
 
     class _FlextApiPluginBase:
@@ -62,11 +63,11 @@ class FlextApiProtocolPluginTypes:
         """Abstract protocol plugin for API protocol implementations."""
 
         @staticmethod
-        def supported_protocols() -> t.StrSequence:
+        def supported_protocols() -> Sequence[str]:
             """Get list of supported protocols.
 
             Returns:
-                The resulting ``t.StrSequence``.
+                The resulting ``Sequence[str]``.
 
             """
             return []
@@ -215,7 +216,8 @@ class FlextApiProtocolPluginTypes:
                 The resulting ``p.Result[t.JsonMapping]``.
 
             """
-            _ = credentials
+            if not credentials:
+                return r[t.JsonMapping].fail("Refresh requires credentials")
             return r[t.JsonMapping].fail("Refresh not supported by this plugin")
 
         @staticmethod
@@ -234,4 +236,4 @@ class FlextApiProtocolPluginTypes:
             ...
 
 
-__all__: list[str] = ["FlextApiProtocolPluginTypes"]
+__all__: list[str] = ["FlextApiTypesProtocolPlugin"]

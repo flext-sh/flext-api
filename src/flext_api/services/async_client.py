@@ -6,17 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import MutableSequence
 
 from flext_api.services import FlextApiClientBase
-from flext_api.services._services import FlextApiClientAsyncRequestMixin
-
-if TYPE_CHECKING:
-    from flext_api import t
+from flext_api.services._services import FlextApiClientAsyncRequest
 
 
-class FlextApiAsyncClient(FlextApiClientAsyncRequestMixin, FlextApiClientBase):
+class FlextApiAsyncClient(FlextApiClientAsyncRequest, FlextApiClientBase):
     """Generic async HTTP client using FLEXT patterns."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiAsyncClient"]
+__all__: MutableSequence[str] = ["FlextApiAsyncClient"]

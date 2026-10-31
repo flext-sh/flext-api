@@ -17,9 +17,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Annotated
 
-from flext_core import FlextSettings, t, u
+from flext_core import FlextSettings, t
 from flext_web import m
 
 
@@ -58,11 +59,11 @@ class FlextApiSettings(FlextSettings):
             bool,
             m.Field(description="Enable TLS certificate check"),
         ] = True
-        default_headers: t.StrMapping = m.Field(
+        default_headers: Mapping[str, str] = m.Field(
             default_factory=dict[str, str],
             description="Default headers applied to all requests",
         )
-        headers: t.StrMapping = m.Field(
+        headers: Mapping[str, str] = m.Field(
             default_factory=dict[str, str],
             description="Compatibility headers bag",
         )
@@ -80,7 +81,7 @@ class FlextApiSettings(FlextSettings):
         description="Namespaced API settings.",
     )
 
-    @u.model_validator(mode="before")
+    @m.model_validator(mode="before")
     @classmethod
     def _lift_flat_api_fields(cls, data: t.JsonValue) -> t.JsonValue:
         """Fold top-level ``ApiSettings`` field kwargs into the ``Api`` namespace.

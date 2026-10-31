@@ -6,27 +6,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_cli.services.cli import FlextCliCli
-
-if TYPE_CHECKING:
-    from flext_api import t
 
 
 class FlextApiCli(FlextCliCli):
     """Flext-api CLI facade — extends flext-cli CLI."""
 
 
-def main(args: t.StrSequence | None = None) -> int:
+def main() -> int:
     """Console-script entry point — commands are not implemented yet.
 
     Returns:
         The resulting ``int``.
 
     """
-    _ = args
     return 0
 
 
-__all__: t.VariadicTuple[str] = ("FlextApiCli", "main")
+__all__: tuple[str, ...] = ("FlextApiCli", "main")

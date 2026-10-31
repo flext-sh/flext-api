@@ -11,7 +11,7 @@ rules:
   include: [ src/flext_api/typings.py ]
   distributions: [ flext-api ]
   find: '\bu\.TypeAdapter\['
-  replace: 'm.TypeAdapter['
+  replace: 'u.type_adapter['
 - id: api-type-adapter-construction
   description: Construct adapters through the public utilities facade.
   include: [ src/flext_api/typings.py ]
@@ -146,6 +146,15 @@ rules:
   find: 'from __future__ import annotations\n\nfrom flext_api import c, m, t'
   replace: |-
     from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
     from typing import TYPE_CHECKING
 

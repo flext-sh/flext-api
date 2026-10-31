@@ -6,13 +6,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
+
 import httpx
 
-from flext_api import m, p, r, t
-from flext_api.services._services import FlextApiClientBaseRequestMixin
+from flext_api import m, p, r
+from flext_api.services._services import FlextApiClientBaseRequest
 
 
-class FlextApiClientAsyncRequestMixin(FlextApiClientBaseRequestMixin):
+class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
     """Async request execution helpers for FlextApiAsyncClient."""
 
     async def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
@@ -41,4 +43,4 @@ class FlextApiClientAsyncRequestMixin(FlextApiClientBaseRequestMixin):
         return self._handle_response(response)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientAsyncRequestMixin"]
+__all__: MutableSequence[str] = ["FlextApiClientAsyncRequest"]

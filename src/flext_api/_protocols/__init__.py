@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from flext_api._protocols.base_storage import FlextApiProtocolsStorage
     from flext_api._protocols.base_transport import FlextApiProtocolsTransport
     from flext_api._protocols.plugin_manager import FlextApiProtocolPluginManager
-    from flext_api._protocols.plugin_types import FlextApiProtocolPluginTypes
+    from flext_api._protocols.plugin_types import FlextApiTypesProtocolPlugin
     from flext_api._protocols.plugins import FlextApiProtocolPlugins
     from flext_api._protocols.serialization import FlextApiProtocolsSerialization
     from flext_api._protocols.transports import FlextApiProtocolsTransports
@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 
 __all__: tuple[str, ...] = (
     "FlextApiProtocolPluginManager",
-    "FlextApiProtocolPluginTypes",
     "FlextApiProtocolPlugins",
     "FlextApiProtocolsBase",
     "FlextApiProtocolsGrpc",
@@ -40,6 +39,7 @@ __all__: tuple[str, ...] = (
     "FlextApiProtocolsStorage",
     "FlextApiProtocolsTransport",
     "FlextApiProtocolsTransports",
+    "FlextApiTypesProtocolPlugin",
 )
 
 install_lazy_exports(
@@ -47,7 +47,6 @@ install_lazy_exports(
     globals(),
     MappingProxyType({
         "FlextApiProtocolPluginManager": ".plugin_manager",
-        "FlextApiProtocolPluginTypes": ".plugin_types",
         "FlextApiProtocolPlugins": ".plugins",
         "FlextApiProtocolsBase": ".base",
         "FlextApiProtocolsGrpc": ".base_grpc",
@@ -58,6 +57,7 @@ install_lazy_exports(
         "FlextApiProtocolsStorage": ".base_storage",
         "FlextApiProtocolsTransport": ".base_transport",
         "FlextApiProtocolsTransports": ".transports",
+        "FlextApiTypesProtocolPlugin": ".plugin_types",
     }),
     public_exports=__all__,
 )

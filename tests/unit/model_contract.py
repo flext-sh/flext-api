@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import pytest
 
 from tests import c, m, t, tm, u
@@ -44,7 +46,7 @@ class TestsFlextApiModelContract:
     )
     @staticmethod
     def test_http_request_content_type_derives_from_headers(
-        headers: t.StrMapping,
+        headers: Mapping[str, str],
         expected: str,
     ) -> None:
         """content_type computed field reflects headers, defaulting to JSON."""
@@ -149,24 +151,24 @@ class TestsFlextApiModelContract:
         built = m.Api.create_response(status_code=200, body={"a": 1})
         tm.that(built.status_code, eq=200)
         tm.that(built.body, eq={"a": 1})
-        tm.that(built.success, eq=True)
+        tm.ok(built.success)
 
     # ---- Serializer contract --------------------------------------------
 
     @staticmethod
     def test_packb_returns_non_empty_bytes() -> None:
         """Packb serializes a mapping into non-empty bytes."""
-        payload: t.StrMapping = {"key": "value"}
+        payload: Mapping[str, str] = {"key": "value"}
         packed = u.Api.packb(payload)
         tm.that(packed, is_=bytes, length_gt=0)
 
     @pytest.mark.parametrize(
         "original",
-        [{"hello": "world", "count": 42}, {"nested": {"a": [1, 2, 3]}}, {}],
+        [{"hello": "world", c.Aggregation.COUNT: 42}, {"nested": {"a": [1, 2, 3]}}, {}],
     )
     @staticmethod
     def test_packb_unpackb_is_lossless_roundtrip(original: t.JsonMapping) -> None:
         """Packing then unpacking reproduces the original payload."""
         result = u.Api.unpackb(u.Api.packb(original))
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)

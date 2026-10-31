@@ -12,9 +12,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from typing import cast
 
-from flext_api import settings
 from flext_api.services import FlextApiClient
-from tests import m, tm
+from tests import m, settings, tm
 
 
 class TestsFlextApiResponseWireContent:
@@ -51,6 +50,6 @@ class TestsFlextApiResponseWireContent:
             )
             result = client.request(m.Api.HttpRequest(url=base_url, method="GET"))
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value.content, eq=payload)
         tm.that(result.value.body, eq={"answer": "ok"})

@@ -18,6 +18,15 @@ This page documents the storage/cache story for `flext-api`.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
@@ -42,7 +51,7 @@ class FakeFileUploadApi(FileUploadApi):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> p.Result[m.Api.HttpResponse]:
         return r[m.Api.HttpResponse].ok(
@@ -64,10 +73,10 @@ api = FakeFileUploadApi(
     runtime_settings=FlextApiSettings(base_url="https://example.com"),
 )
 result = api.upload_document("report.txt", b"Hello, FLEXT!")
-assert result.success
+tm.ok(result.success)
 body = result.unwrap().body
-assert body["filename"] == "report.txt"
-assert body["id"] == 1
+tm.that(body["filename"], eq="report.txt")
+tm.that(body["id"], eq=1)
 ```
 
 ## What Is Not Implemented

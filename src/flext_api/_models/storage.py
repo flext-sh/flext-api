@@ -7,10 +7,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, MutableSequence
+from datetime import UTC, datetime
 from typing import Annotated, ClassVar
 
-from flext_web import m, u
+from flext_web import m
 
 from flext_api import t
 
@@ -23,24 +24,24 @@ class FlextApiModelsStorage:
     class StorageSettings(m.Value):
         """Canonical storage settings."""
 
-        namespace: str = u.Field(
-            "flext_api",
+        namespace: str = m.Field(
+            default="flext_api",
             description="Logical namespace for this storage instance",
             validate_default=True,
         )
-        backend: str = u.Field(
-            "memory",
+        backend: str = m.Field(
+            default="memory",
             description="Storage backend identifier",
             validate_default=True,
         )
-        max_size: int | None = u.Field(
-            None,
+        max_size: int | None = m.Field(
+            default=None,
             description="Maximum number of entries kept in memory",
             gt=0,
             validate_default=True,
         )
-        default_ttl: int | None = u.Field(
-            None,
+        default_ttl: int | None = m.Field(
+            default=None,
             description="Default entry TTL in seconds",
             gt=0,
             validate_default=True,
@@ -53,23 +54,22 @@ class FlextApiModelsStorage:
 
         value: Annotated[
             t.JsonValue,
-            u.Field(description="Stored JSON-compatible value payload"),
+            m.Field(description="Stored JSON-compatible value payload"),
         ]
         timestamp: Annotated[
             str,
-            u.Field(description="Entry creation timestamp in ISO format"),
+            m.Field(description="Entry creation timestamp in ISO format"),
         ]
         ttl: Annotated[
             t.Numeric | None,
-            u.Field(default=None, description="Optional time-to-live seconds"),
+            m.Field(default=None, description="Optional time-to-live seconds"),
         ] = None
         created_at: Annotated[
             float,
-            u.Field(
-                default_factory=time.time,
+            m.Field(
                 description="Monotonic creation timestamp",
             ),
-        ]
+        ] = m.Field(default_factory=time.time)
 
         @property
         def expired(self) -> bool:
@@ -85,59 +85,61 @@ class FlextApiModelsStorage:
             extra="forbid",
             validate_assignment=True,
         )
-        entries: MutableMapping[str, FlextApiModelsStorage.StorageMetadata] = u.Field(
+        entries: MutableMapping[str, FlextApiModelsStorage.StorageMetadata] = m.Field(
             default_factory=dict[str, "FlextApiModelsStorage.StorageMetadata"],
             description="Storage entries by key",
         )
-        operations_count: int = u.Field(
+        operations_count: int = m.Field(
             0,
             description="Total operations performed by this storage",
             validate_default=True,
         )
-        cache_hits: int = u.Field(
+        cache_hits: int = m.Field(
             0,
             description="Successful cache reads",
             validate_default=True,
         )
-        cache_misses: int = u.Field(
+        cache_misses: int = m.Field(
             0,
             description="Failed cache reads",
             validate_default=True,
         )
-        created_at: str = u.Field(
-            default_factory=u.generate_iso_timestamp,
+        created_at: str = m.Field(
+            default_factory=lambda: (
+                datetime.now(UTC).replace(microsecond=0).isoformat()
+            ),
             description="Creation timestamp for this storage instance",
         )
 
     class StorageStats(m.Value):
         """Storage statistics model."""
 
-        total_operations: int = u.Field(
+        total_operations: int = m.Field(
             0,
             description="Total storage operations count",
             validate_default=True,
         )
-        cache_hits: int = u.Field(
+        cache_hits: int = m.Field(
             0,
             description="Number of cache hits",
             validate_default=True,
         )
-        cache_misses: int = u.Field(
+        cache_misses: int = m.Field(
             0,
             description="Number of cache misses",
             validate_default=True,
         )
-        storage_size: int = u.Field(
+        storage_size: int = m.Field(
             0,
             description="Current storage size in entries",
             validate_default=True,
         )
-        memory_usage: int = u.Field(
+        memory_usage: int = m.Field(
             0,
             description="Estimated memory usage in bytes",
             validate_default=True,
         )
-        namespace: str = u.Field(
+        namespace: str = m.Field(
             "flext",
             description="Storage namespace identifier",
             validate_default=True,
@@ -151,4 +153,4 @@ class FlextApiModelsStorage:
             return self.cache_hits / self.total_operations
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiModelsStorage"]
+__all__: MutableSequence[str] = ["FlextApiModelsStorage"]
