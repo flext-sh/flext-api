@@ -29,7 +29,7 @@ executes validated `m.Api.HttpRequest` instances through `request(...)`. It does
 expose `get/post/put/delete/patch` directly; those methods live on the `FlextApi`
 facade.
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -345,7 +345,7 @@ print(timeout_result.unwrap())
 
 ### Complete HTTP Client Example
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

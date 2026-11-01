@@ -224,7 +224,7 @@ from collections.abc import (
 
 ### Test Fixtures and Mocks
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -264,7 +264,7 @@ async def async_client(test_config):
 
 ### Connection Pooling
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -308,7 +308,7 @@ class ConnectionPoolManager:
 
 ### Response Caching
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -357,7 +357,7 @@ class ResponseCache:
 
 ### Authentication Handlers
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

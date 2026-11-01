@@ -223,7 +223,7 @@ This feature is not currently implemented in the public API.
 
 ### HTTP API Client
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

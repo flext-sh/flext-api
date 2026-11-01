@@ -296,7 +296,7 @@ spec:
 
 ### Adding New Protocols
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -328,7 +328,7 @@ registry.register("custom", CustomProtocol())
 
 ### Custom Middleware
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -386,7 +386,7 @@ app.add_middleware(CustomBusinessMiddleware())
 
 ### Monitoring and Optimization
 
-````python notest
+````python
 from __future__ import annotations
 
 from collections.abc import (
@@ -430,7 +430,7 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

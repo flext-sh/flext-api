@@ -142,7 +142,7 @@ make setup
 
 ### Basic HTTP Client Usage
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

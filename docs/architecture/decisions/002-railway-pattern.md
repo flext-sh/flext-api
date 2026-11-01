@@ -64,7 +64,7 @@ Every public method returns `p.Result[T]`. Operations are composed using `flat_m
 
 ### Option 1: Traditional Exceptions
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -200,7 +200,7 @@ tm.that(result.unwrap().body["name"], eq="Alice")
 
 ### Usage in Application Code
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
