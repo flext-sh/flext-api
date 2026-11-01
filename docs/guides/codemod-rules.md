@@ -43,8 +43,8 @@ superseding the intermediate primitive-storage contract (ADR-005 and ADR-028
 Decision 14).
 Validation retains the input domain and the effective preset's strictness;
 validated `StrEnum` attributes retain enum members and the enum type in generated
-protocols. Writable properties retain their accepted enum input type. Python construction, default
-validation, JSON ingress, output values and consumer migration are separate proofs;
+protocols. Writable properties retain their accepted enum input type. Python construction,
+default validation, JSON ingress, output values and consumer migration are separate proofs;
 the annotation alone does not establish any of them.
 
 ## Catalogs and layers
