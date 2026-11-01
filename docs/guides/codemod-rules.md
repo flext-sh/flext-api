@@ -67,8 +67,8 @@ Generation and native-scan agreement require runtime validation after source cha
 | Project overlay | `<repo>/config/rules/ast-grep/sgconfig.yml` | `<repo>/config/rules/mod/sed.yaml` |
 
 The engine composes the providers in that order:
-`flext_infra/_utilities/codemod_rules.py`, `codemod_rule_plan`. Rule ids are unique
-across every loaded provider. A text rule may also name the projects it targets in
+`flext_infra/_utilities/codemod_rules.py`, `codemod_rule_plan`. Rule ids are unique across
+every loaded provider. A text rule may also name the projects it targets in
 `distributions`; an empty list means every project (`codemod/text_gates.py`,
 `_selected_rules`). Put a rule at the highest layer where its law holds.
 
