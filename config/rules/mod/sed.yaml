@@ -1,17 +1,4 @@
 rules:
-- id: api-type-adapter-import-models
-  description: Import the public model facade for adapter type annotations.
-  include: [ src/flext_api/typings.py ]
-  distributions: [ flext-api ]
-  find: '^from flext_web import p, t, u$'
-  replace: 'from flext_web import m, p, t, u'
-  flags: [ MULTILINE ]
-- id: api-type-adapter-annotations
-  description: Type adapters through the public model facade.
-  include: [ src/flext_api/typings.py ]
-  distributions: [ flext-api ]
-  find: '\bu\.TypeAdapter\['
-  replace: 'u.type_adapter['
 - id: api-type-adapter-construction
   description: Construct adapters through the public utilities facade.
   include: [ src/flext_api/typings.py ]
@@ -101,32 +88,6 @@ rules:
   find: '^        assert client\.is_closed$'
   replace: '        tm.that(client.is_closed, eq=True)'
   flags: [ MULTILINE ]
-- id: api-protocol-transport-type-only-model-import
-  description: Keep model types used only in annotations out of the protocol runtime layer.
-  include: [ src/flext_api/_protocols/transports.py ]
-  distributions: [ flext-api ]
-  find: 'from flext_api import c, m, r, t\n'
-  replace: 'from flext_api import c, r, t\n'
-- id: api-protocol-transport-model-type-checking
-  description: Resolve transport model annotations under TYPE_CHECKING.
-  include: [ src/flext_api/_protocols/transports.py ]
-  distributions: [ flext-api ]
-  find: 'if TYPE_CHECKING:\n    from flext_web import p(?!\n\n    from flext_api import m)'
-  replace: |-
-    if TYPE_CHECKING:
-        from flext_web import p
-
-        from flext_api import m, p
-- id: api-protocol-transport-model-import-order
-  description: Order dependency and first-party imports inside the type-checking block.
-  include: [ src/flext_api/_protocols/transports.py ]
-  distributions: [ flext-api ]
-  find: 'if TYPE_CHECKING:\n    from flext_api import m\n    from flext_web import p'
-  replace: |-
-    if TYPE_CHECKING:
-        from flext_web import p
-
-        from flext_api import m, p
 - id: api-protocol-transport-base-name
   description: Use the published protocol class without a local import alias.
   include: [ src/flext_api/_protocols/transports.py ]
@@ -139,29 +100,6 @@ rules:
   distributions: [ flext-api ]
   find: 'pb\.TransportPlugin'
   replace: 'FlextApiProtocolsBase.TransportPlugin'
-- id: api-protocol-config-type-checking-import
-  description: Keep config mixin model annotations out of the protocol runtime layer.
-  include: [ src/flext_api/_protocols/_transports_config.py ]
-  distributions: [ flext-api ]
-  find: 'from __future__ import annotations\n\nfrom flext_api import c, m, p, t'
-  replace: |-
-    from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-    from typing import TYPE_CHECKING
-
-    from flext_api import c, p, t
-
-    if TYPE_CHECKING:
-        from flext_api import m, p
 - id: api-tests-service-parent-class
   description: Extend the public parent service class instead of its letter alias.
   include: [ tests/base.py ]

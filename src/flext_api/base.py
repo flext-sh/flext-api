@@ -14,7 +14,7 @@ from typing import override
 
 from flext_core import FlextService
 
-from flext_api import FlextApiSettings, m
+from flext_api import FlextApiSettings, m, p
 
 
 class FlextApiServiceBase[TDomainResult](

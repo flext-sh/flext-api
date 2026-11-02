@@ -1,0 +1,11 @@
+rules:
+  - id: api-response-construction-owner
+    pattern: '${response}'
+    goal: m.Api.HttpResponse
+    arguments:
+      response: name=flext_api._protocols.transports.FlextApiProtocolsTransports.HttpResponse
+    call_target: response
+    imports:
+      m: from flext_api import m
+    bindings:
+      m.Api.HttpResponse: flext_api._models.response.FlextApiModelsResponse.HttpResponse

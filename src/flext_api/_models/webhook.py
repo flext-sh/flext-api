@@ -10,7 +10,7 @@ import time
 from collections.abc import MutableMapping, MutableSequence
 from typing import Annotated, ClassVar
 
-from flext_web import m, p
+from flext_web import m
 
 from flext_api import c, p, t
 

@@ -111,12 +111,18 @@ Use `request_kwargs` for query parameters and request options that belong to
 
 Every call returns `p.Result[p.Api.HttpResponse]`.
 
-The wire response boundary uses `p.Api.HttpResponse`. Transport adapters construct
+The wire response boundary is `p.Api.HttpTransportResponse`, distinct from the
+domain response contract `p.Api.HttpResponse`. Both are runtime-checkable
+protocols. Transport adapters construct
 the native clients through `u.Api.HttpxClient` and `u.Api.HttpxAsyncClient`; their
 local variables retain the inferred concrete types. The existing domain HTTP
 ports remain separate from these transport implementation details.
 Wire protocols annotate existing responses; the service constructs returned
 values with `m.Api.HttpResponse`, since protocols are never constructors.
+Native Rope rewires the transport declaration and its actual consumers together;
+domain response annotations retain their model-derived protocol identity.
+Consumers bind the API protocol facade once; inherited contracts arrive through
+that facade's MRO. Runtime service specializations bind the same facade at runtime.
 
 ```python
 from __future__ import annotations
