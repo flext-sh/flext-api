@@ -11,7 +11,7 @@ from collections.abc import MutableMapping, MutableSequence
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar
 
-from flext_web import m
+from flext_web import m, p
 
 from flext_api import t
 

@@ -116,7 +116,7 @@ rules:
     if TYPE_CHECKING:
         from flext_web import p
 
-        from flext_api import m
+        from flext_api import m, p
 - id: api-protocol-transport-model-import-order
   description: Order dependency and first-party imports inside the type-checking block.
   include: [ src/flext_api/_protocols/transports.py ]
@@ -126,7 +126,7 @@ rules:
     if TYPE_CHECKING:
         from flext_web import p
 
-        from flext_api import m
+        from flext_api import m, p
 - id: api-protocol-transport-base-name
   description: Use the published protocol class without a local import alias.
   include: [ src/flext_api/_protocols/transports.py ]
@@ -161,7 +161,7 @@ from collections.abc import (
     from flext_api import c, p, t
 
     if TYPE_CHECKING:
-        from flext_api import m
+        from flext_api import m, p
 - id: api-tests-service-parent-class
   description: Extend the public parent service class instead of its letter alias.
   include: [ tests/base.py ]
