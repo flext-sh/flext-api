@@ -11,7 +11,7 @@ from collections.abc import MutableMapping, MutableSequence
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar
 
-from flext_web import m, p
+from flext_web import m
 
 from flext_api import t
 
@@ -81,7 +81,7 @@ class FlextApiModelsStorage:
     class StorageState(m.FlexibleInternalModel):
         """Mutable storage runtime state kept in one central model."""
 
-        model_config: ClassVar[p.ConfigDict] = m.ConfigDict(
+        model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
             extra="forbid",
             validate_assignment=True,
         )

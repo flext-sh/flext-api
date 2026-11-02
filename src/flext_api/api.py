@@ -26,7 +26,7 @@ class FlextApi(s[bool]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[p.ConfigDict] = m.ConfigDict(use_enum_values=True)
+    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = m.PrivateAttr(default_factory=lambda: None)
 
     @property
