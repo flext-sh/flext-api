@@ -1,12 +1,13 @@
 # AGENTS.md — flext-api
 
-> **Parent workspace law** lives in [`../AGENTS.md`](../AGENTS.md) — read it first.
-> Universal engineering core: `~/.agents/UNIVERSAL_CORE.md`. Composition: global
-> skills + parent/root `AGENTS.md` + this scope delta. Do not re-embed universal law.
->
-> **Standalone / independent mode:** when `../AGENTS.md` does not resolve, pin the
-> parent raw `AGENTS.md` URL to the same branch/release as this package (never
-> `main`): <https://raw.githubusercontent.com/flext-sh/flext/0.12.0-dev/AGENTS.md>
+Read the branch-matched [FLEXT root](../AGENTS.md) and its local flext-law through
+that root's authority entry point. In standalone mode resolve the same branch or
+release; a coincidental parent instruction file does not establish FLEXT authority.
+This file adds only this package's domain delta. Command routing, architecture
+and universal execution stay with their parent owners.
+
+Embedded AI Hub or Beads generated blocks are retired delivery material, not
+active local rules. Their withdrawal remains the publisher's responsibility.
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-BEGIN -->
 
@@ -18,39 +19,11 @@ High-performance REST layer (FastAPI-oriented). The HTTP boundary consumed by
 `flext-auth`, `flext-oracle-oic`, `flext-oracle-wms`, `flext-quality`, and OIC
 connectors.
 
-## Structure
-
-```text
-src/flext_api/
-├── api.py            # FlextApi facade: typed HTTP methods over a shared client
-├── base.py
-├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
-└── _config.py _constants/ _models/ _protocols/ _typings/ _utilities/
-```
-
-## Code Map
-
-| Symbol     | Kind  | Location | Role                                                                 |
-| ---------- | ----- | -------- | -------------------------------------------------------------------- |
-| `FlextApi` | class | `api.py` | facade: `client`, `settings`, `request`, `get/post/put/patch/delete` |
-
-All method calls funnel through the private `_http_method`; headers/kwargs are assembled
-per call.
-
 ## Conventions (specific to this package)
 
 - Use the **typed HTTP methods / facade** — never bypass the shared client chain.
 - Request/response payloads are Pydantic-2 models (`model_dump(mode="json")` only at the
   wire edge).
-- Config/settings canonical pattern: ADR-012.
-- Codemod governance (ast-grep + make mod): ADR-014.
-
-## Commands
-
-```bash
-make check
-make test
-```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->
 
