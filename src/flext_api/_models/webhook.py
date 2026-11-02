@@ -113,7 +113,7 @@ class FlextApiModelsWebhook:
     class WebhookState(m.FlexibleInternalModel):
         """Mutable webhook runtime state centralized in one model."""
 
-        model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
+        model_config: ClassVar[p.ConfigDict] = m.ConfigDict(
             extra="forbid",
             validate_assignment=True,
             arbitrary_types_allowed=True,

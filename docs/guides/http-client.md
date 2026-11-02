@@ -111,6 +111,13 @@ Use `request_kwargs` for query parameters and request options that belong to
 
 Every call returns `p.Result[p.Api.HttpResponse]`.
 
+The wire response boundary uses `p.Api.HttpResponse`. Transport adapters construct
+the native clients through `u.Api.HttpxClient` and `u.Api.HttpxAsyncClient`; their
+local variables retain the inferred concrete types. The existing domain HTTP
+ports remain separate from these transport implementation details.
+Wire protocols annotate existing responses; the service constructs returned
+values with `m.Api.HttpResponse`, since protocols are never constructors.
+
 ```python
 from __future__ import annotations
 

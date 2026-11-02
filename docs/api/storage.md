@@ -37,7 +37,7 @@ class FileUploadApi(FlextApi):
         self,
         filename: str,
         content: bytes,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         return self.post(
             "/documents",
             data={"filename": filename, "content": content.decode("utf-8")},
@@ -53,8 +53,8 @@ class FakeFileUploadApi(FileUploadApi):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    ) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=201,
                 body={

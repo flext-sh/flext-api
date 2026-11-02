@@ -41,7 +41,7 @@ class FlextApiServiceBase[TDomainResult](
         return current
 
     @classmethod
-    def runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+    def runtime_bootstrap_options(cls) -> p.RuntimeBootstrapOptions:
         """Return runtime bootstrap options for API services."""
         return m.RuntimeBootstrapOptions(settings_type=FlextApiSettings)
 

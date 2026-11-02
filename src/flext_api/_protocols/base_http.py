@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 if TYPE_CHECKING:
     from flext_web import p
 
-    from flext_api import c, t
+    from flext_api import c, p, t
 
 
 class FlextApiProtocolsHttpClient:

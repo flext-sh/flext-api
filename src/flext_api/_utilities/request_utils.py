@@ -177,7 +177,7 @@ class FlextApiUtilitiesRequestUtils:
             data: t.Api.RequestBody | None = None,
             headers: Mapping[str, str] | None = None,
             request_kwargs: t.Api.RequestKwargs | None = None,
-        ) -> p.Result[m.ConfigMap]:
+        ) -> p.Result[p.ConfigMap]:
             """Build one normalized request payload for HttpRequest validation.
 
             Args:
@@ -194,20 +194,20 @@ class FlextApiUtilitiesRequestUtils:
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)
             if body_result.failure:
-                return r[m.ConfigMap].from_failure(body_result)
+                return r[p.ConfigMap].from_failure(body_result)
             headers_result = request_utils.merge_headers(headers, request_kwargs)
             if headers_result.failure:
-                return r[m.ConfigMap].from_failure(headers_result)
+                return r[p.ConfigMap].from_failure(headers_result)
             timeout_result = request_utils.validate_and_extract_timeout(
                 None,
                 request_kwargs,
             )
             if timeout_result.failure:
-                return r[m.ConfigMap].from_failure(timeout_result)
+                return r[p.ConfigMap].from_failure(timeout_result)
             query_result = request_utils.extract_query_params(request_kwargs)
             if query_result.failure:
-                return r[m.ConfigMap].from_failure(query_result)
-            return r[m.ConfigMap].ok(
+                return r[p.ConfigMap].from_failure(query_result)
+            return r[p.ConfigMap].ok(
                 m.ConfigMap(
                     root={
                         "method": method,

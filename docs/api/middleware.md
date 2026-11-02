@@ -43,7 +43,7 @@ class LoggingApi(FlextApi):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         self.logger.info(c.ContextScope.REQUEST, url=url, method="GET")
         result = super().get(url, headers=headers, request_kwargs=request_kwargs)
         if result.success:
@@ -61,8 +61,8 @@ class FakeLoggingApi(LoggingApi):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    ) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
                 body={

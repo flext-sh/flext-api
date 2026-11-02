@@ -20,8 +20,8 @@ class FlextApiUtilitiesTransport:
     consumer module imports httpx directly (transport ownership stays with
     flext-api). Members are the real class objects typed as
     ``ClassVar[type[...]]`` so construction, ``raise``, ``isinstance`` and
-    ``except`` keep their runtime and static meaning; annotations use the
-    matching ``t.Api.Httpx*`` aliases.
+    ``except`` keep their runtime and static meaning. Consumer annotations use
+    the capability protocols declared by ``p.Api``.
     """
 
     HttpxClient: ClassVar[type[httpx.Client]] = httpx.Client
@@ -33,6 +33,7 @@ class FlextApiUtilitiesTransport:
     HttpxTimeoutException: ClassVar[type[httpx.TimeoutException]] = (
         httpx.TimeoutException
     )
+    EXC_HTTPX: ClassVar[tuple[type[Exception], ...]] = (httpx.HTTPError,)
 
 
 __all__: MutableSequence[str] = ["FlextApiUtilitiesTransport"]

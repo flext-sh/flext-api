@@ -13,7 +13,6 @@ from typing import Final
 
 from flext_core import c
 from flext_web import t
-from httpx import HTTPError as _HttpxError
 
 from flext_api._constants import FlextApiConstantsEnums
 
@@ -21,10 +20,6 @@ from flext_api._constants import FlextApiConstantsEnums
 class FlextApiConstantsValues(FlextApiConstantsEnums):
     """API scalar constants mixed into ``c.Api``."""
 
-    EXC_HTTPX: Final[tuple[type[Exception], ...]] = (
-        *c.EXC_HTTP_PROCESSING,
-        _HttpxError,
-    )
     SAFE_METHODS: Final[frozenset[str]] = frozenset(
         member.value
         for member in (

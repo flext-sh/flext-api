@@ -26,7 +26,7 @@ class FlextApi(s[bool]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
+    model_config: ClassVar[p.ConfigDict] = m.ConfigDict(use_enum_values=True)
     _client: FlextApiClient | None = m.PrivateAttr(default_factory=lambda: None)
 
     @property
@@ -43,7 +43,7 @@ class FlextApi(s[bool]):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP DELETE request through the generic client path.
 
         Args:
@@ -82,7 +82,7 @@ class FlextApi(s[bool]):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP GET request through the generic client path.
 
         Args:
@@ -107,7 +107,7 @@ class FlextApi(s[bool]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP PATCH request through the generic client path.
 
         Args:
@@ -134,7 +134,7 @@ class FlextApi(s[bool]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP POST request through the generic client path.
 
         Args:
@@ -161,7 +161,7 @@ class FlextApi(s[bool]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP PUT request through the generic client path.
 
         Args:
@@ -182,7 +182,7 @@ class FlextApi(s[bool]):
             request_kwargs=request_kwargs,
         )
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute an HTTP request, delegating purely to the client.
 
         Args:
@@ -201,7 +201,7 @@ class FlextApi(s[bool]):
         data: t.Api.RequestBody | None = None,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Execute a generic HTTP method using monadic patterns, without fallbacks.
 
         Args:
@@ -215,7 +215,7 @@ class FlextApi(s[bool]):
             Response payload or error result.
 
         """
-        chain: p.Result[m.Api.HttpResponse] = (
+        chain: p.Result[p.Api.HttpResponse] = (
             u.Api.RequestUtils
             .build_request_payload(
                 method=method,

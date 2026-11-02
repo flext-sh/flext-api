@@ -8,16 +8,14 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-import httpx
-
-from flext_api import c, m, p, r
+from flext_api import p, r, u
 from flext_api.services._services import FlextApiClientBaseRequest
 
 
 class FlextApiClientRequest(FlextApiClientBaseRequest):
     """Request execution helpers for FlextApiClient."""
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute an HTTP request from the request model using monadic patterns.
 
         Args:
@@ -29,9 +27,9 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
         """
         prep = self._prepare_request(request)
         if prep.failure:
-            return r[m.Api.HttpResponse].from_failure(prep)
+            return r[p.Api.HttpResponse].from_failure(prep)
         url, headers, body, extensions = prep.value
-        client = httpx.Client(timeout=request.timeout)
+        client = u.Api.HttpxClient(timeout=request.timeout)
         try:
             response = client.request(
                 method=str(request.method),
@@ -42,7 +40,7 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
                 extensions=extensions,
             )
             return self._handle_response(response)
-        except c.Api.EXC_HTTPX as exc:
+        except u.Api.EXC_HTTPX as exc:
             return self._handle_transport_error(exc, "HTTP client request")
         finally:
             client.close()

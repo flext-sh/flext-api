@@ -116,7 +116,7 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class HttpOnlyApi(FlextApi):
-    def health_check(self) -> p.Result[m.Api.HttpResponse]:
+    def health_check(self) -> p.Result[p.Api.HttpResponse]:
         return self.get("/health")
 
 
@@ -126,9 +126,9 @@ class FakeHttpApi(HttpOnlyApi):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         if url.endswith("/health"):
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     body={
@@ -139,7 +139,7 @@ class FakeHttpApi(HttpOnlyApi):
                     headers={"Content-Type": "application/json"},
                 ),
             )
-        return r[m.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
+        return r[p.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
 
 
 api = FakeHttpApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))

@@ -10,9 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, Protocol, runtime_checkable
-
-import httpx
+from collections.abc import Mapping
+from typing import Protocol, runtime_checkable
 
 from flext_api._protocols import (
     FlextApiProtocolsGrpc,
@@ -35,16 +34,22 @@ class FlextApiProtocolsTransports(
     """FLEXT API transport protocol namespace."""
 
     @runtime_checkable
-    class Httpx(Protocol):
-        """Protocol namespace for owner-derived HTTP status contracts.
+    class HttpResponse(Protocol):
+        """Minimum response wire contract consumed by API services."""
 
-        Runtime classes and exceptions are published as module-level
-        ``Httpx*`` class-object re-exports. Keeping class identity out of this
-        protocol namespace preserves both construction/isinstance semantics and
-        the Protocol/namespace census contract.
-        """
+        @property
+        def content(self) -> bytes: ...
 
-        CONFLICT: ClassVar[int] = int(httpx.codes.CONFLICT)
+        @property
+        def headers(self) -> Mapping[str, str]: ...
+
+        @property
+        def status_code(self) -> int: ...
+
+        @property
+        def text(self) -> str: ...
+
+        def raise_for_status(self) -> FlextApiProtocolsTransports.HttpResponse: ...
 
 
 __all__: list[str] = ["FlextApiProtocolsTransports"]

@@ -40,19 +40,19 @@ rules:
   description: Use the shared public test matcher for HTTP contracts.
   include: [ tests/unit/test_transports_facade_httpx.py ]
   distributions: [ flext-api ]
-  find: '\A(?![\s\S]*^from tests import tm$)([\s\S]*?^from flext_api import \([\s\S]*?^\))'
+  find: '\A(?![\s\S]*^from tests import p, tm$)([\s\S]*?^from flext_api import \([\s\S]*?^\))'
   replace: |-
     \1
-    from tests import tm
+    from tests import p, tm
   flags: [ MULTILINE ]
 - id: api-http-contract-matcher-import-order
   description: Keep the shared matcher after the package facade import block.
   include: [ tests/unit/test_transports_facade_httpx.py ]
   distributions: [ flext-api ]
-  find: '^from tests import tm\n\n(from flext_api import \([\s\S]*?^\))|^(from flext_api import \([\s\S]*?^\))\n\nfrom flext_tests import tm'
+  find: '^from tests import p, tm\n\n(from flext_api import \([\s\S]*?^\))|^(from flext_api import \([\s\S]*?^\))\n\nfrom flext_tests import tm'
   replace: |-
     \1\2
-    from tests import tm
+    from tests import p, tm
   flags: [ MULTILINE ]
 - id: api-http-contract-unused-typing-import
   description: Remove the unused type-checking import from the public contract test.
@@ -143,7 +143,7 @@ rules:
   description: Keep config mixin model annotations out of the protocol runtime layer.
   include: [ src/flext_api/_protocols/_transports_config.py ]
   distributions: [ flext-api ]
-  find: 'from __future__ import annotations\n\nfrom flext_api import c, m, t'
+  find: 'from __future__ import annotations\n\nfrom flext_api import c, m, p, t'
   replace: |-
     from __future__ import annotations
 
@@ -158,7 +158,7 @@ from collections.abc import (
 
     from typing import TYPE_CHECKING
 
-    from flext_api import c, t
+    from flext_api import c, p, t
 
     if TYPE_CHECKING:
         from flext_api import m

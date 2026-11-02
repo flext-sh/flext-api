@@ -21,18 +21,18 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         u.Cli.formatters_print(str(message))
 
     @staticmethod
-    def build_request() -> p.Result[m.Api.HttpRequest]:
+    def build_request() -> p.Result[p.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpRequest]``.
+            The resulting ``p.Result[p.Api.HttpRequest]``.
 
         """
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
             str(settings.Api.timeout),
         )
         if timeout_result.failure:
-            timeout_failure: p.Result[m.Api.HttpRequest] = r[
+            timeout_failure: p.Result[p.Api.HttpRequest] = r[
                 m.Api.HttpRequest
             ].from_failure(timeout_result)
             return timeout_failure
@@ -47,23 +47,23 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             },
         )
         if payload_result.failure:
-            payload_failure: p.Result[m.Api.HttpRequest] = r[
+            payload_failure: p.Result[p.Api.HttpRequest] = r[
                 m.Api.HttpRequest
             ].from_failure(payload_result)
             return payload_failure
 
-        request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
+        request_result: p.Result[p.Api.HttpRequest] = u.parse_model(
             payload_result.value.root,
             m.Api.HttpRequest,
         )
         return request_result
 
     @staticmethod
-    def build_response(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def build_response(request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Build a response model without leaving the public API surface.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            The resulting ``p.Result[p.Api.HttpResponse]``.
 
         """
         response_payload: t.JsonMapping = {
@@ -75,7 +75,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             },
             c.ContextKey.REQUEST_ID: "example-request",
         }
-        response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
+        response_result: p.Result[p.Api.HttpResponse] = r[p.Api.HttpResponse].ok(
             m.Api.HttpResponse.model_validate(response_payload),
         )
         return response_result
@@ -151,7 +151,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         return summary_result
 
     @staticmethod
-    def _emit_storage_demo(response: m.Api.HttpResponse) -> m.Api.StorageState:
+    def _emit_storage_demo(response: p.Api.HttpResponse) -> p.Api.StorageState:
         """Exercise storage models and railway result ergonomics for one response.
 
         Returns:

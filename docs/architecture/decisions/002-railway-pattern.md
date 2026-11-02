@@ -148,7 +148,7 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class UserApi(FlextApi):
-    def fetch_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+    def fetch_user(self, user_id: int) -> p.Result[p.Api.HttpResponse]:
         return (
             self
             .get(f"/users/{user_id}")
@@ -158,11 +158,11 @@ class UserApi(FlextApi):
 
     def _validate_ok(
         self,
-        response: m.Api.HttpResponse,
-    ) -> p.Result[m.Api.HttpResponse]:
+        response: p.Api.HttpResponse,
+    ) -> p.Result[p.Api.HttpResponse]:
         if response.success:
-            return r[m.Api.HttpResponse].ok(response)
-        return r[m.Api.HttpResponse].fail(
+            return r[p.Api.HttpResponse].ok(response)
+        return r[p.Api.HttpResponse].fail(
             f"HTTP {response.status_code}: request failed",
         )
 
@@ -173,9 +173,9 @@ class FakeUserApi(UserApi):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         if url.endswith("/users/123"):
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     body={
@@ -187,7 +187,7 @@ class FakeUserApi(UserApi):
                     headers={"Content-Type": "application/json"},
                 ),
             )
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(status_code=404, body={"error": "not found"}),
         )
 
@@ -218,8 +218,8 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r
 class FakeProfileApi(FlextApi):
     def get(
         self, url, headers=None, request_kwargs=None
-    ) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    ) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
                 body={c.ContextKey.USER_ID: 123, "bio": "FLEXT enthusiast"},
@@ -261,9 +261,9 @@ class FakeUserApi(FlextApi):
         url: str,
         headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         if url.endswith("/users/123"):
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     body={
@@ -275,7 +275,7 @@ class FakeUserApi(FlextApi):
                     headers={"Content-Type": "application/json"},
                 ),
             )
-        return r[m.Api.HttpResponse].fail("HTTP 404")
+        return r[p.Api.HttpResponse].fail("HTTP 404")
 
 
 def test_get_user_success() -> None:

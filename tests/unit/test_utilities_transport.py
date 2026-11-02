@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests import c, t, tm, u
+from tests import c, p, tm, u
 
 
 class TestsFlextApiUtilitiesTransport:
@@ -20,7 +20,7 @@ class TestsFlextApiUtilitiesTransport:
 
         Construction routes through ``u.Api.HttpxClient``.
         """
-        client: t.Api.HttpxClient = u.Api.HttpxClient(timeout=2.0)
+        client = u.Api.HttpxClient(timeout=2.0)
         try:
             tm.ok(isinstance(client, u.Api.HttpxClient))
             tm.fail(client.is_closed)
@@ -33,16 +33,15 @@ class TestsFlextApiUtilitiesTransport:
     async def test_async_client_constructs_and_closes_through_the_owner() -> None:
         """A real async client opens and closes through ``u.Api.HttpxAsyncClient``."""
         async with u.Api.HttpxAsyncClient(timeout=2.0) as client:
-            opened: t.Api.HttpxAsyncClient = client
-            tm.fail(opened.is_closed)
-        tm.ok(opened.is_closed)
+            tm.fail(client.is_closed)
+        tm.ok(client.is_closed)
 
     @staticmethod
     def test_status_error_is_raised_and_caught_through_the_owner() -> None:
         """A conflict response raises the owner status error and its base."""
         with u.Api.HttpxClient() as client:
             request = client.build_request("GET", "https://service.example/items")
-        response: t.Api.HttpxResponse = u.Api.HttpxResponse(
+        response: p.Api.HttpResponse = u.Api.HttpxResponse(
             int(c.Web.StatusCode.CONFLICT),
             request=request,
         )

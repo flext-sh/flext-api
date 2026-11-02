@@ -68,16 +68,16 @@ from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 class FakeHttpClient(FlextApiClient):
     """Fake HTTP client that runs without network access."""
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         if request.url.endswith("/users") and request.method == c.Api.Method.GET:
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
                     body={"users": [{"id": c.ParserBooleanToken.ONE, "name": "Alice"}]},
                 ),
             )
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(status_code=404, body={"error": "not found"}),
         )
 
@@ -156,7 +156,7 @@ print(f"Body: {response.body}")
 print(f"Success: {response.success}")
 
 # Wrap it in a Result when returning from a client method
-result = r[m.Api.HttpResponse].ok(response)
+result = r[p.Api.HttpResponse].ok(response)
 print(f"Result success: {result.success}")
 ```
 
@@ -241,9 +241,9 @@ from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 class FakeHttpClient(FlextApiClient):
     """Fake HTTP client that runs without network access."""
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         if request.url.endswith("/users/123") and request.method == c.Api.Method.GET:
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
@@ -251,14 +251,14 @@ class FakeHttpClient(FlextApiClient):
                 )
             )
         if request.url.endswith("/users") and request.method == c.Api.Method.POST:
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=201,
                     headers={"Content-Type": "application/json"},
                     body={"id": "456", **(request.body or {})},
                 )
             )
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(status_code=404, body={"error": "not found"})
         )
 

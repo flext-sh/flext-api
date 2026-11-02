@@ -9,9 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING
 
-import httpx
-
-from flext_api import c, m, p, r, t, u
+from flext_api import c, p, r, t, u
 from flext_api.services._services import FlextApiClientCodec
 
 if TYPE_CHECKING:
@@ -51,7 +49,7 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
 
     def _prepare_request(
         self,
-        request: m.Api.HttpRequest,
+        request: p.Api.HttpRequest,
     ) -> p.Result[tuple[str, Mapping[str, str], bytes, Mapping[str, str]]]:
         """Prepare URL, headers, body, and extensions for HTTP request.
 
@@ -94,17 +92,17 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
 
     def _handle_response(
         self,
-        response: httpx.Response,
-    ) -> p.Result[m.Api.HttpResponse]:
+        response: p.Api.HttpResponse,
+    ) -> p.Result[p.Api.HttpResponse]:
         """Process HTTP response into HttpResponse model.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            The resulting ``p.Result[p.Api.HttpResponse]``.
 
         """
         return self._deserialize_body(response).flat_map(
             lambda body: u.try_(
-                lambda: m.Api.HttpResponse(
+                lambda: p.Api.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=body,
@@ -119,14 +117,14 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
     def _handle_transport_error(
         exc: Exception,
         op: str,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Convert transport exception to failure result.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            The resulting ``p.Result[p.Api.HttpResponse]``.
 
         """
-        return r[m.Api.HttpResponse].fail_op(op, exc)
+        return r[p.Api.HttpResponse].fail_op(op, exc)
 
 
 __all__: MutableSequence[str] = ["FlextApiClientBaseRequest"]

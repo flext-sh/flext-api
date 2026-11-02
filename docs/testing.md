@@ -27,7 +27,7 @@ surface is intentionally small and testable:
 - `p.Result` and `r.ok` / `r.fail` for railway-style error handling.
 
 Tests should validate the real contract: every `FlextApi` method returns
-`p.Result[m.Api.HttpResponse]`, successes are inspected via `result.unwrap()`, and
+`p.Result[p.Api.HttpResponse]`, successes are inspected via `result.unwrap()`, and
 failures are inspected via `result.error`.
 
 ## Test Structure
@@ -64,11 +64,11 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         if request.url.endswith("/users") and str(request.method) == "GET":
             body = [{"id": 1, "name": "Alice"}]
         elif request.url.endswith("/users/404"):
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.HttpResponse(
                     status_code=404,
                     headers={"Content-Type": "application/json"},
@@ -78,7 +78,7 @@ class FakeApi(FlextApi):
             )
         else:
             body = {"ok": True}
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.HttpResponse(
                 status_code=200,
                 headers={"Content-Type": "application/json"},
@@ -176,13 +176,13 @@ class WorkflowApi(FlextApi):
         super().__init__(settings=settings)
         object.__setattr__(self, "_orders", {})
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         orders: dict[int, dict] = self._orders
         if request.url.endswith("/orders") and str(request.method) == "POST":
             body = request.body if isinstance(request.body, dict) else {}
             order_id = len(orders) + 1
             orders[order_id] = {"id": order_id, **body}
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.HttpResponse(
                     status_code=201,
                     headers={"Content-Type": "application/json"},
@@ -191,7 +191,7 @@ class WorkflowApi(FlextApi):
                 ),
             )
         if request.url.endswith("/orders") and str(request.method) == "GET":
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.HttpResponse(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
@@ -199,7 +199,7 @@ class WorkflowApi(FlextApi):
                     request_id="int-1",
                 ),
             )
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.HttpResponse(
                 status_code=200,
                 headers={"Content-Type": "application/json"},
@@ -315,8 +315,8 @@ from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class FakeApi(FlextApi):
-    def request(self, _request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    def request(self, _request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.HttpResponse(
                 status_code=200,
                 headers={"Content-Type": "application/json"},
