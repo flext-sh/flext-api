@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING
 
-from flext_api import c, p, r, t, u
+from flext_api import c, m, p, r, t, u
 from flext_api.services._services import FlextApiClientCodec
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
 
     def _handle_response(
         self,
-        response: p.Api.HttpResponse,
+        response: p.Api.HttpWireResponse,
     ) -> p.Result[p.Api.HttpResponse]:
         """Process HTTP response into HttpResponse model.
 
@@ -102,7 +102,7 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
         """
         return self._deserialize_body(response).flat_map(
             lambda body: u.try_(
-                lambda: p.Api.HttpResponse(
+                lambda: m.Api.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=body,
