@@ -15,7 +15,9 @@ class FlextApiClientCodec:
     """Serialize requests and deserialize responses for FlextApiClient."""
 
     @staticmethod
-    def _deserialize_body(response: p.Api.HttpResponse) -> p.Result[t.Api.ResponseBody]:
+    def _deserialize_body(
+        response: p.Api.HttpWireResponse,
+    ) -> p.Result[t.Api.ResponseBody]:
         """Deserialize response body based on content-type.
 
         Returns:
@@ -47,7 +49,7 @@ class FlextApiClientCodec:
 
     @staticmethod
     def _deserialize_bytes(
-        response: p.Api.HttpResponse,
+        response: p.Api.HttpWireResponse,
     ) -> p.Result[t.Api.ResponseBody]:
         """Deserialize response as bytes.
 
@@ -58,7 +60,9 @@ class FlextApiClientCodec:
         return r[t.Api.ResponseBody].ok(response.content)
 
     @staticmethod
-    def _deserialize_json(response: p.Api.HttpResponse) -> p.Result[t.Api.ResponseBody]:
+    def _deserialize_json(
+        response: p.Api.HttpWireResponse,
+    ) -> p.Result[t.Api.ResponseBody]:
         """Deserialize response as JSON.
 
         Returns:
@@ -88,7 +92,9 @@ class FlextApiClientCodec:
             return validated
 
     @staticmethod
-    def _deserialize_text(response: p.Api.HttpResponse) -> p.Result[t.Api.ResponseBody]:
+    def _deserialize_text(
+        response: p.Api.HttpWireResponse,
+    ) -> p.Result[t.Api.ResponseBody]:
         """Deserialize response as text.
 
         Returns:

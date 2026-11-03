@@ -14,18 +14,18 @@ from collections.abc import Mapping
 from typing import Protocol, runtime_checkable
 
 from flext_api._protocols import (
+    FlextApiProtocolsBaseStorage,
     FlextApiProtocolsGrpc,
     FlextApiProtocolsHttpClient,
     FlextApiProtocolsResources,
     FlextApiProtocolsSerializer,
-    FlextApiProtocolsStorage,
     FlextApiProtocolsTransport,
 )
 
 
 class FlextApiProtocolsTransports(
     FlextApiProtocolsHttpClient,
-    FlextApiProtocolsStorage,
+    FlextApiProtocolsBaseStorage,
     FlextApiProtocolsSerializer,
     FlextApiProtocolsResources,
     FlextApiProtocolsTransport,
@@ -34,7 +34,7 @@ class FlextApiProtocolsTransports(
     """FLEXT API transport protocol namespace."""
 
     @runtime_checkable
-    class HttpResponse(Protocol):
+    class HttpWireResponse(Protocol):
         """Minimum response wire contract consumed by API services."""
 
         @property
@@ -49,7 +49,7 @@ class FlextApiProtocolsTransports(
         @property
         def text(self) -> str: ...
 
-        def raise_for_status(self) -> FlextApiProtocolsTransports.HttpResponse: ...
+        def raise_for_status(self) -> FlextApiProtocolsTransports.HttpWireResponse: ...
 
 
 __all__: list[str] = ["FlextApiProtocolsTransports"]

@@ -41,7 +41,7 @@ class TestsFlextApiUtilitiesTransport:
         """A conflict response raises the owner status error and its base."""
         with u.Api.HttpxClient() as client:
             request = client.build_request("GET", "https://service.example/items")
-        response: p.Api.HttpResponse = u.Api.HttpxResponse(
+        response: p.Api.HttpWireResponse = u.Api.HttpxResponse(
             int(c.Web.StatusCode.CONFLICT),
             request=request,
         )

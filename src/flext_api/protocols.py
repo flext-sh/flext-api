@@ -25,8 +25,12 @@ from httpx import (
 from flext_api._protocols import (
     FlextApiProtocolPlugins,
     FlextApiProtocolsBase,
+    FlextApiProtocolsRequest,
+    FlextApiProtocolsResponse,
     FlextApiProtocolsSerialization,
+    FlextApiProtocolsStorage,
     FlextApiProtocolsTransports,
+    FlextApiProtocolsWebhook,
 )
 
 
@@ -36,8 +40,12 @@ class FlextApiProtocols(flext_cli_p):
     class Api(
         FlextApiProtocolsBase,
         FlextApiProtocolPlugins,
+        FlextApiProtocolsRequest,
+        FlextApiProtocolsResponse,
         FlextApiProtocolsSerialization,
+        FlextApiProtocolsStorage,
         FlextApiProtocolsTransports,
+        FlextApiProtocolsWebhook,
     ):
         """API-specific protocol namespace.
 

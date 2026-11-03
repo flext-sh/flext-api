@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from flext_api import t
 
 
-class FlextApiProtocolsStorage:
+class FlextApiProtocolsBaseStorage:
     """Storage protocol shard."""
 
     @runtime_checkable
@@ -52,4 +52,4 @@ class FlextApiProtocolsStorage:
             ...
 
 
-__all__: list[str] = ["FlextApiProtocolsStorage"]
+__all__: list[str] = ["FlextApiProtocolsBaseStorage"]
