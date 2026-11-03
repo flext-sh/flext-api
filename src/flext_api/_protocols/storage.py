@@ -9,18 +9,19 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_cli import FlextCliProtocols
 
-from flext_api import t
+if TYPE_CHECKING:
+    from flext_api import t
 
 
 class FlextApiProtocolsStorage:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
-    class StorageSettings(FlextCliProtocols.Model, Protocol):
+    class StorageSettings(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -44,7 +45,7 @@ class FlextApiProtocolsStorage:
             ...
 
     @runtime_checkable
-    class StorageMetadata(FlextCliProtocols.Model, Protocol):
+    class StorageMetadata(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -73,7 +74,7 @@ class FlextApiProtocolsStorage:
             ...
 
     @runtime_checkable
-    class StorageState(FlextCliProtocols.Model, Protocol):
+    class StorageState(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -87,7 +88,7 @@ class FlextApiProtocolsStorage:
         created_at: str
 
     @runtime_checkable
-    class StorageStats(FlextCliProtocols.Model, Protocol):
+    class StorageStats(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property

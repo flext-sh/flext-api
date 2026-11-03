@@ -13,9 +13,8 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_cli import FlextCliProtocols
 
-from flext_api import t
-
 if TYPE_CHECKING:
+    from flext_api import t
     from flext_api._typings import FlextApiTypingsBase, FlextApiTypingsTransport
 
 
@@ -23,7 +22,7 @@ class FlextApiProtocolsWebhook:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
-    class WebhookSettings(FlextCliProtocols.Model, Protocol):
+    class WebhookSettings(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -67,7 +66,7 @@ class FlextApiProtocolsWebhook:
             ...
 
     @runtime_checkable
-    class WebhookEvent(FlextCliProtocols.Model, Protocol):
+    class WebhookEvent(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -96,7 +95,7 @@ class FlextApiProtocolsWebhook:
             ...
 
     @runtime_checkable
-    class WebhookDelivery(FlextCliProtocols.Model, Protocol):
+    class WebhookDelivery(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -125,7 +124,7 @@ class FlextApiProtocolsWebhook:
             ...
 
     @runtime_checkable
-    class WebhookState(FlextCliProtocols.Model, Protocol):
+    class WebhookState(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property

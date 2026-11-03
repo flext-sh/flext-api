@@ -13,9 +13,8 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_cli import FlextCliProtocols
 
-from flext_api import t
-
 if TYPE_CHECKING:
+    from flext_api import t
     from flext_api._typings import FlextApiTypingsBase
 
 
@@ -23,7 +22,7 @@ class FlextApiProtocolsResponse:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
-    class HttpResponse(FlextCliProtocols.Model, Protocol):
+    class HttpResponse(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
