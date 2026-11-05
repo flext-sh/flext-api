@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-import pytest
-
 from tests import c, m, t, tm, u
 
 
@@ -36,7 +34,7 @@ class TestsFlextApiModelContract:
         })
         tm.that(request.method, eq="POST")
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("headers", "expected"),
         [
             ({}, "application/json"),
@@ -111,14 +109,14 @@ class TestsFlextApiModelContract:
         tm.that(response.status_code, eq=200)
         tm.that(response.body, eq={"result": "ok"})
 
-    @pytest.mark.parametrize("status_code", [0, 99, 600, 999])
+    @c.Tests.MARK.parametrize("status_code", [0, 99, 600, 999])
     @staticmethod
     def test_http_response_rejects_out_of_range_status(status_code: int) -> None:
         """Status codes outside 100-599 fail validation."""
         with u.Tests.raises(c.ValidationError):
             m.Api.HttpResponse.model_validate({"status_code": status_code})
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("status_code", "success", "redirect", "client_error", "server_error"),
         [
             (200, True, False, False, False),
@@ -162,7 +160,7 @@ class TestsFlextApiModelContract:
         packed = u.Api.packb(payload)
         tm.that(packed, is_=bytes, length_gt=0)
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "original",
         [{"hello": "world", c.Aggregation.COUNT: 42}, {"nested": {"a": [1, 2, 3]}}, {}],
     )

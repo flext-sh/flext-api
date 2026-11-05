@@ -8,10 +8,8 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-from flext_api.protocols import p
-from flext_api.result import r
+from flext_api import p, r, u
 from flext_api.services._services import FlextApiClientBaseRequest
-from flext_api.utilities import u
 
 
 class FlextApiClientRequest(FlextApiClientBaseRequest):

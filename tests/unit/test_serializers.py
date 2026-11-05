@@ -11,15 +11,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from tests import c, t, tm, u
 
 
 class TestsFlextApiSerializers:
     """Public-contract behavior of packb/unpackb."""
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("packed", "expected"),
         [
             (b"\x81\xa3key\xa5value", {"key": "value"}),
@@ -66,7 +64,7 @@ class TestsFlextApiSerializers:
         tm.ok(result.success)
         tm.that(result.value, eq=42)
 
-    @pytest.mark.parametrize("packed", [b"\xd9", b"\xc1"])
+    @c.Tests.MARK.parametrize("packed", [b"\xd9", b"\xc1"])
     @staticmethod
     def test_unpackb_invalid_input_fails(packed: bytes) -> None:
         """Incomplete or reserved MessagePack input yields a failure."""

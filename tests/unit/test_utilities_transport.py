@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from tests import c, p, tm, u
 
 
@@ -28,7 +26,7 @@ class TestsFlextApiUtilitiesTransport:
             client.close()
         tm.ok(client.is_closed)
 
-    @pytest.mark.asyncio
+    @c.Tests.MARK.asyncio
     @staticmethod
     async def test_async_client_constructs_and_closes_through_the_owner() -> None:
         """A real async client opens and closes through ``u.Api.HttpxAsyncClient``."""
@@ -55,7 +53,7 @@ class TestsFlextApiUtilitiesTransport:
         """An unsupported scheme fails before I/O with the owner request error."""
         with (
             u.Api.HttpxClient() as client,
-            pytest.raises(u.Api.HttpxRequestError) as caught,
+            u.Tests.raises(u.Api.HttpxRequestError) as caught,
         ):
             client.get("ftp://service.example/items")
         tm.ok(isinstance(caught.value, u.Api.HttpxHTTPError))

@@ -13,10 +13,8 @@ from __future__ import annotations
 
 import inspect
 
-import pytest
-
 from flext_api.services import FlextApiAsyncClient
-from tests import c, settings, tm
+from tests import c, settings, tm, u
 from tests.unit.model_contract import TestsFlextApiModelContract
 
 
@@ -25,7 +23,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
 
     # ---- Client / facade contract ---------------------------------------
 
-    @pytest.mark.asyncio
+    @c.Tests.MARK.asyncio
     @staticmethod
     async def test_async_client_exposes_settings_through_public_properties() -> None:
         """The async client surfaces the settings namespace it was built from."""
@@ -34,9 +32,9 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
         )
         client = FlextApiAsyncClient(runtime_settings=configured)
         tm.that(client.base_url, eq=configured.Api.base_url)
-        tm.that(client.timeout, eq=pytest.approx(configured.Api.timeout))
+        tm.that(client.timeout, eq=u.Tests.approx(configured.Api.timeout))
 
-    @pytest.mark.asyncio
+    @c.Tests.MARK.asyncio
     @staticmethod
     async def test_async_client_execute_reports_success() -> None:
         """A configured async client executes its lifecycle successfully."""
@@ -47,14 +45,14 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
 
     # ---- Async client request execution contract -------------------------
 
-    @pytest.mark.asyncio
+    @c.Tests.MARK.asyncio
     @staticmethod
     async def test_async_client_request_method_is_async() -> None:
         """Async client request method is a coroutine function."""
         client = FlextApiAsyncClient(runtime_settings=settings)
         tm.ok(inspect.iscoroutinefunction(client.request))
 
-    @pytest.mark.asyncio
+    @c.Tests.MARK.asyncio
     @staticmethod
     async def test_async_client_context_manager_pattern() -> None:
         """Async client can be used with async context manager semantics."""
@@ -68,7 +66,7 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
         result = client.execute()
         tm.ok(result.success)
 
-    @pytest.mark.asyncio
+    @c.Tests.MARK.asyncio
     @staticmethod
     async def test_async_client_same_interface_as_sync() -> None:
         """Async client mirrors sync client's public properties and methods."""
