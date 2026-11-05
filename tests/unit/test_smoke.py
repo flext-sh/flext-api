@@ -11,11 +11,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_api import FlextApi
 from flext_api.services import FlextApiClient
-from tests import c, settings, tm
+from tests import c, settings, tm, u
 from tests.unit.model_contract import TestsFlextApiModelContract
 
 
@@ -24,7 +22,7 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
 
     # ---- Constants contract ---------------------------------------------
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("method", "expected"),
         [
             (c.Api.Method.GET, "GET"),
@@ -42,7 +40,7 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         """Each HTTP method compares equal to its wire string value."""
         tm.that(method, eq=expected)
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("status", "expected"),
         [(c.Api.Status.SUCCESS, "success"), (c.Api.Status.FAILED, "failed")],
     )
@@ -51,7 +49,7 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         """Status enum members expose the documented string values."""
         tm.that(status.value, eq=expected)
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("content_type", "expected"),
         [
             (c.Api.ContentType.JSON, "application/json"),
@@ -102,7 +100,7 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         )
         client = FlextApiClient(runtime_settings=configured)
         tm.that(client.base_url, eq=configured.Api.base_url)
-        tm.that(client.timeout, eq=pytest.approx(configured.Api.timeout))
+        tm.that(client.timeout, eq=u.Tests.approx(configured.Api.timeout))
 
     @staticmethod
     def test_client_execute_reports_success() -> None:
@@ -123,7 +121,7 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
         tm.ok(result.success)
         tm.ok(result.value)
         tm.that(api.settings.Api.base_url, eq=configured.Api.base_url)
-        tm.that(api.settings.Api.timeout, eq=pytest.approx(configured.Api.timeout))
+        tm.that(api.settings.Api.timeout, eq=u.Tests.approx(configured.Api.timeout))
 
     @staticmethod
     def test_facade_default_settings_provide_base_url() -> None:

@@ -15,7 +15,6 @@ from flext_cli import FlextCliProtocols
 
 if TYPE_CHECKING:
     from flext_api import t
-    from flext_api._typings import FlextApiTypingsBase, FlextApiTypingsTransport
 
 
 class FlextApiProtocolsWebhook:
@@ -36,7 +35,7 @@ class FlextApiProtocolsWebhook:
             ...
 
         @property
-        def algorithm(self) -> FlextApiTypingsTransport.WebhookAlgorithm:
+        def algorithm(self) -> t.Api.WebhookAlgorithm:
             """Supported HMAC signature algorithm."""
             ...
 
@@ -109,7 +108,7 @@ class FlextApiProtocolsWebhook:
             ...
 
         @property
-        def status(self) -> FlextApiTypingsTransport.WebhookDeliveryStatus:
+        def status(self) -> t.Api.WebhookDeliveryStatus:
             """Delivery terminal status."""
             ...
 
@@ -127,12 +126,7 @@ class FlextApiProtocolsWebhook:
     class WebhookState(FlextCliProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
-        @property
-        def handlers(
-            self,
-        ) -> MutableMapping[str, MutableSequence[FlextApiTypingsBase.WebhookHandler]]:
-            """Registered webhook handlers by event type."""
-            ...
+        handlers: MutableMapping[str, MutableSequence[t.Api.WebhookHandler]]
 
         @property
         def event_queue(self) -> Sequence[FlextApiProtocolsWebhook.WebhookEvent]:

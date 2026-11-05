@@ -14,9 +14,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from flext_cli import FlextCliProtocols
 
 if TYPE_CHECKING:
-    from flext_api import t
-    from flext_api._constants import FlextApiConstantsEnums
-    from flext_api._typings import FlextApiTypingsBase
+    from flext_api import c, t
 
 
 class FlextApiProtocolsRequest:
@@ -27,7 +25,7 @@ class FlextApiProtocolsRequest:
         """Structural data contract projected from the owning model."""
 
         @property
-        def method(self) -> FlextApiConstantsEnums.Method | str:
+        def method(self) -> c.Api.Method | str:
             """HTTP method."""
             ...
 
@@ -42,12 +40,12 @@ class FlextApiProtocolsRequest:
             ...
 
         @property
-        def body(self) -> FlextApiTypingsBase.RequestBody | None:
+        def body(self) -> t.Api.RequestBody | None:
             """Request body."""
             ...
 
         @property
-        def query_params(self) -> FlextApiTypingsBase.WebParams | None:
+        def query_params(self) -> t.Api.WebParams | None:
             """Query parameters."""
             ...
 

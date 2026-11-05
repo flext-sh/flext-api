@@ -15,7 +15,6 @@ from flext_cli import FlextCliProtocols
 
 if TYPE_CHECKING:
     from flext_api import t
-    from flext_api._typings import FlextApiTypingsBase
 
 
 class FlextApiProtocolsResponse:
@@ -36,7 +35,7 @@ class FlextApiProtocolsResponse:
             ...
 
         @property
-        def body(self) -> FlextApiTypingsBase.ResponseBody | None:
+        def body(self) -> t.Api.ResponseBody | None:
             """Response body."""
             ...
 
