@@ -13,8 +13,14 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import ClassVar, override
 
-from flext_api import c, m, p, r, s, t, u
+from flext_api.constants import c
+from flext_api.models import m
+from flext_api.protocols import p
+from flext_api.result import r
+from flext_api.service import s
 from flext_api.services import FlextApiClient
+from flext_api.typings import t
+from flext_api.utilities import u
 
 
 class FlextApi(s[bool]):
@@ -232,6 +238,5 @@ class FlextApi(s[bool]):
 
 api: FlextApi = FlextApi.fetch_global()
 """Global FlextApi facade instance used as the canonical runtime entrypoint."""
-
 
 __all__: MutableSequence[str] = ["FlextApi", "api"]

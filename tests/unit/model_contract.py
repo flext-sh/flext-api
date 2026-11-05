@@ -59,13 +59,13 @@ class TestsFlextApiModelContract:
     @staticmethod
     def test_http_request_rejects_empty_url() -> None:
         """An empty URL fails validation."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             m.Api.HttpRequest.model_validate({"url": ""})
 
     @staticmethod
     def test_http_request_rejects_unknown_method() -> None:
         """A method outside the allowed pattern fails validation."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             m.Api.HttpRequest.model_validate({
                 "url": "https://example.com",
                 "method": "FETCH",
@@ -115,7 +115,7 @@ class TestsFlextApiModelContract:
     @staticmethod
     def test_http_response_rejects_out_of_range_status(status_code: int) -> None:
         """Status codes outside 100-599 fail validation."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             m.Api.HttpResponse.model_validate({"status_code": status_code})
 
     @pytest.mark.parametrize(

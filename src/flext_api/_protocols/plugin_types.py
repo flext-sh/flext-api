@@ -11,7 +11,8 @@ from collections.abc import Sequence
 
 from flext_web import p, u
 
-from flext_api import r, t
+from flext_api.result import r
+from flext_api.typings import t
 
 
 class FlextApiTypesProtocolPlugin:

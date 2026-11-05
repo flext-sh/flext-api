@@ -45,7 +45,7 @@ class TestsFlextApiUtilitiesTransport:
             int(c.Web.StatusCode.CONFLICT),
             request=request,
         )
-        with pytest.raises(u.Api.HttpxHTTPStatusError) as caught:
+        with u.Tests.raises(u.Api.HttpxHTTPStatusError) as caught:
             response.raise_for_status()
         tm.ok(isinstance(caught.value, u.Api.HttpxHTTPError))
         tm.that(caught.value.response.status_code, eq=int(c.Web.StatusCode.CONFLICT))

@@ -8,7 +8,11 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-from flext_api import c, p, r, t, u
+from flext_api.constants import c
+from flext_api.protocols import p
+from flext_api.result import r
+from flext_api.typings import t
+from flext_api.utilities import u
 
 
 class FlextApiClientCodec:

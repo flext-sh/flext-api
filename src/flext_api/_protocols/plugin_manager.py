@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING
 
 from flext_web import u
 
-from flext_api import r
 from flext_api._protocols import FlextApiTypesProtocolPlugin
+from flext_api.result import r
 
 if TYPE_CHECKING:
     from flext_web import p
