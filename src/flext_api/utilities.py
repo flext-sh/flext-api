@@ -12,6 +12,7 @@ from flext_web import u as flext_web_u
 from flext_api._utilities import (
     FlextApiUtilitiesRequestUtils,
     FlextApiUtilitiesSerializers,
+    FlextApiUtilitiesTransport,
 )
 
 
@@ -21,6 +22,7 @@ class FlextApiUtilities(flext_web_u):
     class Api(
         FlextApiUtilitiesRequestUtils,
         FlextApiUtilitiesSerializers,
+        FlextApiUtilitiesTransport,
     ):
         """API-specific utility namespace."""
 
