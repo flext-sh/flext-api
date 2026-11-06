@@ -45,7 +45,6 @@ if TYPE_CHECKING:
         __version__,
         __version_info__,
         api,
-        c,
         config,
         d,
         e,
@@ -56,16 +55,15 @@ if TYPE_CHECKING:
         r,
         settings,
         t,
-        u,
         x,
     )
     from tests.base import TestsFlextApiServiceBase, s
-    from tests.constants import TestsFlextApiConstants
+    from tests.constants import TestsFlextApiConstants, c
     from tests.models import TestsFlextApiModels
     from tests.protocols import TestsFlextApiProtocols
     from tests.settings import TestsFlextApiSettings
     from tests.typings import TestsFlextApiTypes
-    from tests.utilities import TestsFlextApiUtilities
+    from tests.utilities import TestsFlextApiUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -167,7 +165,7 @@ install_lazy_exports(
         "__version__": "flext_api",
         "__version_info__": "flext_api",
         "api": "flext_api",
-        "c": "flext_api",
+        "c": ".constants",
         "config": "flext_api",
         "d": "flext_api",
         "e": "flext_api",
@@ -183,7 +181,7 @@ install_lazy_exports(
         "tf": "flext_tests",
         "tk": "flext_tests",
         "tm": "flext_tests",
-        "u": "flext_api",
+        "u": ".utilities",
         "x": "flext_api",
     },
     public_exports=__all__,
