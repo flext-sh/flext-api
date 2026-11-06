@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """Generic protocol definitions for HTTP operations.
 
 All protocol interfaces are centralized here following FLEXT standards.
@@ -10,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import FlextWebProtocols
+from flext_cli import p as flext_cli_p
 from httpx import (
     AsyncClient as HttpxAsyncClient,
     Client as HttpxClient,
@@ -24,19 +25,27 @@ from httpx import (
 from flext_api._protocols import (
     FlextApiProtocolPlugins,
     FlextApiProtocolsBase,
+    FlextApiProtocolsRequest,
+    FlextApiProtocolsResponse,
     FlextApiProtocolsSerialization,
+    FlextApiProtocolsStorage,
     FlextApiProtocolsTransports,
+    FlextApiProtocolsWebhook,
 )
 
 
-class FlextApiProtocols(FlextWebProtocols):
+class FlextApiProtocols(flext_cli_p):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api(
         FlextApiProtocolsBase,
         FlextApiProtocolPlugins,
+        FlextApiProtocolsRequest,
+        FlextApiProtocolsResponse,
         FlextApiProtocolsSerialization,
+        FlextApiProtocolsStorage,
         FlextApiProtocolsTransports,
+        FlextApiProtocolsWebhook,
     ):
         """API-specific protocol namespace.
 
@@ -47,7 +56,6 @@ class FlextApiProtocols(FlextWebProtocols):
 
 
 p = FlextApiProtocols
-
 __all__: list[str] = [
     "FlextApiProtocols",
     "FlextApiProtocolsTransports",

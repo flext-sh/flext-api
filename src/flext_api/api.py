@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, MutableSequence
 from typing import ClassVar, override
 
 from flext_api import c, m, p, r, s, t, u
@@ -25,8 +26,8 @@ class FlextApi(s[bool]):
     100% GENERIC - no domain coupling.
     """
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(use_enum_values=True)
-    _client: FlextApiClient | None = u.PrivateAttr(default_factory=lambda: None)
+    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(use_enum_values=True)
+    _client: FlextApiClient | None = m.PrivateAttr(default_factory=lambda: None)
 
     @property
     def client(self) -> FlextApiClient:
@@ -40,9 +41,9 @@ class FlextApi(s[bool]):
     def delete(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP DELETE request through the generic client path.
 
         Args:
@@ -79,9 +80,9 @@ class FlextApi(s[bool]):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP GET request through the generic client path.
 
         Args:
@@ -104,9 +105,9 @@ class FlextApi(s[bool]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP PATCH request through the generic client path.
 
         Args:
@@ -131,9 +132,9 @@ class FlextApi(s[bool]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP POST request through the generic client path.
 
         Args:
@@ -158,9 +159,9 @@ class FlextApi(s[bool]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Perform an HTTP PUT request through the generic client path.
 
         Args:
@@ -181,7 +182,7 @@ class FlextApi(s[bool]):
             request_kwargs=request_kwargs,
         )
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute an HTTP request, delegating purely to the client.
 
         Args:
@@ -198,9 +199,9 @@ class FlextApi(s[bool]):
         method: c.Api.Method | str,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         """Execute a generic HTTP method using monadic patterns, without fallbacks.
 
         Args:
@@ -214,7 +215,7 @@ class FlextApi(s[bool]):
             Response payload or error result.
 
         """
-        chain: p.Result[m.Api.HttpResponse] = (
+        chain: p.Result[p.Api.HttpResponse] = (
             u.Api.RequestUtils
             .build_request_payload(
                 method=method,
@@ -232,5 +233,4 @@ class FlextApi(s[bool]):
 api: FlextApi = FlextApi.fetch_global()
 """Global FlextApi facade instance used as the canonical runtime entrypoint."""
 
-
-__all__: t.MutableSequenceOf[str] = ["FlextApi", "api"]
+__all__: MutableSequence[str] = ["FlextApi", "api"]

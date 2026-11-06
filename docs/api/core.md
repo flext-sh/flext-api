@@ -29,8 +29,17 @@ executes validated `m.Api.HttpRequest` instances through `request(...)`. It does
 expose `get/post/put/delete/patch` directly; those methods live on the `FlextApi`
 facade.
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApiClient, FlextApiSettings, c, m, p
 
@@ -55,7 +64,7 @@ request = m.Api.HttpRequest(
     headers={"Accept": "application/json"},
     query_params={"limit": "10"},
 )
-result: p.Result[m.Api.HttpResponse] = client.request(request)
+result: p.Result[p.Api.HttpResponse] = client.request(request)
 
 if result.success:
     response = result.unwrap()
@@ -88,11 +97,20 @@ exposes convenience methods for each HTTP verb.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
-result: p.Result[m.Api.HttpResponse] = api.get(
+result: p.Result[p.Api.HttpResponse] = api.get(
     "/users",
     headers={"Accept": "application/json"},
     request_kwargs={"params": {"limit": 10}},
@@ -108,18 +126,27 @@ else:
 
 ### HTTP Methods
 
-All methods return `p.Result[m.Api.HttpResponse]`.
+All methods return `p.Result[p.Api.HttpResponse]`.
 
 **GET Requests:**
 
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
-result: p.Result[m.Api.HttpResponse] = api.get("/users")
+result: p.Result[p.Api.HttpResponse] = api.get("/users")
 
 result = api.get("/users", request_kwargs={"params": {"limit": 10, "offset": 0}})
 
@@ -131,11 +158,20 @@ result = api.get("/users", headers={"Accept": "application/json"})
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
-post_result: p.Result[m.Api.HttpResponse] = api.post(
+post_result: p.Result[p.Api.HttpResponse] = api.post(
     "/users",
     data={"name": "Alice", "email": "alice@example.com"},
 )
@@ -157,6 +193,15 @@ that namespace for convenience.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApiSettings
 
@@ -185,6 +230,15 @@ outside the `Api` namespace or declare an additional nested group.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from pydantic import Field
 
 from flext_api import FlextApiSettings
@@ -197,8 +251,8 @@ class MyApiConfig(FlextApiSettings):
 
 
 config = MyApiConfig(base_url="https://api.example.com", custom_setting="custom")
-assert config.custom_setting == "custom"
-assert config.Api.base_url == "https://api.example.com"
+tm.that(config.custom_setting, eq="custom")
+tm.that(config.Api.base_url, eq="https://api.example.com")
 ```
 
 ## HTTP Models
@@ -209,6 +263,15 @@ HTTP payloads are represented by immutable Pydantic value models under `m.Api`.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import c, m
 
@@ -221,7 +284,7 @@ request = m.Api.HttpRequest(
 
 json_data = request.model_dump_json(exclude={"content_type"})
 deserialized = m.Api.HttpRequest.model_validate_json(json_data)
-assert deserialized.method == "POST"
+tm.that(deserialized.method, eq="POST")
 
 response = m.Api.create_response(
     status_code=201,
@@ -229,7 +292,7 @@ response = m.Api.create_response(
     body={"id": 1, "name": "Alice"},
 )
 assert response.success
-assert response.status_code == 201
+tm.that(response.status_code, eq=201)
 ```
 
 ## HTTP Utilities
@@ -241,6 +304,15 @@ before they are validated into `m.Api.HttpRequest`.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import c, u
 
@@ -273,8 +345,17 @@ print(timeout_result.unwrap())
 
 ### Complete HTTP Client Example
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
@@ -287,21 +368,21 @@ class UserApiClient:
             runtime_settings=FlextApiSettings(base_url=base_url, timeout=10.0)
         )
 
-    def list_users(self, limit: int = 10) -> p.Result[m.Api.HttpResponse]:
+    def list_users(self, limit: int = 10) -> p.Result[p.Api.HttpResponse]:
         return self.api.get("/users", request_kwargs={"params": {"_limit": limit}})
 
-    def get_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+    def get_user(self, user_id: int) -> p.Result[p.Api.HttpResponse]:
         return self.api.get(f"/users/{user_id}")
 
-    def create_user(self, user_data: dict) -> p.Result[m.Api.HttpResponse]:
+    def create_user(self, user_data: dict) -> p.Result[p.Api.HttpResponse]:
         return self.api.post("/users", data=user_data)
 
     def update_user(
         self, user_id: int, user_data: dict
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         return self.api.put(f"/users/{user_id}", data=user_data)
 
-    def delete_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
+    def delete_user(self, user_id: int) -> p.Result[p.Api.HttpResponse]:
         return self.api.delete(f"/users/{user_id}")
 
 
@@ -310,8 +391,8 @@ class FakeUserApi(UserApiClient):
     def __init__(self):
         super().__init__(base_url="https://example.com")
 
-    def list_users(self, limit: int = 10) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    def list_users(self, limit: int = 10) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
                 body=[{"id": i, "name": f"User {i}"} for i in range(limit)],
@@ -319,8 +400,8 @@ class FakeUserApi(UserApiClient):
             )
         )
 
-    def get_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    def get_user(self, user_id: int) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
                 body={"id": user_id, "name": "User Name"},
@@ -328,8 +409,8 @@ class FakeUserApi(UserApiClient):
             )
         )
 
-    def create_user(self, user_data: dict) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    def create_user(self, user_data: dict) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=201,
                 body={"id": 1, **user_data},
@@ -339,8 +420,8 @@ class FakeUserApi(UserApiClient):
 
     def update_user(
         self, user_id: int, user_data: dict
-    ) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    ) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
                 body={"id": user_id, **user_data},
@@ -348,8 +429,8 @@ class FakeUserApi(UserApiClient):
             )
         )
 
-    def delete_user(self, user_id: int) -> p.Result[m.Api.HttpResponse]:
-        return r[m.Api.HttpResponse].ok(
+    def delete_user(self, user_id: int) -> p.Result[p.Api.HttpResponse]:
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=204, body={}, headers={"Content-Type": "application/json"}
             )

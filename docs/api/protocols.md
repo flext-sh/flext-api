@@ -53,22 +53,31 @@ Primary protocol implementation for REST APIs and HTTP-based communication.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
 class FakeHttpClient(FlextApiClient):
     """Fake HTTP client that runs without network access."""
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         if request.url.endswith("/users") and request.method == c.Api.Method.GET:
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
-                    body={"users": [{"id": "1", "name": "Alice"}]},
+                    body={"users": [{"id": c.ParserBooleanToken.ONE, "name": "Alice"}]},
                 ),
             )
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(status_code=404, body={"error": "not found"}),
         )
 
@@ -111,6 +120,15 @@ if result.success:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import c, m, r
 
 # Create HTTP request
@@ -125,7 +143,11 @@ request = m.Api.HttpRequest(
 response = m.Api.create_response(
     status_code=201,
     headers={"Content-Type": "application/json"},
-    body={"id": "1", "name": "Alice", "email": "alice@example.com"},
+    body={
+        "id": c.ParserBooleanToken.ONE,
+        "name": "Alice",
+        "email": "alice@example.com",
+    },
 )
 
 # Access response data
@@ -134,7 +156,7 @@ print(f"Body: {response.body}")
 print(f"Success: {response.success}")
 
 # Wrap it in a Result when returning from a client method
-result = r[m.Api.HttpResponse].ok(response)
+result = r[p.Api.HttpResponse].ok(response)
 print(f"Result success: {result.success}")
 ```
 
@@ -201,8 +223,17 @@ This feature is not currently implemented in the public API.
 
 ### HTTP API Client
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
@@ -210,9 +241,9 @@ from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 class FakeHttpClient(FlextApiClient):
     """Fake HTTP client that runs without network access."""
 
-    def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         if request.url.endswith("/users/123") and request.method == c.Api.Method.GET:
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
@@ -220,14 +251,14 @@ class FakeHttpClient(FlextApiClient):
                 )
             )
         if request.url.endswith("/users") and request.method == c.Api.Method.POST:
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=201,
                     headers={"Content-Type": "application/json"},
                     body={"id": "456", **(request.body or {})},
                 )
             )
-        return r[m.Api.HttpResponse].ok(
+        return r[p.Api.HttpResponse].ok(
             m.Api.create_response(status_code=404, body={"error": "not found"})
         )
 
@@ -272,16 +303,25 @@ if created:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import (
     FlextApiProtocolPluginManager,
-    FlextApiProtocolPluginTypes,
+    FlextApiTypesProtocolPlugin,
     p,
     r,
     t,
 )
 
 
-class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
+class HttpProtocolPlugin(FlextApiTypesProtocolPlugin.Protocol):
     """Concrete HTTP protocol plugin."""
 
     def __init__(self) -> None:
@@ -291,7 +331,7 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
             description="HTTP/REST protocol plugin",
         )
 
-    def supported_protocols(self) -> t.StrSequence:
+    def supported_protocols(self) -> Sequence[str]:
         return ["http", "https"]
 
     def supports_protocol(self, protocol: str) -> bool:
@@ -303,11 +343,11 @@ class HttpProtocolPlugin(FlextApiProtocolPluginTypes.Protocol):
         **kwargs: t.Scalar,
     ) -> p.Result[t.JsonMapping]:
         return r[t.JsonMapping].ok(
-            {"status": 200, "request": request, "kwargs": kwargs},
+            {"status": 200, c.ContextScope.REQUEST: request, "kwargs": kwargs},
         )
 
 
-class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Schema):
+class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Schema):
     """Concrete JSON schema plugin."""
 
     def __init__(self) -> None:

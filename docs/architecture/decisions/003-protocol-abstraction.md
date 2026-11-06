@@ -32,7 +32,7 @@ protocol support through a plugin-style boundary.
 
 `flext-api` exposes a single HTTP-focused facade (`FlextApi`) and a typed protocol layer
 (`p.Api`) for HTTP operations. Protocol plugins are managed by the exported
-`FlextApiProtocolPluginManager` and `FlextApiProtocolPluginTypes` shards, which provide
+`FlextApiProtocolPluginManager` and `FlextApiTypesProtocolPlugin` shards, which provide
 a railway result-oriented lifecycle contract.
 
 ## Consequences
@@ -55,12 +55,21 @@ a railway result-oriented lifecycle contract.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import ClassVar
 
-from flext_api import FlextApiProtocolPluginManager, FlextApiProtocolPluginTypes, p, r
+from flext_api import FlextApiProtocolPluginManager, FlextApiTypesProtocolPlugin, p, r
 
 
-class JsonSchemaPlugin(FlextApiProtocolPluginTypes.Plugin):
+class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Plugin):
     """Example plugin implementing the lifecycle contract."""
 
     name = "json-schema"
@@ -84,7 +93,7 @@ assert "json-schema" in manager.list_loaded_plugins()
 
 resolve_result = manager.resolve_plugin("json-schema")
 assert resolve_result.success
-assert resolve_result.unwrap().version == "1.0.0"
+tm.that(resolve_result.unwrap().version, eq="1.0.0")
 
 assert manager.unload_plugin("json-schema").success
 ```
@@ -94,11 +103,20 @@ assert manager.unload_plugin("json-schema").success
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
 
 
 class HttpOnlyApi(FlextApi):
-    def health_check(self) -> p.Result[m.Api.HttpResponse]:
+    def health_check(self) -> p.Result[p.Api.HttpResponse]:
         return self.get("/health")
 
 
@@ -106,11 +124,11 @@ class FakeHttpApi(HttpOnlyApi):
     def get(
         self,
         url: str,
-        headers: t.StrMapping | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
-    ) -> p.Result[m.Api.HttpResponse]:
+    ) -> p.Result[p.Api.HttpResponse]:
         if url.endswith("/health"):
-            return r[m.Api.HttpResponse].ok(
+            return r[p.Api.HttpResponse].ok(
                 m.Api.create_response(
                     status_code=200,
                     body={
@@ -121,13 +139,13 @@ class FakeHttpApi(HttpOnlyApi):
                     headers={"Content-Type": "application/json"},
                 ),
             )
-        return r[m.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
+        return r[p.Api.HttpResponse].ok(m.Api.create_response(status_code=404, body={}))
 
 
 api = FakeHttpApi(runtime_settings=FlextApiSettings(base_url="https://example.com"))
 result = api.health_check()
-assert result.success
-assert result.unwrap().body["status"] == "healthy"
+tm.ok(result.success)
+tm.that(result.unwrap().body["status"], eq="healthy")
 ```
 
 ## What Is Not Implemented

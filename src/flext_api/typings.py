@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FLEXT API Types - Unified domain-specific type definitions with Clean Architecture.
 
 Single class namespace with NO aliases, NO weak types.
@@ -11,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import FlextWebTypes
+from flext_web import t as flext_web_t
 
 from flext_api._typings import (
     FlextApiTypingsBase,
@@ -20,7 +21,7 @@ from flext_api._typings import (
 )
 
 
-class FlextApiTypes(FlextWebTypes):
+class FlextApiTypes(flext_web_t):
     """Unified API type definitions extending FlextWebTypes via MRO."""
 
     class Api(
@@ -32,5 +33,4 @@ class FlextApiTypes(FlextWebTypes):
 
 
 t = FlextApiTypes
-
 __all__: list[str] = ["FlextApiTypes", "t"]

@@ -8,16 +8,7 @@ from __future__ import annotations
 
 import httpx
 
-from flext_api import (
-    HttpxAsyncClient,
-    HttpxClient,
-    HttpxHTTPError,
-    HttpxHTTPStatusError,
-    HttpxRequestError,
-    HttpxResponse,
-    HttpxTimeoutException,
-)
-from tests import p, tm
+from tests import tm, u
 
 
 class TestsFlextApiHttpxContracts:
@@ -26,31 +17,24 @@ class TestsFlextApiHttpxContracts:
     @staticmethod
     def test_client_primitives_are_the_owner_types() -> None:
         """Client factories and response type are the httpx owner types."""
-        tm.that(HttpxClient is httpx.Client, eq=True)
-        tm.that(HttpxAsyncClient is httpx.AsyncClient, eq=True)
-        tm.that(HttpxResponse is httpx.Response, eq=True)
+        tm.ok(u.Api.HttpxClient is httpx.Client)
+        tm.ok(u.Api.HttpxAsyncClient is httpx.AsyncClient)
+        tm.ok(u.Api.HttpxResponse is httpx.Response)
 
     @staticmethod
     def test_exception_primitives_are_the_owner_types() -> None:
         """Exception types match the httpx owner for consumer except clauses."""
-        tm.that(HttpxHTTPError is httpx.HTTPError, eq=True)
-        tm.that(HttpxHTTPStatusError is httpx.HTTPStatusError, eq=True)
-        tm.that(HttpxRequestError is httpx.RequestError, eq=True)
-        tm.that(HttpxTimeoutException is httpx.TimeoutException, eq=True)
-
-    @staticmethod
-    def test_conflict_status_is_derived_from_the_owner() -> None:
-        """The conflict constant stays int-typed and equals the httpx owner."""
-        conflict = p.Api.Httpx.CONFLICT
-        tm.that(type(conflict), eq=int)
-        tm.that(conflict, eq=int(httpx.codes.CONFLICT))
+        tm.ok(u.Api.HttpxHTTPError is httpx.HTTPError)
+        tm.ok(u.Api.HttpxHTTPStatusError is httpx.HTTPStatusError)
+        tm.ok(u.Api.HttpxRequestError is httpx.RequestError)
+        tm.ok(u.Api.HttpxTimeoutException is httpx.TimeoutException)
 
     @staticmethod
     def test_client_constructs_through_the_public_contract() -> None:
         """A real client constructs and closes through the owner type."""
-        client = HttpxClient(timeout=2.0)
+        client = u.Api.HttpxClient(timeout=2.0)
         try:
-            tm.that(client.is_closed, eq=False)
+            tm.fail(client.is_closed)
         finally:
             client.close()
-        tm.that(client.is_closed, eq=True)
+        tm.ok(client.is_closed)

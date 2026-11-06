@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_api import p, r, s, t, u
@@ -40,4 +41,4 @@ class FlextApiClientBase(s[bool]):
         return r[bool].ok(value=True)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientBase"]
+__all__: MutableSequence[str] = ["FlextApiClientBase"]

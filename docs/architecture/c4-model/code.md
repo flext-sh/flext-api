@@ -211,12 +211,30 @@ flext_api/
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Test Fixtures and Mocks
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 # conftest.py - Shared test fixtures
@@ -246,8 +264,17 @@ async def async_client(test_config):
 
 ### Connection Pooling
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class ConnectionPoolManager:
@@ -281,8 +308,17 @@ class ConnectionPoolManager:
 
 ### Response Caching
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class ResponseCache:
@@ -311,7 +347,7 @@ class ResponseCache:
             )
             self.cache[key] = cached
 
-    def make_cache_key(self, method: str, url: str, headers: t.StrDict) -> str:
+    def make_cache_key(self, method: str, url: str, headers: dict[str, str]) -> str:
         """Generate cache key from request."""
         key_data = f"{method}:{url}:{sorted(headers.items())}"
         return hashlib.sha256(key_data.encode()).hexdigest()
@@ -321,8 +357,17 @@ class ResponseCache:
 
 ### Authentication Handlers
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class AuthenticationManager:

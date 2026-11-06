@@ -6,16 +6,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import httpx
+from collections.abc import MutableSequence
 
-from flext_api import m, p, r, t
-from flext_api.services._services import FlextApiClientBaseRequestMixin
+from flext_api import p, r, u
+from flext_api.services._services import FlextApiClientBaseRequest
 
 
-class FlextApiClientAsyncRequestMixin(FlextApiClientBaseRequestMixin):
+class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
     """Async request execution helpers for FlextApiAsyncClient."""
 
-    async def request(self, request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    async def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Execute an async HTTP request from the request model.
 
         Args:
@@ -27,9 +27,9 @@ class FlextApiClientAsyncRequestMixin(FlextApiClientBaseRequestMixin):
         """
         prep = self._prepare_request(request)
         if prep.failure:
-            return r[m.Api.HttpResponse].from_failure(prep)
+            return r[p.Api.HttpResponse].from_failure(prep)
         url, headers, body, extensions = prep.value
-        async with httpx.AsyncClient(timeout=request.timeout) as client:
+        async with u.Api.HttpxAsyncClient(timeout=request.timeout) as client:
             response = await client.request(
                 method=str(request.method),
                 url=url,
@@ -41,4 +41,4 @@ class FlextApiClientAsyncRequestMixin(FlextApiClientBaseRequestMixin):
         return self._handle_response(response)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextApiClientAsyncRequestMixin"]
+__all__: MutableSequence[str] = ["FlextApiClientAsyncRequest"]

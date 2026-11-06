@@ -8,12 +8,12 @@ from __future__ import annotations
 
 from flext_api._protocols import (
     FlextApiProtocolPluginManager,
-    FlextApiProtocolPluginTypes,
+    FlextApiTypesProtocolPlugin,
 )
 
 
 class FlextApiProtocolPlugins(
-    FlextApiProtocolPluginTypes,
+    FlextApiTypesProtocolPlugin,
     FlextApiProtocolPluginManager,
 ):
     """Unified plugin system for flext-api with FLEXT-pure patterns."""

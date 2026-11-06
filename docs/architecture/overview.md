@@ -33,6 +33,21 @@ foundation for the FLEXT enterprise data integration platform.
 FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation of
 concerns across multiple layers, designed for extensibility and maintainability.
 
+HTTP response handling depends on the consumed transport capability in `p.Api`;
+response annotations reference their complete namespace owner. Services construct
+the real native clients through `u.Api`, preserving their request, lifecycle, and
+exception contracts. The response port includes the operations used by real
+consumers, including `raise_for_status`. Native classes and exception identities
+remain owned by `u.Api`, without forwarding wrappers. The installed implementation
+and [HTTPX API contract](https://www.python-httpx.org/api/) govern this boundary;
+source annotations alone do not establish runtime or fleet acceptance.
+The native wire-port cutover elects `p.Api.HttpTransportResponse`, using the
+HTTP transport capability name, so it cannot shadow the protocol projected from
+the domain `m.Api.HttpResponse`. The domain model retains construction and
+validation; its projected protocol describes the model's fields, including
+`body`. The HTTPX wire contract describes the transport response, including
+`text`. Native Rope preserves each consumer's observed owner during this cutover.
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                         │
@@ -95,6 +110,15 @@ concerns across multiple layers, designed for extensibility and maintainability.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 **Key Components:**
@@ -112,36 +136,90 @@ FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Request Processing Pipeline
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Storage Interface
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Cache Configuration
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Security Middleware
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Performance Monitoring
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 ```
 
 ### Deployment Configuration
@@ -233,8 +311,17 @@ spec:
 
 ### Adding New Protocols
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class CustomProtocol:
@@ -256,8 +343,17 @@ registry.register("custom", CustomProtocol())
 
 ### Custom Middleware
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_api import p, r
 
 
@@ -305,8 +401,17 @@ app.add_middleware(CustomBusinessMiddleware())
 
 ### Monitoring and Optimization
 
-````python notest
+````python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 # Performance monitoring setup
@@ -340,8 +445,17 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 
 **Migration Example:**
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 # Old API (deprecated in 0.9.x)

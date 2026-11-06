@@ -216,40 +216,40 @@ foundation with basic HTTP operations **Current Status**: 70% complete
 
 1. **Missing Core Methods** (Critical)
 
-   - `FlextModels.create_validated_http_url()` - Referenced but not implemented
-   - Breaks model validation tests
+    - `FlextModels.create_validated_http_url()` - Referenced but not implemented
+    - Breaks model validation tests
 
 1. **Type Safety Violations** (Critical)
 
-   - 295 Pyrefly errors prevent strict mode compliance
-   - Affects production deployment readiness
+    - 295 Pyrefly errors prevent strict mode compliance
+    - Affects production deployment readiness
 
 1. **Configuration API Inconsistencies** (High)
 
-   - Missing `to_dict()` methods
-   - Breaks serialization tests
+    - Missing `to_dict()` methods
+    - Breaks serialization tests
 
 1. **Storage Property Issues** (High)
 
-   - Logger property setter missing
-   - Breaks storage abstraction tests
+    - Logger property setter missing
+    - Breaks storage abstraction tests
 
 ### Technical Debt
 
 1. **Protocol Interface Inconsistencies**
 
-   - Plugin interfaces not properly typed
-   - Transport method parameter mismatches
+    - Plugin interfaces not properly typed
+    - Transport method parameter mismatches
 
 1. **Error Handling Gaps**
 
-   - Some operations don't return r consistently
-   - Exception leakage in infrastructure layer
+    - Some operations don't return r consistently
+    - Exception leakage in infrastructure layer
 
 1. **Documentation Synchronization**
 
-   - Implementation status not reflected in documentation
-   - API changes not documented
+    - Implementation status not reflected in documentation
+    - API changes not documented
 
 ## Implementation Timeline
 

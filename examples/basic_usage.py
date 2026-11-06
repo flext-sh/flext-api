@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import override
 
-from examples import c, m, p, r, t, u
-from flext_api import FlextApi, FlextApiServiceBase, settings
+from examples import c, m, p, r, settings, t, u
+from flext_api import FlextApi, FlextApiServiceBase
 
 
 class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
@@ -21,18 +21,18 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         u.Cli.formatters_print(str(message))
 
     @staticmethod
-    def build_request() -> p.Result[m.Api.HttpRequest]:
+    def build_request() -> p.Result[p.Api.HttpRequest]:
         """Build a validated HTTP request through the public utility facade.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpRequest]``.
+            The resulting ``p.Result[p.Api.HttpRequest]``.
 
         """
         timeout_result = u.Api.RequestUtils.coerce_positive_timeout(
             str(settings.Api.timeout),
         )
         if timeout_result.failure:
-            timeout_failure: p.Result[m.Api.HttpRequest] = r[
+            timeout_failure: p.Result[p.Api.HttpRequest] = r[
                 m.Api.HttpRequest
             ].from_failure(timeout_result)
             return timeout_failure
@@ -47,23 +47,23 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             },
         )
         if payload_result.failure:
-            payload_failure: p.Result[m.Api.HttpRequest] = r[
+            payload_failure: p.Result[p.Api.HttpRequest] = r[
                 m.Api.HttpRequest
             ].from_failure(payload_result)
             return payload_failure
 
-        request_result: p.Result[m.Api.HttpRequest] = u.parse_model(
+        request_result: p.Result[p.Api.HttpRequest] = u.parse_model(
             payload_result.value.root,
             m.Api.HttpRequest,
         )
         return request_result
 
     @staticmethod
-    def build_response(request: m.Api.HttpRequest) -> p.Result[m.Api.HttpResponse]:
+    def build_response(request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         """Build a response model without leaving the public API surface.
 
         Returns:
-            The resulting ``p.Result[m.Api.HttpResponse]``.
+            The resulting ``p.Result[p.Api.HttpResponse]``.
 
         """
         response_payload: t.JsonMapping = {
@@ -73,9 +73,9 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
                 "url": request.url,
                 "headers": dict(request.headers),
             },
-            "request_id": "example-request",
+            c.ContextKey.REQUEST_ID: "example-request",
         }
-        response_result: p.Result[m.Api.HttpResponse] = r[m.Api.HttpResponse].ok(
+        response_result: p.Result[p.Api.HttpResponse] = r[p.Api.HttpResponse].ok(
             m.Api.HttpResponse.model_validate(response_payload),
         )
         return response_result
@@ -151,7 +151,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         return summary_result
 
     @staticmethod
-    def _emit_storage_demo(response: m.Api.HttpResponse) -> m.Api.StorageState:
+    def _emit_storage_demo(response: p.Api.HttpResponse) -> p.Api.StorageState:
         """Exercise storage models and railway result ergonomics for one response.
 
         Returns:
@@ -166,11 +166,11 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
         # NOTE (multi-agent): avoid shadowing the module-level ``settings``
         # singleton (ADR-005 namespaced settings); use a distinct local name.
         storage_settings = m.Api.StorageSettings(namespace=namespace, default_ttl=ttl)
-        entry = m.Api.StorageMetadata.model_validate({
-            "value": entry_value,
-            "timestamp": u.generate_iso_timestamp(),
-            "ttl": storage_settings.default_ttl,
-        })
+        entry = m.Api.StorageMetadata(
+            value=entry_value,
+            timestamp=u.generate_iso_timestamp(),
+            ttl=storage_settings.default_ttl,
+        )
         state = m.Api.StorageState(
             entries={"latest-response": entry},
             operations_count=2,

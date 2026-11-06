@@ -11,15 +11,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
-from tests import t, tm, u
+from tests import c, t, tm, u
 
 
 class TestsFlextApiSerializers:
     """Public-contract behavior of packb/unpackb."""
 
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("packed", "expected"),
         [
             (b"\x81\xa3key\xa5value", {"key": "value"}),
@@ -36,8 +34,8 @@ class TestsFlextApiSerializers:
         """Valid msgpack decodes to its JSON value inside a successful result."""
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=True)
-        tm.that(result.failure, eq=False)
+        tm.ok(result.success)
+        tm.fail(result.failure)
         tm.that(result.value, eq=expected)
         tm.that(result.error, none=True)
 
@@ -53,7 +51,7 @@ class TestsFlextApiSerializers:
         """A successful result composes through map() over its value."""
         result = u.Api.unpackb(b"\x81\xa3key\xa5value").map(lambda value: [value])
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=[{"key": "value"}])
 
     @staticmethod
@@ -63,27 +61,27 @@ class TestsFlextApiSerializers:
             lambda value: u.Api.unpackb(u.Api.packb(value)),
         )
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=42)
 
-    @pytest.mark.parametrize("packed", [b"\xd9", b"\xc1"])
+    @c.Tests.MARK.parametrize("packed", [b"\xd9", b"\xc1"])
     @staticmethod
     def test_unpackb_invalid_input_fails(packed: bytes) -> None:
         """Incomplete or reserved MessagePack input yields a failure."""
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=False)
-        tm.that(result.failure, eq=True)
+        tm.fail(result.success)
+        tm.ok(result.failure)
         tm.that(result.error, is_=str, empty=False)
 
     @staticmethod
     def test_packb_unpackb_roundtrip() -> None:
         """packb() followed by unpackb() yields the original value."""
-        original: t.JsonValue = {"key": "value", "list": [1, 2, 3]}
+        original: t.JsonValue = {"key": "value", c.Action.LIST: [1, 2, 3]}
         packed = u.Api.packb(original)
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)
 
     @staticmethod
@@ -100,7 +98,7 @@ class TestsFlextApiSerializers:
         packed = u.Api.packb(original)
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)
 
     @staticmethod
@@ -110,7 +108,7 @@ class TestsFlextApiSerializers:
         packed = u.Api.packb(original)
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)
 
     @staticmethod
@@ -120,7 +118,7 @@ class TestsFlextApiSerializers:
         packed = u.Api.packb(original)
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)
 
     @staticmethod
@@ -129,8 +127,8 @@ class TestsFlextApiSerializers:
         packed = u.Api.packb(None)
         result = u.Api.unpackb(packed)
 
-        tm.that(result.success, eq=False)
-        tm.that(result.failure, eq=True)
+        tm.fail(result.success)
+        tm.ok(result.failure)
         tm.that(str(result.error), has="Result cannot carry None")
 
     @staticmethod
@@ -144,5 +142,5 @@ class TestsFlextApiSerializers:
         original: t.JsonValue = {"nullable": None, "items": [None, "value"]}
         result = u.Api.unpackb(u.Api.packb(original))
 
-        tm.that(result.success, eq=True)
+        tm.ok(result.success)
         tm.that(result.value, eq=original)
