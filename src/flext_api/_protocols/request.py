@@ -63,6 +63,11 @@ class FlextApiProtocolsRequest:
             """
             ...
 
+        @property
+        def content_type(self) -> str:
+            """Content type resolved from the request headers."""
+            ...
+
 
 __all__: list[str] = [
     "FlextApiProtocolsRequest",

@@ -49,6 +49,31 @@ class FlextApiProtocolsResponse:
             """Associated request ID for tracking."""
             ...
 
+        @property
+        def client_error(self) -> bool:
+            """Whether the response is a 4xx client error."""
+            ...
+
+        @property
+        def error(self) -> bool:
+            """Whether the response is an HTTP error."""
+            ...
+
+        @property
+        def redirect(self) -> bool:
+            """Whether the response is a redirect."""
+            ...
+
+        @property
+        def server_error(self) -> bool:
+            """Whether the response is a server error."""
+            ...
+
+        @property
+        def success(self) -> bool:
+            """Whether the response is successful."""
+            ...
+
 
 __all__: list[str] = [
     "FlextApiProtocolsResponse",
