@@ -18,7 +18,7 @@
 
 ## Directory Structure
 
-```
+```text
 tests/
 ├── conftest.py                     # Shared test configuration
 ├── fixtures/                       # Test data and fixtures

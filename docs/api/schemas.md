@@ -63,6 +63,6 @@ therefore not documented as executable examples:
 If a future release adds schema generation helpers, this page will be updated with real,
 runnable examples.
 
-```
+```text
 
 ```

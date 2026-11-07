@@ -48,7 +48,7 @@ validation; its projected protocol describes the model's fields, including
 `body`. The HTTPX wire contract describes the transport response, including
 `text`. Native Rope preserves each consumer's observed owner during this cutover.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                         │
 │   (HTTP clients, FastAPI apps, protocol implementations)    │

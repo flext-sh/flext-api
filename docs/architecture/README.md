@@ -42,7 +42,7 @@ project, following industry best practices and modern documentation standards.
 
 ## 📚 Documentation Structure
 
-```
+```text
 docs/architecture/
 ├── README.md              # This overview document
 ├── overview.md            # High-level architecture description
