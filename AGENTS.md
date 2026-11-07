@@ -57,15 +57,15 @@ make tests
 <!-- AIHUB-GOVERNANCE-INSTRUCTIONS-BEGIN -->
 <!-- AIHUB-GOVERNANCE-CAPSULE v1 sha256:e1b7a9ae088643bf660b78ff1aea55d49076ec46518707976d77c78ed23db5db -->
 
-# Generated session governance capsule
+## Generated session governance capsule
 
 This projection is derived by `agentsctl sync`; edit canonical `AGENTS.md`, `rules/`,
 `skills/`, or `commands/`, never this output. The operator's newest request has
 precedence. Provider hooks are delivery mechanisms, not policy owners.
 
-## Rule `architecture/engineering-core`
+### Rule `architecture/engineering-core`
 
-# Engineering core
+## Engineering core
 
 For every implementation:
 
@@ -100,9 +100,9 @@ without skip, catch, fallback, or normalization.
 Compose with generalized ownership, strict execution, runtime evidence, storage
 isolation, security closure.
 
-## Rule `coordination/fix-forward-collaboration`
+### Rule `coordination/fix-forward-collaboration`
 
-# Adopt the current state and collaborate by fix-forward
+## Adopt the current state and collaborate by fix-forward
 
 Treat every current authorized-repository change as owned input regardless of provenance
 or age. Re-read shared files, attribute overlapping intent, preserve compatible
@@ -127,9 +127,9 @@ proves no actor or intention and never authorizes an unchanged retry.
 Compose this invariant with shared-file coordination, operator precedence, plan
 adoption, and the destructive Git guard.
 
-## Rule `coordination/operator-precedence`
+### Rule `coordination/operator-precedence`
 
-# Newest operator instruction wins; adjust artifacts to it
+## Newest operator instruction wins; adjust artifacts to it
 
 Authority order: operator request > declared orchestration contract > canonical
 tracker > ADRs > skills > docs, and newest supersedes oldest. On conflict, adjust the
@@ -144,9 +144,9 @@ survives interruption, divergence, and red gates; re-preflight and continue. Ask
 when the effect expands beyond it or two evidenced current intentions conflict. State
 alone proves no intention, actor, or process.
 
-## Rule `coordination/session-governance`
+### Rule `coordination/session-governance`
 
-# Rehydrate governance at every agent context boundary
+## Rehydrate governance at every agent context boundary
 
 Static provider instructions own the complete standing contract. Provider hooks refresh
 a compact governance capsule at every native equivalent of session start, prompt
@@ -171,17 +171,17 @@ only observe or advise.
 Compose with operator precedence, fix-forward collaboration, strict execution, and
 runtime evidence.
 
-## Rule `ethics/professional-integrity`
+### Rule `ethics/professional-integrity`
 
-# Professional integrity is absolute
+## Professional integrity is absolute
 
 Never lie, fabricate evidence, hide a blocker, bypass a gate, or patch a symptom only to
 make a check pass. Fix the generalized root cause with full context and report exact
 command, working directory, exit code and decisive output.
 
-## Rule `runtime/strict-execution`
+### Rule `runtime/strict-execution`
 
-# Strict execution is universal and non-optional
+## Strict execution is universal and non-optional
 
 Every project and projected agent applies all of these policies together:
 
@@ -202,9 +202,9 @@ grandfathered compatibility.
 Resolve gate applicability before invocation. A dormant external-token gate is not
 executed; selecting or invoking it applies every policy above.
 
-## Rule `workflow/canonical-commands`
+### Rule `workflow/canonical-commands`
 
-# Run agent functions only through the optionless CLI
+## Run agent functions only through the optionless CLI
 
 `agentsctl` is the sole agent-runtime facade: `help`, `doctor`, `check`, `sync`,
 `evaluate`, `secure`, `clean`, and `live`. Each invocation has exactly one verb and no
@@ -222,9 +222,9 @@ substitute.
 A broken or out-of-pattern command is a defect to fix at its owner and rerun through the
 same surface. Bypasses are blocking violations, not warnings.
 
-## Rule `workflow/runtime-is-reality`
+### Rule `workflow/runtime-is-reality`
 
-# Reality is the running system; tests are checks, not the SSOT
+## Reality is the running system; tests are checks, not the SSOT
 
 Validate against the real declared runtime (CLI, daemon, config, or public API) and
 exercise the actual feature—type and lint green are necessary, not sufficient.
@@ -245,7 +245,7 @@ exercise the actual feature—type and lint green are necessary, not sufficient.
   evidence, and explicit authorization; without all three, correct the owner and rerun
   that released version.
 
-## Capability indexes
+### Capability indexes
 
 Skills: caveman, context-canary, fix-forward-collaboration, governance-audit,
 operator-correction-learning, plan-focus-recovery, sprint-closure, strategic-compact,

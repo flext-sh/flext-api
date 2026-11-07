@@ -191,7 +191,7 @@ create_fastapi_app --> FlextApiClient : integrates
 
 ### Core Module Relationships
 
-```
+```text
 flext_api/
 ├── __init__.py          # Public API exports
 ├── api.py              # Main facade class

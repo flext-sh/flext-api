@@ -16,7 +16,7 @@
 
 ## Directory Structure
 
-```
+```text
 src/flext_api/
 ├── __init__.py              # Public API exports
 ├── api.py                   # Main FlextApiClient service class

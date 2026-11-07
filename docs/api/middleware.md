@@ -97,6 +97,6 @@ therefore not documented as executable examples:
 If a future release adds a first-class middleware API, this page will be updated with
 real, runnable examples.
 
-```
+```text
 
 ```

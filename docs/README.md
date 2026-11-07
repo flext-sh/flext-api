@@ -271,6 +271,6 @@ make test              # All tests
 
 **FLEXT-API** — Enterprise HTTP Foundation | Built for reliability and scale
 
-```
+```text
 
 ```

@@ -165,6 +165,6 @@ with real, runnable examples.
 
 - GitHub Issue: #159 - Protocol Plugin Architecture
 
-```
+```text
 
 ```

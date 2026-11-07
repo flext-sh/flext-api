@@ -92,6 +92,6 @@ therefore not documented as executable examples:
 If a future release adds a storage abstraction, this page will be updated with real,
 runnable examples.
 
-```
+```text
 
 ```
