@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tests import td, tf, tk, tm
+    from flext_tests import api, d, e, h, m, p, r, t, td, tf, tk, tm, x
 
     from flext_api import (
         FlextApi,
@@ -44,18 +44,9 @@ if TYPE_CHECKING:
         __url__,
         __version__,
         __version_info__,
-        api,
         config,
-        d,
-        e,
-        h,
-        m,
         main,
-        p,
-        r,
         settings,
-        t,
-        x,
     )
     from tests.base import TestsFlextApiServiceBase, s
     from tests.constants import TestsFlextApiConstants, c
@@ -164,25 +155,25 @@ install_lazy_exports(
         "__url__": "flext_api",
         "__version__": "flext_api",
         "__version_info__": "flext_api",
-        "api": "flext_api",
+        "api": "flext_tests",
         "c": ".constants",
         "config": "flext_api",
-        "d": "flext_api",
-        "e": "flext_api",
-        "h": "flext_api",
-        "m": "flext_api",
+        "d": "flext_tests",
+        "e": "flext_tests",
+        "h": "flext_tests",
+        "m": "flext_tests",
         "main": "flext_api",
-        "p": "flext_api",
-        "r": "flext_api",
+        "p": "flext_tests",
+        "r": "flext_tests",
         "s": ".base",
         "settings": "flext_api",
-        "t": "flext_api",
+        "t": "flext_tests",
         "td": "flext_tests",
         "tf": "flext_tests",
         "tk": "flext_tests",
         "tm": "flext_tests",
         "u": ".utilities",
-        "x": "flext_api",
+        "x": "flext_tests",
     },
     public_exports=__all__,
 )
