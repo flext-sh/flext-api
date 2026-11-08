@@ -67,6 +67,7 @@ from collections.abc import (
 from typing import ClassVar
 
 from flext_api import FlextApiProtocolPluginManager, FlextApiTypesProtocolPlugin, p, r
+from flext_tests import tm
 
 
 class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Plugin):
@@ -113,6 +114,7 @@ from collections.abc import (
 )
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
+from flext_tests import tm
 
 
 class HttpOnlyApi(FlextApi):

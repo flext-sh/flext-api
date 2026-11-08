@@ -38,6 +38,16 @@ class FlextApi(s[bool]):
             self._client = client
         return client
 
+    @client.setter
+    def client(self, client: FlextApiClient) -> None:
+        """Bind this facade to the given HTTP client.
+
+        Args:
+            client: Client to use for subsequent requests.
+
+        """
+        self._client = client
+
     def delete(
         self,
         url: str,

@@ -239,6 +239,7 @@ from collections.abc import (
     Sequence,
 )
 
+from flext_tests import tm
 from pydantic import Field
 
 from flext_api import FlextApiSettings
@@ -274,6 +275,7 @@ from collections.abc import (
 )
 
 from flext_api import c, m
+from flext_tests import tm
 
 request = m.Api.HttpRequest(
     method=c.Api.Method.POST,
@@ -429,7 +431,7 @@ class FakeUserApi(UserApiClient):
             )
         )
 
-    def delete_user(self, user_id: int) -> p.Result[p.Api.HttpResponse]:
+    def delete_user(self, _user_id: int) -> p.Result[p.Api.HttpResponse]:
         return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=204, body={}, headers={"Content-Type": "application/json"}

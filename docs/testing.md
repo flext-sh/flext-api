@@ -61,6 +61,7 @@ from collections.abc import (
 )
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_tests import tm
 
 
 class FakeApi(FlextApi):
@@ -127,6 +128,7 @@ from collections.abc import (
 )
 
 from flext_api import c, m
+from flext_tests import tm
 
 
 def test_request_model_requires_valid_url() -> None:
@@ -168,6 +170,7 @@ from collections.abc import (
 )
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_tests import tm
 
 
 class WorkflowApi(FlextApi):
@@ -262,6 +265,7 @@ from collections.abc import (
 )
 
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings
+from flext_tests import tm
 
 
 def make_settings(
@@ -312,6 +316,7 @@ from collections.abc import (
 )
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_tests import tm
 
 
 class FakeApi(FlextApi):

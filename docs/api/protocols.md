@@ -129,7 +129,7 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_api import c, m, r
+from flext_api import c, m, p, r
 
 # Create HTTP request
 request = m.Api.HttpRequest(
@@ -235,7 +235,7 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
+from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r, t
 
 
 class FakeHttpClient(FlextApiClient):
@@ -274,7 +274,7 @@ class UserApiClient:
             runtime_settings=FlextApiSettings(base_url=base_url, timeout=10.0)
         )
         # Wire a fake client so the example runs without network access
-        self.api._client = FakeHttpClient(runtime_settings=self.api.settings)
+        self.api.client = FakeHttpClient(runtime_settings=self.api.settings)
 
     def get_user(self, user_id: str) -> t.JsonMapping | None:
         """Get user via REST API."""
@@ -315,6 +315,7 @@ from collections.abc import (
 from flext_api import (
     FlextApiProtocolPluginManager,
     FlextApiTypesProtocolPlugin,
+    c,
     p,
     r,
     t,
