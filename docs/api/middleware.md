@@ -32,7 +32,8 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_api import FlextApi, FlextApiSettings, m, p, r, t
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r, t
+from flext_tests import tm
 
 
 class LoggingApi(FlextApi):
