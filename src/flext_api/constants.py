@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import c as flext_web_c
+from flext_web import FlextWebConstants
 
 from flext_api._constants import (
     FlextApiConstantsApi,
@@ -16,7 +16,7 @@ from flext_api._constants import (
 )
 
 
-class FlextApiConstants(flext_web_c):
+class FlextApiConstants(FlextWebConstants):
     """FlextApi domain constants extending c via MRO."""
 
     class Api(

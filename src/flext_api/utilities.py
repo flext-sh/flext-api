@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_web import u as flext_web_u
+from flext_web import FlextWebUtilities
 
 from flext_api._utilities import (
     FlextApiUtilitiesRequestUtils,
@@ -16,7 +16,7 @@ from flext_api._utilities import (
 )
 
 
-class FlextApiUtilities(flext_web_u):
+class FlextApiUtilities(FlextWebUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers."""
 
     class Api(
