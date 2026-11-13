@@ -12,8 +12,7 @@ if TYPE_CHECKING:
     from flext_api import t
 
 
-@runtime_checkable
-class FlextApiProtocolsSerialization(Protocol):
+class FlextApiProtocolsSerialization:
     """Serialization-domain protocol mixins."""
 
     @runtime_checkable
