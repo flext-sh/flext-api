@@ -41,4 +41,25 @@ install_lazy_exports(
         "FlextApiModelsWebhook": ".webhook",
     },
     public_exports=__all__,
+    deferred_members={
+        "FlextApiModelsBase": (),
+        "FlextApiModelsConfig": ("ConfigNamespace",),
+        "FlextApiModelsRequest": ("HttpRequest",),
+        "FlextApiModelsResponse": (
+            "HttpResponse",
+            "create_response",
+        ),
+        "FlextApiModelsStorage": (
+            "StorageSettings",
+            "StorageMetadata",
+            "StorageState",
+            "StorageStats",
+        ),
+        "FlextApiModelsWebhook": (
+            "WebhookSettings",
+            "WebhookEvent",
+            "WebhookDelivery",
+            "WebhookState",
+        ),
+    },
 )
