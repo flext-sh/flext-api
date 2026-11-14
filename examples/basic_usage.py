@@ -37,7 +37,7 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
             ].from_failure(timeout_result)
             return timeout_failure
 
-        payload_result = u.Api.RequestUtils.build_request_payload(
+        return u.Api.RequestUtils.build_request_payload(
             method=c.Api.Method.GET,
             url=f"{settings.Api.base_url.rstrip('/')}/resources",
             headers={"accept": c.Api.ContentType.JSON.value},
@@ -46,17 +46,6 @@ class FlextApiExamplesBasicUsage(FlextApiServiceBase[t.JsonMapping]):
                 "timeout": timeout_result.value,
             },
         )
-        if payload_result.failure:
-            payload_failure: p.Result[p.Api.HttpRequest] = r[
-                m.Api.HttpRequest
-            ].from_failure(payload_result)
-            return payload_failure
-
-        request_result: p.Result[p.Api.HttpRequest] = u.parse_model(
-            payload_result.value.root,
-            m.Api.HttpRequest,
-        )
-        return request_result
 
     @staticmethod
     def build_response(request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:

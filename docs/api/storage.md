@@ -18,17 +18,11 @@ This page documents the storage/cache story for `flext-api`.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping
+
+from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
-from flext_tests import tm
 
 
 class FileUploadApi(FlextApi):

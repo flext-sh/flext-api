@@ -67,15 +67,6 @@ Every public method returns `p.Result[T]`. Operations are composed using `flat_m
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 import httpx
 
 
@@ -90,15 +81,6 @@ def get_user(user_id: int) -> dict:
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from flext_core import t
 
@@ -135,17 +117,11 @@ class Result:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping
+
+from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
-from flext_tests import tm
 
 
 class UserApi(FlextApi):
@@ -204,26 +180,19 @@ tm.that(result.unwrap().body["name"], eq="Alice")
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-from flext_api import FlextApi, FlextApiSettings, m, p, r
+from flext_api import FlextApi, FlextApiSettings, c, m, p, r
 
 
 class FakeProfileApi(FlextApi):
-    def get(
-        self, url, headers=None, request_kwargs=None
-    ) -> p.Result[p.Api.HttpResponse]:
+    def request(self, request: p.Api.HttpRequest) -> p.Result[p.Api.HttpResponse]:
         return r[p.Api.HttpResponse].ok(
             m.Api.create_response(
                 status_code=200,
-                body={c.ContextKey.USER_ID: 123, "bio": "FLEXT enthusiast"},
+                body={
+                    c.ContextKey.USER_ID: 123,
+                    "bio": "FLEXT enthusiast",
+                    "url": request.url,
+                },
                 headers={"Content-Type": "application/json"},
             )
         )
@@ -244,17 +213,11 @@ else:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping
+
+from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
-from flext_tests import tm
 
 
 class FakeUserApi(FlextApi):
@@ -317,15 +280,6 @@ test_get_user_not_found()
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from flext_api import r
 

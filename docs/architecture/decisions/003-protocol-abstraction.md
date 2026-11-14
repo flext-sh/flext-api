@@ -55,19 +55,11 @@ a railway result-oriented lifecycle contract.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from typing import ClassVar
 
-from flext_api import FlextApiProtocolPluginManager, FlextApiTypesProtocolPlugin, p, r
 from flext_tests import tm
+
+from flext_api import FlextApiProtocolPluginManager, FlextApiTypesProtocolPlugin, p, r
 
 
 class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Plugin):
@@ -104,17 +96,11 @@ assert manager.unload_plugin("json-schema").success
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping
+
+from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiSettings, m, p, r, t
-from flext_tests import tm
 
 
 class HttpOnlyApi(FlextApi):
