@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import install_lazy_exports
+from flext_core.lazy import defer_lazy_bases, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api._constants.api import FlextApiConstantsApi
@@ -39,42 +39,7 @@ install_lazy_exports(
     },
     public_exports=__all__,
     deferred_members={
-        "FlextApiConstantsApi": (
-            "SAFE_METHODS",
-            "TERMINAL_STATUSES",
-            "VALID_STATUSES",
-            "DEFAULT_TIMEOUT",
-            "MAX_HOSTNAME_LENGTH",
-            "MAX_URL_LENGTH",
-            "MIN_PORT",
-            "MAX_PORT",
-            "VALID_HTTP_METHODS",
-            "HTTP_SUCCESS_MIN",
-            "HTTP_SUCCESS_MAX",
-            "HTTP_REDIRECT_MIN",
-            "HTTP_REDIRECT_MAX",
-            "HTTP_CLIENT_ERROR_MIN",
-            "HTTP_CLIENT_ERROR_MAX",
-            "HTTP_STATUS_MIN",
-            "HTTP_STATUS_MAX",
-            "HTTP_SERVER_ERROR_MIN",
-            "HTTP_ERROR_MIN",
-            "HEADER_CONTENT_TYPE",
-            "HEADER_AUTHORIZATION",
-            "HEADER_ACCEPT",
-            "URL_PATH_SEPARATOR",
-            "URL_PATH_EMPTY_ERROR",
-            "REQUEST_EXTENSION_SNI_HOSTNAME",
-            "VALIDATION_LIMITS",
-            "Method",
-            "ProtocolMethod",
-            "Status",
-            "WebhookDeliveryStatus",
-            "WebhookAlgorithm",
-            "ContentType",
-            "OpenApiSecuritySchemeType",
-            "HttpProtocol",
-        ),
+        "FlextApiConstantsApi": (),
         "FlextApiConstantsBase": (),
         "FlextApiConstantsConfig": (
             "CONFIG_DIR_NAME",
@@ -130,14 +95,14 @@ install_lazy_exports(
             "URL_PATH_EMPTY_ERROR",
             "REQUEST_EXTENSION_SNI_HOSTNAME",
             "VALIDATION_LIMITS",
-            "Method",
-            "ProtocolMethod",
-            "Status",
-            "WebhookDeliveryStatus",
-            "WebhookAlgorithm",
-            "ContentType",
-            "OpenApiSecuritySchemeType",
-            "HttpProtocol",
         ),
+    },
+)
+
+defer_lazy_bases(
+    __name__,
+    {
+        "FlextApiConstantsApi": ((".", "FlextApiConstantsValues"),),
+        "FlextApiConstantsValues": ((".", "FlextApiConstantsEnums"),),
     },
 )

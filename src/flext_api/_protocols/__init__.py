@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import install_lazy_exports
+from flext_core.lazy import defer_lazy_bases, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api._protocols.base import FlextApiProtocolsBase
@@ -73,15 +73,7 @@ install_lazy_exports(
     public_exports=__all__,
     deferred_members={
         "FlextApiProtocolPluginManager": ("Manager",),
-        "FlextApiProtocolPlugins": (
-            "_FlextApiPluginBase",
-            "Plugin",
-            "Protocol",
-            "Schema",
-            "Transport",
-            "Authentication",
-            "Manager",
-        ),
+        "FlextApiProtocolPlugins": (),
         "FlextApiProtocolsBase": (),
         "FlextApiProtocolsBaseStorage": ("StorageBackend",),
         "FlextApiProtocolsGrpc": (
@@ -104,17 +96,7 @@ install_lazy_exports(
             "TransportPlugin",
             "ProtocolHandler",
         ),
-        "FlextApiProtocolsTransports": (
-            "HttpWireResponse",
-            "HttpClient",
-            "StorageBackend",
-            "Serializer",
-            "HttpResource",
-            "TransportPlugin",
-            "ProtocolHandler",
-            "GrpcService",
-            "ProtobufService",
-        ),
+        "FlextApiProtocolsTransports": ("HttpWireResponse",),
         "FlextApiProtocolsWebhook": (
             "WebhookSettings",
             "WebhookEvent",
@@ -128,6 +110,24 @@ install_lazy_exports(
             "Schema",
             "Transport",
             "Authentication",
+        ),
+    },
+)
+
+defer_lazy_bases(
+    __name__,
+    {
+        "FlextApiProtocolPlugins": (
+            (".", "FlextApiTypesProtocolPlugin"),
+            (".", "FlextApiProtocolPluginManager"),
+        ),
+        "FlextApiProtocolsTransports": (
+            (".", "FlextApiProtocolsHttpClient"),
+            (".", "FlextApiProtocolsBaseStorage"),
+            (".", "FlextApiProtocolsSerializer"),
+            (".", "FlextApiProtocolsResources"),
+            (".", "FlextApiProtocolsTransport"),
+            (".", "FlextApiProtocolsGrpc"),
         ),
     },
 )
