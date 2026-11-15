@@ -177,46 +177,44 @@ class FlextApiUtilitiesRequestUtils:
             data: t.Api.RequestBody | None = None,
             headers: Mapping[str, str] | None = None,
             request_kwargs: t.Api.RequestKwargs | None = None,
-        ) -> p.Result[p.ConfigMap]:
-            """Build one normalized request payload for HttpRequest validation.
+        ) -> p.Result[p.Api.HttpRequest]:
+            """Build the validated HTTP request for the shared client boundary.
 
             Args:
                 method: HTTP method name.
                 url: Request URL.
                 data: Explicit request body, or ``None``.
                 headers: Explicit header mapping, or ``None``.
-                request_kwargs: Request kwargs merged into the payload.
+                request_kwargs: Request kwargs merged into the request.
 
             Returns:
-                Normalized request payload or error result.
+                Validated request model or error result.
 
             """
             request_utils = FlextApiUtilitiesRequestUtils.RequestUtils
             body_result = request_utils.extract_body_from_kwargs(data, request_kwargs)
             if body_result.failure:
-                return r[p.ConfigMap].from_failure(body_result)
+                return r[p.Api.HttpRequest].from_failure(body_result)
             headers_result = request_utils.merge_headers(headers, request_kwargs)
             if headers_result.failure:
-                return r[p.ConfigMap].from_failure(headers_result)
+                return r[p.Api.HttpRequest].from_failure(headers_result)
             timeout_result = request_utils.validate_and_extract_timeout(
                 None,
                 request_kwargs,
             )
             if timeout_result.failure:
-                return r[p.ConfigMap].from_failure(timeout_result)
+                return r[p.Api.HttpRequest].from_failure(timeout_result)
             query_result = request_utils.extract_query_params(request_kwargs)
             if query_result.failure:
-                return r[p.ConfigMap].from_failure(query_result)
-            return r[p.ConfigMap].ok(
-                m.ConfigMap(
-                    root={
-                        "method": method,
-                        "url": url,
-                        "body": body_result.value,
-                        "headers": dict(headers_result.value),
-                        "query_params": query_result.value,
-                        "timeout": timeout_result.value,
-                    },
+                return r[p.Api.HttpRequest].from_failure(query_result)
+            return r[p.Api.HttpRequest].create_from_callable(
+                lambda: m.Api.HttpRequest(
+                    method=method,
+                    url=url,
+                    body=body_result.value,
+                    headers=headers_result.value,
+                    query_params=query_result.value,
+                    timeout=timeout_result.value,
                 ),
             )
 
