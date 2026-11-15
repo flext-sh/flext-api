@@ -15,13 +15,11 @@ if TYPE_CHECKING:
     from flext_api._constants.api import FlextApiConstantsApi
     from flext_api._constants.api_enums import FlextApiConstantsEnums
     from flext_api._constants.api_values import FlextApiConstantsValues
-    from flext_api._constants.base import FlextApiConstantsBase
     from flext_api._constants.config import FlextApiConstantsConfig
 
 
 __all__: tuple[str, ...] = (
     "FlextApiConstantsApi",
-    "FlextApiConstantsBase",
     "FlextApiConstantsConfig",
     "FlextApiConstantsEnums",
     "FlextApiConstantsValues",
@@ -32,7 +30,6 @@ install_lazy_exports(
     globals(),
     {
         "FlextApiConstantsApi": ".api",
-        "FlextApiConstantsBase": ".base",
         "FlextApiConstantsConfig": ".config",
         "FlextApiConstantsEnums": ".api_enums",
         "FlextApiConstantsValues": ".api_values",
@@ -40,7 +37,6 @@ install_lazy_exports(
     public_exports=__all__,
     deferred_members={
         "FlextApiConstantsApi": (),
-        "FlextApiConstantsBase": (),
         "FlextApiConstantsConfig": (
             "CONFIG_DIR_NAME",
             "CONFIG_SCHEMAS_DIR_NAME",
