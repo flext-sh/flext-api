@@ -35,7 +35,8 @@ class FlextApiValues:
         )
     )
     VALID_STATUSES: ClassVar[frozenset[str]] = frozenset(
-        member for member in (
+        member
+        for member in (
             "idle",
             "pending",
             "running",

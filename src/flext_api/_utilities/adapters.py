@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, ClassVar
 from flext_web import FlextWebTypes, u
 
 if TYPE_CHECKING:
-    from flext_api._typings.base import FlextApiTypingsBase
+    pass
 
 
 class FlextApiTypingsAdapters:
@@ -24,18 +24,18 @@ class FlextApiTypingsAdapters:
     BINARY_CONTENT_ADAPTER: ClassVar[
         FlextWebTypes.ValueAdapter[FlextWebTypes.StrictBytes]
     ] = u.binary_content_adapter()
-    STR_MAPPING_ADAPTER: ClassVar[
-        FlextWebTypes.ValueAdapter[Mapping[str, str]]
-    ] = u.str_mapping_adapter()
+    STR_MAPPING_ADAPTER: ClassVar[FlextWebTypes.ValueAdapter[Mapping[str, str]]] = (
+        u.str_mapping_adapter()
+    )
     HOSTNAME_ADAPTER: ClassVar[
         FlextWebTypes.ValueAdapter[FlextWebTypes.HostnameStr]
     ] = u.hostname_str_adapter()
     PORT_NUMBER_ADAPTER: ClassVar[
         FlextWebTypes.ValueAdapter[FlextWebTypes.PortNumber]
     ] = u.port_number_adapter()
-    STRING_ADAPTER: ClassVar[
-        FlextWebTypes.ValueAdapter[FlextWebTypes.StrictStr]
-    ] = u.str_adapter()
+    STRING_ADAPTER: ClassVar[FlextWebTypes.ValueAdapter[FlextWebTypes.StrictStr]] = (
+        u.str_adapter()
+    )
     STORAGE_ENTRY_ADAPTER: ClassVar[
         FlextWebTypes.ValueAdapter[FlextWebTypes.JsonMapping]
     ] = u.json_mapping_adapter()
@@ -43,7 +43,9 @@ class FlextApiTypingsAdapters:
         FlextWebTypes.ValueAdapter[FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes]
     ] = u.type_adapter(FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes)
     RESPONSE_BODY_ADAPTER: ClassVar[
-        FlextWebTypes.ValueAdapter[FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None]
+        FlextWebTypes.ValueAdapter[
+            FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None
+        ]
     ] = u.type_adapter(FlextWebTypes.JsonValue | FlextWebTypes.StrictBytes | None)
     DICT_BODY_ADAPTER: ClassVar[
         FlextWebTypes.ValueAdapter[FlextWebTypes.JsonMapping]
