@@ -176,7 +176,7 @@ class FlextApiUtilitiesRequestUtils:
         @staticmethod
         def to_json_mapping(
             value: t.Api.WebParams | Mapping[str, str],
-        ) -> t.JsonValue:
+        ) -> t.MutableJsonMapping:
             """Convert a web params or header mapping to a JSON value.
 
             Args:
