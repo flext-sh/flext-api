@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableSequence
+from collections.abc import Mapping, MutableSequence, Sequence
 
 from flext_api import c, m, p, r, t
 
@@ -165,9 +165,36 @@ class FlextApiUtilitiesRequestUtils:
                     normalized[key] = value
                 elif isinstance(value, (int, float, bool)):
                     normalized[key] = f"{value}"
+                elif isinstance(value, Sequence) and not isinstance(
+                    value, (str, bytes)
+                ):
+                    normalized[key] = ",".join(f"{v}" for v in value)
                 else:
                     normalized[key] = ""
             return r[t.Api.WebParams].ok(normalized)
+
+        @staticmethod
+        def to_json_mapping(
+            value: t.Api.WebParams | Mapping[str, str],
+        ) -> t.JsonValue:
+            """Convert a web params or header mapping to a JSON value.
+
+            Args:
+                value: Mapping to convert.
+
+            Returns:
+                JSON-compatible mapping.
+
+            """
+            result: t.MutableJsonMapping = {}
+            for key, val in value.items():
+                if isinstance(val, (str, int, float, bool)) or val is None:
+                    result[key] = val
+                elif isinstance(val, Sequence) and not isinstance(val, (str, bytes)):
+                    result[key] = list(val)
+                else:
+                    result[key] = str(val)
+            return result
 
         @staticmethod
         def build_request_payload(
