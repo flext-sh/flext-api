@@ -24,7 +24,6 @@ from httpx import (
 
 from flext_api._protocols import (
     FlextApiProtocolPlugins,
-    FlextApiProtocolsBase,
     FlextApiProtocolsRequest,
     FlextApiProtocolsResponse,
     FlextApiProtocolsSerialization,
@@ -38,7 +37,6 @@ class FlextApiProtocols(FlextCliProtocols):
     """Single unified HTTP protocols class extending flext-core FlextProtocols."""
 
     class Api(
-        FlextApiProtocolsBase,
         FlextApiProtocolPlugins,
         FlextApiProtocolsRequest,
         FlextApiProtocolsResponse,

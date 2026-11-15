@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import defer_lazy_bases, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api._protocols.base import FlextApiProtocolsBase
     from flext_api._protocols.base_grpc import FlextApiProtocolsGrpc
     from flext_api._protocols.base_http import FlextApiProtocolsHttpClient
     from flext_api._protocols.base_resources import FlextApiProtocolsResources
@@ -33,7 +32,6 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextApiProtocolPluginManager",
     "FlextApiProtocolPlugins",
-    "FlextApiProtocolsBase",
     "FlextApiProtocolsBaseStorage",
     "FlextApiProtocolsGrpc",
     "FlextApiProtocolsHttpClient",
@@ -55,7 +53,6 @@ install_lazy_exports(
     {
         "FlextApiProtocolPluginManager": ".plugin_manager",
         "FlextApiProtocolPlugins": ".plugins",
-        "FlextApiProtocolsBase": ".base",
         "FlextApiProtocolsBaseStorage": ".base_storage",
         "FlextApiProtocolsGrpc": ".base_grpc",
         "FlextApiProtocolsHttpClient": ".base_http",
@@ -74,7 +71,6 @@ install_lazy_exports(
     deferred_members={
         "FlextApiProtocolPluginManager": ("Manager",),
         "FlextApiProtocolPlugins": (),
-        "FlextApiProtocolsBase": (),
         "FlextApiProtocolsBaseStorage": ("StorageBackend",),
         "FlextApiProtocolsGrpc": (
             "GrpcService",

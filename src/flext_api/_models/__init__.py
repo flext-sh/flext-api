@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import defer_lazy_bases, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api._models.base import FlextApiModelsBase
     from flext_api._models.config import FlextApiModelsConfig
     from flext_api._models.request import FlextApiModelsRequest
     from flext_api._models.response import FlextApiModelsResponse
@@ -21,7 +20,6 @@ if TYPE_CHECKING:
 
 
 __all__: tuple[str, ...] = (
-    "FlextApiModelsBase",
     "FlextApiModelsConfig",
     "FlextApiModelsRequest",
     "FlextApiModelsResponse",
@@ -33,7 +31,6 @@ install_lazy_exports(
     __name__,
     globals(),
     {
-        "FlextApiModelsBase": ".base",
         "FlextApiModelsConfig": ".config",
         "FlextApiModelsRequest": ".request",
         "FlextApiModelsResponse": ".response",
@@ -42,7 +39,6 @@ install_lazy_exports(
     },
     public_exports=__all__,
     deferred_members={
-        "FlextApiModelsBase": (),
         "FlextApiModelsConfig": (),
         "FlextApiModelsRequest": ("HttpRequest",),
         "FlextApiModelsResponse": (
