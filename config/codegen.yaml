@@ -3,3 +3,7 @@ Infra:
     repository:
       namespace_scan_dirs:
       - src
+    make:
+      admission:
+        overrides:
+          gen-scope: {max_load5: 80}
