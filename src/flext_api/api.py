@@ -225,18 +225,13 @@ class FlextApi(s[bool]):
             Response payload or error result.
 
         """
-        chain: p.Result[p.Api.HttpResponse] = (
-            u.Api.RequestUtils
-            .build_request_payload(
-                method=method,
-                url=url,
-                data=data,
-                headers=headers,
-                request_kwargs=request_kwargs,
-            )
-            .flat_map(lambda payload: u.parse_model(payload.root, m.Api.HttpRequest))
-            .flat_map(self.request)
-        )
+        chain: p.Result[p.Api.HttpResponse] = u.Api.RequestUtils.build_request_payload(
+            method=method,
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        ).flat_map(self.request)
         return chain
 
 
