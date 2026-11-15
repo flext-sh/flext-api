@@ -79,11 +79,11 @@ class JsonSchemaPlugin(FlextApiTypesProtocolPlugin.Plugin):
 
     def initialize(self) -> p.Result[bool]:
         print(f"{self.name} initialized")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def shutdown(self) -> p.Result[bool]:
         print(f"{self.name} shutdown")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 manager = FlextApiProtocolPluginManager.Manager()
