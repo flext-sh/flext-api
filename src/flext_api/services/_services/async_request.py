@@ -41,7 +41,9 @@ class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
             The raw wire response.
 
         """
-        async with u.Api.HttpxAsyncClient(timeout=request.timeout) as client:
+        async with u.Api.HttpxAsyncClient(
+            timeout=request.timeout, verify=request.verify_tls
+        ) as client:
             return await client.request(
                 method=str(request.method),
                 url=url,

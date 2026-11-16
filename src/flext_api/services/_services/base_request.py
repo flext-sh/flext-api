@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping, MutableSequence
 from typing import TYPE_CHECKING
+from urllib.parse import urlsplit
 
 from flext_api import c, m, p, r, t, u
 from flext_api.services._services import FlextApiClientCodec
@@ -39,6 +40,8 @@ class FlextApiClientBaseRequest(FlextApiClientCodec):
         path_stripped = path.strip()
         if not path_stripped:
             return r[str].fail(c.Api.URL_PATH_EMPTY_ERROR)
+        if urlsplit(path_stripped).scheme in {"http", "https"}:
+            return r[str].ok(path_stripped)
         if not api_settings.base_url.strip():
             return r[str].ok(path_stripped)
         separator = c.Api.URL_PATH_SEPARATOR

@@ -55,6 +55,15 @@ class FlextApiProtocolsRequest:
             ...
 
         @property
+        def verify_tls(self) -> bool:
+            """Structural member projected from the owning model.
+
+            Verify the TLS certificate chain and hostname. Disable only for a
+            service that declares a self-signed certificate.
+            """
+            ...
+
+        @property
         def sni_hostname(self) -> str | None:
             """Structural member projected from the owning model.
 
