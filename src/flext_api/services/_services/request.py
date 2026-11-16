@@ -6,9 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableSequence
+from collections.abc import Mapping, MutableSequence
 
-from flext_api import p, r, u
+from flext_api import p, u
 from flext_api.services._services import FlextApiClientBaseRequest
 
 
@@ -25,13 +25,24 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
             Response payload or error result.
 
         """
-        prep = self._prepare_request(request)
-        if prep.failure:
-            return r[p.Api.HttpResponse].from_failure(prep)
-        url, headers, body, extensions = prep.value
-        client = u.Api.HttpxClient(timeout=request.timeout)
-        try:
-            response = client.request(
+        return self._execute_request(request, self._send)
+
+    @staticmethod
+    def _send(
+        request: p.Api.HttpRequest,
+        url: str,
+        headers: Mapping[str, str],
+        body: bytes,
+        extensions: Mapping[str, str],
+    ) -> p.Api.HttpWireResponse:
+        """Send one prepared request through the synchronous client.
+
+        Returns:
+            The raw wire response.
+
+        """
+        with u.Api.HttpxClient(timeout=request.timeout) as client:
+            return client.request(
                 method=str(request.method),
                 url=url,
                 headers=headers,
@@ -39,11 +50,6 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
                 content=body,
                 extensions=extensions,
             )
-            return self._handle_response(response)
-        except u.Api.EXC_HTTPX as exc:
-            return self._handle_transport_error(exc, "HTTP client request")
-        finally:
-            client.close()
 
 
 __all__: MutableSequence[str] = ["FlextApiClientRequest"]
