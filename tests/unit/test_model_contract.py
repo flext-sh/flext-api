@@ -97,6 +97,21 @@ class TestsFlextApiModelContract:
         tm.that(request.sni_hostname, eq="www.encode.io")
         tm.that(request.model_dump(round_trip=True)["sni_hostname"], eq="www.encode.io")
 
+    @staticmethod
+    def test_http_request_verifies_tls_by_default() -> None:
+        """A request verifies the TLS chain unless the caller opts out."""
+        request = m.Api.HttpRequest.model_validate({"url": "https://example.com"})
+        tm.that(request.verify_tls, eq=True)
+
+    @staticmethod
+    def test_http_request_allows_a_declared_self_signed_target() -> None:
+        """A declared self-signed service can disable TLS verification."""
+        request = m.Api.HttpRequest.model_validate({
+            "url": "https://sm.internal",
+            "verify_tls": False,
+        })
+        tm.that(request.verify_tls, eq=False)
+
     # ---- HttpResponse model contract ------------------------------------
 
     @staticmethod

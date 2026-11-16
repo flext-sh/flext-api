@@ -41,7 +41,9 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
             The raw wire response.
 
         """
-        with u.Api.HttpxClient(timeout=request.timeout) as client:
+        with u.Api.HttpxClient(
+            timeout=request.timeout, verify=request.verify_tls
+        ) as client:
             return client.request(
                 method=str(request.method),
                 url=url,

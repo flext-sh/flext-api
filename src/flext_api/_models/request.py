@@ -50,6 +50,15 @@ class FlextApiModelsRequest:
             t.PositiveTimeout,
             m.Field(description="Request timeout in seconds"),
         ] = float(c.Api.DEFAULT_TIMEOUT)
+        verify_tls: Annotated[
+            bool,
+            m.Field(
+                description=(
+                    "Verify the TLS certificate chain and hostname. Disable only "
+                    "for a service that declares a self-signed certificate."
+                ),
+            ),
+        ] = True
         sni_hostname: Annotated[
             str | None,
             m.Field(
