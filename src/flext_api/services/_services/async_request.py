@@ -48,7 +48,7 @@ class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
                 method=str(request.method),
                 url=url,
                 headers=headers,
-                params=request.query_params or {},
+                params=request.query_params,
                 content=body,
                 extensions=extensions,
             )
