@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from http import HTTPMethod
 from types import MappingProxyType
-from typing import Final
+from typing import ClassVar
 
 from flext_core import c
 from flext_web import t
@@ -20,7 +20,7 @@ from flext_api._constants import FlextApiConstantsEnums
 class FlextApiConstantsValues(FlextApiConstantsEnums):
     """API scalar constants mixed into ``c.Api``."""
 
-    SAFE_METHODS: Final[frozenset[str]] = frozenset(
+    SAFE_METHODS: ClassVar[frozenset[str]] = frozenset(
         member.value
         for member in (
             HTTPMethod.GET,
@@ -29,7 +29,7 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
             HTTPMethod.TRACE,
         )
     )
-    TERMINAL_STATUSES: Final[frozenset[str]] = frozenset(
+    TERMINAL_STATUSES: ClassVar[frozenset[str]] = frozenset(
         member.value
         for member in (
             FlextApiConstantsEnums.Status.COMPLETED,
@@ -37,34 +37,34 @@ class FlextApiConstantsValues(FlextApiConstantsEnums):
             FlextApiConstantsEnums.Status.ERROR,
         )
     )
-    VALID_STATUSES: Final[frozenset[str]] = frozenset(
+    VALID_STATUSES: ClassVar[frozenset[str]] = frozenset(
         member.value for member in FlextApiConstantsEnums.Status.__members__.values()
     )
-    DEFAULT_TIMEOUT: Final[int] = c.DEFAULT_TIMEOUT_SECONDS
-    MAX_HOSTNAME_LENGTH: Final[int] = 253
-    MAX_URL_LENGTH: Final[int] = 2048
-    MIN_PORT: Final[int] = c.MIN_PORT
-    MAX_PORT: Final[int] = c.MAX_PORT
-    VALID_HTTP_METHODS: Final[frozenset[str]] = frozenset(
+    DEFAULT_TIMEOUT: ClassVar[int] = c.DEFAULT_TIMEOUT_SECONDS
+    MAX_HOSTNAME_LENGTH: ClassVar[int] = 253
+    MAX_URL_LENGTH: ClassVar[int] = 2048
+    MIN_PORT: ClassVar[int] = c.MIN_PORT
+    MAX_PORT: ClassVar[int] = c.MAX_PORT
+    VALID_HTTP_METHODS: ClassVar[frozenset[str]] = frozenset(
         member.value for member in HTTPMethod
     )
-    HTTP_SUCCESS_MIN: Final[int] = 200
-    HTTP_SUCCESS_MAX: Final[int] = 300
-    HTTP_REDIRECT_MIN: Final[int] = 300
-    HTTP_REDIRECT_MAX: Final[int] = 400
-    HTTP_CLIENT_ERROR_MIN: Final[int] = 400
-    HTTP_CLIENT_ERROR_MAX: Final[int] = 500
-    HTTP_STATUS_MIN: Final[int] = 100
-    HTTP_STATUS_MAX: Final[int] = 599
-    HTTP_SERVER_ERROR_MIN: Final[int] = 500
-    HTTP_ERROR_MIN: Final[int] = 400
-    HEADER_CONTENT_TYPE: Final[str] = "Content-Type"
-    HEADER_AUTHORIZATION: Final[str] = "Authorization"
-    HEADER_ACCEPT: Final[str] = "Accept"
-    URL_PATH_SEPARATOR: Final[str] = "/"
-    URL_PATH_EMPTY_ERROR: Final[str] = "URL path cannot be empty"
-    REQUEST_EXTENSION_SNI_HOSTNAME: Final[str] = "sni_hostname"
-    VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
+    HTTP_SUCCESS_MIN: ClassVar[int] = 200
+    HTTP_SUCCESS_MAX: ClassVar[int] = 300
+    HTTP_REDIRECT_MIN: ClassVar[int] = 300
+    HTTP_REDIRECT_MAX: ClassVar[int] = 400
+    HTTP_CLIENT_ERROR_MIN: ClassVar[int] = 400
+    HTTP_CLIENT_ERROR_MAX: ClassVar[int] = 500
+    HTTP_STATUS_MIN: ClassVar[int] = 100
+    HTTP_STATUS_MAX: ClassVar[int] = 599
+    HTTP_SERVER_ERROR_MIN: ClassVar[int] = 500
+    HTTP_ERROR_MIN: ClassVar[int] = 400
+    HEADER_CONTENT_TYPE: ClassVar[str] = "Content-Type"
+    HEADER_AUTHORIZATION: ClassVar[str] = "Authorization"
+    HEADER_ACCEPT: ClassVar[str] = "Accept"
+    URL_PATH_SEPARATOR: ClassVar[str] = "/"
+    URL_PATH_EMPTY_ERROR: ClassVar[str] = "URL path cannot be empty"
+    REQUEST_EXTENSION_SNI_HOSTNAME: ClassVar[str] = "sni_hostname"
+    VALIDATION_LIMITS: ClassVar[Mapping[str, t.Numeric]] = MappingProxyType({
         "MAX_URL_LENGTH": MAX_URL_LENGTH,
         "MIN_TIMEOUT": 0.1,
         "MAX_TIMEOUT": 300.0,
