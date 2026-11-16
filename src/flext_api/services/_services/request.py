@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableSequence
 
-from flext_api import p, u
+from flext_api import p, r, u
 from flext_api.services._services import FlextApiClientBaseRequest
 
 
@@ -26,6 +26,26 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
 
         """
         return self._execute_request(request, self._send)
+
+    def request_wire(
+        self, request: p.Api.HttpRequest
+    ) -> p.Result[p.Api.HttpWireResponse]:
+        """Send one prepared request without decoding the response body.
+
+        Returns:
+            The raw wire response or the first failure.
+
+        """
+        prepared = self._prepare_request(request)
+        if prepared.failure:
+            return r[p.Api.HttpWireResponse].from_failure(prepared)
+        url, headers, body, extensions = prepared.value
+        try:
+            return r[p.Api.HttpWireResponse].ok(
+                self._send(request, url, headers, body, extensions)
+            )
+        except u.Api.EXC_HTTPX as exc:
+            return r[p.Api.HttpWireResponse].fail(str(exc))
 
     @staticmethod
     def _send(
@@ -48,7 +68,7 @@ class FlextApiClientRequest(FlextApiClientBaseRequest):
                 method=str(request.method),
                 url=url,
                 headers=headers,
-                params=request.query_params or {},
+                params=request.query_params,
                 content=body,
                 extensions=extensions,
             )
