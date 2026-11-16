@@ -170,3 +170,6 @@ class TestsFlextApiModelContract:
         result = u.Api.unpackb(u.Api.packb(original))
         tm.ok(result.success)
         tm.that(result.value, eq=original)
+
+
+__all__: list[str] = ["TestsFlextApiModelContract"]
