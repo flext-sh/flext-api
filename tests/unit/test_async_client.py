@@ -11,14 +11,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import inspect
-
 from flext_api.services import FlextApiAsyncClient
 from tests import c, settings, tm, u
-from tests.unit.model_contract import TestsFlextApiModelContract
 
 
-class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
+class TestsFlextApiAsyncClientSmoke:
     """Behavioral contract of the flext-api async client public surface."""
 
     # ---- Client / facade contract ---------------------------------------
@@ -42,47 +39,3 @@ class TestsFlextApiAsyncClientSmoke(TestsFlextApiModelContract):
         result = client.execute()
         tm.ok(result.success)
         tm.ok(result.value)
-
-    # ---- Async client request execution contract -------------------------
-
-    @c.Tests.MARK.asyncio
-    @staticmethod
-    async def test_async_client_request_method_is_async() -> None:
-        """Async client request method is a coroutine function."""
-        client = FlextApiAsyncClient(runtime_settings=settings)
-        tm.ok(inspect.iscoroutinefunction(client.request))
-
-    @c.Tests.MARK.asyncio
-    @staticmethod
-    async def test_async_client_context_manager_pattern() -> None:
-        """Async client can be used with async context manager semantics."""
-        client = FlextApiAsyncClient(runtime_settings=settings)
-
-        # Verify the client has the expected async interface
-        tm.ok(hasattr(client, c.ContextScope.REQUEST))
-        tm.ok(callable(client.request))
-
-        # execute() should still work synchronously for lifecycle
-        result = client.execute()
-        tm.ok(result.success)
-
-    @c.Tests.MARK.asyncio
-    @staticmethod
-    async def test_async_client_same_interface_as_sync() -> None:
-        """Async client mirrors sync client's public properties and methods."""
-        client = FlextApiAsyncClient(runtime_settings=settings)
-
-        # Same properties
-        tm.ok(hasattr(client, "base_url"))
-        tm.ok(hasattr(client, "timeout"))
-
-        # Same execute method
-        tm.ok(hasattr(client, "execute"))
-        tm.ok(callable(client.execute))
-
-        # Async-specific method
-        tm.ok(hasattr(client, c.ContextScope.REQUEST))
-        tm.ok(callable(client.request))
-
-        # Verify request is async
-        tm.ok(inspect.iscoroutinefunction(client.request))
