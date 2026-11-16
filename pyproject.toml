@@ -53,6 +53,7 @@ Homepage = "https://github.com/flext-sh/flext"
 
 [dependency-groups]
 dev = [
+  "properdocs>=1.6.7",                                                        # flext: derived member environment
   "types-networkx",
   "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
   "mkdocstrings-python>=2.0.9",
@@ -62,7 +63,6 @@ dev = [
   "editables>=0.6",
   "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
   "hypothesis",
-  "mkdocs",
   "mkdocs-autorefs",
   "mkdocs-exclude>=1.0.2",
   "mkdocs-git-revision-date-localized-plugin>=1.5.4",
@@ -73,11 +73,9 @@ dev = [
   "mkdocs-section-index>=0.3.12",
   "mkdocstrings>=1.0.6",
   "msgpack-types",
-  "mypy>=2.3.1",
   "platformdirs>=4.12.0",
   "pymdown-extensions",
   "pyrefly>=1.2.0",
-  "pyright>=1.1.411",
   "pytest>=9.1.1",
   "pytest-asyncio",
   "pytest-benchmark",
@@ -237,7 +235,6 @@ project-excludes = [
   "**/.git/**",
   "**/.hypothesis/**",
   "**/.kilo/**",
-  "**/.mypy_cache/**",
   "**/.omo/**",
   "**/.opencode/**",
   "**/.pylance_cache/**",
@@ -492,7 +489,7 @@ filterwarnings = ["error", "once::pytest.PytestAssertRewriteWarning"]
 flext_fixture_trees_root = "tests/fixtures"
 flext_make_ci_value = "Y"
 flext_make_ci_variable = "CI"
-flext_slow_timeout_seconds = "25"
+flext_slow_timeout_seconds = "20"
 markers = [
   "smoke: public-interface smoke tests",
   "unit: unit tests",
@@ -516,6 +513,8 @@ minversion = "8.0"
 python_classes = ["Test*"]
 python_files = ["*_test.py", "*_tests.py", "test_*.py"]
 testpaths = ["tests"]
+timeout = 20
+timeout_method = "thread"
 
 [tool.ruff]
 extend-exclude = [
@@ -538,7 +537,6 @@ extend-exclude = [
   "**/.git/**",
   "**/.hypothesis/**",
   "**/.kilo/**",
-  "**/.mypy_cache/**",
   "**/.omo/**",
   "**/.opencode/**",
   "**/.pylance_cache/**",
@@ -691,12 +689,7 @@ environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 exclude-newer = "P10D"
 link-mode = "clone"
 override-dependencies = [
-  "rope @ git+https://github.com/marlon-costa-dc/rope.git@4cb40a6fe564c6761dcb2f4e6c79d7fb7304f96f",
-  "flext-cli @ git+https://github.com/flext-sh/flext-cli.git@0.12.0-dev",
-  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
-  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
-  "flext-web @ git+https://github.com/flext-sh/flext-web.git@0.12.0-dev",
+  "rope @ git+https://github.com/marlon-costa-dc/rope.git@3a0cb69024fb5f17ba32064bf6c294d016c7d9d8",
 ]
 [[tool.uv.cache-keys]]
 file = "pyproject.toml"
@@ -710,35 +703,7 @@ file = "setup.cfg"
 [[tool.uv.cache-keys]]
 file = "src/**"
 
-[[tool.uv.exclude-dependencies]]
-dependencies = ["flext-api"]
-
-[tool.uv.exclude-dependencies.package]
-name = "flext-cli"
-
-[[tool.uv.exclude-dependencies]]
-dependencies = ["flext-api"]
-
-[tool.uv.exclude-dependencies.package]
-name = "flext-core"
-
-[[tool.uv.exclude-dependencies]]
-dependencies = ["flext-api"]
-
-[tool.uv.exclude-dependencies.package]
-name = "flext-infra"
-
-[[tool.uv.exclude-dependencies]]
-dependencies = ["flext-api"]
-
-[tool.uv.exclude-dependencies.package]
-name = "flext-tests"
-
-[[tool.uv.exclude-dependencies]]
-dependencies = ["flext-api"]
-
-[tool.uv.exclude-dependencies.package]
-name = "flext-web"
-
 [tool.uv.exclude-newer-package]
 soupsieve = false
+
+[tool.uv.sources]

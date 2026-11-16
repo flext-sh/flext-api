@@ -54,6 +54,7 @@ if TYPE_CHECKING:
     from tests.protocols import TestsFlextApiProtocols, p
     from tests.settings import TestsFlextApiSettings
     from tests.typings import TestsFlextApiTypes, t
+    from tests.unit import TestsFlextApiModelContract
     from tests.utilities import TestsFlextApiUtilities, u
 
 
@@ -80,6 +81,7 @@ __all__: tuple[str, ...] = (
     "HttpxResponse",
     "HttpxTimeoutException",
     "TestsFlextApiConstants",
+    "TestsFlextApiModelContract",
     "TestsFlextApiModels",
     "TestsFlextApiProtocols",
     "TestsFlextApiServiceBase",
@@ -141,6 +143,7 @@ install_lazy_exports(
         "HttpxResponse": "flext_api",
         "HttpxTimeoutException": "flext_api",
         "TestsFlextApiConstants": ".constants",
+        "TestsFlextApiModelContract": ".unit",
         "TestsFlextApiModels": ".models",
         "TestsFlextApiProtocols": ".protocols",
         "TestsFlextApiServiceBase": ".base",
