@@ -186,7 +186,7 @@ class FlextApiUtilitiesRequestUtils:
                 JSON-compatible mapping.
 
             """
-            result: t.MutableJsonMapping = {}
+            result: dict[str, t.JsonValue] = {}
             for key, val in value.items():
                 if isinstance(val, (str, int, float, bool)) or val is None:
                     result[key] = val
