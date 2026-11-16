@@ -6,9 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableSequence
+from collections.abc import Mapping, MutableSequence
 
-from flext_api import p, r, u
+from flext_api import p, u
 from flext_api.services._services import FlextApiClientBaseRequest
 
 
@@ -25,12 +25,24 @@ class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
             Response payload or error result.
 
         """
-        prep = self._prepare_request(request)
-        if prep.failure:
-            return r[p.Api.HttpResponse].from_failure(prep)
-        url, headers, body, extensions = prep.value
+        return await self._execute_request_async(request, self._send)
+
+    @staticmethod
+    async def _send(
+        request: p.Api.HttpRequest,
+        url: str,
+        headers: Mapping[str, str],
+        body: bytes,
+        extensions: Mapping[str, str],
+    ) -> p.Api.HttpWireResponse:
+        """Send one prepared request through the asynchronous client.
+
+        Returns:
+            The raw wire response.
+
+        """
         async with u.Api.HttpxAsyncClient(timeout=request.timeout) as client:
-            response = await client.request(
+            return await client.request(
                 method=str(request.method),
                 url=url,
                 headers=headers,
@@ -38,7 +50,6 @@ class FlextApiClientAsyncRequest(FlextApiClientBaseRequest):
                 content=body,
                 extensions=extensions,
             )
-        return self._handle_response(response)
 
 
 __all__: MutableSequence[str] = ["FlextApiClientAsyncRequest"]
