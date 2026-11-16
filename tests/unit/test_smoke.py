@@ -12,10 +12,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from tests import FlextApi, c, settings, tm, u
-from tests.unit.model_contract import TestsFlextApiModelContract
 
 
-class TestsFlextApiSmoke(TestsFlextApiModelContract):
+class TestsFlextApiSmoke:
     """Behavioral contract of the flext-api public surface."""
 
     # ---- Constants contract ---------------------------------------------
