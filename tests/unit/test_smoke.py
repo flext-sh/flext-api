@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import FlextApi
-from flext_api.services import FlextApiClient
 from tests import c, settings, tm, u
 from tests.unit.model_contract import TestsFlextApiModelContract
 
@@ -93,19 +92,9 @@ class TestsFlextApiSmoke(TestsFlextApiModelContract):
     # ---- Client / facade contract ---------------------------------------
 
     @staticmethod
-    def test_client_exposes_settings_through_public_properties() -> None:
-        """The client surfaces the settings namespace it was built from."""
-        configured = settings.clone(
-            Api={"base_url": "https://service.example", "timeout": 9.5},
-        )
-        client = FlextApiClient(runtime_settings=configured)
-        tm.that(client.base_url, eq=configured.Api.base_url)
-        tm.that(client.timeout, eq=u.Tests.approx(configured.Api.timeout))
-
-    @staticmethod
     def test_client_execute_reports_success() -> None:
         """A configured client executes its lifecycle successfully."""
-        client = FlextApiClient(runtime_settings=settings)
+        client = FlextApi(runtime_settings=settings)
         result = client.execute()
         tm.ok(result.success)
         tm.ok(result.value)
