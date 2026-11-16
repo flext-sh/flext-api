@@ -12,7 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from typing import cast
 
-from flext_api.services import FlextApiClient
+from flext_api import FlextApi
 from tests import m, settings, tm
 
 
@@ -45,10 +45,10 @@ class TestsFlextApiResponseWireContent:
         """A real local exchange exposes both raw bytes and parsed JSON."""
         payload = b'{"answer":"ok"}'
         with self._server(payload) as base_url:
-            client = FlextApiClient(
+            api = FlextApi(
                 runtime_settings=settings.clone(Api={"base_url": base_url}),
             )
-            result = client.request(m.Api.HttpRequest(url=base_url, method="GET"))
+            result = api.request(m.Api.HttpRequest(url=base_url, method="GET"))
 
         tm.ok(result.success)
         tm.that(result.value.content, eq=payload)
