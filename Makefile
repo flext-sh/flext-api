@@ -185,13 +185,16 @@ unexport GITHUB_API_TOKEN
 
 # Git 2.38+ refuses the local file protocol uv uses to materialize its cached
 # git checkouts (`git clone --no-hardlinks <uv cache db> <checkout>`). Admit it
-# for this process tree only; global Git configuration stays untouched.
-ifeq ($(strip $(GIT_CONFIG_COUNT)),)
-GIT_CONFIG_COUNT := 1
-GIT_CONFIG_KEY_0 := protocol.file.allow
-GIT_CONFIG_VALUE_0 := always
-endif
-export GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0
+# for this process tree only; global Git configuration stays untouched. Append
+# to any caller-declared GIT_CONFIG_COUNT so an inherited policy can never hide
+# the uv cache transport.
+GIT_CONFIG_ALLOW_INDEX := $(if $(strip $(GIT_CONFIG_COUNT)),$(strip $(GIT_CONFIG_COUNT)),0)
+GIT_CONFIG_KEY_$(GIT_CONFIG_ALLOW_INDEX) := protocol.file.allow
+GIT_CONFIG_VALUE_$(GIT_CONFIG_ALLOW_INDEX) := always
+GIT_CONFIG_COUNT := $(shell expr $(GIT_CONFIG_ALLOW_INDEX) + 1)
+export GIT_CONFIG_COUNT
+$(eval export GIT_CONFIG_KEY_$(GIT_CONFIG_ALLOW_INDEX))
+$(eval export GIT_CONFIG_VALUE_$(GIT_CONFIG_ALLOW_INDEX))
 
 # === SECTION: project identity (managed) ===
 # Source: config:dist / config:make_profile / config:repository_root_rel / config:uv_link_mode
@@ -806,17 +809,20 @@ override PROJECT_FLEXT_INFRA := $(PROJECT_INFRA_RUN) -m flext_infra
 # `make upg`'s residual flext-infra step imports neither the project's source nor
 # the runtime environment.
 override EXECUTOR_FLEXT_INFRA = env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH "$(FLEXT_INFRA_EXECUTOR_PYTHON)" -I -m flext_infra
-# Native uv syncs the executor from the project's frozen lock: the dependency
-# group that pins flext-infra, without editable installs, into its own
-# environment (recreated first when it is not a uv environment, and refreshed,
-# so a sync never targets a Mise base interpreter). A consumer excludes the
-# project, so the executor never imports its source. A project in flext-infra's
-# own runtime closure (derived from the installed metadata) supplies part of the
-# executor, so its locked non-editable build is installed, never the editable
-# source. upg forms it from the committed lock for the pre-resolution
-# cooldown admission and again from the written locks for the last repair.
-SYNC_UPGRADE_EXECUTOR_RECIPE = $(call TARGET_ENVIRONMENT,$(FLEXT_INFRA_EXECUTOR_VENV)); \
-	env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH UV_PROJECT_ENVIRONMENT="$$install_environment" timeout --signal=TERM --kill-after=5s 118s $(UV) sync --frozen --project "$(RUNTIME_ROOT)" --python "$$desired_python" --no-python-downloads --no-default-groups --group "dev" --no-install-project --no-editable --link-mode clone; \
+# Native uv syncs the executor from the dependency group that pins flext-infra,
+# without editable installs, into its own environment (recreated first when it
+# is not a uv environment, and refreshed, so a sync never targets a Mise base
+# interpreter). A consumer excludes the project, so the executor never imports
+# its source. A project in flext-infra's own runtime closure (derived from the
+# installed metadata) supplies part of the executor, so its locked non-editable
+# build is installed, never the editable source. upg's pre-resolution executor
+# follows the declared sources (--no-frozen) so a Makefile generated from the
+# current tip can run commands the committed lock predates; its post-resolution
+# executor is frozen from the written locks for the last repair.
+SYNC_UPGRADE_EXECUTOR_RECIPE = $(call SYNC_UPGRADE_EXECUTOR_WITH,--frozen)
+SYNC_UPGRADE_EXECUTOR_PRE_RESOLUTION_RECIPE = $(call SYNC_UPGRADE_EXECUTOR_WITH,--no-frozen --upgrade)
+SYNC_UPGRADE_EXECUTOR_WITH = $(call TARGET_ENVIRONMENT,$(FLEXT_INFRA_EXECUTOR_VENV)); \
+	env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH UV_PROJECT_ENVIRONMENT="$$install_environment" timeout --signal=TERM --kill-after=5s 118s $(UV) sync $(1) --project "$(RUNTIME_ROOT)" --python "$$desired_python" --no-python-downloads --no-default-groups --group "dev" --no-install-project --no-editable --link-mode clone; \
 	$(INSTALL_FLEXT_INFRA) --help >/dev/null; \
 	$(VERIFY_ENVIRONMENT)
 
@@ -1311,7 +1317,7 @@ _upg_lifecycle:
 	mise_bin="$(MISE)"; \
 	$(RESOLVE_DESIRED_PYTHON); \
 	[ -f "$(RUNTIME_ROOT)/uv.lock" ] || $(UV) lock --project "$(RUNTIME_ROOT)" --python "$$desired_python" --no-python-downloads; \
-	$(SYNC_UPGRADE_EXECUTOR_RECIPE); \
+	$(SYNC_UPGRADE_EXECUTOR_PRE_RESOLUTION_RECIPE); \
 	PATH="$$(dirname "$$mise_bin"):$$PATH" $(EXECUTOR_FLEXT_INFRA) deps cooldown-admission --repository-root "$(RUNTIME_ROOT)"; \
 	bootstrap_stage=network-auth; \
 	if git config --global --get-regexp '^url\.https?://[^ /]+:[^ /]+@.*\.insteadof$$' >/dev/null; then \
@@ -1455,9 +1461,17 @@ CHECK_PROFILE ?=
 _builtin_gen_all: _builtin_require_interpreter
 	@set -eu; \
 	root="$(abspath $(or $(strip $(ROOT)),$(PROJECT_ROOT)))"; \
-	scope=all; \
-	if [ "$$root" != "$(PROJECT_ROOT)" ] || [ "$(strip $(CI))" = "Y" ]; then scope=self; fi; \
-	$(if $(GEN_PROFILE),FLEXT_INFRA_PROFILE=$(GEN_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$$root/.reports/codegen/gen.pstats" $(PROJECT_FLEXT_INFRA) codegen generate --root "$$root" --scope "$$scope"
+	what="$(strip $(WHAT))"; \
+	if [ -n "$$what" ] && [ "$$what" != "ALL" ]; then \
+		scope="$(or $(strip $(SCOPE)),self)"; \
+		module_args=""; \
+		if [ -n "$(strip $(MODULE))" ]; then module_args=" --module $(strip $(MODULE))"; fi; \
+		$(if $(GEN_PROFILE),FLEXT_INFRA_PROFILE=$(GEN_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$$root/.reports/codegen/gen-scope.pstats" $(PROJECT_FLEXT_INFRA) codegen generate --root "$$root" --what "$$what" --scope "$$scope"$$module_args; \
+	else \
+		scope=all; \
+		if [ "$$root" != "$(PROJECT_ROOT)" ] || [ "$(strip $(CI))" = "Y" ]; then scope=self; fi; \
+		$(if $(GEN_PROFILE),FLEXT_INFRA_PROFILE=$(GEN_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$$root/.reports/codegen/gen.pstats" $(PROJECT_FLEXT_INFRA) codegen generate --root "$$root" --scope "$$scope"; \
+	fi
 
 # Focal generation is the bounded diagnosis vehicle: one surface (and, for
 # facades, one module) through the identical engine, lock and budget.
