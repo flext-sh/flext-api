@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import defer_lazy_bases, install_lazy_exports
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api._protocols.base_grpc import FlextApiProtocolsGrpc
@@ -68,62 +68,21 @@ install_lazy_exports(
         "FlextApiTypesProtocolPlugin": ".plugin_types",
     },
     public_exports=__all__,
-    deferred_members={
-        "FlextApiProtocolPluginManager": ("Manager",),
-        "FlextApiProtocolPlugins": (),
-        "FlextApiProtocolsBaseStorage": ("StorageBackend",),
-        "FlextApiProtocolsGrpc": (
-            "GrpcService",
-            "ProtobufService",
-        ),
-        "FlextApiProtocolsHttpClient": ("HttpClient",),
-        "FlextApiProtocolsRequest": ("HttpRequest",),
-        "FlextApiProtocolsResources": ("HttpResource",),
-        "FlextApiProtocolsResponse": ("HttpResponse",),
-        "FlextApiProtocolsSerialization": ("MsgpackModule",),
-        "FlextApiProtocolsSerializer": ("Serializer",),
-        "FlextApiProtocolsStorage": (
-            "StorageSettings",
-            "StorageMetadata",
-            "StorageState",
-            "StorageStats",
-        ),
-        "FlextApiProtocolsTransport": (
-            "TransportPlugin",
-            "ProtocolHandler",
-        ),
-        "FlextApiProtocolsTransports": ("HttpWireResponse",),
-        "FlextApiProtocolsWebhook": (
-            "WebhookSettings",
-            "WebhookEvent",
-            "WebhookDelivery",
-            "WebhookState",
-        ),
-        "FlextApiTypesProtocolPlugin": (
-            "_FlextApiPluginBase",
-            "Plugin",
-            "Protocol",
-            "Schema",
-            "Transport",
-            "Authentication",
-        ),
-    },
-)
-
-defer_lazy_bases(
-    __name__,
-    {
-        "FlextApiProtocolPlugins": (
-            (".", "FlextApiTypesProtocolPlugin"),
-            (".", "FlextApiProtocolPluginManager"),
-        ),
-        "FlextApiProtocolsTransports": (
-            (".", "FlextApiProtocolsHttpClient"),
-            (".", "FlextApiProtocolsBaseStorage"),
-            (".", "FlextApiProtocolsSerializer"),
-            (".", "FlextApiProtocolsResources"),
-            (".", "FlextApiProtocolsTransport"),
-            (".", "FlextApiProtocolsGrpc"),
-        ),
-    },
+    deferred_members=(
+        "FlextApiProtocolPluginManager",
+        "FlextApiProtocolPlugins",
+        "FlextApiProtocolsBaseStorage",
+        "FlextApiProtocolsGrpc",
+        "FlextApiProtocolsHttpClient",
+        "FlextApiProtocolsRequest",
+        "FlextApiProtocolsResources",
+        "FlextApiProtocolsResponse",
+        "FlextApiProtocolsSerialization",
+        "FlextApiProtocolsSerializer",
+        "FlextApiProtocolsStorage",
+        "FlextApiProtocolsTransport",
+        "FlextApiProtocolsTransports",
+        "FlextApiProtocolsWebhook",
+        "FlextApiTypesProtocolPlugin",
+    ),
 )
