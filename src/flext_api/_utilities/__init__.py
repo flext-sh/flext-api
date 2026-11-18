@@ -32,21 +32,9 @@ install_lazy_exports(
         "FlextApiUtilitiesTransport": ".transport",
     },
     public_exports=__all__,
-    deferred_members={
-        "FlextApiUtilitiesRequestUtils": ("RequestUtils",),
-        "FlextApiUtilitiesSerializers": (
-            "packb",
-            "unpackb",
-        ),
-        "FlextApiUtilitiesTransport": (
-            "HttpxClient",
-            "HttpxAsyncClient",
-            "HttpxResponse",
-            "HttpxHTTPError",
-            "HttpxHTTPStatusError",
-            "HttpxRequestError",
-            "HttpxTimeoutException",
-            "EXC_HTTPX",
-        ),
-    },
+    deferred_members=(
+        "FlextApiUtilitiesRequestUtils",
+        "FlextApiUtilitiesSerializers",
+        "FlextApiUtilitiesTransport",
+    ),
 )
