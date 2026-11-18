@@ -701,3 +701,5 @@ file = "src/**"
 
 [tool.uv.exclude-newer-package]
 soupsieve = false
+
+[tool.uv.sources]
