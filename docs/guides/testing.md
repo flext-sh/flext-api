@@ -117,19 +117,35 @@ For an explicitly requested complete execution, use:
 make tests-full
 ```
 
-`make tests-full` executes the complete applicable population once, without
-Testmon or a preliminary incremental run. It does not load the Testmon plugin,
-pass its options or database environment, acquire its lease, inspect or modify
-its database, or publish a cache receipt. The existing database remains untouched
-for later `make tests` runs. This is the latest operator clarification of
-2026-10-28, recorded in
+`make tests-full` executes the complete applicable population once without a
+preliminary incremental run, and records the execution in Testmon for later
+incremental runs. This is the 2026-11-19 amendment in
 ADR-029.
 Both operations retain source admission, runtime/input identity, applicability,
 original failures and the complete invocation deadline. Full execution is not
 a coverage-mode substitute or a second runner.
 
+Harness gates (`harness-gate-markers` in the pytest section of `tooling.yaml`)
+are deselected by both operations and reported NOT EXECUTED, because their inputs
+exist only under the harness that provides them. That harness runs them through
+the same runner:
+
+```bash
+make tests-harness
+make tests-harness MARKER=docker
+```
+
+`make tests-harness` selects only the harness gate markers, through the
+persistent Testmon selection in a Testmon environment of its own marker scope,
+and reports every other external gate NOT EXECUTED in the same receipt under
+`.reports/tests/`. `MARKER` narrows the run to one declared harness gate marker;
+any other marker fails before execution, and the `tests` and `tests-full` routes
+refuse a marker instead of ignoring it. A project whose harness provisions its inputs in
+fixtures declares that provisioning in its `custom.mk` `_custom-tests-harness`
+hook, which ends in `_builtin-tests-harness`.
+
 CI and the generated pre-commit hook run the rows ADR-029 declares. No
-compatibility aliases or file selectors belong to either operation.
+compatibility aliases or file selectors belong to any of these operations.
 
 The complete suite retains its declared services, network access and authentication
 requirements. Connectivity prerequisite skips follow root `AGENTS.md`; they never
@@ -140,8 +156,8 @@ runner that violates this contract is repaired at its owner and rerun through Ma
 Each phase retains its mode, raw process outcome, collection manifest, and
 diagnostics. The latest receipt names the current attempt even when collection fails.
 Incremental phases retain their database and cache accounting. Full phases record
-no Testmon database, lease or cache publication and reconcile execution against
-their complete applicable inventory.
+their Testmon database and reconcile execution against their complete applicable
+inventory; a cache hit does not establish full execution.
 Warning totals include selection, inventory, and suite occurrences, with blocking and
 explicitly suspended warnings reported separately. The existing non-strict MRO
 enforcement suspension remains visible in those receipts. Unexpected skips block
@@ -211,7 +227,11 @@ Budgets are configuration-owned by `flext-infra/src/flext_infra/config/tooling.y
 `ordinary-timeout-seconds` (2 s) measures the test call, `slow-timeout-seconds`
 (20 s) applies to `slow` and the heavy capability markers, and
 `run-timeout-seconds` (240 s) is the fleet-wide suite clock — one invocation owns one
-budget across every member suite, and a per-member reset is rejected. Collection,
+budget across every member suite, and a per-member reset is rejected.
+`harness-run-timeout-seconds` (fleet default 240 s) is the suite clock of
+`make tests-harness`, which also pays for the provisioning its harness fixtures
+own; a repository whose measured harness needs more declares it in its own
+`config/tooling.yaml` overlay instead of raising the incremental budget. Collection,
 session setup, fixture teardown and plugin bookkeeping belong to the suite deadline; an
 item budget never pays for them. A test that starts a child process is a
 process-boundary test and carries the `slow` marker instead of straining the ordinary

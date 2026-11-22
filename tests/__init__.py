@@ -40,19 +40,26 @@ if TYPE_CHECKING:
         main,
         settings,
     )
+    from flext_api.services import (
+        FlextApiAsyncClient,
+        FlextApiClient,
+        FlextApiClientBase,
+    )
     from tests.base import TestsFlextApiServiceBase, s
     from tests.constants import TestsFlextApiConstants, c
     from tests.models import TestsFlextApiModels, m
     from tests.protocols import TestsFlextApiProtocols, p
     from tests.settings import TestsFlextApiSettings
     from tests.typings import TestsFlextApiTypes, t
-    from tests.unit import TestsFlextApiModelContract
     from tests.utilities import TestsFlextApiUtilities, u
 
 
 __all__: tuple[str, ...] = (
     "FlextApi",
+    "FlextApiAsyncClient",
     "FlextApiCli",
+    "FlextApiClient",
+    "FlextApiClientBase",
     "FlextApiConfig",
     "FlextApiConfigNamespace",
     "FlextApiConstants",
@@ -73,7 +80,6 @@ __all__: tuple[str, ...] = (
     "HttpxResponse",
     "HttpxTimeoutException",
     "TestsFlextApiConstants",
-    "TestsFlextApiModelContract",
     "TestsFlextApiModels",
     "TestsFlextApiProtocols",
     "TestsFlextApiServiceBase",
@@ -106,7 +112,10 @@ install_lazy_exports(
     globals(),
     {
         "FlextApi": "flext_api",
+        "FlextApiAsyncClient": "flext_api.services",
         "FlextApiCli": "flext_api",
+        "FlextApiClient": "flext_api.services",
+        "FlextApiClientBase": "flext_api.services",
         "FlextApiConfig": "flext_api",
         "FlextApiConfigNamespace": "flext_api",
         "FlextApiConstants": "flext_api",
@@ -127,7 +136,6 @@ install_lazy_exports(
         "HttpxResponse": "flext_api",
         "HttpxTimeoutException": "flext_api",
         "TestsFlextApiConstants": ".constants",
-        "TestsFlextApiModelContract": ".unit",
         "TestsFlextApiModels": ".models",
         "TestsFlextApiProtocols": ".protocols",
         "TestsFlextApiServiceBase": ".base",
