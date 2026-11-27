@@ -12,8 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from typing import cast
 
-from flext_api.services import FlextApiClient
-from tests import m, settings, tm
+from tests import FlextApi, m, settings, tm
 
 
 class TestsFlextApiResponseWireContent:
@@ -21,14 +20,21 @@ class TestsFlextApiResponseWireContent:
 
     @staticmethod
     @contextmanager
-    def _server(payload: bytes) -> Generator[str]:
+    def _server(
+        payload: bytes,
+        seen: list[str] | None = None,
+        status: int = 200,
+    ) -> Generator[str]:
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self) -> None:
-                self.send_response(200)
+                if seen is not None:
+                    seen.append(self.path)
+                self.send_response(status)
                 self.send_header("content-type", "application/json")
                 self.send_header("content-length", str(len(payload)))
                 self.end_headers()
-                self.wfile.write(payload)
+                if payload:
+                    self.wfile.write(payload)
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         thread = Thread(target=server.serve_forever, daemon=True)
@@ -45,11 +51,35 @@ class TestsFlextApiResponseWireContent:
         """A real local exchange exposes both raw bytes and parsed JSON."""
         payload = b'{"answer":"ok"}'
         with self._server(payload) as base_url:
-            client = FlextApiClient(
+            api = FlextApi(
                 runtime_settings=settings.clone(Api={"base_url": base_url}),
             )
-            result = client.request(m.Api.HttpRequest(url=base_url, method="GET"))
+            result = api.request(m.Api.HttpRequest(url=base_url, method="GET"))
 
         tm.ok(result.success)
         tm.that(result.value.content, eq=payload)
         tm.that(result.value.body, eq={"answer": "ok"})
+
+    def test_absolute_query_reaches_the_wire(self) -> None:
+        """An absolute URL keeps its query instead of being rebased or emptied."""
+        seen: list[str] = []
+        with self._server(b'{"ok":true}', seen) as base_url:
+            api = FlextApi(
+                runtime_settings=settings.clone(Api={"base_url": base_url}),
+            )
+            result = api.request(m.Api.HttpRequest(url=f"{base_url}/extracts?pagina=2"))
+
+        tm.ok(result.success)
+        tm.that(seen, eq=["/extracts?pagina=2"])
+
+    def test_request_wire_preserves_a_bodyless_non_200(self) -> None:
+        """The raw wire contract keeps the status and empty content."""
+        with self._server(b"", status=204) as base_url:
+            api = FlextApi(
+                runtime_settings=settings.clone(Api={"base_url": base_url}),
+            )
+            result = api.client.request_wire(m.Api.HttpRequest(url=base_url))
+
+        tm.ok(result.success)
+        tm.that(result.value.status_code, eq=204)
+        tm.that(result.value.content, eq=b"")

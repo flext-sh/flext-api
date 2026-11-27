@@ -145,15 +145,6 @@ make setup
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import FlextApi, FlextApiSettings
 
 settings = FlextApiSettings(base_url="https://api.example.com", timeout=30)
@@ -172,15 +163,6 @@ else:
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from flext_api import FlextApiSettings
 

@@ -53,15 +53,6 @@ Primary protocol implementation for REST APIs and HTTP-based communication.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r
 
 
@@ -119,15 +110,6 @@ if result.success:
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from flext_api import c, m, p, r
 
@@ -226,15 +208,6 @@ This feature is not currently implemented in the public API.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import FlextApi, FlextApiClient, FlextApiSettings, c, m, p, r, t
 
 
@@ -269,7 +242,7 @@ FakeHttpClient.model_rebuild()
 class UserApiClient:
     """Client supporting HTTP operations through the real FLEXT-API facade."""
 
-    def __init__(self, base_url: str = "https://api.example.com"):
+    def __init__(self, base_url: str = "https://api.example.com") -> None:
         self.api = FlextApi(
             runtime_settings=FlextApiSettings(base_url=base_url, timeout=10.0)
         )
@@ -303,14 +276,7 @@ if created:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Sequence
 
 from flext_api import (
     FlextApiProtocolPluginManager,

@@ -23,17 +23,11 @@ without relying on any non-existent middleware API.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping
+
+from flext_tests import tm
 
 from flext_api import FlextApi, FlextApiSettings, c, m, p, r, t
-from flext_tests import tm
 
 
 class LoggingApi(FlextApi):

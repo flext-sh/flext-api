@@ -15,13 +15,6 @@
   - [Performance Monitoring](#performance-monitoring)
   - [Deployment Configuration](#deployment-configuration)
   - [Kubernetes Deployment](#kubernetes-deployment)
-  - [Custom Middleware](#custom-middleware)
-- [Performance Considerations](#performance-considerations)
-  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
-  - [Monitoring and Optimization](#monitoring-and-optimization)
-- [Migration Guidelines](#migration-guidelines)
-  - [Version Compatibility](#version-compatibility)
-- [References](#references)
 
 <!-- TOC END -->
 
@@ -110,15 +103,6 @@ validation; its projected protocol describes the model's fields, including
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 **Key Components:**
@@ -136,90 +120,36 @@ FLEXT-API uses a plugin system for protocol extensibility.
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 ### Request Processing Pipeline
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 ### Storage Interface
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 ### Cache Configuration
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 ### Security Middleware
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 ### Performance Monitoring
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
 ### Deployment Configuration
@@ -309,70 +239,11 @@ spec:
 
 ## Extension Points
 
-### Adding New Protocols
+### Adding Behaviour
 
-```python
-from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-
-class CustomProtocol:
-    """Custom protocol implementation."""
-
-    def create_client(self, settings: dict):
-        """Create protocol-specific client."""
-        return CustomClient(**settings)
-
-    async def execute_request(self, request) -> p.Result[t.JsonValue]:
-        """Execute protocol-specific request."""
-        pass
-
-
-# Register new protocol
-registry = ProtocolRegistry()
-registry.register("custom", CustomProtocol())
-````
-
-### Custom Middleware
-
-```python
-from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-from flext_api import p, r
-
-
-class CustomBusinessMiddleware:
-    """Custom middleware for business logic."""
-
-    async def process_request(self, request) -> p.Result[dict]:
-        """Add business context to request."""
-        # Add business-specific headers
-        request.business_context = {
-            "tenant_id": request.headers.get("X-Tenant-ID"),
-            "user_role": request.headers.get("X-User-Role"),
-        }
-        return r[dict].ok({})
-
-
-# Register middleware
-app.add_middleware(CustomBusinessMiddleware())
-```
+New transport behaviour is a `p` protocol implemented by its owner and injected at the
+composition root through `FlextContainer`. Registries and
+name-keyed lookups are not used.
 
 ## Performance Considerations
 
@@ -443,31 +314,10 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 1. Remove in next major version (2.0.0)
 1. Update ecosystem documentation
 
-**Migration Example:**
+**Migration route:** a removed or renamed public signature stays as a thin pass-through
+marked with `warnings.deprecated` until its consumer census reaches zero, then it is
+deleted.
 
-```python
-from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-
-# Old API (deprecated in 0.9.x)
-@deprecated("Use create_fastapi_app() instead")
-def create_app(settings: dict) -> FastAPI: ...  # Legacy implementation
-
-
-# New API (introduced in 0.9.x)
-def create_fastapi_app(settings: FlextApiSettings = None) -> FastAPI:
-    """Create FastAPI application with FLEXT patterns."""
-    ...  # New implementation
-    ```
 ## References
 
 - **FLEXT-Core Documentation**: Foundation patterns and infrastructure

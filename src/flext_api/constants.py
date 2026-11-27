@@ -9,11 +9,7 @@ from __future__ import annotations
 
 from flext_web import FlextWebConstants
 
-from flext_api._constants import (
-    FlextApiConstantsApi,
-    FlextApiConstantsBase,
-    FlextApiConstantsConfig,
-)
+from flext_api._constants import FlextApiConstantsApi, FlextApiConstantsConfig
 
 
 class FlextApiConstants(FlextWebConstants):
@@ -21,7 +17,6 @@ class FlextApiConstants(FlextWebConstants):
 
     class Api(
         FlextApiConstantsApi,
-        FlextApiConstantsBase,
         FlextApiConstantsConfig,
     ):
         """API domain constants namespace."""

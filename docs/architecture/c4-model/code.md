@@ -7,12 +7,8 @@
 - [Code Structure Analysis](#code-structure-analysis)
   - [Core Module Relationships](#core-module-relationships)
   - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
-  - [Test Fixtures and Mocks](#test-fixtures-and-mocks)
-- [Performance Optimizations](#performance-optimizations)
-  - [Connection Pooling](#connection-pooling)
-  - [Response Caching](#response-caching)
-- [Security Implementation](#security-implementation)
-  - [Authentication Handlers](#authentication-handlers)
+  - [Test Fixtures](#test-fixtures)
+- [Transport, Pooling and Authentication](#transport-pooling-and-authentication)
 
 <!-- TOC END -->
 
@@ -211,195 +207,19 @@ flext_api/
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 ```
 
-### Test Fixtures and Mocks
+### Test Fixtures
 
-```python
-from __future__ import annotations
+Shared fixtures live in `tests/conftest.py` and use the `flext_tests` facades (`tm`, typed
+fixtures under `tests/fixtures/`); mocks and patches are not used.
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+## Transport, Pooling and Authentication
 
-
-# conftest.py - Shared test fixtures
-@pytest.fixture
-def mock_http_client():
-    """Mock HTTP client for testing."""
-    client = Mock(spec=FlextApiClient)
-    client.get.return_value = r.ok(MockHttpResponse())
-    return client
-
-
-@pytest.fixture
-def test_config():
-    """Test configuration fixture."""
-    return FlextApiSettings(base_url="https://httpbin.org", timeout=10.0, max_retries=1)
-
-
-@pytest.fixture
-async def async_client(test_config):
-    """Real HTTP client for integration tests."""
-    client = FlextApiClient(test_config)
-    yield client
-    await client.close()
-```
-
-## Performance Optimizations
-
-### Connection Pooling
-
-```python
-from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-
-class ConnectionPoolManager:
-    """HTTP connection pool management."""
-
-    def __init__(self, max_connections: int = 100, max_keepalive: int = 20):
-        self.max_connections = max_connections
-        self.max_keepalive = max_keepalive
-        self._pools: dict[str, httpx.AsyncClient] = {}
-
-    async def get_client(self, base_url: str) -> httpx.AsyncClient:
-        """Get or create client for base URL."""
-        if base_url not in self._pools:
-            self._pools[base_url] = httpx.AsyncClient(
-                base_url=base_url,
-                limits=httpx.Limits(
-                    max_connections=self.max_connections,
-                    max_keepalive_connections=self.max_keepalive,
-                ),
-                timeout=httpx.Timeout(30.0),
-            )
-
-        return self._pools[base_url]
-
-    async def close_all(self):
-        """Close all connection pools."""
-        for client in self._pools.values():
-            await client.aclose()
-        self._pools.clear()
-```
-
-### Response Caching
-
-```python
-from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-
-class ResponseCache:
-    """HTTP response caching with TTL."""
-
-    def __init__(self, max_size: int = 1000, default_ttl: int = 300):
-        self.cache = TTLCache(maxsize=max_size, ttl=default_ttl)
-        self._lock = asyncio.Lock()
-
-    async def get(self, key: str) -> CachedResponse | None:
-        """Get cached response."""
-        async with self._lock:
-            return self.cache.get(key)
-
-    async def set(
-        self, key: str, response: FlextApiModels.HttpResponse, ttl: int | None = None
-    ):
-        """Cache response with optional TTL."""
-        async with self._lock:
-            cached = CachedResponse(
-                status_code=response.status_code,
-                headers=response.headers,
-                body=response.body,
-                cached_at=datetime.now(UTC),
-                ttl=ttl or self.default_ttl,
-            )
-            self.cache[key] = cached
-
-    def make_cache_key(self, method: str, url: str, headers: dict[str, str]) -> str:
-        """Generate cache key from request."""
-        key_data = f"{method}:{url}:{sorted(headers.items())}"
-        return hashlib.sha256(key_data.encode()).hexdigest()
-```
-
-## Security Implementation
-
-### Authentication Handlers
-
-```python
-from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-
-class AuthenticationManager:
-    """Multi-scheme authentication manager."""
-
-    def __init__(self):
-        self._handlers: dict[str, AuthHandler] = {
-            "jwt": JwtAuthHandler(),
-            "api_key": ApiKeyAuthHandler(),
-            "basic": BasicAuthHandler(),
-            "oauth": OAuthAuthHandler(),
-        }
-
-    def get_handler(self, scheme: str) -> AuthHandler:
-        """Get authentication handler for scheme."""
-        if scheme not in self._handlers:
-            raise ValueError(f"Unsupported auth scheme: {scheme}")
-        return self._handlers[scheme]
-
-    async def authenticate_request(
-        self, request: FlextApiModels.HttpRequest, credentials: AuthCredentials
-    ) -> p.Result[FlextApiModels.HttpRequest]:
-        """Add authentication to request."""
-        handler = self.get_handler(credentials.scheme)
-
-        auth_result = await handler.authenticate(request, credentials)
-        if auth_result.failure:
-            return r.fail(f"Authentication failed: {auth_result.error}")
-
-        authenticated_request = auth_result.unwrap()
-        return r.ok(authenticated_request)
-```
+Connection reuse, timeouts and retries belong to the shared client
+(`src/flext_api/services/client.py`, `FlextApiClient`) configured through
+`FlextApiSettings`. Response caching and pluggable authentication handlers are not
+implemented; when they are, they arrive as `p` protocols injected at the composition root.
 
 ---
 

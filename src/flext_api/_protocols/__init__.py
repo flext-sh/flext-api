@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api._protocols.base import FlextApiProtocolsBase
     from flext_api._protocols.base_grpc import FlextApiProtocolsGrpc
     from flext_api._protocols.base_http import FlextApiProtocolsHttpClient
     from flext_api._protocols.base_resources import FlextApiProtocolsResources
@@ -33,7 +32,6 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextApiProtocolPluginManager",
     "FlextApiProtocolPlugins",
-    "FlextApiProtocolsBase",
     "FlextApiProtocolsBaseStorage",
     "FlextApiProtocolsGrpc",
     "FlextApiProtocolsHttpClient",
@@ -55,7 +53,6 @@ install_lazy_exports(
     {
         "FlextApiProtocolPluginManager": ".plugin_manager",
         "FlextApiProtocolPlugins": ".plugins",
-        "FlextApiProtocolsBase": ".base",
         "FlextApiProtocolsBaseStorage": ".base_storage",
         "FlextApiProtocolsGrpc": ".base_grpc",
         "FlextApiProtocolsHttpClient": ".base_http",
@@ -71,4 +68,21 @@ install_lazy_exports(
         "FlextApiTypesProtocolPlugin": ".plugin_types",
     },
     public_exports=__all__,
+    deferred_members=(
+        "FlextApiProtocolPluginManager",
+        "FlextApiProtocolPlugins",
+        "FlextApiProtocolsBaseStorage",
+        "FlextApiProtocolsGrpc",
+        "FlextApiProtocolsHttpClient",
+        "FlextApiProtocolsRequest",
+        "FlextApiProtocolsResources",
+        "FlextApiProtocolsResponse",
+        "FlextApiProtocolsSerialization",
+        "FlextApiProtocolsSerializer",
+        "FlextApiProtocolsStorage",
+        "FlextApiProtocolsTransport",
+        "FlextApiProtocolsTransports",
+        "FlextApiProtocolsWebhook",
+        "FlextApiTypesProtocolPlugin",
+    ),
 )

@@ -8,9 +8,10 @@
 <!-- TOC START -->
 
 - [Test design](#test-design)
-- [Pydantic and mypy](#pydantic-and-mypy)
+- [Pydantic and type checking](#pydantic-and-type-checking)
 - [Canonical execution](#canonical-execution)
 - [Generated documentation](#generated-documentation)
+- [Execution budgets and the shared runner](#execution-budgets-and-the-shared-runner)
 - [Related guides](#related-guides)
 
 <!-- TOC END -->
@@ -55,38 +56,31 @@ environment. Do not assume another city's activation or connection settings.
   Connectivity prerequisite skips follow root `AGENTS.md`, section "Production
   Readiness And Connectivity Tests"; they never prove the omitted service works.
 
-Private attribute usage is enforced by Pyright's resolved owner and export semantics in
+Private attribute usage is enforced by Ruff's `private-member-access` (`SLF001`) in
 source, tests, examples, and scripts according to the typed path policy. The
 `ban-test-private-access` ast-grep rule retains only dynamic private-module imports; it
-does not duplicate semantic attribute detection or require deleting test scenarios.
+does not duplicate that attribute detection or require deleting test scenarios.
 
-## Pydantic and mypy
+## Pydantic and type checking
 
 Pydantic 2 is mandatory for owned model contracts. Consume it through the canonical
 FLEXT facades and model presets; do not introduce `pydantic.v1`, raw consumer bases, or
-compatibility models. The [Pydantic mypy plugin](https://docs.pydantic.dev/latest/integrations/mypy/)
-adds model-aware static analysis; it does not replace runtime validation.
+compatibility models. Static analysis does not replace runtime validation.
 
 Upstream Pydantic declaration primitives retain their library/model owner. Moving
 project helpers does not authorize importing `u` backward into `m`, `config`, or
 `settings`, or changing validation behavior merely to relocate a decorator.
 
-`flext-infra/config/tooling.yaml` owns the mypy policy. Its generated configurations,
-runtime profiles, project overlays, and checker arguments must retain `pydantic.mypy`
-and the operator-mandated suspension of `prop-decorator` and `call-arg`. Change and
+Ruff is the one formatter and linter and Pyrefly the one type checker
+(operator order 2026-11-13 `ag-6w7a`; global `rules/python.md`).
+`flext-infra/config/tooling.yaml` owns the Ruff and Pyrefly policy. Change and
 regenerate the producer, never hand-edit a consumer projection. Correct YAML alone
-does not prove that the installed checker consumed the policy.
+does not prove that the installed checker consumed the policy. Never weaken an
+analyzer or exclude source, tests, examples, or scripts from their native gates.
 
-These two suspensions apply to mypy only. They do not authorize disabling unrelated
-diagnostics, removing the plugin, weakening another analyzer, or excluding source,
-tests, examples, or scripts from their native gates.
-
-Treat code changed to accommodate these two diagnostics as a regression. Use
-the original commit, diagnostic, canonical owner, and public behavior to establish
-causality; restore only the affected hunks and preserve unrelated changes. Revalidate
-the lawful Pydantic 2 declaration through the public consumer before encoding its
-behavior in tests. Do not replace a validator or computed field with a shim, unchecked
-mapping, cast, or alternate model to satisfy the checker.
+Revalidate a lawful Pydantic 2 declaration through the public consumer before encoding
+its behavior in tests. Do not replace a validator or computed field with a shim,
+unchecked mapping, cast, or alternate model to satisfy the checker.
 
 ## Canonical execution
 
@@ -123,19 +117,35 @@ For an explicitly requested complete execution, use:
 make tests-full
 ```
 
-`make tests-full` executes the complete applicable population once, without
-Testmon or a preliminary incremental run. It does not load the Testmon plugin,
-pass its options or database environment, acquire its lease, inspect or modify
-its database, or publish a cache receipt. The existing database remains untouched
-for later `make tests` runs. This is the latest operator clarification of
-2026-10-28, recorded in
+`make tests-full` executes the complete applicable population once without a
+preliminary incremental run, and records the execution in Testmon for later
+incremental runs. This is the 2026-11-19 amendment in
 ADR-029.
 Both operations retain source admission, runtime/input identity, applicability,
 original failures and the complete invocation deadline. Full execution is not
 a coverage-mode substitute or a second runner.
 
-CI and pre-push retain their declared workflow; pre-commit runs no tests. No
-compatibility aliases or file selectors belong to either operation.
+Harness gates (`harness-gate-markers` in the pytest section of `tooling.yaml`)
+are deselected by both operations and reported NOT EXECUTED, because their inputs
+exist only under the harness that provides them. That harness runs them through
+the same runner:
+
+```bash
+make tests-harness
+make tests-harness MARKER=docker
+```
+
+`make tests-harness` selects only the harness gate markers, through the
+persistent Testmon selection in a Testmon environment of its own marker scope,
+and reports every other external gate NOT EXECUTED in the same receipt under
+`.reports/tests/`. `MARKER` narrows the run to one declared harness gate marker;
+any other marker fails before execution, and the `tests` and `tests-full` routes
+refuse a marker instead of ignoring it. A project whose harness provisions its inputs in
+fixtures declares that provisioning in its `custom.mk` `_custom-tests-harness`
+hook, which ends in `_builtin-tests-harness`.
+
+CI and the generated pre-commit hook run the rows ADR-029 declares. No
+compatibility aliases or file selectors belong to any of these operations.
 
 The complete suite retains its declared services, network access and authentication
 requirements. Connectivity prerequisite skips follow root `AGENTS.md`; they never
@@ -146,8 +156,8 @@ runner that violates this contract is repaired at its owner and rerun through Ma
 Each phase retains its mode, raw process outcome, collection manifest, and
 diagnostics. The latest receipt names the current attempt even when collection fails.
 Incremental phases retain their database and cache accounting. Full phases record
-no Testmon database, lease or cache publication and reconcile execution against
-their complete applicable inventory.
+their Testmon database and reconcile execution against their complete applicable
+inventory; a cache hit does not establish full execution.
 Warning totals include selection, inventory, and suite occurrences, with blocking and
 explicitly suspended warnings reported separately. The existing non-strict MRO
 enforcement suspension remains visible in those receipts. Unexpected skips block
@@ -211,8 +221,29 @@ make gen
 
 Do not edit a member projection by hand.
 
+## Execution budgets and the shared runner
+
+Budgets are configuration-owned by `flext-infra/src/flext_infra/config/tooling.yaml`:
+`ordinary-timeout-seconds` (2 s) measures the test call, `slow-timeout-seconds`
+(20 s) applies to `slow` and the heavy capability markers, and
+`run-timeout-seconds` (240 s) is the fleet-wide suite clock — one invocation owns one
+budget across every member suite, and a per-member reset is rejected.
+`harness-run-timeout-seconds` (fleet default 240 s) is the suite clock of
+`make tests-harness`, which also pays for the provisioning its harness fixtures
+own; a repository whose measured harness needs more declares it in its own
+`config/tooling.yaml` overlay instead of raising the incremental budget. Collection,
+session setup, fixture teardown and plugin bookkeeping belong to the suite deadline; an
+item budget never pays for them. A test that starts a child process is a
+process-boundary test and carries the `slow` marker instead of straining the ordinary
+budget.
+
+CLI coverage runs in-process through `u.Tests.cli_in_process`, which owns stream
+capture, the environment scope and termination-handler restoration; the caller keeps
+only its domain configuration.
+
 ## Related guides
 
 - Development
 - Troubleshooting
 - Testing standards
+- Engineering SOP

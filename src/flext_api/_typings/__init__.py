@@ -32,4 +32,9 @@ install_lazy_exports(
         "FlextApiTypingsTransport": ".transport",
     },
     public_exports=__all__,
+    deferred_members=(
+        "FlextApiTypingsBase",
+        "FlextApiTypingsSerialization",
+        "FlextApiTypingsTransport",
+    ),
 )

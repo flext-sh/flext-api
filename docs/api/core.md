@@ -32,15 +32,6 @@ facade.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import FlextApiClient, FlextApiSettings, c, m, p
 
 # Settings are the only constructor argument.
@@ -97,16 +88,7 @@ exposes convenience methods for each HTTP verb.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
@@ -133,16 +115,7 @@ All methods return `p.Result[p.Api.HttpResponse]`.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
@@ -158,16 +131,7 @@ result = api.get("/users", headers={"Accept": "application/json"})
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-from flext_api import FlextApi, FlextApiSettings, m, p
+from flext_api import FlextApi, FlextApiSettings, p
 
 api = FlextApi(runtime_settings=FlextApiSettings(base_url="https://api.example.com"))
 
@@ -193,15 +157,6 @@ that namespace for convenience.
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from flext_api import FlextApiSettings
 
@@ -230,15 +185,6 @@ outside the `Api` namespace or declare an additional nested group.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_tests import tm
 from pydantic import Field
 
@@ -265,17 +211,9 @@ HTTP payloads are represented by immutable Pydantic value models under `m.Api`.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from flext_tests import tm
 
 from flext_api import c, m
-from flext_tests import tm
 
 request = m.Api.HttpRequest(
     method=c.Api.Method.POST,
@@ -307,27 +245,18 @@ before they are validated into `m.Api.HttpRequest`.
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import c, u
 
-# Build a normalized request payload from raw call-site arguments.
-payload_result = u.Api.RequestUtils.build_request_payload(
+# Build the validated HTTP request from raw call-site arguments.
+request_result = u.Api.RequestUtils.build_request_payload(
     method=c.Api.Method.GET,
     url="/users",
     headers={"Accept": "application/json"},
     request_kwargs={"params": {"limit": 10}},
 )
-assert payload_result.success
-payload = payload_result.unwrap()
-print(payload.root)
+assert request_result.success
+request = request_result.unwrap()
+print(request.method, request.url, request.query_params)
 
 # Merge headers.
 merged_result = u.Api.RequestUtils.merge_headers(
@@ -350,22 +279,13 @@ print(timeout_result.unwrap())
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import FlextApi, FlextApiSettings, m, p, r
 
 
 class UserApiClient:
     """Thin wrapper over the FlextApi facade for a user-management API."""
 
-    def __init__(self, base_url: str = "https://api.example.com"):
+    def __init__(self, base_url: str = "https://api.example.com") -> None:
         self.api = FlextApi(
             runtime_settings=FlextApiSettings(base_url=base_url, timeout=10.0)
         )
@@ -390,7 +310,7 @@ class UserApiClient:
 
 # Usage example against a fake facade so the example runs without network access.
 class FakeUserApi(UserApiClient):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(base_url="https://example.com")
 
     def list_users(self, limit: int = 10) -> p.Result[p.Api.HttpResponse]:
